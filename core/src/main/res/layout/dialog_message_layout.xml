@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#99000000">
+
+    <!-- 外层包裹 FrameLayout 内部才能够设置 Margin -->
+    <LinearLayout
+        android:id="@+id/messageDialogContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="48dp"
+        android:background="#ffffffff"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/messageDialogTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="24dp"
+            android:paddingTop="16dp"
+            android:text="title"
+            android:textColor="#ff666666"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/messageDialogContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:lineSpacingMultiplier="1.2"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="16dp"
+            android:minHeight="62dp"
+            android:gravity="center_vertical"
+            android:text="This is a message.\nMore message."
+            android:textColor="#ff333333"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/messageDialogCancel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_horizontal"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="16dp"
+                android:text="cancel"
+                android:textAlignment="center"
+                android:textColor="#ff666666"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/messageDialogConfirm"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_horizontal"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="16dp"
+                android:text="conform"
+                android:textAlignment="center"
+                android:textColor="#FFEDA664"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>
