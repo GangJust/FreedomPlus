@@ -17,6 +17,7 @@ object KAlbumUtils {
      * @param path 保存路径, 可能会限制: Environment.DIRECTORY_DCIM、Environment.DIRECTORY_PICTURES 等文件夹(作为父文件夹)
      * @param callback 回调方法, 刷新成功才进行回调
      */
+    @JvmStatic
     fun refresh(context: Context, path: String, callback: ((path: String, uri: Uri) -> Unit)? = null) {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
             MediaScannerConnection.scanFile(context, arrayOf(path), null) { resultPath, uri ->

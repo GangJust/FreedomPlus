@@ -23,7 +23,7 @@ class HMainFragment(
             .method("onViewCreated", View::class.java, Bundle::class.java) {
                 onAfter {
                     if (!config.isHideTab) return@onAfter
-                    val viewGroup = it.args[0] as ViewGroup
+                    val viewGroup = args[0] as ViewGroup
                     hideTabItem(viewGroup, config)
                 }
             }
@@ -34,8 +34,8 @@ class HMainFragment(
                 onBefore {
                     if (!config.isHideTab) return@onBefore
 
-                    if (it.method.name.contains("onInterceptTouchEvent|onTouchEvent|dispatchHoverEvent".toRegex())) {
-                        it.result = false
+                    if (method.name.contains("onInterceptTouchEvent|onTouchEvent|dispatchHoverEvent".toRegex())) {
+                        result = false
                     }
                 }
             }

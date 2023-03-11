@@ -6,42 +6,57 @@ import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import java.lang.reflect.Member
 
+/// 对普通方法的 Hook 封装
+interface MethodHook : KtHook {
+    fun onBefore(block: XC_MethodHook.MethodHookParam.() -> Unit)
+    fun onAfter(block: XC_MethodHook.MethodHookParam.() -> Unit)
+    fun onReplace(block: XC_MethodHook.MethodHookParam.() -> Any)
+}
+
 /// 实现类
 open class MethodHookImpl(private var method: Member) : MethodHook {
-    private var beforeBlock: ((param: XC_MethodHook.MethodHookParam) -> Unit)? = null
-    private var afterBlock: ((param: XC_MethodHook.MethodHookParam) -> Unit)? = null
-    private var replaceBlock: ((param: XC_MethodHook.MethodHookParam) -> Any)? = null
+    private var beforeBlock: (XC_MethodHook.MethodHookParam.() -> Unit)? = null
+    private var afterBlock: (XC_MethodHook.MethodHookParam.() -> Unit)? = null
+    private var replaceBlock: (XC_MethodHook.MethodHookParam.() -> Any)? = null
 
     constructor(clazz: Class<*>, methodName: String, vararg argsTypes: Any) :
             this(XposedHelpers.findMethodExact(clazz, methodName, *argsTypes))
 
+
     /**
-     * 在进入某个方法第一行进行注入
-     * @param block 注入的代码块
+     * [onBefore]会在某个Hook方法执行 之前 被调用
+     *
+     * 等价于[XC_MethodHook#beforeHookedMethod]方法
+     *
+     * @param block hook代码块, 可在内部书写hook逻辑
      */
-    override fun onBefore(block: (param: XC_MethodHook.MethodHookParam) -> Unit) {
+    override fun onBefore(block: XC_MethodHook.MethodHookParam.() -> Unit) {
         this.beforeBlock = block
     }
 
     /**
-     * 在结束某个方法最后一行(return之前)进行注入
-     * @param block 注入的代码块
+     * [onAfter]会在某个Hook方法执行 之后 被调用
+     *
+     * 等价于[XC_MethodHook#afterHookedMethod]方法
+     *
+     * @param block hook代码块, 可在内部书写hook逻辑
      */
-    override fun onAfter(block: (param: XC_MethodHook.MethodHookParam) -> Unit) {
+    override fun onAfter(block: XC_MethodHook.MethodHookParam.() -> Unit) {
         this.afterBlock = block
     }
 
     /**
-     * 对某个方法进行替换
-     * @param block 注入的代码块
+     * 该方法会直接 替换 某个Hook方法, 一旦[onReplace]被显示调用, [onBefore]和[onAfter]将不会被响应
+     *
+     * 等价于[XC_MethodHook#replaceHookedMethod]方法
+     *
+     * @param block hook代码块, 可在内部书写hook逻辑
      */
-    override fun onReplace(block: (param: XC_MethodHook.MethodHookParam) -> Any) {
+    override fun onReplace(block: XC_MethodHook.MethodHookParam.() -> Any) {
         this.replaceBlock = block
     }
 
-    /**
-     * 开启Hook
-     */
+    // 开启hook, 统一执行Hook逻辑
     fun start() {
         if (replaceBlock != null) {
             XposedBridge.hookMethod(method, object : XC_MethodReplacement() {

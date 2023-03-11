@@ -11,6 +11,14 @@ import java.nio.charset.StandardCharsets
 object KHttpUtils {
     private const val DEFAULT_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
 
+    private fun commonConnection(url: URL): HttpURLConnection {
+        val connect: HttpURLConnection = url.openConnection() as HttpURLConnection
+        connect.requestMethod = "GET"
+        connect.setRequestProperty("User-Agent", DEFAULT_UA)
+        connect.setRequestProperty("Accept", "*/*")
+        return connect
+    }
+
     /**
      * GET请求
      *
@@ -25,13 +33,11 @@ object KHttpUtils {
         } else {
             if (sourceUrl.contains("?")) "$sourceUrl&$params" else "$sourceUrl?$params"
         }
+
         var body = ""
+        var connect: HttpURLConnection? = null
         try {
-            val url = URL(sourceUrl)
-            val connect: HttpURLConnection = url.openConnection() as HttpURLConnection
-            connect.requestMethod = "GET"
-            connect.setRequestProperty("User-Agent", DEFAULT_UA)
-            connect.setRequestProperty("Accept", "*/*")
+            connect = commonConnection(URL(sourceUrl))
             val inputStream = if (connect.responseCode == HttpURLConnection.HTTP_OK
                 || connect.responseCode == HttpURLConnection.HTTP_CREATED
             ) {
@@ -45,6 +51,13 @@ object KHttpUtils {
         } catch (e: Exception) {
             e.printStackTrace()
             KLogCat.e("发生异常:\n${e.stackTraceToString()}")
+        } finally {
+            try {
+                connect?.disconnect()
+            } catch (e: IOException) {
+                e.printStackTrace()
+                KLogCat.e("发生异常:\n${e.stackTraceToString()}")
+            }
         }
         return body
     }
@@ -58,21 +71,25 @@ object KHttpUtils {
     @JvmStatic
     fun getRedirectsUrl(sourceUrl: String): String {
         var redirectUrl = ""
+        var connect: HttpURLConnection? = null
         try {
-            val url = URL(sourceUrl)
-            val connect: HttpURLConnection = url.openConnection() as HttpURLConnection
-            connect.connect()
-            connect.requestMethod = "GET"
+            connect = commonConnection(URL(sourceUrl))
             connect.instanceFollowRedirects = false
             redirectUrl = if (connect.responseCode == 302) {
                 connect.getHeaderField("Location")
             } else {
                 connect.url.toString()
             }
-            connect.disconnect()
         } catch (e: Exception) {
             e.printStackTrace()
             KLogCat.e("发生异常:\n${e.stackTraceToString()}")
+        } finally {
+            try {
+                connect?.disconnect()
+            } catch (e: IOException) {
+                e.printStackTrace()
+                KLogCat.e("发生异常:\n${e.stackTraceToString()}")
+            }
         }
         return redirectUrl
     }
@@ -87,7 +104,7 @@ object KHttpUtils {
     fun download(sourceUrl: String, output: OutputStream, listener: DownloadListener) {
         var connect: HttpURLConnection? = null
         try {
-            connect = URL(sourceUrl).openConnection() as HttpURLConnection
+            connect = commonConnection(URL(sourceUrl))
             val input = connect.inputStream
             val total = connect.contentLength
             input.use {

@@ -54,12 +54,11 @@ object KFileUtils {
      */
     fun String.toFile() = File(this)
 
-    /**
-     * 获取纯净的文件名, 替换掉部分特殊符号
-     */
+    //获取纯净的文件名, 替换掉部分特殊符号
     val File.pureName: String
         get() = name.pureFileName
 
+    //获取纯净的文件名, 替换掉部分特殊符号
     val String.pureFileName: String
         get() {
             return this.replace("\\s".toRegex(), "")

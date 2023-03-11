@@ -22,7 +22,7 @@ class DouYinMain(
         lpparam.hookClass(AwemeHostApplication::class.java)
             .method("onCreate") {
                 onBefore {
-                    val app = it.thisObject as Application
+                    val app = thisObject as Application
 
                     //日志工具
                     KLogCat.init(app)

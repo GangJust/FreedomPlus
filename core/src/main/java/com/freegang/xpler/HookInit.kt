@@ -17,17 +17,6 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 class HookInit : IXposedHookLoadPackage, IXposedHookZygoteInit {
     private val hookMain: HookMain = HookMain()
 
-    private fun injectClassLoader(lpparam: XC_LoadPackage.LoadPackageParam, classLoader: ClassLoader) {
-        val fParent = ClassLoader::class.java.declaredFields.first { it.name == "parent" }
-        fParent.isAccessible = true
-        val mine = HookInit::class.java.classLoader
-        val curr = fParent.get(mine) as (ClassLoader?) ?: XposedBridge::class.java.classLoader
-        if (!curr::class.java.name.equals(HybridClassLoader::class.java.name)) {
-            lpparam.classLoader = HybridClassLoader(classLoader, curr)
-            fParent.set(mine, lpparam.classLoader)
-        }
-    }
-
     override fun initZygote(sparam: IXposedHookZygoteInit.StartupParam) {
         val modulePath = sparam.modulePath
         val moduleRes = XModuleResources.createInstance(sparam.modulePath, null)
@@ -48,7 +37,7 @@ class HookInit : IXposedHookLoadPackage, IXposedHookZygoteInit {
             .hookClass(Application::class.java)
             .method("attach", Context::class.java) {
                 onAfter {
-                    val context = it.args[0] as Context
+                    val context = args[0] as Context
                     val targetLoader = context.classLoader
                     injectClassLoader(lpparam, targetLoader)
 
@@ -56,12 +45,22 @@ class HookInit : IXposedHookLoadPackage, IXposedHookZygoteInit {
                     if (lpparam.packageName == HookPackages.appPackageName) {
                         moduleInit(lpparam)
                     } else {
-                        pluginInit(lpparam, it.thisObject as Application)
+                        pluginInit(lpparam, thisObject as Application)
                     }
                 }
             }
     }
 
+    private fun injectClassLoader(lpparam: XC_LoadPackage.LoadPackageParam, classLoader: ClassLoader) {
+        val fParent = ClassLoader::class.java.declaredFields.first { it.name == "parent" }
+        fParent.isAccessible = true
+        val mine = HookInit::class.java.classLoader
+        val curr = fParent.get(mine) as (ClassLoader?) ?: XposedBridge::class.java.classLoader
+        if (!curr::class.java.name.equals(HybridClassLoader::class.java.name)) {
+            lpparam.classLoader = HybridClassLoader(classLoader, curr)
+            fParent.set(mine, lpparam.classLoader)
+        }
+    }
 
     ///
     // module hint hook!!
@@ -70,11 +69,7 @@ class HookInit : IXposedHookLoadPackage, IXposedHookZygoteInit {
         lpparam.hookClass(moduleMainActivity)
             .method("onCreate", Bundle::class.java) {
                 onAfter {
-                    // classloader不一致导致无法进行类型转换
-                    //val mainActivity = it.thisObject as MainActivity
-
                     // 反射调用, 模块加载成功
-                    val thisObject = it.thisObject
                     val hookHintMethod = thisObject::class.java.getDeclaredMethod("hookHint")
                     hookHintMethod.isAccessible = true
                     hookHintMethod.invoke(thisObject)

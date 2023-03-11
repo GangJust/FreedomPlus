@@ -46,19 +46,19 @@ class HAbsActivity(
             .method("onCreate", Bundle::class.java) {
                 onAfter {
                     if (!config.isEmoji) return@onAfter
-                    getCommentImage(it)
+                    getCommentImage(this)
                 }
             }
             .method("onResume") {
                 onAfter {
                     if (!config.isDownload) return@onAfter
-                    addClipboardListener(it, config)
+                    addClipboardListener(this, config)
                 }
             }
             .method("onPause") {
                 onBefore {
                     if (!config.isDownload) return@onBefore
-                    removeClipboardListener(it)
+                    removeClipboardListener(this)
                 }
             }
     }

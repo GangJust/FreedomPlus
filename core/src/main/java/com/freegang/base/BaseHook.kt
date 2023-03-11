@@ -34,15 +34,24 @@ abstract class BaseHook(
 
     fun launch(block: suspend CoroutineScope.() -> Unit): Job {
         val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
+            if (throwable is CancellationException) {
+                throwable.printStackTrace()
+                return@CoroutineExceptionHandler
+            }
+
             KLogCat.d("发生异常: \n${throwable.stackTraceToString()}")
             if (coroutineContext.isActive) {
                 coroutineContext.cancel()
+                coroutineContext.cancelChildren()
             }
         }
         val job = mainScope.launch(exceptionHandler) {
             try {
                 block.invoke(this)
+            } catch (e: CancellationException) {
+                e.printStackTrace()
             } catch (e: Exception) {
+                e.printStackTrace()
                 KLogCat.d("发生异常: \n${e.stackTraceToString()}")
             }
         }

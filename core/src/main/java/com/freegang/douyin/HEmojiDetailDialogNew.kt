@@ -33,7 +33,7 @@ class HEmojiDetailDialogNew(
             .constructorsAll {
                 onAfter {
                     if (!config.isEmoji) return@onAfter
-                    getEmojiDetail(it)
+                    getEmojiDetail(this)
                 }
             }
 
@@ -41,7 +41,7 @@ class HEmojiDetailDialogNew(
             .method("onCreate", Bundle::class.java) {
                 onAfter {
                     if (!config.isEmoji) return@onAfter
-                    rebuildEmojiView(it)
+                    rebuildEmojiView(this)
                 }
             }
     }

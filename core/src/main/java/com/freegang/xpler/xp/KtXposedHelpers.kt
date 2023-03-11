@@ -37,8 +37,9 @@ class KtXposedHelpers {
 
     /**
      * Hook某个方法
+     *
      * @param argsTypes 参数类型列表
-     * @param block hook实例
+     * @param block hook代码块, 可在内部书写hook逻辑
      */
     fun constructor(vararg argsTypes: Any, block: ConstructorHook.() -> Unit): KtXposedHelpers {
         val constructorHookImpl = ConstructorHookImpl(clazz!!, *argsTypes)
@@ -49,8 +50,9 @@ class KtXposedHelpers {
 
     /**
      * Hook某个方法
+     *
      * @param methodName 方法
-     * @param block hook实例
+     * @param block hook代码块, 可在内部书写hook逻辑
      */
     fun method(methodName: Method, block: MethodHook.() -> Unit): KtXposedHelpers {
         val methodHookImpl = MethodHookImpl(methodName)
@@ -61,9 +63,10 @@ class KtXposedHelpers {
 
     /**
      * Hook某个方法
+     *
      * @param methodName 方法名
      * @param argsTypes 参数类型列表
-     * @param block hook实例
+     * @param block hook代码块, 可在内部书写hook逻辑
      */
     fun method(methodName: String, vararg argsTypes: Any, block: MethodHook.() -> Unit): KtXposedHelpers {
         val methodHookImpl = MethodHookImpl(clazz!!, methodName, *argsTypes)
@@ -74,7 +77,8 @@ class KtXposedHelpers {
 
     /**
      * Hook某个类中的所有构造方法
-     * @param block hook实例
+     *
+     * @param block hook代码块, 可在内部书写hook逻辑
      */
     fun constructorsAll(block: MethodHook.() -> Unit): KtXposedHelpers {
         val constructors = clazz!!.declaredConstructors
@@ -89,7 +93,8 @@ class KtXposedHelpers {
 
     /**
      * Hook某个类中的所有方法(构造方法除外)
-     * @param block hook实例
+     *
+     * @param block hook代码块, 可在内部书写hook逻辑
      */
     fun methodAll(block: MethodHook.() -> Unit): KtXposedHelpers {
         val methods = clazz!!.declaredMethods
@@ -103,9 +108,12 @@ class KtXposedHelpers {
     }
 
     /**
-     * Hook某个类中所有同名方法, 不考虑参数类型、数量
+     * Hook某个类中所有[methodName]同名方法,
+     *
+     * 不在乎参数类型、数量
+     *
      * @param methodName 方法名
-     * @param block hook实例
+     * @param block hook代码块, 可在内部书写hook逻辑
      */
     fun methodAllByName(methodName: String, block: MethodHook.() -> Unit): KtXposedHelpers {
         val methods = clazz!!.declaredMethods
@@ -121,7 +129,10 @@ class KtXposedHelpers {
     }
 
     /**
-     * Hook某个类中所有方法返回类型为[returnType]的方法, 不考虑方法名, 参数类型
+     * Hook某个类中所有方法返回类型为[returnType]的方法,
+     *
+     * 不在乎方法名, 参数类型
+     *
      * @param returnType 返回类型
      */
     fun methodAllByReturnType(returnType: Class<*>, block: MethodHook.() -> Unit): KtXposedHelpers {

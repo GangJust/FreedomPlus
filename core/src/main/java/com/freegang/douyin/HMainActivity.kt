@@ -9,6 +9,7 @@ import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionCode
 import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionName
 import com.freegang.xpler.utils.io.KStorageUtils.hasOperationStorage
 import com.freegang.xpler.xp.hookClass
+import com.freegang.xpler.xp.thisActivity
 import com.ss.android.ugc.aweme.main.MainActivity
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
@@ -27,13 +28,12 @@ class HMainActivity(
         lpparam.hookClass(MainActivity::class.java)
             .method("onCreate", Bundle::class.java) {
                 onAfter {
-                    val activity = it.thisObject as MainActivity
-                    showToast(activity, "Freedom+ Attach!")
+                    showToast(thisActivity, "Freedom+ Attach!")
                 }
             }
             .method("onResume") {
                 onAfter {
-                    showSupportDialog(it, config)
+                    showSupportDialog(this, config)
                 }
             }
     }
