@@ -36,6 +36,7 @@ object KFileUtils {
 
     /**
      * 必要的路径地址, 如果该路径不存在, 则为其创建
+     * @param isFile 该路径最右侧的子项是否为文件
      */
     fun File.need(isFile: Boolean = false): File {
         if (isFile) {
@@ -53,6 +54,19 @@ object KFileUtils {
      * 将一个字符串转换为文件, 该字符串必须是一个正确的路径地址
      */
     fun String.toFile() = File(this)
+
+    /**
+     * 按给定最大长度截取某个字符串, 成功返回截取后的文本, 失败返回原文本
+     * 该字符串最大长度不能超过[max],
+     * 并以[ellipsis]结尾
+     * @param max 最大长度
+     * @param ellipsis 省略占位文本
+     * @return String
+     */
+    fun String.subMax(max: Int = 10, ellipsis: String = ""): String {
+        if (this.length <= max) return this
+        return this.substring(0, max).plus(ellipsis)
+    }
 
     //获取纯净的文件名, 替换掉部分特殊符号
     val File.pureName: String

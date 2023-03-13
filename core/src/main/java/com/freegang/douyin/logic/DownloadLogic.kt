@@ -9,6 +9,7 @@ import com.freegang.xpler.utils.app.KAlbumUtils
 import com.freegang.xpler.utils.io.KFileUtils.child
 import com.freegang.xpler.utils.io.KFileUtils.need
 import com.freegang.xpler.utils.io.KFileUtils.pureFileName
+import com.freegang.xpler.utils.io.KFileUtils.subMax
 import com.freegang.xpler.utils.net.KHttpUtils
 import com.freegang.xpler.xp.getObjectField
 import kotlinx.coroutines.Dispatchers
@@ -117,7 +118,7 @@ class DownloadLogic(
         val pureFileName = if (deAweme.desc.isBlank()) {
             "${deAweme.nickname.pureFileName}_${deAweme.shortId}_${System.currentTimeMillis() / 1000}"
         } else {
-            "${deAweme.nickname.pureFileName}_${deAweme.shortId}_${deAweme.desc.pureFileName}"
+            "${deAweme.nickname.pureFileName}_${deAweme.shortId}_${deAweme.desc.pureFileName.subMax()}"
         }.plus(".mp4")
 
         //默认下载路径: `/外置存储器/DCIM/Freedom/video`
@@ -164,7 +165,7 @@ class DownloadLogic(
         val pureFileName = if (deAweme.desc.isBlank()) {
             "${deAweme.nickname.pureFileName}_${deAweme.shortId}_${System.currentTimeMillis() / 1000}"
         } else {
-            "${deAweme.nickname.pureFileName}_${deAweme.shortId}_${deAweme.desc.pureFileName}"
+            "${deAweme.nickname.pureFileName}_${deAweme.shortId}_${deAweme.desc.pureFileName.subMax()}"
         }
 
         //默认下载路径: `/外置存储器/DCIM/Freedom/picture`
@@ -222,7 +223,7 @@ class DownloadLogic(
         val pureFileName = if (deAweme.desc.isBlank()) {
             "${deAweme.nickname.pureFileName}_${deAweme.shortId}_${System.currentTimeMillis() / 1000}"
         } else {
-            "${deAweme.nickname.pureFileName}_${deAweme.shortId}_${deAweme.desc.pureFileName}"
+            "${deAweme.nickname.pureFileName}_${deAweme.shortId}_${deAweme.desc.pureFileName.subMax()}"
         }.plus(".mp3")
 
         //默认下载路径: `/外置存储器/DCIM/Freedom/music`

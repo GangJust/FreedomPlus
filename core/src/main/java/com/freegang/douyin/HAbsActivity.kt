@@ -94,7 +94,14 @@ class HAbsActivity(
             if (absActivity is DetailActivity || absActivity is MainActivity) {
                 val methods = absActivity.findMethodsByReturnType(Aweme::class.java)
                 if (methods.isNotEmpty()) {
-                    val aweme = methods.first().call(absActivity)
+                    var aweme = methods.first().call(absActivity)
+                    if (aweme == null) {
+                        val curFragment = absActivity.findMethod("getCurFragment", *arrayOf<Any>())?.call(absActivity)
+                        val curFragmentMethods = curFragment?.findMethodsByReturnType(Aweme::class.java) ?: listOf()
+                        if (curFragmentMethods.isNotEmpty()) {
+                            aweme = curFragmentMethods.first().call(curFragment!!)
+                        }
+                    }
                     DownloadLogic(this@HAbsActivity, absActivity, aweme, config.isOwnerDir)
                 }
             }
