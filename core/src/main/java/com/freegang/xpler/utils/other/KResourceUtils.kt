@@ -100,4 +100,14 @@ object KResourceUtils {
     fun getString(@StringRes id: Int): String {
         return KtXposedHelpers.getModuleRes().getString(id)
     }
+
+    /**
+     * 获取模块中的 String Array
+     *
+     * @param id id
+     * @return String Array
+     */
+    fun getStringArray(@ArrayRes id: Int): Array<String> {
+        return KtXposedHelpers.getModuleRes().getStringArray(id)
+    }
 }

@@ -63,7 +63,7 @@ object KFileUtils {
      * @param ellipsis 省略占位文本
      * @return String
      */
-    fun String.subMax(max: Int = 10, ellipsis: String = ""): String {
+    fun String.subMax(max: Int = 35, ellipsis: String = ""): String {
         if (this.length <= max) return this
         return this.substring(0, max).plus(ellipsis)
     }

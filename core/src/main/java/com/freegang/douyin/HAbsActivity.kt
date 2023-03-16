@@ -130,13 +130,9 @@ class HAbsActivity(
             if (methods.isNotEmpty()) {
                 val aweme = methods.first().call(absActivity) ?: return@launch
 
-                //不处理评论区视频(如果是视频的话)
-                val video = aweme.getObjectField<Any>("video")
-                if (video != null) return@launch
-
-                //如果没有背景音乐, 代表是评论区图片(图文也可能没有背景音乐, 但是少, 就这么判断了)
-                val music = aweme.getObjectField<Any>("music")
-                if (music == null) {
+                //如果是评论区的评论, 则获取图片
+                val commentFeedOuterAweme = aweme.getObjectField<Any>("commentFeedOuterAweme")
+                if (commentFeedOuterAweme != null) {
                     val image = aweme.getObjectField<List<Any>>("images")?.first() ?: return@launch
                     urlList = image.getObjectField<List<String>>("urlList") ?: return@launch
                 }

@@ -567,6 +567,7 @@ class HomeActivity : ComponentActivity() {
     // 保存配置
     private fun saveConfig() {
         lifecycleScope.launch {
+            config.isSupportHint = application.appVersionCode != config.versionCode
             config.versionName = application.appVersionName
             config.versionCode = application.appVersionCode
             config.save(application)
