@@ -7,7 +7,6 @@ import com.freegang.base.BaseHook
 import com.freegang.config.Config
 import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionCode
 import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionName
-import com.freegang.xpler.utils.io.KStorageUtils.hasOperationStorage
 import com.freegang.xpler.xp.hookClass
 import com.freegang.xpler.xp.thisActivity
 import com.ss.android.ugc.aweme.main.MainActivity
@@ -21,7 +20,15 @@ class HMainActivity(
 ) : BaseHook(lpparam) {
 
     //当前适配版本列表
-    private val supportVersions = listOf("24.4.0", "24.5.0", "24.6.0")
+    private val supportVersions = listOf(
+        "24.0.0",
+        "24.1.0",
+        "24.2.0",
+        "24.3.0",
+        "24.4.0",
+        "24.5.0",
+        "24.6.0",
+    )
 
     override fun onHook() {
         val config = Config.get()

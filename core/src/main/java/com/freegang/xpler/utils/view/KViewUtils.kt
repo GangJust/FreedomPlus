@@ -222,7 +222,8 @@ object KViewUtils {
     fun <T : View> getOnLongClickListener(view: T): View.OnLongClickListener? {
         try {
             val listenerInfo = getListenerInfo(view) ?: return null
-            val mOnLongClickListenerField = listenerInfo.javaClass.getDeclaredField("mOnLongClickListener")
+            val mOnLongClickListenerField =
+                listenerInfo.javaClass.getDeclaredField("mOnLongClickListener")
             mOnLongClickListenerField.isAccessible = true
             val onLongClickListener = mOnLongClickListenerField.get(view)
             return if (onLongClickListener is View.OnLongClickListener) onLongClickListener else null
@@ -261,25 +262,28 @@ object KViewUtils {
 
     //
     /**
-     * 解构ViewGroup视图树, 返回一个[View]列表
+     * 解构ViewGroup视图树, 返回一个[View]线性列表
      * @param viewGroup ViewGroup
      * @return List<View>
      */
     fun deepViewGroup(viewGroup: ViewGroup): List<View> {
-        val list = mutableListOf<View>()
-        list.add(viewGroup)
+        val views = mutableListOf<View>()
+        val stack = Stack<View>()
+        stack.push(viewGroup)
 
-        for (i in 0 until viewGroup.childCount) {
-            val childAt = viewGroup.getChildAt(i)
-            if (childAt is ViewGroup) {
-                list.addAll(deepViewGroup(childAt))
-            } else {
-                // 如果符合目标，添加
-                list.add(childAt)
+        while (!stack.isEmpty()) {
+            val current = stack.pop()
+            views.add(current)
+            if (current is ViewGroup) {
+                for (i in current.childCount - 1 downTo 0) {
+                    stack.push(current.getChildAt(i))
+                }
             }
         }
-        return list
+
+        return views
     }
+
 
     /**
      * 获取某个ViewGroup视图树中所有指定类型的 ChildView
@@ -287,21 +291,11 @@ object KViewUtils {
      * @param targetType 某个View类型, 可以是 View.class
      * @return List<T> T extends View
      */
-    fun <T : View> findViews(viewGroup: ViewGroup, targetType: Class<T>): List<T> {
-        val views = mutableListOf<T>()
-        //如果符合目标, 添加
-        if (targetType.isInstance(viewGroup)) {
-            targetType.cast(viewGroup)?.let { views.add(it) }
-        }
-        for (i in 0 until viewGroup.childCount) {
-            val child = viewGroup.getChildAt(i)
-            if (targetType.isInstance(child)) {
-                targetType.cast(child)?.let { views.add(it) }
-            } else if (child is ViewGroup) {
-                views.addAll(findViews(child, targetType))
-            }
-        }
-        return views
+    fun <T : View> findViews(
+        viewGroup: ViewGroup,
+        targetType: Class<T>,
+    ): List<T> {
+        return findViewsExact(viewGroup, targetType) { true }
     }
 
     /**
@@ -312,34 +306,35 @@ object KViewUtils {
      * @param containsDesc 指定正则表达式
      * @return List<T> T extends View
      */
-    fun <T : View> findViewsByDesc(viewGroup: ViewGroup, targetType: Class<T>, containsDesc: Regex): List<T> {
-        val listViews = mutableListOf<T>()
-
-        val stack = Stack<ViewGroup>()
-        stack.push(viewGroup)
-
-        while (!stack.empty()) {
-            val currentView = stack.pop()
-            val childCount = currentView.childCount
-            for (i in 0 until childCount) {
-                val childView = currentView.getChildAt(i)
-                if (childView is ViewGroup) {
-                    stack.push(childView)
-                } else if (targetType.isInstance(childView)) {
-                    val childDesc = childView.contentDescription ?: ""
-                    if (childDesc.contains(containsDesc)) {
-                        listViews.add(targetType.cast(childView) as T)
-                    }
-                }
-            }
-            if (targetType.isInstance(currentView)) {
-                val parentDesc = currentView.contentDescription ?: ""
-                if (parentDesc.contains(containsDesc)) {
-                    listViews.add(targetType.cast(currentView) as T)
-                }
-            }
+    fun <T : View> findViewsByDesc(
+        viewGroup: ViewGroup,
+        targetType: Class<T>,
+        containsDesc: Regex
+    ): List<T> {
+        return findViewsExact(viewGroup, targetType) {
+            val desc = it.contentDescription ?: ""
+            desc.contains(containsDesc)
         }
-        return listViews
+    }
+
+    /**
+     * 获取某个ViewGroup视图树中所有指定类型的 ChildView
+     * 并且该ChildView的[contentDescription]值包含了指定文本[containsDesc]中的内容
+     * @param viewGroup ViewGroup
+     * @param targetType 某个View类型, 可以是 View.class
+     * @param containsDesc 指定文本
+     * @return List<T> T extends View
+     */
+    fun <T : View> findViewsByDesc(
+        viewGroup: ViewGroup,
+        targetType: Class<T>,
+        containsDesc: String,
+        ignoreCase: Boolean = false,
+    ): List<T> {
+        return findViewsExact(viewGroup, targetType) {
+            val desc = it.contentDescription ?: ""
+            desc.contains(containsDesc, ignoreCase)
+        }
     }
 
     /**
@@ -347,32 +342,15 @@ object KViewUtils {
      * 并且该ChildView的[idName]等于指定的[idName]
      * @param viewGroup ViewGroup
      * @param targetType 某个View类型, 可以是 View.class
-     * @param idName idName
+     * @param idName idName 举例: @id/textView
      * @return List<T> T extends View
      */
-    fun <T : View> findViewsByIdName(viewGroup: ViewGroup, targetType: Class<T>, idName: String): List<T> {
-        val listViews = mutableListOf<T>()
-
-        val stack = Stack<ViewGroup>()
-        stack.push(viewGroup)
-
-        while (!stack.empty()) {
-            val currentView = stack.pop()
-            val childCount = currentView.childCount
-            for (i in 0 until childCount) {
-                val childView = currentView.getChildAt(i)
-                if (childView is ViewGroup) {
-                    stack.push(childView)
-                } else if (targetType.isInstance(childView) && getIdName(currentView) == idName) {
-                    listViews.add(targetType.cast(childView) as T)
-                }
-            }
-
-            if (targetType.isInstance(currentView) && getIdName(currentView) == idName) {
-                listViews.add(targetType.cast(currentView) as T)
-            }
-        }
-        return listViews
+    fun <T : View> findViewsByIdName(
+        viewGroup: ViewGroup,
+        targetType: Class<T>,
+        idName: String
+    ): List<T> {
+        return findViewsExact(viewGroup, targetType) { getIdName(it) == idName }
     }
 
     /**
@@ -382,29 +360,26 @@ object KViewUtils {
      * @param logic 回调方法, 该方法参数会传入所有被遍历的view, 返回一个[Boolean]
      * @return List<T> T extends View
      */
-    fun <T : View> findViewsExact(viewGroup: ViewGroup, targetType: Class<T>, logic: (it: T) -> Boolean): List<T> {
-        val listViews = mutableListOf<T>()
-
-        val stack = Stack<ViewGroup>()
+    fun <T : View> findViewsExact(
+        viewGroup: ViewGroup,
+        targetType: Class<T>,
+        logic: (it: T) -> Boolean
+    ): List<T> {
+        val views = mutableListOf<T>()
+        val stack = Stack<View>()
         stack.push(viewGroup)
-
-        while (!stack.empty()) {
-            val currentView = stack.pop()
-            val childCount = currentView.childCount
-            for (i in 0 until childCount) {
-                val childView = currentView.getChildAt(i)
-                if (childView is ViewGroup) {
-                    stack.push(childView)
-                } else if (targetType.isInstance(childView) && logic.invoke(targetType.cast(currentView)!!)) {
-                    listViews.add(targetType.cast(childView) as T)
+        while (!stack.isEmpty()) {
+            val current = stack.pop()
+            if (targetType.isInstance(current) && logic.invoke(targetType.cast(current) as T)) {
+                views.add(targetType.cast(current) as T)
+            }
+            if (current is ViewGroup) {
+                for (i in current.childCount - 1 downTo 0) {
+                    stack.push(current.getChildAt(i))
                 }
             }
-
-            if (targetType.isInstance(currentView) && logic.invoke(targetType.cast(currentView)!!)) {
-                listViews.add(targetType.cast(currentView) as T)
-            }
         }
-        return listViews
+        return views
     }
 
 
@@ -415,37 +390,22 @@ object KViewUtils {
      * @return ViewNode viewGroup作为根节点
      */
     fun buildViewTree(viewGroup: ViewGroup): ViewNode {
-        //当前视图作为树根
-        val rootNode = ViewNode()
-        rootNode.parent = null //rootNode.parent = (ViewGroup) viewGroup.getParent();
-        rootNode.view = viewGroup
-        rootNode.depth = 1
-        rootNode.children = ArrayList()
-        //构建子树
-        return buildViewNodeChild(viewGroup, rootNode, rootNode.depth + 1)
-    }
-
-    private fun buildViewNodeChild(viewGroup: ViewGroup, rootNode: ViewNode, depth: Int): ViewNode {
-        //获取root视图下的所有子视图
-        val childCount = viewGroup.childCount
-        if (childCount == 0) return rootNode
-        for (i in 0 until childCount) {
-            val childAt = viewGroup.getChildAt(i)
-            val childNode = ViewNode()
-            childNode.parent = viewGroup
-            childNode.view = childAt
-            childNode.depth = depth
-            childNode.children = ArrayList()
-            //如果该子视图是ViewGroup, 将它作为下一个根遍历
-            if (childAt is ViewGroup) {
-                //接入主树
-                rootNode.children.add(buildViewNodeChild(childAt, childNode, childNode.depth + 1))
-            } else {
-                //接入主树
-                rootNode.children.add(childNode)
+        val root = ViewNode(viewGroup, viewGroup, 0, mutableListOf())
+        val stack = Stack<ViewNode>()
+        stack.push(root)
+        while (!stack.isEmpty()) {
+            val current = stack.pop()
+            val view = current.view
+            if (view is ViewGroup) {
+                for (i in view.childCount - 1 downTo 0) {
+                    val child = view.getChildAt(i)
+                    val childNode = ViewNode(view, child, current.depth + 1, mutableListOf())
+                    current.children.add(0, childNode) // 添加到当前节点的子节点列表头部
+                    stack.push(childNode)
+                }
             }
         }
-        return rootNode
+        return root
     }
 
     data class ViewNode(
@@ -455,37 +415,58 @@ object KViewUtils {
         var children: MutableList<ViewNode> = mutableListOf(), //子节点
     ) {
 
+        //销毁当前节点下的所有视图树
         fun destroy() {
-            destroyChildren(this)
+            destroy(this)
         }
 
-        private fun destroyChildren(viewNode: ViewNode) {
-            viewNode.parent = null
-            viewNode.view = null
-            viewNode.depth = 0
-            if (viewNode.children.isNotEmpty()) {
-                for (child in viewNode.children) {
-                    destroyChildren(child)
+        private fun destroy(node: ViewNode) {
+            val stack = Stack<ViewNode>()
+            stack.push(node)
+            while (!stack.isEmpty()) {
+                val current = stack.pop()
+                for (childNode in current.children) {
+                    stack.push(childNode)
                 }
-            }
-            viewNode.children.clear()
-        }
-
-        fun deep(block: (node: ViewNode) -> Unit) {
-            deepChildren(this, block)
-        }
-
-        private fun deepChildren(viewNode: ViewNode, block: (node: ViewNode) -> Unit) {
-            block.invoke(this)
-            if (this.children.isNotEmpty()) {
-                for (node in viewNode.children) {
-                    deepChildren(node, block)
-                }
+                current.parent = null
+                current.children.clear()
+                current.view = null
             }
         }
 
-        fun toSimpleString(): String {
-            val view = view ?: return "ViewNode{parent=${parent}, view=null, depth=${depth}, hashCode=${this.hashCode()}}"
+        //当前节点下的所有视图树深度遍历到字符串
+        fun deepToString(indent: Int = 4): String {
+            val buffer = StringBuffer()
+            deepChildren("|-", indent, this) { trunk, node ->
+                buffer.append("$trunk${node}\n")
+            }
+            return buffer.toString()
+        }
+
+        private fun deepChildren(
+            trunk: String = "|-",
+            indent: Int = 4,
+            node: ViewNode,
+            block: (trunk: String, node: ViewNode) -> Unit
+        ) {
+            var indentTrunk = ""
+            for (i in 0 until indent) indentTrunk += "-"
+
+            val stack = Stack<Pair<ViewNode, Int>>()
+            stack.push(Pair(node, 0))
+            while (!stack.isEmpty()) {
+                val (current, level) = stack.pop()
+                val currentTrunk = if (level == 0) trunk else trunk + indentTrunk.repeat(level)
+                block.invoke(currentTrunk, current)
+                for (childNode in current.children) {
+                    stack.push(Pair(childNode, level + 1))
+                }
+            }
+        }
+
+        override fun toString(): String {
+            val view = view
+                ?: return "ViewNode{parent=${parent}, view=null, depth=${depth}, hashCode=${this.hashCode()}}"
 
             return "ViewNode{view=${view.javaClass.name}" +
                     ", idHex=${getIdHex(view)}" +
@@ -493,17 +474,7 @@ object KViewUtils {
                     ", depth=${depth}" +
                     ", descr=${view.contentDescription}" +
                     ", childrenSize=${children.size}" +
-                    ", hashCode=${this.hashCode()}" +
                     "}"
-        }
-
-        override fun toString(): String {
-            return "ViewNode{" +
-                    "parent=${parent}" +
-                    ", view=${view}" +
-                    ", depth=${depth}" +
-                    ", children=${children}" +
-                    '}'
         }
     }
 
@@ -517,7 +488,10 @@ object KViewUtils {
         return findViews(this, targetType)
     }
 
-    fun <T : View> ViewGroup.findViewsByExact(targetType: Class<T>, logic: (it: T) -> Boolean): List<T> {
+    fun <T : View> ViewGroup.findViewsByExact(
+        targetType: Class<T>,
+        logic: (it: T) -> Boolean
+    ): List<T> {
         return findViewsExact(this, targetType, logic)
     }
 

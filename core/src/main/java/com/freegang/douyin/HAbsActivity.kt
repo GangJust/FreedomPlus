@@ -15,6 +15,7 @@ import com.freegang.douyin.model.DeAweme
 import com.freegang.douyin.model.ImageUrlStruct
 import com.freegang.xpler.R
 import com.freegang.xpler.databinding.HookAppbarLayoutBinding
+import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionName
 import com.freegang.xpler.utils.json.KJSONUtils.getStringOrDefault
 import com.freegang.xpler.utils.json.KJSONUtils.isEmpties
 import com.freegang.xpler.utils.json.KJSONUtils.parseJSON
@@ -38,15 +39,18 @@ class HAbsActivity(
     lpparam: XC_LoadPackage.LoadPackageParam,
 ) : BaseHook(lpparam) {
     private var primaryClipChangedListener: ClipboardManager.OnPrimaryClipChangedListener? = null
+    val config: Config //get, 确保获取时已经有值
+        get() = Config.get()
 
     override fun onHook() {
-        val config = Config.get()
 
         lpparam.hookClass(AbsActivity::class.java)
             .method("onCreate", Bundle::class.java) {
                 onAfter {
                     if (!config.isEmoji) return@onAfter
-                    getCommentImage(this)
+                    val absActivity = thisObject as AbsActivity
+                    if (absActivity !is DetailActivity) return@onAfter
+                    hookComment(absActivity)
                 }
             }
             .method("onResume") {
@@ -91,20 +95,7 @@ class HAbsActivity(
             //val sortUrl = shareText.substring(urlIndexOf)
             //mainLogic(absActivity, sortUrl, config)
 
-            if (absActivity is DetailActivity || absActivity is MainActivity) {
-                val methods = absActivity.findMethodsByReturnType(Aweme::class.java)
-                if (methods.isNotEmpty()) {
-                    var aweme = methods.first().call(absActivity)
-                    if (aweme == null) {
-                        val curFragment = absActivity.findMethod("getCurFragment", *arrayOf<Any>())?.call(absActivity)
-                        val curFragmentMethods = curFragment?.findMethodsByReturnType(Aweme::class.java) ?: listOf()
-                        if (curFragmentMethods.isNotEmpty()) {
-                            aweme = curFragmentMethods.first().call(curFragment!!)
-                        }
-                    }
-                    DownloadLogic(this@HAbsActivity, absActivity, aweme, config.isOwnerDir)
-                }
-            }
+            hookActivity(absActivity)
         }
         clipboardManager.addPrimaryClipChangedListener(primaryClipChangedListener)
     }
@@ -116,58 +107,145 @@ class HAbsActivity(
         clipboardManager.removePrimaryClipChangedListener(primaryClipChangedListener)
     }
 
-    // 获取评论区图片
-    private fun getCommentImage(it: XC_MethodHook.MethodHookParam) {
-        val absActivity = it.thisObject as AbsActivity
-        if (absActivity !is DetailActivity) return
+    private fun hookActivity(absActivity: AbsActivity) {
+        hookActivityAt1(absActivity)
+        hookActivityAt2(absActivity)
+    }
 
-        launch {
-            delay(200L)
+    private fun hookActivityAt1(absActivity: AbsActivity) {
+        val versions = listOf("24.0.0", "24.1.0", "24.2.0")
+        if (!versions.contains(absActivity.appVersionName)) return
 
-            //获取内容
-            var urlList: List<String> = listOf()
+        if (absActivity is MainActivity) {
             val methods = absActivity.findMethodsByReturnType(Aweme::class.java)
             if (methods.isNotEmpty()) {
-                val aweme = methods.first().call(absActivity) ?: return@launch
-
-                //如果是评论区的评论, 则获取图片
-                val commentFeedOuterAweme = aweme.getObjectField<Any>("commentFeedOuterAweme")
-                if (commentFeedOuterAweme != null) {
-                    val image = aweme.getObjectField<List<Any>>("images")?.first() ?: return@launch
-                    urlList = image.getObjectField<List<String>>("urlList") ?: return@launch
+                var aweme = methods.first().call(absActivity)
+                if (aweme == null) {
+                    val curFragment = absActivity.findMethod("getCurFragment", *arrayOf<Any>())?.call(absActivity)
+                    val curFragmentMethods = curFragment?.findMethodsByReturnType(Aweme::class.java) ?: listOf()
+                    if (curFragmentMethods.isNotEmpty()) {
+                        aweme = curFragmentMethods.first().call(curFragment!!)
+                    }
                 }
+                DownloadLogic(this@HAbsActivity, absActivity, aweme, config.isOwnerDir)
             }
+        }
 
-            if (urlList.isEmpty()) return@launch
-
-            //重新构建顶部操作栏
-            val contentView: View = absActivity.window.decorView.findViewById(android.R.id.content)
-            val outViews = ArrayList<View>()
-            contentView.findViewsWithText(outViews, "返回", View.FIND_VIEWS_WITH_CONTENT_DESCRIPTION)
-            val backBtn = outViews.first { it.contentDescription.equals("返回") }
-
-            //清空旧视图
-            val viewGroup = backBtn.parent as ViewGroup
-            viewGroup.removeAllViews()
-
-            //重新构建视图
-            val appbar = KResourceUtils.inflateView<RelativeLayout>(viewGroup.context, R.layout.hook_appbar_layout)
-            val binding = HookAppbarLayoutBinding.bind(appbar)
-            binding.backBtn.setOnClickListener {
-                backBtn.performClick()
+        if (absActivity is DetailActivity) {
+            val any1 = absActivity.getObjectField<Any>("LIZJ") ?: return
+            val methods = any1.findMethodsByReturnType(Aweme::class.java)
+            if (methods.isNotEmpty()) {
+                val aweme = methods.first().call(any1)
+                DownloadLogic(this@HAbsActivity, absActivity, aweme, config.isOwnerDir)
             }
-            binding.saveBtn.setOnClickListener {
-                SaveLogic(this@HAbsActivity, it.context, urlList)
-            }
-            viewGroup.addView(appbar)
         }
     }
 
+    private fun hookActivityAt2(absActivity: AbsActivity) {
+        val versions = listOf("24.2.0", "24.3.0", "24.4.0", "24.5.0", "24.6.0")
+        if (!versions.contains(absActivity.appVersionName)) return
+
+        if (absActivity is DetailActivity || absActivity is MainActivity) {
+            val methods = absActivity.findMethodsByReturnType(Aweme::class.java)
+            if (methods.isNotEmpty()) {
+                var aweme = methods.first().call(absActivity)
+                if (aweme == null) {
+                    val curFragment = absActivity.findMethod("getCurFragment", *arrayOf<Any>())?.call(absActivity)
+                    val curFragmentMethods = curFragment?.findMethodsByReturnType(Aweme::class.java) ?: listOf()
+                    if (curFragmentMethods.isNotEmpty()) {
+                        aweme = curFragmentMethods.first().call(curFragment!!)
+                    }
+                }
+                DownloadLogic(this@HAbsActivity, absActivity, aweme, config.isOwnerDir)
+            }
+        }
+    }
+
+    // 获取评论区图片
+    private fun hookComment(absActivity: AbsActivity) {
+        launch {
+            delay(200L)
+
+            hookCommentAt1(absActivity)
+            hookCommentAt2(absActivity)
+        }
+    }
+
+    private fun hookCommentAt1(absActivity: AbsActivity) {
+        val versions = listOf("24.0.0", "24.1.0", "24.2.0")
+
+        if (!versions.contains(absActivity.appVersionName)) return
+        var urlList: List<String> = listOf()
+
+        val any1 = absActivity.getObjectField<Any>("LIZJ") ?: return
+        val methods = any1.findMethodsByReturnType(Aweme::class.java)
+        if (methods.isNotEmpty()) {
+            val aweme = methods.first().call(any1) ?: return
+            val aid = aweme.getObjectField<Any>("aid")
+            if (aid != null && "$aid".contains("-|[a-z]".toRegex())) {
+                val image = aweme.getObjectField<List<Any>>("images")?.first() ?: return
+                urlList = image.getObjectField<List<String>>("urlList") ?: listOf()
+            }
+        }
+
+        if (urlList.isEmpty()) return
+        rebuildCommentTopBarView(absActivity, urlList)
+    }
+
+    private fun hookCommentAt2(absActivity: AbsActivity) {
+        val versions = listOf("24.2.0", "24.3.0", "24.4.0", "24.5.0", "24.6.0")
+        if (!versions.contains(absActivity.appVersionName)) return
+
+        var urlList: List<String> = listOf()
+        val methods = absActivity.findMethodsByReturnType(Aweme::class.java)
+        if (methods.isNotEmpty()) {
+            val aweme = methods.first().call(absActivity) ?: return
+            // 如果是评论区的评论, 则获取图片
+            // 24.2.0, 24.3.0, 24.4.0
+            val commentFeedOuterCid = aweme.getObjectField<Any>("commentFeedOuterCid")
+            if (commentFeedOuterCid != null) {
+                val image = aweme.getObjectField<List<Any>>("images")?.first() ?: return
+                urlList = image.getObjectField<List<String>>("urlList") ?: listOf()
+            }
+
+            // 24.5.0, 24.6.0
+            val commentFeedOuterAweme = aweme.getObjectField<Any>("commentFeedOuterAweme")
+            if (commentFeedOuterAweme != null) {
+                val image = aweme.getObjectField<List<Any>>("images")?.first() ?: return
+                urlList = image.getObjectField<List<String>>("urlList") ?: listOf()
+            }
+        }
+        if (urlList.isEmpty()) return
+        rebuildCommentTopBarView(absActivity, urlList)
+    }
+
+    // 重新构建评论区顶部操作栏
+    private fun rebuildCommentTopBarView(absActivity: AbsActivity, urlList: List<String> = listOf()) {
+        val contentView: View = absActivity.window.decorView.findViewById(android.R.id.content)
+        val outViews = ArrayList<View>()
+        contentView.findViewsWithText(outViews, "返回", View.FIND_VIEWS_WITH_CONTENT_DESCRIPTION)
+        val backBtn = outViews.first { it.contentDescription.equals("返回") }
+
+        //清空旧视图
+        val viewGroup = backBtn.parent as ViewGroup
+        viewGroup.removeAllViews()
+
+        //重新构建视图
+        val appbar = KResourceUtils.inflateView<RelativeLayout>(viewGroup.context, R.layout.hook_appbar_layout)
+        val binding = HookAppbarLayoutBinding.bind(appbar)
+        binding.backBtn.setOnClickListener {
+            backBtn.performClick()
+        }
+        binding.saveBtn.setOnClickListener {
+            SaveLogic(this@HAbsActivity, it.context, urlList)
+        }
+        viewGroup.addView(appbar)
+    }
 
     ///// @Deprecated
     // 获取接口中的视频信息
     @Deprecated("Deprecated")
-    private fun mainLogic(absActivity: AbsActivity, sortUrl: String, config: Config) {
+    private fun mainLogic(absActivity: AbsActivity, sortUrl: String) {
         launch {
             try {
                 val originUrl = getOriginalUrl(sortUrl)

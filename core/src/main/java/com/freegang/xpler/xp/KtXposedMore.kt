@@ -140,7 +140,7 @@ fun Any.findFieldByType(type: Class<*>): List<Field> {
  * @return 该方法被调用之后的返回值, 可能是 null 即没有返回值
  */
 fun <T> Any.callMethod(methodName: String, vararg args: Any): T? {
-    return XposedHelpers.callMethod(this, methodName, *args) as T?
+    return XposedHelpers.callMethod(this, methodName, *args) as? T
 }
 
 /**
@@ -152,7 +152,7 @@ fun <T> Any.callMethod(methodName: String, vararg args: Any): T? {
  * @return 该方法被调用之后的返回值, 可能是 null 即没有返回值
  */
 fun <T> Any.callMethod(methodName: String, argsTypes: Array<Class<*>>, vararg args: Any): T? {
-    return XposedHelpers.callMethod(this, methodName, *argsTypes, *args) as T?
+    return XposedHelpers.callMethod(this, methodName, *argsTypes, *args) as? T
 }
 
 /**
@@ -185,7 +185,8 @@ fun <T> Any.callStaticMethod(methodName: String, argsTypes: Array<Class<*>>, var
  * @return 该字段的值, 可能是 null 即被赋值
  */
 fun <T> Any.getObjectField(fieldName: String): T? {
-    return XposedHelpers.getObjectField(this, fieldName) as T?
+    val field = XposedHelpers.findFieldIfExists(this::class.java, fieldName) ?: return null
+    return field.get(this) as? T
 }
 
 /**
@@ -195,7 +196,8 @@ fun <T> Any.getObjectField(fieldName: String): T? {
  * @return 该字段的值, 可能是 null 即被赋值
  */
 fun <T> Any.getStaticObjectField(fieldName: String): T? {
-    return XposedHelpers.getStaticObjectField(this::class.java, fieldName) as T?
+    val field = XposedHelpers.findFieldIfExists(this::class.java, fieldName) ?: return null
+    return field.get(null) as? T
 }
 
 /**
