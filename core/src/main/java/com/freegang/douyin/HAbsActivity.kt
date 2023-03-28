@@ -11,17 +11,9 @@ import com.freegang.base.BaseHook
 import com.freegang.config.Config
 import com.freegang.douyin.logic.DownloadLogic
 import com.freegang.douyin.logic.SaveLogic
-import com.freegang.douyin.model.DeAweme
-import com.freegang.douyin.model.ImageUrlStruct
 import com.freegang.xpler.R
 import com.freegang.xpler.databinding.HookAppbarLayoutBinding
 import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionName
-import com.freegang.xpler.utils.json.KJSONUtils.getStringOrDefault
-import com.freegang.xpler.utils.json.KJSONUtils.isEmpties
-import com.freegang.xpler.utils.json.KJSONUtils.parseJSON
-import com.freegang.xpler.utils.json.KJSONUtils.toJSONObjectArray
-import com.freegang.xpler.utils.log.KLogCat
-import com.freegang.xpler.utils.net.KHttpUtils
 import com.freegang.xpler.utils.other.KResourceUtils
 import com.freegang.xpler.xp.*
 import com.ss.android.ugc.aweme.detail.ui.DetailActivity
@@ -30,45 +22,34 @@ import com.ss.android.ugc.aweme.main.MainActivity
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlinx.coroutines.*
-import org.json.JSONException
-import org.json.JSONObject
 
 
 /// 基类Activity
-class HAbsActivity(
-    lpparam: XC_LoadPackage.LoadPackageParam,
-) : BaseHook(lpparam) {
+class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActivity>(lpparam) {
+    private val config get() = Config.get()
     private var primaryClipChangedListener: ClipboardManager.OnPrimaryClipChangedListener? = null
-    val config: Config //get, 确保获取时已经有值
-        get() = Config.get()
 
-    override fun onHook() {
+    @OnAfter("onCreate")
+    fun onCreate(it: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {
+        if (!config.isEmoji) return
+        if (it.thisActivity !is DetailActivity) return
+        hookComment(it.thisObject as DetailActivity)
+    }
 
-        lpparam.hookClass(AbsActivity::class.java)
-            .method("onCreate", Bundle::class.java) {
-                onAfter {
-                    if (!config.isEmoji) return@onAfter
-                    val absActivity = thisObject as AbsActivity
-                    if (absActivity !is DetailActivity) return@onAfter
-                    hookComment(absActivity)
-                }
-            }
-            .method("onResume") {
-                onAfter {
-                    if (!config.isDownload) return@onAfter
-                    addClipboardListener(this, config)
-                }
-            }
-            .method("onPause") {
-                onBefore {
-                    if (!config.isDownload) return@onBefore
-                    removeClipboardListener(this)
-                }
-            }
+    @OnAfter("onResume")
+    fun onResume(it: XC_MethodHook.MethodHookParam) {
+        if (!config.isDownload) return
+        addClipboardListener(it)
+    }
+
+    @OnBefore("onPause")
+    fun onPause(it: XC_MethodHook.MethodHookParam) {
+        if (!config.isDownload) return
+        removeClipboardListener(it)
     }
 
     // 添加剪贴板监听
-    private fun addClipboardListener(it: XC_MethodHook.MethodHookParam, config: Config) {
+    private fun addClipboardListener(it: XC_MethodHook.MethodHookParam) {
         val absActivity = it.thisObject as AbsActivity
         val clipboardManager = absActivity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 
@@ -107,77 +88,77 @@ class HAbsActivity(
         clipboardManager.removePrimaryClipChangedListener(primaryClipChangedListener)
     }
 
-    private fun hookActivity(absActivity: AbsActivity) {
-        hookActivityAt1(absActivity)
-        hookActivityAt2(absActivity)
+    private fun hookActivity(activity: AbsActivity) {
+        hookActivityAt1(activity)
+        hookActivityAt2(activity)
     }
 
-    private fun hookActivityAt1(absActivity: AbsActivity) {
+    private fun hookActivityAt1(activity: AbsActivity) {
         val versions = listOf("24.0.0", "24.1.0", "24.2.0")
-        if (!versions.contains(absActivity.appVersionName)) return
+        if (!versions.contains(activity.appVersionName)) return
 
-        if (absActivity is MainActivity) {
-            val methods = absActivity.findMethodsByReturnType(Aweme::class.java)
+        if (activity is MainActivity) {
+            val methods = activity.findMethodsByReturnType(Aweme::class.java)
             if (methods.isNotEmpty()) {
-                var aweme = methods.first().call(absActivity)
+                var aweme = methods.first().call(activity)
                 if (aweme == null) {
-                    val curFragment = absActivity.findMethod("getCurFragment", *arrayOf<Any>())?.call(absActivity)
+                    val curFragment = activity.findMethod("getCurFragment", *arrayOf<Any>())?.call(activity)
                     val curFragmentMethods = curFragment?.findMethodsByReturnType(Aweme::class.java) ?: listOf()
                     if (curFragmentMethods.isNotEmpty()) {
                         aweme = curFragmentMethods.first().call(curFragment!!)
                     }
                 }
-                DownloadLogic(this@HAbsActivity, absActivity, aweme, config.isOwnerDir)
+                DownloadLogic(this@HAbsActivity, activity, aweme, config.isOwnerDir)
             }
         }
 
-        if (absActivity is DetailActivity) {
-            val any1 = absActivity.getObjectField<Any>("LIZJ") ?: return
+        if (activity is DetailActivity) {
+            val any1 = activity.getObjectField<Any>("LIZJ") ?: return
             val methods = any1.findMethodsByReturnType(Aweme::class.java)
             if (methods.isNotEmpty()) {
                 val aweme = methods.first().call(any1)
-                DownloadLogic(this@HAbsActivity, absActivity, aweme, config.isOwnerDir)
+                DownloadLogic(this@HAbsActivity, activity, aweme, config.isOwnerDir)
             }
         }
     }
 
-    private fun hookActivityAt2(absActivity: AbsActivity) {
-        val versions = listOf("24.2.0", "24.3.0", "24.4.0", "24.5.0", "24.6.0")
-        if (!versions.contains(absActivity.appVersionName)) return
+    private fun hookActivityAt2(activity: AbsActivity) {
+        val versions = listOf("24.2.0", "24.3.0", "24.4.0", "24.5.0", "24.6.0", "24.7.0")
+        if (!versions.contains(activity.appVersionName)) return
 
-        if (absActivity is DetailActivity || absActivity is MainActivity) {
-            val methods = absActivity.findMethodsByReturnType(Aweme::class.java)
+        if (activity is DetailActivity || activity is MainActivity) {
+            val methods = activity.findMethodsByReturnType(Aweme::class.java)
             if (methods.isNotEmpty()) {
-                var aweme = methods.first().call(absActivity)
+                var aweme = methods.first().call(activity)
                 if (aweme == null) {
-                    val curFragment = absActivity.findMethod("getCurFragment", *arrayOf<Any>())?.call(absActivity)
+                    val curFragment = activity.findMethod("getCurFragment", *arrayOf<Any>())?.call(activity)
                     val curFragmentMethods = curFragment?.findMethodsByReturnType(Aweme::class.java) ?: listOf()
                     if (curFragmentMethods.isNotEmpty()) {
                         aweme = curFragmentMethods.first().call(curFragment!!)
                     }
                 }
-                DownloadLogic(this@HAbsActivity, absActivity, aweme, config.isOwnerDir)
+                DownloadLogic(this@HAbsActivity, activity, aweme, config.isOwnerDir)
             }
         }
     }
 
     // 获取评论区图片
-    private fun hookComment(absActivity: AbsActivity) {
+    private fun hookComment(activity: DetailActivity) {
         launch {
             delay(200L)
 
-            hookCommentAt1(absActivity)
-            hookCommentAt2(absActivity)
+            hookCommentAt1(activity)
+            hookCommentAt2(activity)
         }
     }
 
-    private fun hookCommentAt1(absActivity: AbsActivity) {
+    private fun hookCommentAt1(activity: DetailActivity) {
         val versions = listOf("24.0.0", "24.1.0", "24.2.0")
 
-        if (!versions.contains(absActivity.appVersionName)) return
+        if (!versions.contains(activity.appVersionName)) return
         var urlList: List<String> = listOf()
 
-        val any1 = absActivity.getObjectField<Any>("LIZJ") ?: return
+        val any1 = activity.getObjectField<Any>("LIZJ") ?: return
         val methods = any1.findMethodsByReturnType(Aweme::class.java)
         if (methods.isNotEmpty()) {
             val aweme = methods.first().call(any1) ?: return
@@ -189,17 +170,17 @@ class HAbsActivity(
         }
 
         if (urlList.isEmpty()) return
-        rebuildCommentTopBarView(absActivity, urlList)
+        rebuildCommentTopBarView(activity, urlList)
     }
 
-    private fun hookCommentAt2(absActivity: AbsActivity) {
-        val versions = listOf("24.2.0", "24.3.0", "24.4.0", "24.5.0", "24.6.0")
-        if (!versions.contains(absActivity.appVersionName)) return
+    private fun hookCommentAt2(activity: DetailActivity) {
+        val versions = listOf("24.2.0", "24.3.0", "24.4.0", "24.5.0", "24.6.0", "24.7.0")
+        if (!versions.contains(activity.appVersionName)) return
 
         var urlList: List<String> = listOf()
-        val methods = absActivity.findMethodsByReturnType(Aweme::class.java)
+        val methods = activity.findMethodsByReturnType(Aweme::class.java)
         if (methods.isNotEmpty()) {
-            val aweme = methods.first().call(absActivity) ?: return
+            val aweme = methods.first().call(activity) ?: return
             // 如果是评论区的评论, 则获取图片
             // 24.2.0, 24.3.0, 24.4.0
             val commentFeedOuterCid = aweme.getObjectField<Any>("commentFeedOuterCid")
@@ -216,12 +197,12 @@ class HAbsActivity(
             }
         }
         if (urlList.isEmpty()) return
-        rebuildCommentTopBarView(absActivity, urlList)
+        rebuildCommentTopBarView(activity, urlList)
     }
 
     // 重新构建评论区顶部操作栏
-    private fun rebuildCommentTopBarView(absActivity: AbsActivity, urlList: List<String> = listOf()) {
-        val contentView: View = absActivity.window.decorView.findViewById(android.R.id.content)
+    private fun rebuildCommentTopBarView(activity: DetailActivity, urlList: List<String> = listOf()) {
+        val contentView: View = activity.window.decorView.findViewById(android.R.id.content)
         val outViews = ArrayList<View>()
         contentView.findViewsWithText(outViews, "返回", View.FIND_VIEWS_WITH_CONTENT_DESCRIPTION)
         val backBtn = outViews.first { it.contentDescription.equals("返回") }
@@ -240,141 +221,5 @@ class HAbsActivity(
             SaveLogic(this@HAbsActivity, it.context, urlList)
         }
         viewGroup.addView(appbar)
-    }
-
-    ///// @Deprecated
-    // 获取接口中的视频信息
-    @Deprecated("Deprecated")
-    private fun mainLogic(absActivity: AbsActivity, sortUrl: String) {
-        launch {
-            try {
-                val originUrl = getOriginalUrl(sortUrl)
-                val detailId = getDetailId(originUrl)
-                if (detailId.isBlank()) {
-                    showToast(absActivity, "未获取到视频ID!")
-                    return@launch
-                }
-
-                var detailJson = getDetailJson(detailId)
-                for (i in 0 until 10) {
-                    if (detailJson != "blocked") break //出错重试, 最多10次
-                    detailJson = getDetailJson(detailId)
-                }
-
-                val json = detailJson.parseJSON().apply {
-                    if (isEmpties) {
-                        showToast(absActivity, detailJson) //json解析失败, 直接返回失败文本
-                        return@launch
-                    } else if (isNull("aweme_detail")) {
-                        showToast(absActivity, "未获取到视频信息!")
-                        return@launch
-                    }
-                }
-
-                val detail = parseDetailInfo(json)
-                DownloadLogic(this@HAbsActivity, absActivity, detail, config.isOwnerDir)
-            } catch (e: JSONException) {
-                showToast(absActivity, "视频信息解析失败!")
-                KLogCat.e("视频信息解析失败:\n${e.stackTraceToString()}")
-            }
-        }
-    }
-
-    /**
-     * 获取原始地址
-     * @param sortUrl 短链接
-     */
-    private suspend fun getOriginalUrl(sortUrl: String): String {
-        return withContext(Dispatchers.IO) {
-            KHttpUtils.getRedirectsUrl(sortUrl)
-        }
-    }
-
-    /**
-     * 获取视频/图文ID
-     * @param originUrl 原始url地址
-     */
-    private fun getDetailId(originUrl: String): String {
-        val find = Regex("/(\\d+)/").find(originUrl)
-        return find?.groupValues?.last() ?: ""
-    }
-
-    /**
-     *
-     * 获取单个视频/图文详情 Json
-     *
-     * @param videoId 视频/图文ID
-     */
-    private suspend fun getDetailJson(videoId: String): String {
-        // thanks for: https://github.com/Evil0ctal/Douyin_TikTok_Download_API
-        val url = "https://www.iesdouyin.com/aweme/v1/web/aweme/detail/"
-        val params = "aid=1128&version_name=23.5.0&device_platform=android&os_version=2333&aweme_id=$videoId"
-        return withContext(Dispatchers.IO) {
-            KHttpUtils.get(url, params)
-        }
-    }
-
-    /**
-     * 解析视频/图文基本信息
-     * @param json
-     */
-    @Throws(JSONException::class)
-    private fun parseDetailInfo(json: JSONObject): DeAweme {
-        val deAweme = DeAweme()
-        /// 视频/图文基本信息 Json
-        val awemeDetail = json.getJSONObject("aweme_detail")
-        //描述
-        deAweme.desc = awemeDetail.getStringOrDefault("desc")
-
-        /// 用户公开的基本信息 Json
-        val author = awemeDetail.getJSONObject("author")
-        //昵称
-        deAweme.nickname = author.getStringOrDefault("nickname")
-        //用户唯一(账号)ID
-        val uniqueId = author.getStringOrDefault("unique_id")
-        //目前来看, uniqueId为空, shortId即用户Id
-        deAweme.shortId = author.getStringOrDefault("short_id", uniqueId)
-
-        if (awemeDetail.isNull("images")) {
-            /// 视频基本信息 Json
-            val video = awemeDetail.getJSONObject("video")
-            val playAddrH264 = video.getJSONObject("play_addr_h264")
-
-            val videoUrlList = mutableListOf<String>()
-            val urlList = playAddrH264.getJSONArray("url_list")
-            for (index in 0 until urlList.length()) {
-                videoUrlList.add(urlList.getStringOrDefault(index))
-            }
-
-
-            deAweme.videoUrlList = videoUrlList
-        } else {
-            /// 图文基本信息 Json
-            val imageUrlStructList = mutableListOf<ImageUrlStruct>()
-            val images = awemeDetail.getJSONArray("images").toJSONObjectArray()
-            for (image in images) {
-                val imageUrlList = mutableListOf<String>()
-                val urlList = image.getJSONArray("url_list")
-                for (index in 0 until urlList.length()) {
-                    imageUrlList.add(urlList.getStringOrDefault(index))
-                }
-                imageUrlStructList.add(ImageUrlStruct(imageUrlList))
-            }
-
-            deAweme.imageUrlStructList = imageUrlStructList
-        }
-
-        /// 背景音乐基本信息 Json
-        val music = awemeDetail.getJSONObject("music")
-        val playUrl = music.getJSONObject("play_url")
-
-        val musicUrlList = mutableListOf<String>()
-        val urlList = playUrl.getJSONArray("url_list")
-        for (index in 0 until urlList.length()) {
-            musicUrlList.add(urlList.getStringOrDefault(index))
-        }
-        deAweme.musicUrlList = musicUrlList
-
-        return deAweme
     }
 }

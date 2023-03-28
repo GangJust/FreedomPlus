@@ -1,25 +1,20 @@
 package com.freegang.douyin
 
-import android.app.Application
 import android.os.Bundle
 import android.text.Html
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
 import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionCode
 import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionName
-import com.freegang.xpler.xp.hookClass
-import com.freegang.xpler.xp.thisActivity
+import com.freegang.xpler.xp.OnAfter
+import com.freegang.xpler.xp.thisContext
 import com.ss.android.ugc.aweme.main.MainActivity
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlinx.coroutines.delay
 
-class HMainActivity(
-    lpparam: XC_LoadPackage.LoadPackageParam,
-    private val application: Application,
-) : BaseHook(lpparam) {
-
-    //当前适配版本列表
+class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainActivity>(lpparam) {
+    private val config get() = Config.get()
     private val supportVersions = listOf(
         "24.0.0",
         "24.1.0",
@@ -28,28 +23,24 @@ class HMainActivity(
         "24.4.0",
         "24.5.0",
         "24.6.0",
+        "24.7.0",
     )
 
-    override fun onHook() {
-        val config = Config.get()
-        lpparam.hookClass(MainActivity::class.java)
-            .method("onCreate", Bundle::class.java) {
-                onAfter {
-                    showToast(thisActivity, "Freedom+ Attach!")
-                }
-            }
-            .method("onResume") {
-                onAfter {
-                    showSupportDialog(this, config)
-                }
-            }
+    @OnAfter(methodName = "onCreate")
+    fun onCreate(it: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {
+        showToast(it.thisContext, "Freedom+ Attach!")
+    }
+
+    @OnAfter(methodName = "onResume")
+    fun onResume(it: XC_MethodHook.MethodHookParam) {
+        showSupportDialog(it)
     }
 
     //抖音版本(版本是否兼容提示)
-    private fun showSupportDialog(it: XC_MethodHook.MethodHookParam, config: Config) {
+    private fun showSupportDialog(it: XC_MethodHook.MethodHookParam) {
         val activity = it.thisObject as MainActivity
-        val versionName = application.appVersionName
-        val versionCode = application.appVersionCode
+        val versionName = activity.appVersionName
+        val versionCode = activity.appVersionCode
 
         //此版本是否继续提示
         if (!config.isSupportHint && versionCode == config.dyVersionCode && versionName == config.dyVersionName) return
@@ -72,7 +63,7 @@ class HMainActivity(
                     config.isSupportHint = false
                     config.dyVersionName = versionName
                     config.dyVersionCode = versionCode
-                    config.save(application)
+                    config.save(activity)
                 }
             )
         }

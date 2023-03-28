@@ -7,18 +7,17 @@ import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
 import com.freegang.xpler.utils.view.KViewUtils
+import com.freegang.xpler.xp.EmptyHook
 import com.freegang.xpler.xp.hookClass
 import com.ss.android.ugc.aweme.homepage.ui.view.MainFlippableViewPager
 import com.ss.android.ugc.aweme.homepage.ui.view.MainTabStripScrollView
 import com.ss.android.ugc.aweme.main.MainFragment
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
-class HMainFragment(
-    lpparam: XC_LoadPackage.LoadPackageParam,
-) : BaseHook(lpparam) {
-    override fun onHook() {
-        val config = Config.get()
+class HMainFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHook>(lpparam) {
+    private val config get() = Config.get()
 
+    override fun onInit() {
         lpparam.hookClass(MainFragment::class.java)
             .method("onViewCreated", View::class.java, Bundle::class.java) {
                 onAfter {

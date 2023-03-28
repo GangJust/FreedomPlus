@@ -13,7 +13,7 @@ import java.io.FileOutputStream
 
 //保存(图片/表情)逻辑
 class SaveLogic(
-    private val hook: BaseHook,
+    private val hook: BaseHook<*>,
     private val context: Context,
     private val urlList: List<String>,
     private val isDCIM: Boolean = false,

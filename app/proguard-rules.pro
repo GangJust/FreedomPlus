@@ -62,18 +62,21 @@
 
 # 保留我们使用的四大组件，自定义的Application等等这些类不被混淆
 # 因为这些子类都有可能被外部调用
--keep public class * extends androidx.*
--keep public class * extends android.*
+-keep public class * extends androidx.**
+-keep public class * extends android.**
 
-# 保留以下类不做混淆, 否则模块无法生效
--keep class com.freegang.xpler.xp.** {
-    *;
+# 保留模块核心, 否则无法生效
+-keepclassmembers class com.freegang.xpler.xp.** { *; }
+-keepclassmembers class * {
+    @com.freegang.xpler.xp.FieldGet <fields>;
+    @com.freegang.xpler.xp.OnBefore <methods>;
+    @com.freegang.xpler.xp.OnAfter <methods>;
+    @com.freegang.xpler.xp.OnReplace <methods>;
+    @com.freegang.xpler.xp.OnConstructorBefore <methods>;
+    @com.freegang.xpler.xp.OnConstructorAfter <methods>;
+    @com.freegang.xpler.xp.OnConstructorReplace <methods>;
 }
+-keep class com.freegang.xpler.HookInit extends * { *; }
 
--keep class com.freegang.xpler.HookInit extends * {
-    *;
-}
-
--keep class com.freegang.fplus.activity.HomeActivity extends * {
-    hookHint();
-}
+# 保留模块状态回调提示函数
+-keep class com.freegang.fplus.activity.HomeActivity extends * { hookHint(); }

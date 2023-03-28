@@ -23,9 +23,6 @@ class KAppCrashUtils : Thread.UncaughtExceptionHandler {
     fun init(app: Application, message: String = "程序崩溃!") {
         this.mApp = app
         this.mMessage = message
-        //初始化日志记录工具
-        KLogCat.init(app)
-        KLogCat.openStorage()
         //获取系统默认的UncaughtException处理器
         mDefaultHandler = Thread.getDefaultUncaughtExceptionHandler();
         //设置该MyCrashHandler为程序的默认处理器

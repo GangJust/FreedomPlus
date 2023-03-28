@@ -5,7 +5,9 @@ import android.content.Context
 import android.content.Context.VIBRATOR_SERVICE
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.os.*
+import android.os.Build
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.Toast
@@ -17,20 +19,13 @@ import com.freegang.xpler.databinding.DialogMessageLayoutBinding
 import com.freegang.xpler.utils.app.KNotifiUtils
 import com.freegang.xpler.utils.log.KLogCat
 import com.freegang.xpler.utils.other.KResourceUtils
+import com.freegang.xpler.xp.KtOnHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlinx.coroutines.*
 
-abstract class BaseHook(
-    protected val lpparam: XC_LoadPackage.LoadPackageParam,
-) {
+abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<T>(lpparam) {
     private val mainScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
     private var toast: Toast? = null
-
-    init {
-        this.onHook()
-    }
-
-    abstract fun onHook()
 
     fun launch(block: suspend CoroutineScope.() -> Unit): Job {
         val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->

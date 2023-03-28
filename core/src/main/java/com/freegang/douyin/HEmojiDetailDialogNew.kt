@@ -11,9 +11,7 @@ import com.freegang.douyin.logic.SaveLogic
 import com.freegang.xpler.R
 import com.freegang.xpler.databinding.HookAddSaveEmojiLayoutBinding
 import com.freegang.xpler.utils.other.KResourceUtils
-import com.freegang.xpler.xp.findFieldByType
-import com.freegang.xpler.xp.getObjectField
-import com.freegang.xpler.xp.hookClass
+import com.freegang.xpler.xp.*
 import com.ss.android.ugc.aweme.emoji.model.Emoji
 import com.ss.android.ugc.aweme.emoji.similaremoji.EmojiDetailDialogNew
 import com.ss.android.ugc.aweme.emoji.store.view.EmojiBottomSheetDialog
@@ -23,12 +21,11 @@ import kotlinx.coroutines.delay
 
 class HEmojiDetailDialogNew(
     lpparam: XC_LoadPackage.LoadPackageParam,
-) : BaseHook(lpparam) {
-    var urlList: List<String> = listOf()
+) : BaseHook<EmptyHook>(lpparam) {
+    private val config get() = Config.get()
+    private var urlList: List<String> = listOf()
 
-    override fun onHook() {
-        val config = Config.get()
-
+    override fun onInit() {
         lpparam.hookClass(EmojiDetailDialogNew::class.java)
             .constructorsAll {
                 onAfter {

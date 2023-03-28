@@ -384,6 +384,24 @@ fun XC_LoadPackage.LoadPackageParam.findClass(className: String): Class<*> {
  *
  * @param log 内容
  */
+fun XC_LoadPackage.LoadPackageParam.xposedLog(log: String){
+    XposedBridge.log(log)
+}
+
+/**
+ * 打印Xposed日志
+ *
+ * @param log 内容
+ */
+fun XC_LoadPackage.LoadPackageParam.xposedLog(log: Throwable) {
+    XposedBridge.log(log)
+}
+
+/**
+ * 打印Xposed日志
+ *
+ * @param log 内容
+ */
 fun XC_MethodHook.MethodHookParam.xposedLog(log: String) {
     XposedBridge.log(log)
 }

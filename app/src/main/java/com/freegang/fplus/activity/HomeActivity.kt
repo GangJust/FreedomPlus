@@ -4,7 +4,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -604,7 +603,7 @@ class HomeActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        getVersion()
+        //getVersion()
     }
 
     override fun onPause() {
@@ -612,4 +611,3 @@ class HomeActivity : ComponentActivity() {
         saveConfig()
     }
 }
-
