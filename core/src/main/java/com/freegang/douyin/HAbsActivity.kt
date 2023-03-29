@@ -68,14 +68,6 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
                 return@OnPrimaryClipChangedListener
             }
 
-            // @Deprecated
-            //showToast(absActivity, "复制成功!\n$shareText")
-
-            //截取短链接, 一般这个截取逻辑能用到死, 但是不排除抖音更新分享文本格式, 如果真更新再说.
-            //val urlIndexOf = shareText.indexOf("http")
-            //val sortUrl = shareText.substring(urlIndexOf)
-            //mainLogic(absActivity, sortUrl, config)
-
             hookActivity(absActivity)
         }
         clipboardManager.addPrimaryClipChangedListener(primaryClipChangedListener)
@@ -94,7 +86,7 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
     }
 
     private fun hookActivityAt1(activity: AbsActivity) {
-        val versions = listOf("24.0.0", "24.1.0", "24.2.0")
+        val versions = listOf("23.5.0", "23.6.0", "23.7.0", "23.8.0", "23.9.0", "24.0.0", "24.1.0", "24.2.0")
         if (!versions.contains(activity.appVersionName)) return
 
         if (activity is MainActivity) {
@@ -123,7 +115,7 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
     }
 
     private fun hookActivityAt2(activity: AbsActivity) {
-        val versions = listOf("24.2.0", "24.3.0", "24.4.0", "24.5.0", "24.6.0", "24.7.0")
+        val versions = listOf("24.2.0", "24.3.0", "24.4.0", "24.5.0", "24.6.0", "24.7.0", "24.8.0")
         if (!versions.contains(activity.appVersionName)) return
 
         if (activity is DetailActivity || activity is MainActivity) {
@@ -153,7 +145,7 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
     }
 
     private fun hookCommentAt1(activity: DetailActivity) {
-        val versions = listOf("24.0.0", "24.1.0", "24.2.0")
+        val versions = listOf("23.5.0", "23.6.0", "23.7.0", "23.8.0", "23.9.0", "24.0.0", "24.1.0", "24.2.0")
 
         if (!versions.contains(activity.appVersionName)) return
         var urlList: List<String> = listOf()
@@ -174,7 +166,7 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
     }
 
     private fun hookCommentAt2(activity: DetailActivity) {
-        val versions = listOf("24.2.0", "24.3.0", "24.4.0", "24.5.0", "24.6.0", "24.7.0")
+        val versions = listOf("24.2.0", "24.3.0", "24.4.0", "24.5.0", "24.6.0", "24.7.0", "24.8.0")
         if (!versions.contains(activity.appVersionName)) return
 
         var urlList: List<String> = listOf()

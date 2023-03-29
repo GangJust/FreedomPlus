@@ -603,7 +603,7 @@ class HomeActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        //getVersion()
+        getVersion()
     }
 
     override fun onPause() {

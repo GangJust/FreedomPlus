@@ -16,6 +16,11 @@ import kotlinx.coroutines.delay
 class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainActivity>(lpparam) {
     private val config get() = Config.get()
     private val supportVersions = listOf(
+        "23.5.0",
+        "23.6.0",
+        "23.7.0",
+        "23.8.0",
+        "23.9.0",
         "24.0.0",
         "24.1.0",
         "24.2.0",
@@ -24,6 +29,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         "24.5.0",
         "24.6.0",
         "24.7.0",
+        "24.8.0"
     )
 
     @OnAfter(methodName = "onCreate")

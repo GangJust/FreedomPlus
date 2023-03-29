@@ -1,6 +1,5 @@
 package com.freegang.xpler.xp
 
-import com.freegang.xpler.utils.log.KLogCat
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import java.lang.reflect.Field
@@ -105,7 +104,6 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
             val targetMethodParamTypes = Array<Class<*>>(mineParamsTypes.size - 1) { mineParamsTypes[it + 1] }
             hookHelper?.method(key.methodName, *targetMethodParamTypes) {
                 onBefore {
-                    KLogCat.d("OnBefore method: ${method.name}")
                     val invArgs = arrayOf(this, *args)
                     value.invoke(this@KtOnHook, *invArgs)
                 }
@@ -126,7 +124,6 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
             val targetMethodParamTypes = Array<Class<*>>(mineParamsTypes.size - 1) { mineParamsTypes[it + 1] }
             hookHelper?.method(key.methodName, *targetMethodParamTypes) {
                 onAfter {
-                    KLogCat.d("OnAfter method: ${method.name}")
                     val invArgs = arrayOf(this, *args)
                     value.invoke(this@KtOnHook, *invArgs)
                 }
@@ -233,12 +230,6 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
 
             map[annotation] = method
         }
-
-
-        map.forEach {
-            KLogCat.d("${it.key} = ${it.value}")
-        }
-
         return map
     }
 
