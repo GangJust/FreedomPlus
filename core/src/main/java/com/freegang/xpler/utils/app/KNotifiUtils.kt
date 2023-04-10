@@ -7,6 +7,12 @@ import android.content.Context
 import android.os.Build
 import androidx.core.app.NotificationCompat
 
+interface IProgressNotification {
+    fun setFinishedText(finishedText: String)
+
+    fun notifyProgress(step: Int, inProgressText: String)
+}
+
 object KNotifiUtils {
 
     /**
@@ -128,14 +134,13 @@ object KNotifiUtils {
         private var finishedText: String,
         private val manager: NotificationManager,
         private val notify: NotificationCompat.Builder,
-    ) {
+    ) : IProgressNotification {
         /**
          * 由调用者主动设置完成文本
          * @param finishedText 下载完成后展示的文本, 默认为: "下载完成!"
          */
-        @JvmOverloads
-        fun setFinishedText(
-            finishedText: String = "下载完成!",
+        override fun setFinishedText(
+            finishedText: String,
         ) {
             this.finishedText = finishedText
             notify.setProgress(100, 100, false)
@@ -148,10 +153,9 @@ object KNotifiUtils {
          * @param step 当前进度
          * @param inProgressText 进度文本, 应该预留一个`%s`或者`%d`作为[step]的展示, 默认为: "下载中%s%%"
          */
-        @JvmOverloads
-        fun notifyProgress(
+        override fun notifyProgress(
             step: Int,
-            inProgressText: String = "下载中%s%%",
+            inProgressText: String,
         ) {
             this.inProgressText = inProgressText
             notify.setContentText(this.inProgressText.format(step))

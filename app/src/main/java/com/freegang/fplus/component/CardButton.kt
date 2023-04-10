@@ -1,10 +1,14 @@
-package kit
+package com.freegang.fplus.component
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.LocalAbsoluteElevation
+import androidx.compose.material.LocalContentColor
+import androidx.compose.material.LocalElevationOverlay
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember

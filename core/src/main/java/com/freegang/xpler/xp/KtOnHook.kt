@@ -1,6 +1,7 @@
 package com.freegang.xpler.xp
 
 import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -9,16 +10,16 @@ import java.lang.reflect.ParameterizedType
 /// 使用案例, 详见: https://github.com/GangJust/Xpler/blob/main/docs/readme.md
 
 @Target(AnnotationTarget.FIELD)
-annotation class FieldGet(val fieldName: String)
+annotation class FieldGet(val fieldName: String = "", val tag: String = "tag")
 
 @Target(AnnotationTarget.FUNCTION)
-annotation class OnBefore(val methodName: String)
+annotation class OnBefore(val name: String = "")
 
 @Target(AnnotationTarget.FUNCTION)
-annotation class OnAfter(val methodName: String)
+annotation class OnAfter(val name: String = "")
 
 @Target(AnnotationTarget.FUNCTION)
-annotation class OnReplace(val methodName: String)
+annotation class OnReplace(val name: String = "")
 
 @Target(AnnotationTarget.FUNCTION)
 annotation class OnConstructorBefore
@@ -28,6 +29,9 @@ annotation class OnConstructorAfter
 
 @Target(AnnotationTarget.FUNCTION)
 annotation class OnConstructorReplace
+
+@Target(AnnotationTarget.VALUE_PARAMETER)
+annotation class Param(val name: String)
 
 abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackageParam) {
     private var mTargetClazz: Class<*>
@@ -39,8 +43,6 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     private val mineFields = mutableSetOf<Field>()
 
     init {
-        this.onInit()
-
         mTargetClazz = this.setTargetClass()
         if (mTargetClazz.name != EmptyHook::class.java.name) {
             hookHelper = KtXposedHelpers.hookClass(targetClazz)
@@ -58,6 +60,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
 
             defaultHookAllMethod()
         }
+        this.onInit()
     }
 
     open fun onInit() {}
@@ -67,6 +70,13 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
      * 则需要通过: XposedHelpers.findClass("类名", lpparam.classLoader)
      */
     open fun setTargetClass(): Class<*> = getHookTargetClass()
+
+    /**
+     * 查找某类
+     */
+    fun findClass(className: String): Class<*> {
+        return XposedHelpers.findClass(className, lpparam.classLoader)
+    }
 
     /**
      * 获取泛型中的类, 如果泛型类是 Any, 则可通过 [setTargetClass] 对指定类进行设置
@@ -97,14 +107,14 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     @Throws
     private fun invOnBefore() {
         val methodMap = getAnnotationMethod(OnBefore::class.java)
+        val fieldMap = getAnnotationFiled(FieldGet::class.java)
         for ((key, value) in methodMap) {
             if (value.getAnnotation(OnReplace::class.java) != null) continue
 
-            val mineParamsTypes = value.parameterTypes
-            val targetMethodParamTypes = Array<Class<*>>(mineParamsTypes.size - 1) { mineParamsTypes[it + 1] }
-            hookHelper?.method(key.methodName, *targetMethodParamTypes) {
+            hookHelper?.method(key.name.ifEmpty { value.name }, *getTargetMethodParamTypes(value)) {
                 onBefore {
                     val invArgs = arrayOf(this, *args)
+                    setAnyField(thisObject, fieldMap)
                     value.invoke(this@KtOnHook, *invArgs)
                 }
             }
@@ -117,14 +127,14 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     @Throws
     private fun invOnAfter() {
         val methodMap = getAnnotationMethod(OnAfter::class.java)
+        val fieldMap = getAnnotationFiled(FieldGet::class.java)
         for ((key, value) in methodMap) {
             if (value.getAnnotation(OnReplace::class.java) != null) continue
 
-            val mineParamsTypes = value.parameterTypes
-            val targetMethodParamTypes = Array<Class<*>>(mineParamsTypes.size - 1) { mineParamsTypes[it + 1] }
-            hookHelper?.method(key.methodName, *targetMethodParamTypes) {
+            hookHelper?.method(key.name.ifEmpty { value.name }, *getTargetMethodParamTypes(value)) {
                 onAfter {
                     val invArgs = arrayOf(this, *args)
+                    setAnyField(thisObject, fieldMap)
                     value.invoke(this@KtOnHook, *invArgs)
                 }
             }
@@ -139,12 +149,12 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     @Throws
     private fun invOnReplace() {
         val methodMap = getAnnotationMethod(OnReplace::class.java)
+        val fieldMap = getAnnotationFiled(FieldGet::class.java)
         for ((key, value) in methodMap) {
-            val mineParamsTypes = value.parameterTypes
-            val targetMethodParamTypes = Array<Class<*>>(mineParamsTypes.size - 1) { mineParamsTypes[it + 1] }
-            hookHelper?.method(key.methodName, *targetMethodParamTypes) {
+            hookHelper?.method(key.name.ifEmpty { value.name }, *getTargetMethodParamTypes(value)) {
                 onReplace {
                     val invArgs = arrayOf(this, *args)
+                    setAnyField(thisObject, fieldMap)
                     value.invoke(this@KtOnHook, *invArgs) ?: Unit
                 }
             }
@@ -157,14 +167,14 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     @Throws
     private fun invOnConstructorBefore() {
         val methodMap = getAnnotationMethod(OnConstructorBefore::class.java)
+        val fieldMap = getAnnotationFiled(FieldGet::class.java)
         for ((_, value) in methodMap) {
             if (value.getAnnotation(OnConstructorReplace::class.java) != null) continue
 
-            val mineParamsTypes = value.parameterTypes
-            val targetMethodParamTypes = Array<Class<*>>(mineParamsTypes.size - 1) { mineParamsTypes[it + 1] }
-            hookHelper?.constructor(*targetMethodParamTypes) {
+            hookHelper?.constructor(*getTargetMethodParamTypes(value)) {
                 onBefore {
                     val invArgs = arrayOf(this, *args)
+                    setAnyField(thisObject, fieldMap)
                     value.invoke(this@KtOnHook, *invArgs)
                 }
             }
@@ -177,14 +187,14 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     @Throws
     private fun invOnConstructorAfter() {
         val methodMap = getAnnotationMethod(OnConstructorAfter::class.java)
+        val fieldMap = getAnnotationFiled(FieldGet::class.java)
         for ((_, value) in methodMap) {
             if (value.getAnnotation(OnConstructorReplace::class.java) != null) continue
 
-            val mineParamsTypes = value.parameterTypes
-            val targetMethodParamTypes = Array<Class<*>>(mineParamsTypes.size - 1) { mineParamsTypes[it + 1] }
-            hookHelper?.constructor(*targetMethodParamTypes) {
+            hookHelper?.constructor(*getTargetMethodParamTypes(value)) {
                 onAfter {
                     val invArgs = arrayOf(this, *args)
+                    setAnyField(thisObject, fieldMap)
                     value.invoke(this@KtOnHook, *invArgs)
                 }
             }
@@ -197,12 +207,12 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     @Throws
     private fun invOnConstructorReplace() {
         val methodMap = getAnnotationMethod(OnConstructorReplace::class.java)
+        val fieldMap = getAnnotationFiled(FieldGet::class.java)
         for ((_, value) in methodMap) {
-            val mineParamsTypes = value.parameterTypes
-            val targetMethodParamTypes = Array<Class<*>>(mineParamsTypes.size - 1) { mineParamsTypes[it + 1] }
-            hookHelper?.constructor(*targetMethodParamTypes) {
+            hookHelper?.constructor(*getTargetMethodParamTypes(value)) {
                 onReplace {
                     val invArgs = arrayOf(this, *args)
+                    setAnyField(thisObject, fieldMap)
                     value.invoke(this@KtOnHook, *invArgs)
                     thisObject
                 }
@@ -234,6 +244,26 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     }
 
     /**
+     * 替换@Param注解, 获取目标方法中的的真实参数列表
+     * @param method 目标方法
+     * @return Array
+     */
+    private fun getTargetMethodParamTypes(method: Method): Array<Class<*>> {
+        //整理参数、参数注解列表, 将第一个参数`XC_MethodHook.MethodHookParam`移除
+        val targetMethodParamTypes = method.parameterTypes.toMutableList().apply { removeFirst() }
+        val parameterAnnotations = method.parameterAnnotations.toMutableList().apply { removeFirst() }
+
+        //替换 @Param 指定的参数类型
+        val finalTargetMethodParamTypes = targetMethodParamTypes.mapIndexed { index, clazz ->
+            if (parameterAnnotations[index].isEmpty()) return@mapIndexed clazz //如果某个参数没有注解
+            val param = parameterAnnotations[index].filterIsInstance<Param>().ifEmpty { return@mapIndexed clazz } //如果某个参数有注解, 但没有@Param注解
+            findClass(param[0].name) //寻找注解类
+        }.toTypedArray()
+
+        return finalTargetMethodParamTypes
+    }
+
+    /**
      * 默认Hook目标类的所有函数调用, 为字段注入值
      */
     private fun defaultHookAllMethod() {
@@ -241,19 +271,19 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
         hookHelper?.methodAll {
             onAfter {
                 thisObject ?: return@onAfter
-                invAnyField(thisObject, fieldMap)
+                setAnyField(thisObject, fieldMap)
             }
         }
     }
 
     /**
-     * 查找子类字段[mineFields]中被[@AnyField]标注的所有字段, 并赋值
+     * 查找子类字段[mineFields]中被[@FieldGet]标注的所有字段, 并赋值
      */
     @Throws
-    private fun <A : Annotation> invAnyField(instance: Any, fieldMap: Map<A, Field>) {
+    private fun <A : Annotation> setAnyField(instance: Any, fieldMap: Map<A, Field>) {
         for ((key, value) in fieldMap) {
             key as FieldGet
-            val any = instance.getObjectField<Any>(key.fieldName)
+            val any = instance.getObjectField<Any>(key.fieldName.ifEmpty { value.name })
             value.set(this@KtOnHook, any)
         }
     }
@@ -265,6 +295,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
         val fieldMap = mutableMapOf<A, Field>()
         for (field in mineFields) {
             val annotation = field.getAnnotation(a) ?: continue
+            field.isAccessible = true
             fieldMap[annotation] = field
         }
         return fieldMap

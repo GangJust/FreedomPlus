@@ -44,10 +44,10 @@ class HMainFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHo
     private fun hideTabItem(viewGroup: ViewGroup, config: Config) {
         val views = KViewUtils.findViews(viewGroup, MainTabStripScrollView::class.java)
         if (views.isEmpty()) return
-        val hideTabKeyword = config.hideTabKeyword
+        val hideTabKeywords = config.hideTabKeywords
             .replace("\\s".toRegex(), "")
             .replace(",|，".toRegex(), "|")
-        KViewUtils.findViewsByDesc(views.first() as ViewGroup, View::class.java, hideTabKeyword.toRegex()).forEach { v ->
+        KViewUtils.findViewsByDesc(views.first() as ViewGroup, View::class.java, hideTabKeywords.toRegex()).forEach { v ->
             v.isVisible = false
         }
     }

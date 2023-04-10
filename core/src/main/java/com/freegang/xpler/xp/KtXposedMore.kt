@@ -156,29 +156,6 @@ fun <T> Any.callMethod(methodName: String, argsTypes: Array<Class<*>>, vararg ar
 }
 
 /**
- * 从实例对象中直接调用某个静态方法
- *
- * @param methodName 方法名
- * @return 该方法被调用之后的返回值, 可能是 null 即没有返回值
- */
-fun <T> Any.callStaticMethod(methodName: String, vararg args: Any): T? {
-    return XposedHelpers.callStaticMethod(this::class.java, methodName, *args) as T?
-}
-
-
-/**
- * 从实例对象中直接调用某个静态方法
- *
- * @param methodName 方法名
- * @param argsTypes 参数类型列表
- * @param args 参数列表值 (需要与[argsTypes]类型一一对应)
- * @return 该方法被调用之后的返回值, 可能是 null 即没有返回值
- */
-fun <T> Any.callStaticMethod(methodName: String, argsTypes: Array<Class<*>>, vararg args: Any): T? {
-    return XposedHelpers.callStaticMethod(this::class.java, methodName, *argsTypes, *args) as T?
-}
-
-/**
  * 从实例对象中直接获取某个字段的值
  *
  * @param fieldName 字段名
@@ -190,34 +167,13 @@ fun <T> Any.getObjectField(fieldName: String): T? {
 }
 
 /**
- * 从实例对象中直接获取某个静态字段的值
- *
- * @param fieldName 字段名
- * @return 该字段的值, 可能是 null 即被赋值
- */
-fun <T> Any.getStaticObjectField(fieldName: String): T? {
-    val field = XposedHelpers.findFieldIfExists(this::class.java, fieldName) ?: return null
-    return field.get(null) as? T
-}
-
-/**
- * 对示例对象中的某个字段赋值
+ * 对实例对象中的某个字段赋值
  *
  * @param fieldName 字段名
  * @param value 字段值
  */
 fun Any.setObjectField(fieldName: String, value: Any) {
     XposedHelpers.setObjectField(this, fieldName, value)
-}
-
-/**
- * 对示例对象中的某个静态字段赋值
- *
- * @param fieldName 字段名
- * @param value 字段值
- */
-fun Any.setStaticObjectField(fieldName: String, value: Any) {
-    XposedHelpers.setStaticObjectField(this::class.java, fieldName, value)
 }
 
 
@@ -272,6 +228,39 @@ fun String.hookMethod(classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER, v
 
 
 //Class
+/**
+ * 从Class中直接获取某个静态字段的值
+ *
+ * @param fieldName 字段名
+ * @return 该字段的值, 可能是 null 即被赋值
+ */
+fun <T> Class<*>.getStaticObjectField(fieldName: String): T? {
+    val get = XposedHelpers.getStaticObjectField(this, fieldName) ?: null
+    return get as? T
+}
+
+/**
+ * 从Class中直接调用某个静态方法
+ *
+ * @param methodName 方法名
+ * @return 该方法被调用之后的返回值, 可能是 null 即没有返回值
+ */
+fun <T> Class<*>.callStaticMethod(methodName: String, vararg args: Any): T? {
+    return XposedHelpers.callStaticMethod(this, methodName, *args) as T?
+}
+
+/**
+ * 从Class中直接调用某个静态方法
+ *
+ * @param methodName 方法名
+ * @param argsTypes 参数类型列表
+ * @param args 参数列表值 (需要与[argsTypes]类型一一对应)
+ * @return 该方法被调用之后的返回值, 可能是 null 即没有返回值
+ */
+fun <T> Class<*>.callStaticMethod(methodName: String, argsTypes: Array<Class<*>>, vararg args: Any): T? {
+    return XposedHelpers.callStaticMethod(this, methodName, *argsTypes, *args) as T?
+}
+
 /**
  * Hook某个Class的构造方法
  *
@@ -384,7 +373,7 @@ fun XC_LoadPackage.LoadPackageParam.findClass(className: String): Class<*> {
  *
  * @param log 内容
  */
-fun XC_LoadPackage.LoadPackageParam.xposedLog(log: String){
+fun XC_LoadPackage.LoadPackageParam.xposedLog(log: String) {
     XposedBridge.log(log)
 }
 

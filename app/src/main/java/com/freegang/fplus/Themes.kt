@@ -5,11 +5,16 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material.*
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import com.freegang.fplus.resource.ColorRes
@@ -109,10 +114,12 @@ object Themes {
             shapes = ShapeRes.defaultShapes,
             content = {
                 //沉浸式状态栏
-                rememberSystemUiController().setSystemBarsColor(
-                    color = nowColors.colors.background,
-                    darkIcons = !Themes.isDark,
-                )
+                rememberSystemUiController().run {
+                    setSystemBarsColor(
+                        color = nowColors.colors.background,
+                        darkIcons = !Themes.isDark,
+                    )
+                }
                 //沉浸式则补充间隙
                 Surface(
                     modifier = if (Themes.isImmersive) Modifier.windowInsetsPadding(WindowInsets.systemBars) else Modifier,
@@ -124,3 +131,7 @@ object Themes {
         )
     }
 }
+
+val Dp.asSP: TextUnit get() = this.value.sp
+
+val TextUnit.asDp: Dp get() = this.value.dp

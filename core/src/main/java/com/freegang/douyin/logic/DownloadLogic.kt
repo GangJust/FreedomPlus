@@ -1,10 +1,13 @@
 package com.freegang.douyin.logic
 
 import android.app.Activity
+import android.widget.Toast
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
 import com.freegang.douyin.model.DeAweme
-import com.freegang.douyin.model.ImageUrlStruct
+import com.freegang.douyin.model.UrlStruct
+import com.freegang.webdav.WebDav
+import com.freegang.xpler.utils.app.IProgressNotification
 import com.freegang.xpler.utils.app.KAlbumUtils
 import com.freegang.xpler.utils.io.KFileUtils.child
 import com.freegang.xpler.utils.io.KFileUtils.need
@@ -22,11 +25,12 @@ class DownloadLogic(
     private val hook: BaseHook<*>,
     private val activity: Activity,
     private val aweme: Any?,
-    private val isOwnerDir: Boolean = false,
 ) {
 
     companion object {
+        private val config: Config = Config.get()
         private var downloadNotifyId = 1
+        private var webdav: WebDav = WebDav(config.webDavHost, config.webDavUsername, config.webDavPassword)
     }
 
     init {
@@ -64,11 +68,11 @@ class DownloadLogic(
             ?: listOf()
 
         //图文列表
-        val imageUrlList = mutableListOf<ImageUrlStruct>()
+        val imageUrlList = mutableListOf<UrlStruct>()
         val imagesStructList = aweme.getObjectField<List<Any>>("images")
         imagesStructList?.forEach { imagesStruct ->
             val urlList = imagesStruct.getObjectField<List<String>>("urlList")
-            val imageUrlStruct = ImageUrlStruct(urlList ?: listOf())
+            val imageUrlStruct = UrlStruct(urlList ?: listOf())
             imageUrlList.add(imageUrlStruct)
         }
         deAweme.imageUrlStructList = imageUrlList
@@ -94,16 +98,27 @@ class DownloadLogic(
      * @param deAweme
      */
     private fun showChoiceDialog(deAweme: DeAweme) {
-        val items = arrayOf(if (deAweme.videoUrlList.isNotEmpty()) "视频" else "图片", "背景音乐")
+        val items = mutableListOf(if (deAweme.videoUrlList.isNotEmpty()) "视频" else "图片", "背景音乐")
+        if (config.isWebDav) {
+            if (deAweme.videoUrlList.isNotEmpty()) {
+                items.add("视频(WebDav)")
+            } else {
+                items.add("图片(WebDav)")
+            }
+            items.add("背景音乐(WebDav)")
+        }
         hook.showChoiceDialog(
             activity = activity,
             title = "Freedom+",
-            items = items,
+            items = items.toTypedArray(),
             onChoice = { _, item, _ ->
                 when (item) {
-                    "视频" -> downloadVideo(activity, deAweme)
-                    "图片" -> downloadImages(activity, deAweme)
-                    "背景音乐" -> downloadMusic(activity, deAweme)
+                    "视频" -> downloadVideo(deAweme)
+                    "图片" -> downloadImages(deAweme)
+                    "背景音乐" -> downloadMusic(deAweme)
+                    "视频(WebDav)" -> downloadVideo(deAweme, true)
+                    "图片(WebDav)" -> downloadImages(deAweme, true)
+                    "背景音乐(WebDav)" -> downloadMusic(deAweme, true)
                 }
             }
         )
@@ -113,7 +128,7 @@ class DownloadLogic(
      * 下载视频
      * @param deAweme
      */
-    private fun downloadVideo(activity: Activity, deAweme: DeAweme) {
+    private fun downloadVideo(deAweme: DeAweme, isWebDav: Boolean = false) {
         //构建视频文件名
         val pureFileName = if (deAweme.desc.isBlank()) {
             "${deAweme.nickname.pureFileName}_${deAweme.shortId}_${System.currentTimeMillis() / 1000}"
@@ -125,100 +140,21 @@ class DownloadLogic(
         var parentPath = Config.getFreedomDir(activity).child("video")
 
         //如果需要按视频创作者单独创建文件夹: `/外置存储器/DCIM/Freedom/video/昵称(账号)`
-        if (isOwnerDir) parentPath = parentPath.child("${deAweme.nickname}(${deAweme.shortId})")
+        if (config.isOwnerDir) parentPath = parentPath.child("${deAweme.nickname}(${deAweme.shortId})")
 
-        //构建下载文件名
-        val videoFile = File(parentPath.need(), pureFileName)
-
-        //发送通知
-        hook.showDownloadNotification(
-            context = activity,
-            notifyId = downloadNotifyId++,
-            title = pureFileName,
-            listener = {
-                //下载逻辑
-                hook.launch {
-                    withContext(Dispatchers.IO) {
-                        //KLogCat.d("RealDownloadLogic#video: ${deAweme.videoUrlList}")
-                        val outputStream = FileOutputStream(videoFile)
-                        KHttpUtils.download(deAweme.videoUrlList.first(), outputStream) { real, total ->
-                            it.notifyProgress(real * 100 / total)
-                            if (real == total) {
-                                KAlbumUtils.refresh(activity, videoFile.absolutePath) { _, _ ->
-                                    it.setFinishedText("下载成功!")
-                                    hook.showToast(activity, "下载成功!")
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        )
-    }
-
-    /**
-     * 下载图片 (标题作为文件夹)
-     * @param deAweme
-     */
-    private fun downloadImages(activity: Activity, deAweme: DeAweme) {
-        //构建图片文件夹名
-        val pureFileName = if (deAweme.desc.isBlank()) {
-            "${deAweme.nickname.pureFileName}_${deAweme.shortId}_${System.currentTimeMillis() / 1000}"
+        if (config.isNotification) {
+            //发送通知
+            showDownloadByNotification(deAweme.videoUrlList, parentPath, pureFileName, isWebDav)
         } else {
-            "${deAweme.nickname.pureFileName}_${deAweme.shortId}_${deAweme.desc.pureFileName.subMax()}"
+            showDownloadByDialog(deAweme.videoUrlList, parentPath, pureFileName, isWebDav)
         }
-
-        //默认下载路径: `/外置存储器/DCIM/Freedom/picture`
-        var parentPath = Config.getFreedomDir(activity).child("picture")
-
-        //如果需要按视频创作者单独创建文件夹: `/外置存储器/DCIM/Freedom/picture/昵称(账号)`
-        if (isOwnerDir) parentPath = parentPath.child("${deAweme.nickname}(${deAweme.shortId})")
-
-        //构建下载文件名(文件夹)
-        val pictureDir = File(parentPath.need(), pureFileName).need()
-
-        //发送通知
-        hook.showDownloadNotification(
-            context = activity,
-            notifyId = downloadNotifyId++,
-            title = pureFileName,
-            listener = {
-                //下载逻辑
-                hook.launch {
-                    var downloadCount = 0 //下载计数器
-                    deAweme.imageUrlStructList.forEachIndexed { index, url ->
-                        downloadCount++ //进循环即开始计数, 如果中途有失败, 直接跳过编号, 方便定位
-                        withContext(Dispatchers.IO) {
-                            //KLogCat.d("RealDownloadLogic#images: ${url.imageUrlList}")
-                            val file = File(pictureDir, "${index + 1}.jpg")
-                            val outputStream = FileOutputStream(file)
-                            KHttpUtils.download(url.imageUrlList.first(), outputStream) { real, total ->
-                                it.notifyProgress(real * 100 / total, "$index/${deAweme.imageUrlStructList.size} %s%%")
-                                if (real == total) {
-                                    KAlbumUtils.refresh(activity, file.absolutePath)
-                                }
-                            }
-                        }
-                    }
-                    //结束提示
-                    if (downloadCount == deAweme.imageUrlStructList.size) {
-                        it.setFinishedText("下载成功!")
-                        hook.showToast(activity, "下载成功!")
-                    } else {
-                        it.setFinishedText("成功${downloadCount}, 失败${deAweme.imageUrlStructList.size - downloadCount}!")
-                        hook.showToast(activity, "成功${downloadCount}, 失败${deAweme.imageUrlStructList.size - downloadCount}!")
-                    }
-                }
-            }
-        )
-
     }
 
     /**
      * 下载背景音乐
      * @param deAweme
      */
-    private fun downloadMusic(activity: Activity, deAweme: DeAweme) {
+    private fun downloadMusic(deAweme: DeAweme, isWebDav: Boolean = false) {
         //构建背景音乐文件名
         val pureFileName = if (deAweme.desc.isBlank()) {
             "${deAweme.nickname.pureFileName}_${deAweme.shortId}_${System.currentTimeMillis() / 1000}"
@@ -230,11 +166,147 @@ class DownloadLogic(
         var parentPath = Config.getFreedomDir(activity).child("music")
 
         //如果需要按视频创作者单独创建文件夹: `/外置存储器/DCIM/Freedom/music/昵称(账号)`
-        if (isOwnerDir) parentPath = parentPath.child("${deAweme.nickname}(${deAweme.shortId})")
+        if (config.isOwnerDir) parentPath = parentPath.child("${deAweme.nickname}(${deAweme.shortId})")
 
-        //构建下载文件名
-        val musicFile = File(parentPath.need(), pureFileName)
+        if (config.isNotification) {
+            showDownloadByNotification(deAweme.musicUrlList, parentPath, pureFileName, isWebDav)
+        } else {
+            showDownloadByDialog(deAweme.musicUrlList, parentPath, pureFileName, isWebDav)
+        }
+    }
 
+    /**
+     * 下载图片
+     * @param deAweme
+     */
+    private fun downloadImages(deAweme: DeAweme, isWebDav: Boolean = false) {
+        //构建图片文件名
+        val pureFileName = if (deAweme.desc.isBlank()) {
+            "${deAweme.nickname.pureFileName}_${deAweme.shortId}_${System.currentTimeMillis() / 1000}"
+        } else {
+            "${deAweme.nickname.pureFileName}_${deAweme.shortId}_${deAweme.desc.pureFileName.subMax()}"
+        }
+
+        //默认下载路径: `/外置存储器/DCIM/Freedom/picture`
+        var parentPath = Config.getFreedomDir(activity).child("picture")
+
+        //如果需要按视频创作者单独创建文件夹: `/外置存储器/DCIM/Freedom/picture/昵称(账号)`
+        if (config.isOwnerDir) parentPath = parentPath.child("${deAweme.nickname}(${deAweme.shortId})")
+
+        if (config.isNotification) {
+            //发送通知
+            hook.showDownloadNotification(
+                context = activity,
+                notifyId = downloadNotifyId++,
+                title = pureFileName,
+                listener = {
+                    //下载逻辑
+                    hook.launch {
+                        val imageFiles = mutableListOf<File>()
+                        var downloadCount = 0 //下载计数器
+                        deAweme.imageUrlStructList.forEachIndexed { index, urlStruct ->
+                            val downloadFile = File(parentPath.need(), "${pureFileName}_${index + 1}.jpg")
+                            val finished = download(urlStruct.urlList.first(), downloadFile, it, "$index/${deAweme.imageUrlStructList.size} %s%%")
+                            if (finished) {
+                                downloadCount += 1
+                                imageFiles.add(downloadFile)
+                                KAlbumUtils.refresh(activity, downloadFile.absolutePath)
+                            }
+                        }
+
+                        if (downloadCount == deAweme.imageUrlStructList.size) {
+                            val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
+                            it.setFinishedText(message)
+                            hook.showToast(activity, message)
+                        } else {
+                            val failCount = deAweme.imageUrlStructList.size - downloadCount
+                            it.setFinishedText("下载成功${downloadCount}, 失败${failCount}!")
+                            hook.showToast(activity, "下载成功${downloadCount}, 失败${failCount}!")
+                            Toast.makeText(activity, "正在上传WebDav!", Toast.LENGTH_SHORT).show()
+                        }
+
+                        //上传WebDav
+                        if (isWebDav) {
+                            if (imageFiles.isEmpty()) {
+                                hook.showToast(activity, "上传WebDav失败, 无法找到已下载的内容!")
+                                return@launch
+                            }
+                            var uploadCount = 0
+                            for (image in imageFiles) {
+                                val uploadStatus = uploadToWebDav(image)
+                                if (uploadStatus) uploadCount += 1
+                            }
+                            if (uploadCount == imageFiles.size) {
+                                hook.showToast(activity, "上传WebDav成功!")
+                            } else {
+                                hook.showToast(activity, "上传WebDav成功${uploadCount}, 失败${imageFiles.size - uploadCount}!")
+                            }
+                        }
+                    }
+                }
+            )
+        } else {
+            //进度条Dialog
+            hook.showProgressDialog(
+                activity = activity,
+                title = "Freedom+",
+                listener = { dialog, notify ->
+                    //下载逻辑
+                    hook.launch {
+                        var downloadCount = 0 //下载计数器
+                        deAweme.imageUrlStructList.forEachIndexed { index, urlStruct ->
+                            val downloadFile = File(parentPath.need(), "${pureFileName}_${index + 1}.jpg")
+                            val finished =
+                                download(urlStruct.urlList.first(), downloadFile, notify, "$index/${deAweme.imageUrlStructList.size} %s%%")
+                            if (finished) {
+                                downloadCount += 1
+                                KAlbumUtils.refresh(activity, downloadFile.absolutePath)
+                            }
+                        }
+
+                        dialog.dismiss()
+                        if (downloadCount == deAweme.imageUrlStructList.size) {
+                            val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
+                            notify.setFinishedText(message)
+                            hook.showToast(activity, message)
+                        } else {
+                            val failCount = deAweme.imageUrlStructList.size - downloadCount
+                            notify.setFinishedText("下载成功${downloadCount}, 失败${failCount}!")
+                            hook.showToast(activity, "下载成功${downloadCount}, 失败${failCount}!")
+                            Toast.makeText(activity, "正在上传WebDav!", Toast.LENGTH_SHORT).show()
+                        }
+
+                        //上传WebDav
+                        if (isWebDav) {
+                            val images = (parentPath.listFiles() ?: arrayOf<File>()).filter { it.isFile }
+                            if (images.isEmpty()) {
+                                hook.showToast(activity, "上传WebDav失败, 无法找到已下载的内容!")
+                                return@launch
+                            }
+                            var uploadCount = 0
+                            for (image in images) {
+                                val uploadStatus = uploadToWebDav(image)
+                                if (uploadStatus) uploadCount += 1
+                            }
+                            if (uploadCount == images.size) {
+                                hook.showToast(activity, "上传WebDav成功!")
+                            } else {
+                                hook.showToast(activity, "上传WebDav成功${uploadCount}, 失败${images.size - uploadCount}!")
+                            }
+                        }
+                    }
+                }
+            )
+        }
+    }
+
+    // 显示下载 Notification
+    private fun showDownloadByNotification(
+        urlList: List<String>,
+        parentPath: File,
+        pureFileName: String,
+        isWebDav: Boolean = false,
+    ) {
         //发送通知
         hook.showDownloadNotification(
             context = activity,
@@ -243,19 +315,99 @@ class DownloadLogic(
             listener = {
                 //下载逻辑
                 hook.launch {
-                    withContext(Dispatchers.IO) {
-                        //KLogCat.d("RealDownloadLogic#music: ${deAweme.videoUrlList}")
-                        val outputStream = FileOutputStream(musicFile)
-                        KHttpUtils.download(deAweme.musicUrlList.first(), outputStream) { real, total ->
-                            it.notifyProgress(real * 100 / total)
-                            if (real == total) {
-                                it.setFinishedText("下载成功!")
-                                hook.showToast(activity, "下载成功!")
-                            }
+                    val downloadFile = File(parentPath.need(), pureFileName)
+                    val finished = download(urlList.first(), downloadFile, it, "下载中 %s%%")
+                    if (finished) {
+                        val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
+                        it.setFinishedText(message)
+                        hook.showToast(activity, message)
+                        KAlbumUtils.refresh(activity, downloadFile.absolutePath)
+
+                        //上传WebDav
+                        if (isWebDav) {
+                            val uploadStatus = uploadToWebDav(downloadFile)
+                            hook.showToast(activity, "上传WebDav${if (uploadStatus) "成功!" else "失败!"}")
                         }
+                    } else {
+                        it.setFinishedText("下载失败!")
+                        hook.showToast(activity, "下载失败!")
                     }
                 }
             }
         )
+    }
+
+    // 显示下载 Dialog
+    private fun showDownloadByDialog(
+        urlList: List<String>,
+        parentPath: File,
+        pureFileName: String,
+        isWebDav: Boolean = false,
+    ) {
+        //进度条Dialog
+        hook.showProgressDialog(
+            activity = activity,
+            title = "Freedom+",
+            listener = { dialog, notify ->
+                //下载逻辑
+                hook.launch {
+                    val downloadFile = File(parentPath.need(), pureFileName)
+                    val finished = download(urlList.first(), downloadFile, notify, "%s%%")
+                    if (finished) {
+                        val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
+                        dialog.dismiss()
+                        notify.setFinishedText(message)
+                        hook.showToast(activity, message)
+                        KAlbumUtils.refresh(activity, downloadFile.absolutePath)
+
+                        //上传WebDav
+                        if (isWebDav) {
+                            val uploadStatus = uploadToWebDav(downloadFile)
+                            hook.showToast(activity, "上传WebDav${if (uploadStatus) "成功!" else "失败!"}")
+                        }
+                    } else {
+                        dialog.dismiss()
+                        notify.setFinishedText("下载失败!")
+                        hook.showToast(activity, "下载失败!")
+                    }
+                }
+            }
+        )
+    }
+
+    /**
+     * 下载至本地
+     */
+    private suspend fun download(
+        url: String,
+        downloadFile: File,
+        notify: IProgressNotification,
+        progressText: String,
+    ): Boolean {
+        return withContext(Dispatchers.IO) {
+            val outputStream = FileOutputStream(downloadFile)
+            var finished = false
+            KHttpUtils.download(url, outputStream) { real, total, isInterrupt ->
+                activity.runOnUiThread { notify.notifyProgress(real * 100 / total, progressText) }
+                if (isInterrupt) finished = false
+                if (real >= total) finished = true
+            }
+            finished
+        }
+    }
+
+    /**
+     * 上传至WebDav
+     */
+    private suspend fun uploadToWebDav(file: File): Boolean {
+        return try {
+            val directoryName = file.parentFile!!.absolutePath.substringAfter("Freedom")
+            webdav.createDirectory(directoryName = directoryName, parentPath = "Freedom", true)
+            webdav.put(file = file, "Freedom".plus(directoryName))
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
     }
 }

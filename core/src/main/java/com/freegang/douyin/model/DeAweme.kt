@@ -5,19 +5,19 @@ data class DeAweme(
     var nickname: String = "",
     var shortId: String = "",
     var videoUrlList: List<String> = listOf(),
-    var imageUrlStructList: List<ImageUrlStruct> = listOf(),
     var musicUrlList: List<String> = listOf(),
+    var imageUrlStructList: List<UrlStruct> = listOf(),
 ) {
     fun isEmpty(): Boolean {
         return desc.isEmpty()
                 && nickname.isEmpty()
                 && shortId.isEmpty()
                 && videoUrlList.isEmpty()
-                && imageUrlStructList.isEmpty()
                 && musicUrlList.isEmpty()
+                && imageUrlStructList.isEmpty()
     }
 }
 
-data class ImageUrlStruct(
-    val imageUrlList: List<String>,
+data class UrlStruct(
+    val urlList: List<String>,
 )

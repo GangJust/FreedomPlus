@@ -17,6 +17,7 @@ import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionName
 import com.freegang.xpler.utils.other.KResourceUtils
 import com.freegang.xpler.xp.*
 import com.ss.android.ugc.aweme.detail.ui.DetailActivity
+import com.ss.android.ugc.aweme.familiar.feed.slides.detail.SlidesDetailActivity
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.main.MainActivity
 import de.robv.android.xposed.XC_MethodHook
@@ -86,7 +87,7 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
     }
 
     private fun hookActivityAt1(activity: AbsActivity) {
-        val versions = listOf("23.5.0", "23.6.0", "23.7.0", "23.8.0", "23.9.0", "24.0.0", "24.1.0", "24.2.0")
+        val versions = listOf("23.5.0", "23.6.0", "23.7.0", "23.8.0", "23.9.0", "24.0.0", "24.1.0")
         if (!versions.contains(activity.appVersionName)) return
 
         if (activity is MainActivity) {
@@ -100,7 +101,7 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
                         aweme = curFragmentMethods.first().call(curFragment!!)
                     }
                 }
-                DownloadLogic(this@HAbsActivity, activity, aweme, config.isOwnerDir)
+                DownloadLogic(this@HAbsActivity, activity, aweme)
             }
         }
 
@@ -109,16 +110,16 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
             val methods = any1.findMethodsByReturnType(Aweme::class.java)
             if (methods.isNotEmpty()) {
                 val aweme = methods.first().call(any1)
-                DownloadLogic(this@HAbsActivity, activity, aweme, config.isOwnerDir)
+                DownloadLogic(this@HAbsActivity, activity, aweme)
             }
         }
     }
 
     private fun hookActivityAt2(activity: AbsActivity) {
-        val versions = listOf("24.2.0", "24.3.0", "24.4.0", "24.5.0", "24.6.0", "24.7.0", "24.8.0")
+        val versions = listOf("24.2.0", "24.3.0", "24.4.0", "24.5.0", "24.6.0", "24.7.0", "24.8.0", "24.9.0")
         if (!versions.contains(activity.appVersionName)) return
 
-        if (activity is DetailActivity || activity is MainActivity) {
+        if (activity is SlidesDetailActivity || activity is DetailActivity || activity is MainActivity) {
             val methods = activity.findMethodsByReturnType(Aweme::class.java)
             if (methods.isNotEmpty()) {
                 var aweme = methods.first().call(activity)
@@ -129,7 +130,7 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
                         aweme = curFragmentMethods.first().call(curFragment!!)
                     }
                 }
-                DownloadLogic(this@HAbsActivity, activity, aweme, config.isOwnerDir)
+                DownloadLogic(this@HAbsActivity, activity, aweme)
             }
         }
     }
@@ -145,7 +146,7 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
     }
 
     private fun hookCommentAt1(activity: DetailActivity) {
-        val versions = listOf("23.5.0", "23.6.0", "23.7.0", "23.8.0", "23.9.0", "24.0.0", "24.1.0", "24.2.0")
+        val versions = listOf("23.5.0", "23.6.0", "23.7.0", "23.8.0", "23.9.0", "24.0.0", "24.1.0")
 
         if (!versions.contains(activity.appVersionName)) return
         var urlList: List<String> = listOf()
@@ -166,7 +167,7 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
     }
 
     private fun hookCommentAt2(activity: DetailActivity) {
-        val versions = listOf("24.2.0", "24.3.0", "24.4.0", "24.5.0", "24.6.0", "24.7.0", "24.8.0")
+        val versions = listOf("24.2.0", "24.3.0", "24.4.0", "24.5.0", "24.6.0", "24.7.0", "24.8.0","24.9.0")
         if (!versions.contains(activity.appVersionName)) return
 
         var urlList: List<String> = listOf()

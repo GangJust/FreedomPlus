@@ -1,5 +1,8 @@
 package com.freegang.xpler.utils.other
 
+object KNumUtils {
+
+}
 
 /// 简化循环
 fun Int.forTo(to: Int, both: Boolean = false, block: (index: Int) -> Unit) {

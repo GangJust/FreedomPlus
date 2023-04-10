@@ -20,8 +20,8 @@ object ColorRes {
         uncheckedThumb = Color(0XFFFDFDFD),
         uncheckedTrack = Color(0xFF999999),
         colors = lightColors(
-            primary = Color(0xFF03A9F4),
-            primaryVariant = Color(0xFF03A9F4),
+            primary = Color(0xFFE89F5B),
+            primaryVariant = Color(0xFFE5B283),
             secondary = Color(0xFFEDA664),
             secondaryVariant = Color(0xFFF0BB88),
             background = Color(0xFFF8FAFB),
@@ -47,8 +47,8 @@ object ColorRes {
         uncheckedThumb = Color(0XFF666666),
         uncheckedTrack = Color(0XFF999999),
         colors = darkColors(
-            primary = Color(0xFF03A9F4),
-            primaryVariant = Color(0xFF03A9F4),
+            primary = Color(0xFF272727),
+            primaryVariant = Color(0xFF484949),
             secondary = Color(0xFFEDA664),
             secondaryVariant = Color(0xFFF0BB88),
             background = Color(0xFF3A3A3A),

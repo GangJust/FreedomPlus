@@ -10,12 +10,16 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import android.view.View
 import android.widget.FrameLayout
+import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import com.freegang.view.KDialog
 import com.freegang.view.adapter.DialogChoiceAdapter
 import com.freegang.xpler.R
 import com.freegang.xpler.databinding.DialogChoiceLayoutBinding
 import com.freegang.xpler.databinding.DialogMessageLayoutBinding
+import com.freegang.xpler.databinding.DialogProgressLayoutBinding
+import com.freegang.xpler.utils.app.IProgressNotification
 import com.freegang.xpler.utils.app.KNotifiUtils
 import com.freegang.xpler.utils.log.KLogCat
 import com.freegang.xpler.utils.other.KResourceUtils
@@ -116,6 +120,26 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
         kDialog.show()
     }
 
+    fun showProgressDialog(
+        activity: Activity,
+        title: CharSequence,
+        progress: Int = 0,
+        listener: (dialog: KDialog, progress: ProgressDialogNotification) -> Unit,
+    ) {
+        val kDialog = KDialog(activity)
+
+        val dialogView = KResourceUtils.inflateView<FrameLayout>(activity, R.layout.dialog_progress_layout)
+        val binding = DialogProgressLayoutBinding.bind(dialogView)
+
+        binding.progressDialogContainer.background = KResourceUtils.getDrawable(R.drawable.dialog_background)
+        binding.progressDialogBar.progress = progress
+        binding.progressDialogTitle.text = title
+        listener.invoke(kDialog, ProgressDialogNotification(binding.progressDialogBar, binding.progressDialogText))
+
+        kDialog.setView(binding.root)
+        kDialog.show()
+    }
+
     fun showChoiceDialog(
         activity: Activity,
         title: CharSequence,
@@ -188,5 +212,20 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
             finishedText = finishedText,
             listener = listener,
         )
+    }
+
+    class ProgressDialogNotification(
+        private val progressBar: ProgressBar,
+        private val progressText: TextView,
+    ) : IProgressNotification {
+        override fun setFinishedText(finishedText: String) {
+            progressBar.progress = 100
+            progressText.text = finishedText
+        }
+
+        override fun notifyProgress(step: Int, inProgressText: String) {
+            progressBar.progress = step
+            progressText.text = String.format(inProgressText, step)
+        }
     }
 }

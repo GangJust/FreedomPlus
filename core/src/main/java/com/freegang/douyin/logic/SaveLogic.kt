@@ -34,10 +34,13 @@ class SaveLogic(
             //构建保存文件名
             val file = File(parentPath, "${System.currentTimeMillis() / 1000}.gif")
             withContext(Dispatchers.IO) {
-                KHttpUtils.download(urlList.first(), FileOutputStream(file)) { real, total ->
-                    if (real == total) {
+                KHttpUtils.download(urlList.first(), FileOutputStream(file)) { real, total, isInterrupt ->
+                    if (real >= total) {
                         hook.showToast(context, "保存成功!")
                         hook.vibrate(context, 100L)
+                    }
+                    if (isInterrupt) {
+                        hook.showToast(context, "保存失败!")
                     }
                 }
             }

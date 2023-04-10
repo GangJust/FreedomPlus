@@ -7,7 +7,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,8 +16,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.PermissionChecker
 import com.freegang.fplus.FreedomTheme
 import com.freegang.fplus.Themes
-import com.freegang.fplus.component.FDialog
-import com.freegang.xpler.utils.io.KStorageUtils.hasOperationStorage
+import com.freegang.fplus.component.FMessageDialog
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
@@ -92,7 +90,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val permissionsState = rememberMultiplePermissionsState(getPermissionList())
             FreedomTheme(window = window) {
-                FDialog(
+                FMessageDialog(
                     title = "Freedom+需要以下权限才能正常运行",
                     cancel = "取消",
                     confirm = "确定",

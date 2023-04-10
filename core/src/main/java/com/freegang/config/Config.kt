@@ -18,8 +18,13 @@ data class Config(
     var isOwnerDir: Boolean = false, //是否按视频创作者单独创建文件夹
     var isDownload: Boolean = false, //是否开启视频/图文/音乐下载
     var isEmoji: Boolean = false, //是否开启评论区图片/表情包保存
+    var isNotification: Boolean = false, //是否通知栏下载
+    var isWebDav: Boolean = false, //是否开启WebDav
+    var webDavHost: String = "", //WebDav地址
+    var webDavUsername: String = "", //WebDav用户名
+    var webDavPassword: String = "", //WebDav密码
     var isHideTab: Boolean = false, //是否开启隐藏顶部tab
-    var hideTabKeyword: String = "探索, 商城", //隐藏顶部tab包含的关键字, 逗号隔开
+    var hideTabKeywords: String = "探索, 商城", //隐藏顶部tab包含的关键字, 逗号隔开
     var versionName: String = "", //版本名称
     var versionCode: Long = 0L, //版本代码
     var dyVersionName: String = "", //抖音版本名称
@@ -46,8 +51,13 @@ data class Config(
                 isOwnerDir = json.getBooleanOrDefault("isOwnerDir"),
                 isDownload = json.getBooleanOrDefault("isDownload"),
                 isEmoji = json.getBooleanOrDefault("isEmoji"),
+                isNotification = json.getBooleanOrDefault("isNotification"),
+                isWebDav = json.getBooleanOrDefault("isWebDav"),
+                webDavHost = json.getStringOrDefault("webDavHost"),
+                webDavUsername = json.getStringOrDefault("webDavUsername"),
+                webDavPassword = json.getStringOrDefault("webDavPassword"),
                 isHideTab = json.getBooleanOrDefault("isHideTab"),
-                hideTabKeyword = json.getStringOrDefault("hideTabKeyword"),
+                hideTabKeywords = json.getStringOrDefault("hideTabKeywords"),
                 versionName = json.getStringOrDefault("versionName"),
                 versionCode = json.getLongOrDefault("versionCode"),
                 dyVersionName = json.getStringOrDefault("dyVersionName"),
@@ -83,8 +93,13 @@ data class Config(
             .name("isOwnerDir").value(isOwnerDir)
             .name("isDownload").value(isDownload)
             .name("isEmoji").value(isEmoji)
+            .name("isNotification").value(isNotification)
+            .name("isWebDav").value(isWebDav)
+            .name("webDavHost").value(webDavHost)
+            .name("webDavUsername").value(webDavUsername)
+            .name("webDavPassword").value(webDavPassword)
             .name("isHideTab").value(isHideTab)
-            .name("hideTabKeyword").value(hideTabKeyword)
+            .name("hideTabKeywords").value(hideTabKeywords)
             .name("versionName").value(versionName)
             .name("versionCode").value(versionCode)
             .name("dyVersionName").value(dyVersionName)

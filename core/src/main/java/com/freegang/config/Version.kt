@@ -9,7 +9,6 @@ import com.freegang.xpler.utils.net.KHttpUtils
 object Version {
     // Api
     private const val githubReleasesApi = "https://api.github.com/repos/GangJust/FreedomPlus/releases/latest"
-    //private const val githubReleasesApi = "https://api.github.com/repos/GangJust/Freedom/releases/latest"
 
     // 获取Github最后一次 releases
     fun getRemoteReleasesLatest(): VersionConfig? {

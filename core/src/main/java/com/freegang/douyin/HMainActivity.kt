@@ -29,15 +29,16 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         "24.5.0",
         "24.6.0",
         "24.7.0",
-        "24.8.0"
+        "24.8.0",
+        "24.9.0",
     )
 
-    @OnAfter(methodName = "onCreate")
+    @OnAfter(name = "onCreate")
     fun onCreate(it: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {
         showToast(it.thisContext, "Freedom+ Attach!")
     }
 
-    @OnAfter(methodName = "onResume")
+    @OnAfter(name = "onResume")
     fun onResume(it: XC_MethodHook.MethodHookParam) {
         showSupportDialog(it)
     }

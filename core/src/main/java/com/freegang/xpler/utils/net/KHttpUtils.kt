@@ -103,23 +103,25 @@ object KHttpUtils {
     @JvmStatic
     fun download(sourceUrl: String, output: OutputStream, listener: DownloadListener) {
         var connect: HttpURLConnection? = null
+        var total = 0
+        var realCount = 0
         try {
             connect = commonConnection(URL(sourceUrl))
+            total = connect.contentLength
             val input = connect.inputStream
-            val total = connect.contentLength
             input.use {
-                var realCount = 0
                 val buffer = ByteArray(4096)
                 while (true) {
                     val count = input.read(buffer)
                     if (count < 0) break
                     output.write(buffer, 0, count)
                     realCount += count
-                    listener.downloading(realCount, total)
+                    listener.downloading(realCount, total, false)
                 }
             }
         } catch (e: IOException) {
             e.printStackTrace()
+            listener.downloading(realCount, total, true)
             KLogCat.e("发生异常:\n${e.stackTraceToString()}")
         } finally {
             try {
@@ -134,16 +136,16 @@ object KHttpUtils {
     }
 
     // kotlin
-    fun download(sourceUrl: String, output: OutputStream, listener: (real: Int, total: Int) -> Unit) {
+    fun download(sourceUrl: String, output: OutputStream, listener: (real: Int, total: Int, isInterrupt: Boolean) -> Unit) {
         download(sourceUrl, output, object : DownloadListener {
-            override fun downloading(real: Int, total: Int) {
-                listener.invoke(real, total)
+            override fun downloading(real: Int, total: Int, isInterrupt: Boolean) {
+                listener.invoke(real, total, isInterrupt)
             }
         })
     }
 
     @FunctionalInterface
     interface DownloadListener {
-        fun downloading(real: Int, total: Int)
+        fun downloading(real: Int, total: Int, isInterrupt: Boolean)
     }
 }
