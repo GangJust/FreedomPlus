@@ -78,5 +78,5 @@
 }
 -keep class com.freegang.xpler.HookInit extends * { *; }
 
-# 保留模块状态回调提示函数
--keep class com.freegang.fplus.activity.HomeActivity extends * { hookHint(); }
+# 保留模块状态
+-keep class com.freegang.xpler.HookStatus extends * { *; }
