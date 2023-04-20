@@ -17,7 +17,8 @@ data class Config(
     var isSupportHint: Boolean = true, //是否显示兼容
     var isOwnerDir: Boolean = false, //是否按视频创作者单独创建文件夹
     var isDownload: Boolean = false, //是否开启视频/图文/音乐下载
-    var isEmoji: Boolean = false, //是否开启评论区图片/表情包保存
+    var isEmoji: Boolean = false, //是否开启表情包保存
+    var isTranslucent: Boolean = false, //是否开启首页控件半透明
     var isNotification: Boolean = false, //是否通知栏下载
     var isWebDav: Boolean = false, //是否开启WebDav
     var webDavHost: String = "", //WebDav地址
@@ -51,6 +52,7 @@ data class Config(
                 isOwnerDir = json.getBooleanOrDefault("isOwnerDir"),
                 isDownload = json.getBooleanOrDefault("isDownload"),
                 isEmoji = json.getBooleanOrDefault("isEmoji"),
+                isTranslucent = json.getBooleanOrDefault("isTranslucent"),
                 isNotification = json.getBooleanOrDefault("isNotification"),
                 isWebDav = json.getBooleanOrDefault("isWebDav"),
                 webDavHost = json.getStringOrDefault("webDavHost"),
@@ -93,6 +95,7 @@ data class Config(
             .name("isOwnerDir").value(isOwnerDir)
             .name("isDownload").value(isDownload)
             .name("isEmoji").value(isEmoji)
+            .name("isTranslucent").value(isTranslucent)
             .name("isNotification").value(isNotification)
             .name("isWebDav").value(isWebDav)
             .name("webDavHost").value(webDavHost)

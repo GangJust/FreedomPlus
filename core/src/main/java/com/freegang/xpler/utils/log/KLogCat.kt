@@ -2,13 +2,13 @@ package com.freegang.xpler.utils.log
 
 import android.app.Application
 import android.util.Log
-import com.freegang.xpler.utils.io.KFileUtils.forceDelete
-import com.freegang.xpler.utils.other.forCalc
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 /// 改由Kotlin实现
 class KLogCat {
@@ -130,7 +130,7 @@ class KLogCat {
      * clear local logcat files
      */
     private fun _clearStorage() {
-        getStoragePath()?.forceDelete()
+        getStoragePath()?.deleteRecursively()
     }
 
     /**
@@ -173,8 +173,8 @@ class KLogCat {
      * static
      */
     companion object {
-        private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.CHINA)
-        private val dateTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS", Locale.CHINA)
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.CHINA)
+        val dateTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS", Locale.CHINA)
         private val instance = KLogCat()
 
         /**
@@ -237,7 +237,6 @@ class KLogCat {
         fun clearStorage() {
             instance._clearStorage()
         }
-
         @JvmStatic
         fun readStorage(date: Date): String {
             return instance._readStorage(date)
@@ -290,5 +289,22 @@ class KLogCat {
         fun e(vararg msg: String) {
             instance.println(Log.ERROR, instance.tag, *msg)
         }
+    }
+
+    /// 简化计算
+    private fun <T> Int.forCalc(from: Int, initValue: T, both: Boolean = false, block: (previous: T) -> T): T {
+        var result: T = initValue
+
+        if (both) {
+            for (i in from..this) {
+                result = block.invoke(result)
+            }
+            return result
+        }
+
+        for (i in from until this) {
+            result = block.invoke(result)
+        }
+        return result
     }
 }

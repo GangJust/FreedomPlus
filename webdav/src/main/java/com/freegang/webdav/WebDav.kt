@@ -13,17 +13,10 @@ class WebDav(
     private val username: String,
     private val password: String,
 ) {
-    private var webDavUrl = host
-    private val sardine = OkHttpSardine()
+    private val mSardine = OkHttpSardine()
 
     init {
-        sardine.setCredentials(username, password)
-        initHost()
-    }
-
-    private fun initHost() {
-        if (!host.contains("http(s?)://".toRegex())) webDavUrl = "http://$host"
-        webDavUrl = webDavUrl.removeSuffix("/")
+        mSardine.setCredentials(username, password)
     }
 
     /**
@@ -36,9 +29,9 @@ class WebDav(
         return withContext(Dispatchers.IO) {
             return@withContext try {
                 if (isDirectory) {
-                    sardine.exists(webDavUrl.plus("/$path/$name/".format()))
+                    mSardine.exists(host.plus("/$path/$name/".format()))
                 } else {
-                    sardine.exists(webDavUrl.plus("/$path/$name".removeSuffix("/").format()))
+                    mSardine.exists(host.plus("/$path/$name".removeSuffix("/").format()))
                 }
             } catch (e: Exception) {
                 false //不存在会抛出异常
@@ -55,7 +48,7 @@ class WebDav(
         withContext(Dispatchers.IO) {
             if (!mkdirs) {
                 if (exists(parentPath, directoryName, true)) return@withContext
-                sardine.createDirectory(webDavUrl.plus("/$parentPath/$directoryName/".format()))
+                mSardine.createDirectory(host.plus("/$parentPath/$directoryName/".format()))
                 return@withContext
             }
             val dirs = directoryName.format().split("/")
@@ -63,7 +56,7 @@ class WebDav(
             for (dir in dirs) {
                 name = name.plus("/$dir")
                 if (exists(name, parentPath, true)) continue
-                sardine.createDirectory(webDavUrl.plus("/$parentPath/$name/".format()))
+                mSardine.createDirectory(host.plus("/$parentPath/$name/".format()))
             }
         }
     }
@@ -75,7 +68,7 @@ class WebDav(
     suspend fun delete(name: String, path: String = "/") {
         withContext(Dispatchers.IO) {
             if (!exists(name, path)) return@withContext
-            sardine.delete(webDavUrl.plus("/$path/$name".format()))
+            mSardine.delete(host.plus("/$path/$name".format()))
         }
     }
 
@@ -86,8 +79,8 @@ class WebDav(
      */
     suspend fun put(file: File, path: String = "/") {
         withContext(Dispatchers.IO) {
-            Log.d("GLog", "上传文件: ${webDavUrl.plus("/$path/${file.name}".format())}")
-            sardine.put(webDavUrl.plus("/$path/${file.name}".format()), file, null, true)
+            Log.d("GLog", "上传文件: ${host.plus("/$path/${file.name}".format())}")
+            mSardine.put(host.plus("/$path/${file.name}".format()), file, null, true)
         }
     }
 
@@ -99,7 +92,7 @@ class WebDav(
      */
     suspend fun put(name: String, path: String = "/", bytes: ByteArray) {
         withContext(Dispatchers.IO) {
-            sardine.put(webDavUrl.plus("/$path/${name}".format()), bytes)
+            mSardine.put(host.plus("/$path/${name}".format()), bytes)
         }
     }
 
@@ -111,7 +104,7 @@ class WebDav(
      */
     suspend fun move(fromFilename: String, toFilename: String, overwrite: Boolean) {
         withContext(Dispatchers.IO) {
-            sardine.move(webDavUrl.plus("/$fromFilename".format()), webDavUrl.plus("/$toFilename".format()), overwrite)
+            mSardine.move(host.plus("/$fromFilename".format()), host.plus("/$toFilename".format()), overwrite)
         }
     }
 
@@ -123,7 +116,7 @@ class WebDav(
      */
     suspend fun copy(fromFilename: String, toFilename: String, overwrite: Boolean) {
         withContext(Dispatchers.IO) {
-            sardine.copy(webDavUrl.plus("/$fromFilename".format()), webDavUrl.plus("/$toFilename".format()), overwrite)
+            mSardine.copy(host.plus("/$fromFilename".format()), host.plus("/$toFilename".format()), overwrite)
         }
     }
 
@@ -134,7 +127,7 @@ class WebDav(
      */
     suspend fun getFile(filename: String, path: String = "/"): DavResource? {
         return withContext(Dispatchers.IO) {
-            val list = sardine.list(webDavUrl.plus("/$path/$filename".format()))
+            val list = mSardine.list(host.plus("/$path/$filename".format()))
             if (list.isEmpty()) return@withContext null
             return@withContext list.first()
         }

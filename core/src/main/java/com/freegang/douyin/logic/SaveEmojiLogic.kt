@@ -11,20 +11,19 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 
-//保存(图片/表情)逻辑
-class SaveLogic(
+//保存表情逻辑
+class SaveEmojiLogic(
     private val hook: BaseHook<*>,
     private val context: Context,
     private val urlList: List<String>,
-    private val isDCIM: Boolean = false,
 ) {
 
     init {
-        onSaveCommentImageOrEmoji(context, urlList)
+        onSaveEmoji(context, urlList)
     }
 
     // 保存评论区图片
-    private fun onSaveCommentImageOrEmoji(context: Context, urlList: List<String>) {
+    private fun onSaveEmoji(context: Context, urlList: List<String>) {
         hook.launch {
             //默认保存路径: `/外置存储器/DCIM/Freedom/emoji`
             val parentPath = Config.getFreedomDir(context)

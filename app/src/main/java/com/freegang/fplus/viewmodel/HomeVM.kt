@@ -2,7 +2,6 @@ package com.freegang.fplus.viewmodel
 
 import android.app.Application
 import android.os.Environment
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -20,9 +19,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 
-class HomeVM(application: Application) : AndroidViewModel(application) {
-    private var _isDark = MutableLiveData(false)
-    val isDark: LiveData<Boolean> = _isDark
+class HomeVM(application: Application) : AppVM(application) {
 
     private var _versionConfig = MutableLiveData<VersionConfig>()
     val versionConfig: LiveData<VersionConfig> = _versionConfig
@@ -38,6 +35,9 @@ class HomeVM(application: Application) : AndroidViewModel(application) {
 
     private var _isEmoji = MutableLiveData(false)
     val isEmoji: LiveData<Boolean> = _isEmoji
+
+    private var _isTranslucent = MutableLiveData(false)
+    val isTranslucent: LiveData<Boolean> = _isTranslucent
 
     private var _isNotification = MutableLiveData(false)
     val isNotification: LiveData<Boolean> = _isNotification
@@ -60,11 +60,6 @@ class HomeVM(application: Application) : AndroidViewModel(application) {
     private var _hideTabKeywords = MutableLiveData("")
     var hideTabKeywords: LiveData<String> = _hideTabKeywords
 
-
-    // 切换主题模式(亮色/暗色)
-    fun toggleThemeModel() {
-        _isDark.value = !_isDark.value!!
-    }
 
     // 检查版本更新
     fun checkVersion() {
@@ -93,6 +88,7 @@ class HomeVM(application: Application) : AndroidViewModel(application) {
             changeIsOwnerDir(config.isOwnerDir)
             changeIsDownload(config.isDownload)
             changeIsEmoji(config.isEmoji)
+            changeIsTranslucent(config.isTranslucent)
             changeIsNotification(config.isNotification)
             changeIsWebDav(config.isWebDav)
             setWebDavConfig(config.webDavHost, config.webDavUsername, config.webDavPassword)
@@ -113,10 +109,16 @@ class HomeVM(application: Application) : AndroidViewModel(application) {
         config.isDownload = value
     }
 
-    // 评论区图片/表情包保存
+    // 表情包保存
     fun changeIsEmoji(value: Boolean) {
         _isEmoji.value = value
         config.isEmoji = value
+    }
+
+    // 首页控件半透明
+    fun changeIsTranslucent(value: Boolean) {
+        _isTranslucent.value = value
+        config.isTranslucent = value
     }
 
     // 是否通知栏下载
@@ -136,8 +138,8 @@ class HomeVM(application: Application) : AndroidViewModel(application) {
         if (!hasWebDavConfig()) return
 
         viewModelScope.launch {
-            val webDav = WebDav(webDavHost.value!!, webDavUsername.value!!, webDavPassword.value!!)
             try {
+                val webDav = WebDav(webDavHost.value!!, webDavUsername.value!!, webDavPassword.value!!)
                 if (!webDav.exists("Freedom", isDirectory = true)) {
                     webDav.createDirectory("Freedom")
                 }
@@ -192,6 +194,7 @@ class HomeVM(application: Application) : AndroidViewModel(application) {
             config.isOwnerDir = isOwnerDir.value ?: false
             config.isDownload = isDownload.value ?: false
             config.isEmoji = isEmoji.value ?: false
+            config.isTranslucent = isTranslucent.value ?: false
             config.isNotification = isNotification.value ?: false
             config.isWebDav = isWebDav.value ?: false
             config.webDavHost = webDavHost.value ?: ""

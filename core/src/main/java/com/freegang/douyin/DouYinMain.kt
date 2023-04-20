@@ -37,8 +37,11 @@ class DouYinMain(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHook>
 
                     //Hook
                     HMainActivity(lpparam)
-                    HAbsActivity(lpparam)
+                    HDetailActivity(lpparam)
                     HMainFragment(lpparam)
+                    HLazyFragmentPagerAdapter(lpparam)
+                    HGifEmojiDetailActivity(lpparam)
+                    HEmojiDetailDialog(lpparam)
                     HEmojiDetailDialogNew(lpparam)
                 }
             }

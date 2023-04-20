@@ -9,7 +9,6 @@ import android.view.View
 import androidx.annotation.*
 import androidx.core.content.res.ResourcesCompat
 import com.freegang.xpler.xp.KtXposedHelpers
-import com.freegang.xpler.xp.getModuleRes
 
 /// Xposed Resource
 /// need in: Github/Xpler
@@ -39,7 +38,7 @@ object KResourceUtils {
      */
     @Throws
     fun getLayout(@LayoutRes id: Int): XmlResourceParser {
-        return KtXposedHelpers.getModuleRes().getLayout(id)
+        return KtXposedHelpers.moduleRes.getLayout(id)
     }
 
     /**
@@ -50,7 +49,7 @@ object KResourceUtils {
      */
     @Throws
     fun getDrawable(@DrawableRes id: Int): Drawable? {
-        return ResourcesCompat.getDrawable(KtXposedHelpers.getModuleRes(), id, null)
+        return ResourcesCompat.getDrawable(KtXposedHelpers.moduleRes, id, null)
     }
 
     /**
@@ -62,9 +61,9 @@ object KResourceUtils {
     @Throws
     fun getColor(@ColorRes id: Int): Int {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            KtXposedHelpers.getModuleRes().getColor(id, null)
+            KtXposedHelpers.moduleRes.getColor(id, null)
         } else {
-            KtXposedHelpers.getModuleRes().getColor(id)
+            KtXposedHelpers.moduleRes.getColor(id)
         }
     }
 
@@ -76,7 +75,7 @@ object KResourceUtils {
      */
     @Throws
     fun getDimension(@DimenRes id: Int): Float {
-        return KtXposedHelpers.getModuleRes().getDimension(id)
+        return KtXposedHelpers.moduleRes.getDimension(id)
     }
 
     /**
@@ -87,7 +86,7 @@ object KResourceUtils {
      */
     @Throws
     fun getAnimation(@AnimatorRes @AnimRes id: Int): XmlResourceParser {
-        return KtXposedHelpers.getModuleRes().getAnimation(id)
+        return KtXposedHelpers.moduleRes.getAnimation(id)
     }
 
     /**
@@ -98,7 +97,7 @@ object KResourceUtils {
      */
     @Throws
     fun getString(@StringRes id: Int): String {
-        return KtXposedHelpers.getModuleRes().getString(id)
+        return KtXposedHelpers.moduleRes.getString(id)
     }
 
     /**
@@ -108,6 +107,6 @@ object KResourceUtils {
      * @return String Array
      */
     fun getStringArray(@ArrayRes id: Int): Array<String> {
-        return KtXposedHelpers.getModuleRes().getStringArray(id)
+        return KtXposedHelpers.moduleRes.getStringArray(id)
     }
 }

@@ -2,12 +2,9 @@ package com.freegang.xpler
 
 import android.app.Application
 import android.content.Context
-import android.content.res.XModuleResources
-import android.os.Bundle
 import com.freegang.xpler.loader.HybridClassLoader
 import com.freegang.xpler.xp.KtXposedHelpers
 import com.freegang.xpler.xp.hookClass
-import com.freegang.xpler.xp.initModule
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.IXposedHookZygoteInit
 import de.robv.android.xposed.XposedBridge
@@ -18,9 +15,7 @@ class HookInit : IXposedHookLoadPackage, IXposedHookZygoteInit {
     private val hookMain: HookMain = HookMain()
 
     override fun initZygote(sparam: IXposedHookZygoteInit.StartupParam) {
-        val modulePath = sparam.modulePath
-        val moduleRes = XModuleResources.createInstance(sparam.modulePath, null)
-        KtXposedHelpers.initModule(modulePath, moduleRes)
+        KtXposedHelpers.initModule(sparam.modulePath)
     }
 
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
@@ -33,7 +28,7 @@ class HookInit : IXposedHookLoadPackage, IXposedHookZygoteInit {
             HybridClassLoader.setObfuscatedXposedApiPackage(pkgName)
         }
 
-        KtXposedHelpers
+        lpparam
             .hookClass(Application::class.java)
             .method("attach", Context::class.java) {
                 onAfter {
@@ -41,12 +36,14 @@ class HookInit : IXposedHookLoadPackage, IXposedHookZygoteInit {
                     val targetLoader = context.classLoader
                     injectClassLoader(lpparam, targetLoader)
 
-                    // starter hook main
+                    // init module status
                     if (lpparam.packageName == HookPackages.appPackageName) {
                         moduleInit(lpparam)
-                    } else {
-                        pluginInit(lpparam, thisObject as Application)
                     }
+
+                    // starter hook main
+                    hookMain.handleLoadPackage(lpparam)
+                    hookMain.handleLoadPackage(lpparam, thisObject as Application)
                 }
             }
     }
@@ -62,24 +59,14 @@ class HookInit : IXposedHookLoadPackage, IXposedHookZygoteInit {
         }
     }
 
-    ///
-    // module hint hook!!
+    // module status hook!!
     private fun moduleInit(lpparam: XC_LoadPackage.LoadPackageParam) {
-        val moduleMainActivity = HookPackages.appPackageName.plus(".activity.HomeActivity")
-        lpparam.hookClass(moduleMainActivity)
-            .method("onCreate", Bundle::class.java) {
+        lpparam
+            .hookClass(HookStatus::class.java)
+            .method("isEnabled") {
                 onAfter {
-                    // 反射调用, 模块加载成功
-                    val hookHintMethod = thisObject::class.java.getDeclaredMethod("hookHint")
-                    hookHintMethod.isAccessible = true
-                    hookHintMethod.invoke(thisObject)
+                    result = true
                 }
             }
-    }
-
-    // starter main hook!!
-    private fun pluginInit(lpparam: XC_LoadPackage.LoadPackageParam, application: Application) {
-        hookMain.handleLoadPackage(lpparam)
-        hookMain.handleLoadPackage(lpparam, application)
     }
 }

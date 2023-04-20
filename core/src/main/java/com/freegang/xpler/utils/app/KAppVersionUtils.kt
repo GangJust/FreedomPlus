@@ -108,9 +108,9 @@ object KAppVersionUtils {
     }
 
     ///
-    val Context.appVersionName
-        get() = getVersionName(this)
+    val Context.appLabelName get() = this.resources.getString(getPackageInfo(this).applicationInfo.labelRes)
 
-    val Context.appVersionCode
-        get() = getVersionCode(this)
+    val Context.appVersionName get() = getVersionName(this)
+
+    val Context.appVersionCode get() = getVersionCode(this)
 }

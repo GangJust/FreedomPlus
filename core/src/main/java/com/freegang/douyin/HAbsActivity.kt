@@ -10,7 +10,7 @@ import com.bytedance.ies.uikit.base.AbsActivity
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
 import com.freegang.douyin.logic.DownloadLogic
-import com.freegang.douyin.logic.SaveLogic
+import com.freegang.douyin.logic.SaveEmojiLogic
 import com.freegang.xpler.R
 import com.freegang.xpler.databinding.HookAppbarLayoutBinding
 import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionName
@@ -25,28 +25,31 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlinx.coroutines.*
 
 
-/// 基类Activity
+@Deprecated("deprecated")
 class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActivity>(lpparam) {
     private val config get() = Config.get()
+
     private var primaryClipChangedListener: ClipboardManager.OnPrimaryClipChangedListener? = null
 
     @OnAfter("onCreate")
     fun onCreate(it: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {
-        if (!config.isEmoji) return
-        if (it.thisActivity !is DetailActivity) return
-        hookComment(it.thisObject as DetailActivity)
+        //if (!config.isEmoji) return
+        //if (it.thisActivity !is DetailActivity) return
+        //hookComment(it.thisObject as DetailActivity)
     }
 
     @OnAfter("onResume")
     fun onResume(it: XC_MethodHook.MethodHookParam) {
-        if (!config.isDownload) return
-        addClipboardListener(it)
+        //if (!config.isDownload) return
+        //clipboardLogic.addClipboardListener(it.thisActivity)
+        //addClipboardListener(it)
     }
 
     @OnBefore("onPause")
     fun onPause(it: XC_MethodHook.MethodHookParam) {
-        if (!config.isDownload) return
-        removeClipboardListener(it)
+        //if (!config.isDownload) return
+        //clipboardLogic.removeClipboardListener(it.thisActivity)
+        //removeClipboardListener(it)
     }
 
     // 添加剪贴板监听
@@ -101,7 +104,7 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
                         aweme = curFragmentMethods.first().call(curFragment!!)
                     }
                 }
-                DownloadLogic(this@HAbsActivity, activity, aweme)
+                DownloadLogic(this@HAbsActivity, activity, aweme as? Aweme)
             }
         }
 
@@ -110,7 +113,7 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
             val methods = any1.findMethodsByReturnType(Aweme::class.java)
             if (methods.isNotEmpty()) {
                 val aweme = methods.first().call(any1)
-                DownloadLogic(this@HAbsActivity, activity, aweme)
+                DownloadLogic(this@HAbsActivity, activity, aweme as? Aweme)
             }
         }
     }
@@ -130,7 +133,7 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
                         aweme = curFragmentMethods.first().call(curFragment!!)
                     }
                 }
-                DownloadLogic(this@HAbsActivity, activity, aweme)
+                DownloadLogic(this@HAbsActivity, activity, aweme as? Aweme)
             }
         }
     }
@@ -167,7 +170,7 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
     }
 
     private fun hookCommentAt2(activity: DetailActivity) {
-        val versions = listOf("24.2.0", "24.3.0", "24.4.0", "24.5.0", "24.6.0", "24.7.0", "24.8.0","24.9.0")
+        val versions = listOf("24.2.0", "24.3.0", "24.4.0", "24.5.0", "24.6.0", "24.7.0", "24.8.0", "24.9.0")
         if (!versions.contains(activity.appVersionName)) return
 
         var urlList: List<String> = listOf()
@@ -211,7 +214,7 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
             backBtn.performClick()
         }
         binding.saveBtn.setOnClickListener {
-            SaveLogic(this@HAbsActivity, it.context, urlList)
+            SaveEmojiLogic(this@HAbsActivity, it.context, urlList)
         }
         viewGroup.addView(appbar)
     }

@@ -1,18 +1,16 @@
 package com.freegang.view
 
-import android.app.Activity
-import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.view.Gravity
 import android.view.View
+import android.view.Window
 import android.view.WindowManager
 import android.widget.PopupWindow
-import androidx.annotation.IntDef
+import com.freegang.xpler.utils.app.KActivityUtils.topActivity
 import com.freegang.xpler.utils.log.KLogCat
 
-
-class KDialog(private val context: Context) : PopupWindow(context) {
+class KDialog : PopupWindow() {
 
     init {
         this.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT)) //取消默认背景色(设置透明)
@@ -29,32 +27,33 @@ class KDialog(private val context: Context) : PopupWindow(context) {
     }
 
     override fun dismiss() {
+        if (!isShowing) return
         super.dismiss()
     }
 
     fun show() {
+        if (isShowing) return
         this.show(Gravity.CENTER, 0, 0)
     }
 
-    fun show(@PopupWindowGravity gravity: Int, offsetX: Int, offsetY: Int) {
+    fun show(gravity: Int, offsetX: Int, offsetY: Int) {
         //父布局, 默认为Android根布局
         try {
-            val parentView: View = (context as Activity).window.decorView.findViewById(android.R.id.content)
+            val activity = topActivity ?: throw NullPointerException("`${this::class.java.name}#show()`错误, 无法获取到当前Activity!")
+            val parentView: View = activity.window.decorView.findViewById(Window.ID_ANDROID_CONTENT)
             show(parentView, gravity, offsetX, offsetY)
         } catch (e: Exception) {
+            e.printStackTrace()
             KLogCat.e("`${this::class.java.name}#show()`错误:\n${e.stackTraceToString()}")
         }
     }
 
-    fun show(parentView: View, @PopupWindowGravity gravity: Int, x: Int, y: Int) {
+    fun show(parentView: View, gravity: Int, x: Int, y: Int) {
         try {
             showAtLocation(parentView, gravity, x, y)
         } catch (e: Exception) {
+            e.printStackTrace()
             KLogCat.e("`${this::class.java.name}#show()`错误:\n${e.stackTraceToString()}")
         }
     }
-
-    //定位注解
-    @IntDef(*[Gravity.TOP, Gravity.BOTTOM, Gravity.START, Gravity.END, Gravity.CENTER_VERTICAL, Gravity.FILL_VERTICAL, Gravity.CENTER_HORIZONTAL, Gravity.FILL_HORIZONTAL, Gravity.CENTER, Gravity.FILL, Gravity.CLIP_VERTICAL, Gravity.CLIP_HORIZONTAL])
-    annotation class PopupWindowGravity
 }

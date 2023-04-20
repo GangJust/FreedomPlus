@@ -1,5 +1,6 @@
 package com.freegang.xpler.xp
 
+import android.content.res.XModuleResources
 import com.freegang.xpler.xp.bridge.ConstructorHook
 import com.freegang.xpler.xp.bridge.ConstructorHookImpl
 import com.freegang.xpler.xp.bridge.MethodHook
@@ -13,6 +14,8 @@ class KtXposedHelpers {
 
     companion object {
         private val instances = KtXposedHelpers()
+        private var mModulePath: String? = null
+        private var mModuleRes: XModuleResources? = null
 
         /**
          * Hook某个类
@@ -33,6 +36,27 @@ class KtXposedHelpers {
             instances.clazz = findClass
             return instances
         }
+
+        /**
+         * 由 [de.robv.android.xposed.IXposedHookZygoteInit.initZygote] 时调用该方法
+         * 可以参考 [com.freegang.xpler.HookInit] 的实现
+         *
+         * @param modulePath 模块路径
+         */
+        fun initModule(modulePath: String) {
+            mModulePath = modulePath
+            mModuleRes = XModuleResources.createInstance(modulePath, null)
+        }
+
+        /**
+         * 返回模块路径, 需要首先 [initModule] 调用
+         */
+        val modulePath: String get() = mModulePath!!
+
+        /**
+         * 返回模块资源, 需要首先 [initModule] 调用
+         */
+        val moduleRes: XModuleResources get() = mModuleRes!!
     }
 
     /**
@@ -44,34 +68,7 @@ class KtXposedHelpers {
     fun constructor(vararg argsTypes: Any, block: ConstructorHook.() -> Unit): KtXposedHelpers {
         val constructorHookImpl = ConstructorHookImpl(clazz!!, *argsTypes)
         block.invoke(constructorHookImpl)
-        constructorHookImpl.start()
-        return this
-    }
-
-    /**
-     * Hook某个方法
-     *
-     * @param methodName 方法
-     * @param block hook代码块, 可在内部书写hook逻辑
-     */
-    fun method(methodName: Method, block: MethodHook.() -> Unit): KtXposedHelpers {
-        val methodHookImpl = MethodHookImpl(methodName)
-        block.invoke(methodHookImpl)
-        methodHookImpl.start()
-        return this
-    }
-
-    /**
-     * Hook某个方法
-     *
-     * @param methodName 方法名
-     * @param argsTypes 参数类型列表
-     * @param block hook代码块, 可在内部书写hook逻辑
-     */
-    fun method(methodName: String, vararg argsTypes: Any, block: MethodHook.() -> Unit): KtXposedHelpers {
-        val methodHookImpl = MethodHookImpl(clazz!!, methodName, *argsTypes)
-        block.invoke(methodHookImpl)
-        methodHookImpl.start()
+        constructorHookImpl.startHook()
         return this
     }
 
@@ -86,8 +83,35 @@ class KtXposedHelpers {
             c.isAccessible = true
             val constructorHookImpl = MethodHookImpl(c)
             block.invoke(constructorHookImpl)
-            constructorHookImpl.start()
+            constructorHookImpl.startHook()
         }
+        return this
+    }
+
+    /**
+     * Hook某个方法
+     *
+     * @param methodName 方法
+     * @param block hook代码块, 可在内部书写hook逻辑
+     */
+    fun method(methodName: Method, block: MethodHook.() -> Unit): KtXposedHelpers {
+        val methodHookImpl = MethodHookImpl(methodName)
+        block.invoke(methodHookImpl)
+        methodHookImpl.startHook()
+        return this
+    }
+
+    /**
+     * Hook某个方法
+     *
+     * @param methodName 方法名
+     * @param argsTypes 参数类型列表
+     * @param block hook代码块, 可在内部书写hook逻辑
+     */
+    fun method(methodName: String, vararg argsTypes: Any, block: MethodHook.() -> Unit): KtXposedHelpers {
+        val methodHookImpl = MethodHookImpl(clazz!!, methodName, *argsTypes)
+        block.invoke(methodHookImpl)
+        methodHookImpl.startHook()
         return this
     }
 
@@ -102,7 +126,7 @@ class KtXposedHelpers {
             method.isAccessible = true
             val methodHookImpl = MethodHookImpl(method)
             block.invoke(methodHookImpl)
-            methodHookImpl.start()
+            methodHookImpl.startHook()
         }
         return this
     }
@@ -122,7 +146,7 @@ class KtXposedHelpers {
                 method.isAccessible = true
                 val methodHookImpl = MethodHookImpl(method)
                 block.invoke(methodHookImpl)
-                methodHookImpl.start()
+                methodHookImpl.startHook()
             }
         }
         return this
@@ -142,7 +166,7 @@ class KtXposedHelpers {
                 method.isAccessible = true
                 val methodHookImpl = MethodHookImpl(method)
                 block.invoke(methodHookImpl)
-                methodHookImpl.start()
+                methodHookImpl.startHook()
             }
         }
         return this

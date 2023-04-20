@@ -31,6 +31,7 @@ import com.freegang.fplus.asDp
 import com.freegang.fplus.component.*
 import com.freegang.fplus.resource.StringRes
 import com.freegang.fplus.viewmodel.HomeVM
+import com.freegang.xpler.HookStatus
 import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -39,7 +40,6 @@ import kotlin.random.Random
 
 
 class HomeActivity : ComponentActivity() {
-    private val hookHint = mutableStateOf(StringRes.moduleHintFailed)
     private val model by viewModels<HomeVM>()
 
     @OptIn(ExperimentalFoundationApi::class)
@@ -271,14 +271,18 @@ class HomeActivity : ComponentActivity() {
         }
 
         //版本更新弹窗
+        var showNewVersionDialog by remember { mutableStateOf(true) }
         val version by model.versionConfig.observeAsState()
         if (version != null) {
             val version = version!!
-            if (version.name.compareTo("v${application.appVersionName}") >= 1) {
+            if (version.name.compareTo("v${application.appVersionName}") >= 1 && showNewVersionDialog) {
                 FMessageDialog(
                     title = "发现新版本 ${version.name}!",
-                    onlyConfirm = true,
                     confirm = "确定",
+                    cancel = "取消",
+                    onCancel = {
+                        showNewVersionDialog = false
+                    },
                     onConfirm = {
                         startActivity(
                             Intent(
@@ -347,7 +351,7 @@ class HomeActivity : ComponentActivity() {
                                     maxLines = 1,
                                     singleLine = true,
                                     decorationBox = { innerTextField ->
-                                        if (host.isEmpty()) Text(text = "服务器地址")
+                                        if (host.isEmpty()) Text(text = "http://服务器地址:端口")
                                         innerTextField.invoke() //必须调用这行哦
                                     },
                                     onValueChange = {
@@ -475,7 +479,7 @@ class HomeActivity : ComponentActivity() {
                             content = {
                                 Text(
                                     modifier = Modifier.align(Alignment.Center),
-                                    text = hookHint.value,
+                                    text = if (HookStatus.isEnabled) StringRes.moduleHintSucceeded else StringRes.moduleHintFailed,
                                     style = Themes.nowTypography.body1,
                                 )
                             },
@@ -499,10 +503,17 @@ class HomeActivity : ComponentActivity() {
                     }
                 )
                 SwitchItem(
-                    text = "评论区图片/表情包保存",
+                    text = "表情包保存",
                     checked = model.isEmoji.observeAsState(false),
                     onCheckedChange = {
                         model.changeIsEmoji(it)
+                    }
+                )
+                SwitchItem(
+                    text = "首页控件半透明",
+                    checked = model.isTranslucent.observeAsState(false),
+                    onCheckedChange = {
+                        model.changeIsTranslucent(it)
                     }
                 )
                 SwitchItem(
@@ -645,11 +656,6 @@ class HomeActivity : ComponentActivity() {
                 )
             },
         )
-    }
-
-    // 模块反射调用
-    private fun hookHint() {
-        hookHint.value = StringRes.moduleHintSucceeded
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

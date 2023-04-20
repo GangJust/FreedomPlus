@@ -465,34 +465,37 @@ object KViewUtils {
         }
 
         override fun toString(): String {
-            val view = view
-                ?: return "ViewNode{parent=${parent}, view=null, depth=${depth}, hashCode=${this.hashCode()}}"
+            val view = view ?: return "ViewNode{parent=${parent}, view=null, visibility=null, depth=${depth}, hashCode=${this.hashCode()}}"
+
+            val visibility = when (view.visibility) {
+                View.GONE -> "GONE"
+                View.VISIBLE -> "VISIBLE"
+                else -> "INVISIBLE"
+            }
 
             return "ViewNode{view=${view.javaClass.name}" +
                     ", idHex=${getIdHex(view)}" +
                     ", idName=${getIdName(view)}" +
                     ", depth=${depth}" +
+                    ", visibility=${visibility}" +
                     ", descr=${view.contentDescription}" +
                     ", childrenSize=${children.size}" +
                     "}"
         }
     }
-
-
-    ///
-    fun ViewGroup.getViewTree(): ViewNode {
-        return buildViewTree(this)
-    }
-
-    fun <T : View> ViewGroup.findViewsByType(targetType: Class<T>): List<T> {
-        return findViews(this, targetType)
-    }
-
-    fun <T : View> ViewGroup.findViewsByExact(
-        targetType: Class<T>,
-        logic: (it: T) -> Boolean
-    ): List<T> {
-        return findViewsExact(this, targetType, logic)
-    }
-
 }
+
+///
+fun ViewGroup.getViewTree(): KViewUtils.ViewNode {
+    return KViewUtils.buildViewTree(this)
+}
+
+fun <T : View> ViewGroup.findViewsByType(targetType: Class<T>): List<T> {
+    return KViewUtils.findViews(this, targetType)
+}
+
+fun <T : View> ViewGroup.findViewsByExact(targetType: Class<T>, logic: (it: T) -> Boolean): List<T> {
+    return KViewUtils.findViewsExact(this, targetType, logic)
+}
+
+val View.idName get() = KViewUtils.getIdName(this)

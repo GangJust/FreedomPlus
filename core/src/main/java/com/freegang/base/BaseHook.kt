@@ -1,6 +1,5 @@
 package com.freegang.base
 
-import android.app.Activity
 import android.content.Context
 import android.content.Context.VIBRATOR_SERVICE
 import android.graphics.Color
@@ -24,12 +23,22 @@ import com.freegang.xpler.utils.app.KNotifiUtils
 import com.freegang.xpler.utils.log.KLogCat
 import com.freegang.xpler.utils.other.KResourceUtils
 import com.freegang.xpler.xp.KtOnHook
+import com.freegang.xpler.xp.inflateModuleView
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<T>(lpparam) {
     private val mainScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
     private var toast: Toast? = null
+    private var kDialog: KDialog? = null
 
     fun launch(block: suspend CoroutineScope.() -> Unit): Job {
         val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
@@ -81,18 +90,20 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
     }
 
     fun showMessageDialog(
-        activity: Activity,
+        context: Context,
         title: CharSequence,
         content: CharSequence,
         cancel: CharSequence = "取消",
         confirm: CharSequence = "确定",
         singleButton: Boolean = false, //只会响应 onConfirm 方法
+        needMultiple: Boolean = false,
         onConfirm: () -> Unit = {},
         onCancel: () -> Unit = {},
     ) {
-        val kDialog = KDialog(activity)
+        kDialog = if (kDialog == null) KDialog() else kDialog
+        val kDialog = if (needMultiple) KDialog() else kDialog
 
-        val dialogView = KResourceUtils.inflateView<FrameLayout>(activity, R.layout.dialog_message_layout)
+        val dialogView = context.inflateModuleView<FrameLayout>(R.layout.dialog_message_layout)
         val binding = DialogMessageLayoutBinding.bind(dialogView)
 
         binding.messageDialogContainer.background = KResourceUtils.getDrawable(R.drawable.dialog_background)
@@ -109,47 +120,52 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
         binding.messageDialogConfirm.text = confirm
         binding.messageDialogCancel.setOnClickListener {
             onCancel.invoke()
-            kDialog.dismiss()
+            kDialog!!.dismiss()
         }
         binding.messageDialogConfirm.setOnClickListener {
             onConfirm.invoke()
-            kDialog.dismiss()
+            kDialog!!.dismiss()
         }
 
-        kDialog.setView(binding.root)
+        kDialog!!.setView(binding.root)
         kDialog.show()
     }
 
     fun showProgressDialog(
-        activity: Activity,
+        context: Context,
         title: CharSequence,
+        needMultiple: Boolean = false,
         progress: Int = 0,
         listener: (dialog: KDialog, progress: ProgressDialogNotification) -> Unit,
     ) {
-        val kDialog = KDialog(activity)
+        kDialog = if (kDialog == null) KDialog() else kDialog
+        val kDialog = if (needMultiple) KDialog() else kDialog
 
-        val dialogView = KResourceUtils.inflateView<FrameLayout>(activity, R.layout.dialog_progress_layout)
+        val dialogView = KResourceUtils.inflateView<FrameLayout>(context, R.layout.dialog_progress_layout)
         val binding = DialogProgressLayoutBinding.bind(dialogView)
 
         binding.progressDialogContainer.background = KResourceUtils.getDrawable(R.drawable.dialog_background)
         binding.progressDialogBar.progress = progress
         binding.progressDialogTitle.text = title
-        listener.invoke(kDialog, ProgressDialogNotification(binding.progressDialogBar, binding.progressDialogText))
+        listener.invoke(kDialog!!, ProgressDialogNotification(binding.progressDialogBar, binding.progressDialogText))
 
         kDialog.setView(binding.root)
         kDialog.show()
     }
 
     fun showChoiceDialog(
-        activity: Activity,
+        context: Context,
         title: CharSequence,
         items: Array<String>,
         cancel: CharSequence = "取消",
+        needMultiple: Boolean = false,
         onChoice: (view: View, item: CharSequence, position: Int) -> Unit,
         onCancel: () -> Unit = {},
     ) {
-        val kDialog = KDialog(activity)
-        val dialogView = KResourceUtils.inflateView<FrameLayout>(activity, R.layout.dialog_choice_layout)
+        kDialog = if (kDialog == null) KDialog() else kDialog
+        val kDialog = if (needMultiple) KDialog() else kDialog
+
+        val dialogView = KResourceUtils.inflateView<FrameLayout>(context, R.layout.dialog_choice_layout)
         val binding = DialogChoiceLayoutBinding.bind(dialogView)
 
         binding.choiceDialogContainer.background = KResourceUtils.getDrawable(R.drawable.dialog_background)
@@ -159,18 +175,18 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
         binding.choiceDialogCancel.text = cancel
         binding.choiceDialogCancel.setOnClickListener {
             onCancel.invoke()
-            kDialog.dismiss()
+            kDialog!!.dismiss()
         }
 
-        binding.choiceDialogList.adapter = DialogChoiceAdapter(activity, items)
+        binding.choiceDialogList.adapter = DialogChoiceAdapter(context, items)
         binding.choiceDialogList.divider = ColorDrawable(Color.TRANSPARENT)
         binding.choiceDialogList.selector = KResourceUtils.getDrawable(R.drawable.item_selector_background)
         binding.choiceDialogList.setOnItemClickListener { _, view, position, _ ->
             onChoice.invoke(view, items[position], position)
-            kDialog.dismiss()
+            kDialog!!.dismiss()
         }
 
-        kDialog.setView(binding.root)
+        kDialog!!.setView(binding.root)
         kDialog.show()
     }
 

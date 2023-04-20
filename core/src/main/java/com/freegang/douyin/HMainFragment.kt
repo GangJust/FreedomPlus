@@ -23,7 +23,7 @@ class HMainFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHo
                 onAfter {
                     if (!config.isHideTab) return@onAfter
                     val viewGroup = args[0] as ViewGroup
-                    hideTabItem(viewGroup, config)
+                    changeTabItem(viewGroup)
                 }
             }
 
@@ -40,8 +40,7 @@ class HMainFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHo
             }
     }
 
-    //隐藏tab
-    private fun hideTabItem(viewGroup: ViewGroup, config: Config) {
+    private fun changeTabItem(viewGroup: ViewGroup) {
         val views = KViewUtils.findViews(viewGroup, MainTabStripScrollView::class.java)
         if (views.isEmpty()) return
         val hideTabKeywords = config.hideTabKeywords

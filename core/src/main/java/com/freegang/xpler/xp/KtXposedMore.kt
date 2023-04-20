@@ -2,7 +2,6 @@ package com.freegang.xpler.xp
 
 import android.app.Activity
 import android.content.Context
-import android.content.res.XModuleResources
 import android.view.View
 import androidx.annotation.LayoutRes
 import com.freegang.xpler.utils.other.KResourceUtils
@@ -12,6 +11,7 @@ import com.freegang.xpler.xp.bridge.MethodHookImpl
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
+import de.robv.android.xposed.XposedHelpers.ClassNotFoundError
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -25,7 +25,7 @@ import java.lang.reflect.Method
 fun Method.hook(block: MethodHook.() -> Unit) {
     val methodHookImpl = MethodHookImpl(this)
     block.invoke(methodHookImpl)
-    methodHookImpl.start()
+    methodHookImpl.startHook()
 }
 
 /**
@@ -35,8 +35,8 @@ fun Method.hook(block: MethodHook.() -> Unit) {
  * @param args 参数列表值
  * @return 该方法被调用之后的返回值, 可能是 null 即没有返回值
  */
-fun Method.call(obj: Any, vararg args: Any): Any? {
-    return XposedHelpers.callMethod(obj, this.name, *args)
+fun Method.call(obj: Any, vararg args: Any?): Any? {
+    return XposedBridge.invokeOriginalMethod(this, obj, args)
 }
 
 
@@ -97,11 +97,22 @@ fun Any.findMethodsByName(methodName: String): List<Method> {
  * 不在乎方法名, 参数类型列表
  *
  * @param returnType 返回值类型
+ * @param isAssignableFrom 该类型是否需要对返回值类型做子类对比
  * @return 被找到的目标方法列表, 可能是 empty 即没有该方法
  */
-fun Any.findMethodsByReturnType(returnType: Class<*>): List<Method> {
+fun Any.findMethodsByReturnType(returnType: Class<*>, isAssignableFrom: Boolean = false): List<Method> {
     val result = mutableListOf<Method>()
     val methods = this::class.java.declaredMethods
+    if (isAssignableFrom) {
+        for (method in methods) {
+            if (returnType.isAssignableFrom(method.returnType)) {
+                method.isAccessible = true
+                result.add(method)
+                continue
+            }
+        }
+        return result
+    }
     for (method in methods) {
         if (method.returnType == returnType) {
             method.isAccessible = true
@@ -111,18 +122,28 @@ fun Any.findMethodsByReturnType(returnType: Class<*>): List<Method> {
     return result
 }
 
-
 /**
  * 从实例对象中直接寻找某些类型相同的所有字段,
  *
  * 不在乎字段名
  *
  * @param type 返回值类型
+ * @param isAssignableFrom 该类型是否需要对返回值类型做子类对比
  * @return 被找到的目标字段列表, 可能是 empty 即没有该字段
  */
-fun Any.findFieldByType(type: Class<*>): List<Field> {
+fun Any.findFieldByType(type: Class<*>, isAssignableFrom: Boolean = false): List<Field> {
     val result = mutableListOf<Field>()
     val fields = this::class.java.declaredFields
+    if (isAssignableFrom) {
+        for (field in fields) {
+            if (type.isAssignableFrom(field.type)) {
+                field.isAccessible = true
+                result.add(field)
+            }
+        }
+        return result
+    }
+
     for (field in fields) {
         if (field.type == type) {
             field.isAccessible = true
@@ -139,8 +160,9 @@ fun Any.findFieldByType(type: Class<*>): List<Field> {
  * @param args 参数列表值
  * @return 该方法被调用之后的返回值, 可能是 null 即没有返回值
  */
-fun <T> Any.callMethod(methodName: String, vararg args: Any): T? {
-    return XposedHelpers.callMethod(this, methodName, *args) as? T
+fun <T> Any.callMethod(methodName: String, vararg args: Any?): T? {
+    val method = XposedHelpers.findMethodBestMatch(this::class.java, methodName, *XposedHelpers.getParameterTypes(*args))
+    return XposedBridge.invokeOriginalMethod(method, this, args) as? T
 }
 
 /**
@@ -152,7 +174,8 @@ fun <T> Any.callMethod(methodName: String, vararg args: Any): T? {
  * @return 该方法被调用之后的返回值, 可能是 null 即没有返回值
  */
 fun <T> Any.callMethod(methodName: String, argsTypes: Array<Class<*>>, vararg args: Any): T? {
-    return XposedHelpers.callMethod(this, methodName, *argsTypes, *args) as? T
+    val method = XposedHelpers.findMethodBestMatch(this::class.java, methodName, *argsTypes)
+    return XposedBridge.invokeOriginalMethod(method, this, args) as? T
 }
 
 /**
@@ -176,6 +199,13 @@ fun Any.setObjectField(fieldName: String, value: Any) {
     XposedHelpers.setObjectField(this, fieldName, value)
 }
 
+fun Any.traverseFiled(block: (type: Class<*>, name: String, value: Any?) -> Unit) {
+    this::class.java.declaredFields.forEach {
+        it.isAccessible = true
+        block.invoke(it.type, it.name, it.get(this))
+    }
+}
+
 
 //String
 /**
@@ -185,7 +215,7 @@ fun Any.setObjectField(fieldName: String, value: Any) {
  * @throws ClassNotFoundError
  * @return 被找到的类
  */
-@Throws
+@Throws(ClassNotFoundError::class)
 fun String.toClass(classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER): Class<*>? {
     return XposedHelpers.findClass(this, classLoader)
 }
@@ -197,6 +227,7 @@ fun String.toClass(classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER): Cla
  * @throws ClassNotFoundError
  * @return KtXposedHelpers
  */
+@Throws(ClassNotFoundError::class)
 fun String.hookClass(classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER): KtXposedHelpers {
     val clazz = XposedHelpers.findClass(this, classLoader)
     return KtXposedHelpers.hookClass(clazz)
@@ -211,6 +242,7 @@ fun String.hookClass(classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER): K
  * @throws ClassNotFoundError|NoSuchMethodException
  * @return KtXposedHelpers
  */
+@Throws(ClassNotFoundError::class, NoSuchMethodException::class)
 fun String.hookMethod(classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER, vararg argsTypes: Any, block: MethodHook.() -> Unit)
         : KtXposedHelpers {
     if (!this.contains("#")) throw NoSuchMethodException("please refer to: \"com.xxx.ClassName#MethodName\".hookMethod(...)")
@@ -246,7 +278,8 @@ fun <T> Class<*>.getStaticObjectField(fieldName: String): T? {
  * @return 该方法被调用之后的返回值, 可能是 null 即没有返回值
  */
 fun <T> Class<*>.callStaticMethod(methodName: String, vararg args: Any): T? {
-    return XposedHelpers.callStaticMethod(this, methodName, *args) as T?
+    val method = XposedHelpers.findMethodBestMatch(this, methodName, *XposedHelpers.getParameterTypes(*args))
+    return XposedBridge.invokeOriginalMethod(method, null, args) as T?
 }
 
 /**
@@ -258,7 +291,8 @@ fun <T> Class<*>.callStaticMethod(methodName: String, vararg args: Any): T? {
  * @return 该方法被调用之后的返回值, 可能是 null 即没有返回值
  */
 fun <T> Class<*>.callStaticMethod(methodName: String, argsTypes: Array<Class<*>>, vararg args: Any): T? {
-    return XposedHelpers.callStaticMethod(this, methodName, *argsTypes, *args) as T?
+    val method = XposedHelpers.findMethodBestMatch(this, methodName, *argsTypes)
+    return XposedBridge.invokeOriginalMethod(method, null, args) as T?
 }
 
 /**
@@ -286,6 +320,28 @@ fun Class<*>.hookMethod(methodName: String, vararg argsTypes: Any, block: Method
     return KtXposedHelpers
         .hookClass(this)
         .method(methodName, *argsTypes) { block.invoke(this) }
+}
+
+/**
+ * Hook某个Class的所有构造方法
+ * @throws block hook代码块, 可在内部书写hook逻辑
+ * @return KtXposedHelpers
+ */
+fun Class<*>.hookConstructorsAll(block: MethodHook.() -> Unit) {
+    KtXposedHelpers
+        .hookClass(this)
+        .constructorsAll { block.invoke(this) }
+}
+
+/**
+ * Hook某个Class的所有方法
+ * @throws block hook代码块, 可在内部书写hook逻辑
+ * @return KtXposedHelpers
+ */
+fun Class<*>.hookMethodAll(block: MethodHook.() -> Unit) {
+    KtXposedHelpers
+        .hookClass(this)
+        .methodAll { block.invoke(this) }
 }
 
 
@@ -333,7 +389,7 @@ fun ClassLoader.findClassByXposed(className: String): Class<*>? {
  * @param id module layout xml id
  */
 fun <T : View> Context.inflateModuleView(@LayoutRes id: Int): T {
-    return KResourceUtils.inflateView<T>(this, id)
+    return KResourceUtils.inflateView(this, id)
 }
 
 
@@ -454,14 +510,11 @@ val XC_MethodHook.MethodHookParam.thisContext: Context
         return thisObject as Context
     }
 
-
-//Other
-private var mModulePath: String? = null
-private var mModuleRes: XModuleResources? = null
-fun KtXposedHelpers.Companion.initModule(modulePath: String, moduleRes: XModuleResources) {
-    mModulePath = modulePath
-    mModuleRes = moduleRes
-}
-
-fun KtXposedHelpers.Companion.getModulePath() = mModulePath!!
-fun KtXposedHelpers.Companion.getModuleRes() = mModuleRes!!
+/**
+ * args可能会是 NullPointerException,
+ * 当 NullPointerException 时无法通过 `*args`解构
+ */
+val XC_MethodHook.MethodHookParam.argsOrEmpty: Array<Any>
+    get() {
+        return args ?: emptyArray()
+    }

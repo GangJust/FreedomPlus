@@ -1,8 +1,16 @@
 package com.freegang.xpler.utils.app
 
+import android.app.Activity
 import android.app.Application
+import android.content.Intent
+import android.os.Build
 import android.os.Looper
+import android.os.Process
 import android.widget.Toast
+import com.freegang.xpler.utils.app.KActivityUtils.topActivity
+import com.freegang.xpler.utils.app.KAppVersionUtils.appLabelName
+import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionCode
+import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionName
 import com.freegang.xpler.utils.log.KLogCat
 import kotlin.system.exitProcess
 
@@ -12,6 +20,7 @@ class KAppCrashUtils : Thread.UncaughtExceptionHandler {
     private var mDefaultHandler: Thread.UncaughtExceptionHandler? = null
 
     private var mApp: Application? = null
+    private var mErrActivity: Class<out Activity>? = null
     private var mMessage: String = ""
 
     companion object {
@@ -19,28 +28,27 @@ class KAppCrashUtils : Thread.UncaughtExceptionHandler {
         val instance: KAppCrashUtils = KAppCrashUtils()
     }
 
-    @JvmOverloads
     fun init(app: Application, message: String = "程序崩溃!") {
+        init(app, null, message)
+    }
+
+    @JvmOverloads
+    fun init(app: Application, errActivity: Class<out Activity>? = null, message: String = "程序崩溃!") {
         this.mApp = app
+        this.mErrActivity = errActivity
         this.mMessage = message
         //获取系统默认的UncaughtException处理器
-        mDefaultHandler = Thread.getDefaultUncaughtExceptionHandler();
-        //设置该MyCrashHandler为程序的默认处理器
-        Thread.setDefaultUncaughtExceptionHandler(this);
+        mDefaultHandler = Thread.getDefaultUncaughtExceptionHandler()
+        //设置KAppCrashUtils为程序的默认处理器
+        Thread.setDefaultUncaughtExceptionHandler(this)
     }
 
     /// 全局异常处理方法
     override fun uncaughtException(t: Thread, e: Throwable) {
         if (!handlerException(e) && mDefaultHandler != null) {
-            mDefaultHandler?.uncaughtException(t, e);
+            mDefaultHandler?.uncaughtException(t, e)
         } else {
-            try {
-                //Sleep 来让线程停止一会是为了显示Toast信息给用户，然后Kill程序
-                Thread.sleep(2000)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-            exitApp()
+            exitAppOrStartErrActivity(e)
         }
     }
 
@@ -51,15 +59,36 @@ class KAppCrashUtils : Thread.UncaughtExceptionHandler {
             Toast.makeText(mApp, mMessage, Toast.LENGTH_SHORT).show()
             Looper.loop()
         }.start()
-
-        //记录日志
-        KLogCat.e("$mMessage\n${e.stackTraceToString()}")
+        val errMessage = "\n发生错误: ${e.message}\n" +
+                "出现时间: ${KLogCat.dateTimeFormat.format(System.currentTimeMillis())}\n" +
+                "设备信息: ${Build.MANUFACTURER} ${Build.MODEL}\n" +
+                "系统版本: Android ${Build.VERSION.RELEASE} (${Build.VERSION.SDK_INT})\n" +
+                "应用版本: ${mApp!!.appLabelName} ${mApp!!.appVersionName} (${mApp!!.appVersionCode})\n" +
+                "堆栈信息: ${e.stackTraceToString()}\n"
+        KLogCat.e(errMessage)
         return true
     }
 
     /// 结束应用
-    private fun exitApp() {
-        android.os.Process.killProcess(android.os.Process.myPid());
-        exitProcess(1);
+    private fun exitAppOrStartErrActivity(e: Throwable) {
+        if (mErrActivity != null) {
+            val intent = Intent(mApp!!.applicationContext, mErrActivity)
+            intent.putExtra("message", e.message)
+            intent.putExtra("stack_trace", e.stackTraceToString())
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            mApp!!.startActivity(intent)
+            Process.killProcess(Process.myPid())
+            exitProcess(1)
+        } else {
+            //等待1秒toast显示
+            try {
+                Thread.sleep(1000)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            mApp!!.topActivity?.finishAffinity()
+            Process.killProcess(Process.myPid())
+            exitProcess(1)
+        }
     }
 }
