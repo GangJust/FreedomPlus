@@ -43,3 +43,6 @@ v1.0.8
 修复Android11以上部分机型存储权限
 minSdk更改为24
 致谢@LuckyPray/DexKit
+
+v1.0.9
+视频/图文下载文件名账号问题

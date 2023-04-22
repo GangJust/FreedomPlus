@@ -83,7 +83,7 @@ class DownloadLogic(
         }
 
         //构建视频文件名
-        val shortId = if (aweme.author.shortId.isNullOrEmpty()) aweme.author.uniqueId else aweme.author.shortId
+        val shortId = if (aweme.author.uniqueId.isNullOrEmpty()) aweme.author.shortId else aweme.author.uniqueId //如果uniqueId为空, shortId为账号
         val pureNickname = aweme.author.nickname.pureFileName
 
         val pureFileName = if (aweme.desc.isNullOrBlank()) {
@@ -118,7 +118,7 @@ class DownloadLogic(
         }
 
         //构建背景音乐文件名
-        val shortId = if (aweme.author.shortId.isNullOrEmpty()) aweme.author.uniqueId else aweme.author.shortId
+        val shortId = if (aweme.author.uniqueId.isNullOrEmpty()) aweme.author.shortId else aweme.author.uniqueId //如果uniqueId为空, shortId为账号
         val pureNickname = aweme.author.nickname.pureFileName
 
         val pureFileName = if (aweme.desc.isNullOrBlank()) {
@@ -152,7 +152,7 @@ class DownloadLogic(
         }
 
         //构建图片文件名
-        val shortId = if (aweme.author.shortId.isNullOrEmpty()) aweme.author.uniqueId else aweme.author.shortId
+        val shortId = if (aweme.author.uniqueId.isNullOrEmpty()) aweme.author.shortId else aweme.author.uniqueId //如果uniqueId为空, shortId为账号
         val pureNickname = aweme.author.nickname.pureFileName
         val pureFileName = if (aweme.desc.isNullOrBlank()) {
             "${pureNickname}_${shortId}_${System.currentTimeMillis() / 1000}"
