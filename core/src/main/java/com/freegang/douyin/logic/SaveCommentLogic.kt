@@ -21,10 +21,14 @@ class SaveCommentLogic(
 
     init {
         if (aweme != null) {
-            if (aweme.images?.isEmpty() == true) {
-                onSaveCommentImage(aweme.images.first().urlList)
+            val imageUrl = aweme.images ?: emptyList()
+            val videoUrl = aweme.video?.h264PlayAddr?.urlList ?: emptyList()
+            if (imageUrl.isNotEmpty()) {
+                onSaveCommentImage(imageUrl.first().urlList)
+            } else if (videoUrl.isNotEmpty()) {
+                onSaveCommentVideo(videoUrl)
             } else {
-                onSaveCommentVideo(aweme.video.h264PlayAddr.urlList)
+                hook.showToast(context, "未获取到基本信息")
             }
         } else {
             hook.showToast(context, "未获取到基本信息")

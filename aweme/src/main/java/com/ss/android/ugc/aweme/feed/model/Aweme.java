@@ -15,6 +15,8 @@ public class Aweme {
 
     public int awemeType;
 
+    public boolean canPlay;
+
     public String city;
 
     public long createTime;
@@ -31,4 +33,7 @@ public class Aweme {
 
     public List<ImageUrlStruct> images;
 
+    public Aweme() {
+        throw new RuntimeException("sub!");
+    }
 }

@@ -1,4 +1,4 @@
-package com.freegang.xpler.xp
+package com.freegang.xpler.core
 
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers
@@ -10,7 +10,7 @@ import java.lang.reflect.ParameterizedType
 /// 使用案例, 详见: https://github.com/GangJust/Xpler/blob/main/docs/readme.md
 
 @Target(AnnotationTarget.FIELD)
-annotation class FieldGet(val name: String, val tag: String = "tag")
+annotation class FieldGet(val name: String, val tag: String)
 
 @Target(AnnotationTarget.FUNCTION)
 annotation class OnBefore(val name: String, val unhook: Boolean = false)
@@ -330,6 +330,8 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
 
     /**
      * 子类便捷生成修改指定hook方法
+     * 该方法被复写不会发生任何hook调用
+     *
      * @param param XC_MethodHook.MethodHookParam
      */
     open fun hookMethod(param: XC_MethodHook.MethodHookParam) {

@@ -65,18 +65,20 @@
 -keep public class * extends androidx.**
 -keep public class * extends android.**
 
-# 保留模块核心, 否则无法生效
--keepclassmembers class com.freegang.xpler.xp.** { *; }
+# 关闭警告信息
+-dontwarn android.content.res.*
+-dontwarn de.robv.android.xposed.**
+# 模块核心
+-keepclassmembers class com.freegang.xpler.core.** { *; }
 -keepclassmembers class * {
-    @com.freegang.xpler.xp.FieldGet <fields>;
-    @com.freegang.xpler.xp.OnBefore <methods>;
-    @com.freegang.xpler.xp.OnAfter <methods>;
-    @com.freegang.xpler.xp.OnReplace <methods>;
-    @com.freegang.xpler.xp.OnConstructorBefore <methods>;
-    @com.freegang.xpler.xp.OnConstructorAfter <methods>;
-    @com.freegang.xpler.xp.OnConstructorReplace <methods>;
+    @com.freegang.xpler.core.FieldGet <fields>;
+    @com.freegang.xpler.core.OnBefore <methods>;
+    @com.freegang.xpler.core.OnAfter <methods>;
+    @com.freegang.xpler.core.OnReplace <methods>;
+    @com.freegang.xpler.core.OnConstructorBefore <methods>;
+    @com.freegang.xpler.core.OnConstructorAfter <methods>;
+    @com.freegang.xpler.core.OnConstructorReplace <methods>;
 }
+# 模块状态
 -keep class com.freegang.xpler.HookInit extends * { *; }
-
-# 保留模块状态
 -keep class com.freegang.xpler.HookStatus extends * { *; }

@@ -1,31 +1,38 @@
 package com.freegang.douyin
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.text.Html
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat.startActivity
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
+import com.freegang.config.Version
 import com.freegang.douyin.logic.ClipboardLogic
 import com.freegang.douyin.logic.DownloadLogic
+import com.freegang.xpler.core.KtXposedHelpers
+import com.freegang.xpler.core.OnAfter
+import com.freegang.xpler.core.OnBefore
+import com.freegang.xpler.core.call
+import com.freegang.xpler.core.findMethod
+import com.freegang.xpler.core.findMethodsByReturnType
+import com.freegang.xpler.core.thisActivity
+import com.freegang.xpler.core.thisContext
 import com.freegang.xpler.utils.app.KActivityUtils.contentView
 import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionCode
 import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionName
 import com.freegang.xpler.utils.view.KViewUtils
-import com.freegang.xpler.xp.OnAfter
-import com.freegang.xpler.xp.OnBefore
-import com.freegang.xpler.xp.call
-import com.freegang.xpler.xp.findMethod
-import com.freegang.xpler.xp.findMethodsByReturnType
-import com.freegang.xpler.xp.thisActivity
-import com.freegang.xpler.xp.thisContext
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.main.MainActivity
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
-class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainActivity>(lpparam) {
+class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainActivity>(KtXposedHelpers.lpparam) {
     private val config get() = Config.get()
     private val clipboardLogic = ClipboardLogic(this)
     private val supportVersions = listOf(
@@ -60,6 +67,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         hookBlock(it) {
             changeView(thisActivity.contentView)
             showSupportDialog(thisActivity as MainActivity)
+            checkVersionDialog(thisActivity as MainActivity)
             addClipboardListener(thisActivity as MainActivity)
         }
     }
@@ -79,7 +87,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         }
 
         if (aweme == null) {
-            val curFragment = activity.findMethod("getCurFragment", *arrayOf<Any>())?.call(activity)
+            val curFragment = activity.findMethod("getCurFragment", *arrayOf<Any>())?.call<Any>(activity)
             val curFragmentMethods = curFragment?.findMethodsByReturnType(Aweme::class.java) ?: listOf()
             if (curFragmentMethods.isNotEmpty()) {
                 aweme = curFragmentMethods.first().call(curFragment!!)
@@ -93,6 +101,20 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         clipboardLogic.addClipboardListener(activity) {
             val aweme = findVideoAweme(activity)
             DownloadLogic(this@HMainActivity, activity, aweme)
+        }
+    }
+
+    //透明度
+    private fun changeView(viewGroup: ViewGroup) {
+        if (!config.isTranslucent) return
+        launch {
+            delay(200L)
+            val views = KViewUtils.findViewsExact(viewGroup, View::class.java) {
+                var result = it::class.java.name.contains("MainBottomTabContainer") //底部
+                result = result or it::class.java.name.contains("MainTitleBar") //顶部
+                result
+            }
+            views.forEach { it.alpha = 0.5f }
         }
     }
 
@@ -128,17 +150,28 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         }
     }
 
-    //透明度
-    private fun changeView(viewGroup: ViewGroup) {
-        if (!config.isTranslucent) return
+    //检查模块版本
+    private fun checkVersionDialog(activity: MainActivity) {
         launch {
-            delay(200L)
-            val views = KViewUtils.findViewsExact(viewGroup, View::class.java) {
-                var result = it::class.java.name.contains("MainBottomTabContainer") //底部
-                result = result or it::class.java.name.contains("MainTitleBar") //顶部
-                result
+            delay(2000L)
+            val version = withContext(Dispatchers.IO) { Version.getRemoteReleasesLatest() } ?: return@launch
+            if (version.name.compareTo("v${config.versionName}") >= 1) {
+                showMessageDialog(
+                    context = activity,
+                    title = "发现新版本 ${version.name}!",
+                    content = version.body,
+                    cancel = "取消",
+                    confirm = "更新",
+                    onConfirm = {
+                        activity.startActivity(
+                            Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse(version.browserDownloadUrl),
+                            )
+                        )
+                    }
+                )
             }
-            views.forEach { it.alpha = 0.5f }
         }
     }
 }

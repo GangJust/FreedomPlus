@@ -2,9 +2,9 @@ package com.freegang.xpler
 
 import android.app.Application
 import android.content.Context
+import com.freegang.xpler.core.KtXposedHelpers
+import com.freegang.xpler.core.hookClass
 import com.freegang.xpler.loader.HybridClassLoader
-import com.freegang.xpler.xp.KtXposedHelpers
-import com.freegang.xpler.xp.hookClass
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.IXposedHookZygoteInit
 import de.robv.android.xposed.XposedBridge
@@ -20,6 +20,7 @@ class HookInit : IXposedHookLoadPackage, IXposedHookZygoteInit {
 
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
         if (!HookPackages.packages.contains(lpparam.packageName)) return
+        KtXposedHelpers.setLpparam(lpparam)
 
         val kXposedBridge: Class<*> = XposedBridge::class.java
         if ("de.robv.android.xposed.XposedBridge" != kXposedBridge.name) {
@@ -37,7 +38,7 @@ class HookInit : IXposedHookLoadPackage, IXposedHookZygoteInit {
                     injectClassLoader(lpparam, targetLoader)
 
                     // init module status
-                    if (lpparam.packageName == HookPackages.appPackageName) {
+                    if (lpparam.packageName == HookPackages.modulePackageName) {
                         moduleInit(lpparam)
                     }
 

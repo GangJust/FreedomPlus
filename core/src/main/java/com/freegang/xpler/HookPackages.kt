@@ -6,13 +6,13 @@ package com.freegang.xpler
  * 然后在 `HookMain` 中写你的Hook逻辑
  */
 object HookPackages {
-    const val appPackageName = "com.freegang.fplus"
+    const val modulePackageName = "com.freegang.fplus"
     const val corePackageName = "com.freegang.xpler"
     const val douYinPackageName = "com.ss.android.ugc.aweme"
 
 
     val packages = listOf(
-        appPackageName,
+        modulePackageName,
         corePackageName,
         douYinPackageName,
     )

@@ -6,12 +6,12 @@ import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
 import com.freegang.douyin.logic.SaveEmojiLogic
+import com.freegang.xpler.core.OnBefore
+import com.freegang.xpler.core.getObjectField
+import com.freegang.xpler.core.thisActivity
 import com.freegang.xpler.utils.app.KActivityUtils.contentView
 import com.freegang.xpler.utils.view.findViewsByExact
 import com.freegang.xpler.utils.view.idName
-import com.freegang.xpler.xp.OnBefore
-import com.freegang.xpler.xp.getObjectField
-import com.freegang.xpler.xp.thisActivity
 import com.ss.android.ugc.aweme.comment.ui.GifEmojiDetailActivity
 import com.ss.android.ugc.aweme.emoji.model.Emoji
 import de.robv.android.xposed.XC_MethodHook

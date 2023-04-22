@@ -1,11 +1,28 @@
-package com.freegang.xpler.xp
+package com.freegang.xpler.core
 
+import android.content.Context
+import android.content.res.Resources.Theme
 import android.content.res.XModuleResources
-import com.freegang.xpler.xp.bridge.ConstructorHook
-import com.freegang.xpler.xp.bridge.ConstructorHookImpl
-import com.freegang.xpler.xp.bridge.MethodHook
-import com.freegang.xpler.xp.bridge.MethodHookImpl
+import android.content.res.XmlResourceParser
+import android.graphics.drawable.Drawable
+import android.os.Build
+import android.view.LayoutInflater
+import android.view.View
+import androidx.annotation.AnimRes
+import androidx.annotation.AnimatorRes
+import androidx.annotation.ArrayRes
+import androidx.annotation.ColorRes
+import androidx.annotation.DimenRes
+import androidx.annotation.DrawableRes
+import androidx.annotation.LayoutRes
+import androidx.annotation.StringRes
+import androidx.core.content.res.ResourcesCompat
+import com.freegang.xpler.core.bridge.ConstructorHook
+import com.freegang.xpler.core.bridge.ConstructorHookImpl
+import com.freegang.xpler.core.bridge.MethodHook
+import com.freegang.xpler.core.bridge.MethodHookImpl
 import de.robv.android.xposed.XposedHelpers
+import de.robv.android.xposed.callbacks.XC_LoadPackage
 import java.lang.reflect.Method
 
 /// Xposed hook 的基础封装
@@ -16,6 +33,7 @@ class KtXposedHelpers {
         private val instances = KtXposedHelpers()
         private var mModulePath: String? = null
         private var mModuleRes: XModuleResources? = null
+        private var mLpparam: XC_LoadPackage.LoadPackageParam? = null
 
         /**
          * Hook某个类
@@ -38,8 +56,98 @@ class KtXposedHelpers {
         }
 
         /**
+         * 加载模块中的xml布局文件
+         *
+         * 需要注意的是, 模块中的xml不能直接引入模块自身的资源文件,
+         * 如: @color/module_blank, @drawable/ic_logo 等
+         *
+         * 如需加载资源文件见[getDrawable]、[getColor]、[getDrawable]、[getAnimation]
+         *
+         * @param context context
+         * @param id id
+         * @param inflateView
+         */
+        fun <T : View> inflateView(context: Context, @LayoutRes id: Int): T {
+            return LayoutInflater.from(context).inflate(getLayout(id), null, false) as T
+        }
+
+        /**
+         * 获取模块中的 layout, 该方法不会加载layout
+         *
+         * @param id id
+         * @return Layout XmlResourceParser
+         */
+        fun getLayout(@LayoutRes id: Int): XmlResourceParser {
+            return moduleRes.getLayout(id)
+        }
+
+        /**
+         * 获取模块中的 drawable
+         *
+         * @param id id
+         * @return Drawable
+         */
+        fun getDrawable(@DrawableRes id: Int, theme: Theme? = null): Drawable? {
+            return ResourcesCompat.getDrawable(moduleRes, id, theme)
+        }
+
+        /**
+         * 获取模块中的 color
+         *
+         * @param id id
+         * @return color int
+         */
+        fun getColor(@ColorRes id: Int, theme: Theme? = null): Int {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                moduleRes.getColor(id, theme)
+            } else {
+                moduleRes.getColor(id)
+            }
+        }
+
+        /**
+         * 获取模块中的 Float
+         *
+         * @param id id
+         * @return Float
+         */
+        fun getDimension(@DimenRes id: Int): Float {
+            return moduleRes.getDimension(id)
+        }
+
+        /**
+         * 获取模块中的 Animation
+         *
+         * @param id id
+         * @return Animation XmlResourceParser
+         */
+        fun getAnimation(@AnimatorRes @AnimRes id: Int): XmlResourceParser {
+            return moduleRes.getAnimation(id)
+        }
+
+        /**
+         * 获取模块中的 String
+         *
+         * @param id id
+         * @return String
+         */
+        fun getString(@StringRes id: Int): String {
+            return moduleRes.getString(id)
+        }
+
+        /**
+         * 获取模块中的 String Array
+         *
+         * @param id id
+         * @return String Array
+         */
+        fun getStringArray(@ArrayRes id: Int): Array<String> {
+            return moduleRes.getStringArray(id)
+        }
+
+        /**
          * 由 [de.robv.android.xposed.IXposedHookZygoteInit.initZygote] 时调用该方法
-         * 可以参考 [com.freegang.xpler.HookInit] 的实现
+         * 可以参考 [com.freegang.xpler.HookInit.initZygote] 的实现
          *
          * @param modulePath 模块路径
          */
@@ -57,6 +165,21 @@ class KtXposedHelpers {
          * 返回模块资源, 需要首先 [initModule] 调用
          */
         val moduleRes: XModuleResources get() = mModuleRes!!
+
+        /**
+         * 存储 XC_LoadPackage.LoadPackageParam 实例
+         * @param lpparam
+         */
+        fun setLpparam(lpparam: XC_LoadPackage.LoadPackageParam) {
+            this.mLpparam = lpparam
+        }
+
+        /**
+         * 需要在 [de.robv.android.xposed.callbacks.XC_LoadPackage.handleLoadPackage] 时
+         * 调用 [setLpparam]方法进行存储, 否则将无法使用
+         * 可以参考 [com.freegang.xpler.HookInit.handleLoadPackage] 的实现
+         */
+        val lpparam: XC_LoadPackage.LoadPackageParam get() = this.mLpparam!!
     }
 
     /**

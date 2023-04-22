@@ -29,4 +29,8 @@ public class Video {
     public int height;
 
     public int width;
+
+    private Video() {
+        throw new RuntimeException("sub!");
+    }
 }

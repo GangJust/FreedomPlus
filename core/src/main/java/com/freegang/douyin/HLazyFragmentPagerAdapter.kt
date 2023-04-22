@@ -3,10 +3,10 @@ package com.freegang.douyin
 import android.view.View
 import android.view.ViewGroup
 import com.freegang.config.Config
+import com.freegang.xpler.core.KtOnHook
+import com.freegang.xpler.core.KtXposedHelpers
+import com.freegang.xpler.core.argsOrEmpty
 import com.freegang.xpler.utils.view.KViewUtils
-import com.freegang.xpler.xp.KtOnHook
-import com.freegang.xpler.xp.KtXposedHelpers
-import com.freegang.xpler.xp.argsOrEmpty
 import com.ss.android.ugc.aweme.lego.lazy.LazyFragmentPagerAdapter
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 

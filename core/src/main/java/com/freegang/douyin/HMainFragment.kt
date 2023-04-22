@@ -6,9 +6,9 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
+import com.freegang.xpler.core.EmptyHook
+import com.freegang.xpler.core.hookClass
 import com.freegang.xpler.utils.view.KViewUtils
-import com.freegang.xpler.xp.EmptyHook
-import com.freegang.xpler.xp.hookClass
 import com.ss.android.ugc.aweme.homepage.ui.view.MainFlippableViewPager
 import com.ss.android.ugc.aweme.homepage.ui.view.MainTabStripScrollView
 import com.ss.android.ugc.aweme.main.MainFragment

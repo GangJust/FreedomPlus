@@ -1,4 +1,4 @@
-package com.freegang.xpler.xp.bridge
+package com.freegang.xpler.core.bridge
 
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
@@ -8,12 +8,12 @@ import java.lang.reflect.Member
 
 /// 实现类
 open class MethodHookImpl(private var method: Member) : MethodHook {
-    private var beforeBlock: (XC_MethodHook.MethodHookParam.() -> Unit)? = null
-    private var afterBlock: (XC_MethodHook.MethodHookParam.() -> Unit)? = null
-    private var replaceBlock: (XC_MethodHook.MethodHookParam.() -> Any)? = null
+    private var beforeBlock: OnBeforeBlock? = null
+    private var afterBlock: OnAfterBlock? = null
+    private var replaceBlock: OnReplaceBlock? = null
 
     private var unhookMap: MutableMap<Member, XC_MethodHook.Unhook> = mutableMapOf()
-    private var unHookBlock: ((hookMethod: Member, callback: XC_MethodHook) -> Unit)? = null
+    private var unHookBlock: OnUnhookBlock? = null
 
     constructor(clazz: Class<*>, methodName: String, vararg argsTypes: Any) :
             this(XposedHelpers.findMethodExact(clazz, methodName, *argsTypes))
@@ -24,7 +24,7 @@ open class MethodHookImpl(private var method: Member) : MethodHook {
      *
      * @param block hook代码块, 可在内部书写hook逻辑
      */
-    override fun onBefore(block: XC_MethodHook.MethodHookParam.() -> Unit) {
+    override fun onBefore(block: OnBeforeBlock) {
         this.beforeBlock = block
     }
 
@@ -34,7 +34,7 @@ open class MethodHookImpl(private var method: Member) : MethodHook {
      *
      * @param block hook代码块, 可在内部书写hook逻辑
      */
-    override fun onAfter(block: XC_MethodHook.MethodHookParam.() -> Unit) {
+    override fun onAfter(block: OnAfterBlock) {
         this.afterBlock = block
     }
 
@@ -44,7 +44,7 @@ open class MethodHookImpl(private var method: Member) : MethodHook {
      *
      * @param block hook代码块, 可在内部书写hook逻辑
      */
-    override fun onReplace(block: XC_MethodHook.MethodHookParam.() -> Any) {
+    override fun onReplace(block: OnReplaceBlock) {
         this.replaceBlock = block
     }
 
@@ -55,7 +55,7 @@ open class MethodHookImpl(private var method: Member) : MethodHook {
      *
      * @param block deHook代码块
      */
-    override fun onUnhook(block: (hookMethod: Member, callback: XC_MethodHook) -> Unit) {
+    override fun onUnhook(block: OnUnhookBlock) {
         this.unHookBlock = block
     }
 

@@ -12,10 +12,9 @@ import com.freegang.config.Config
 import com.freegang.douyin.logic.DownloadLogic
 import com.freegang.douyin.logic.SaveEmojiLogic
 import com.freegang.xpler.R
+import com.freegang.xpler.core.*
 import com.freegang.xpler.databinding.HookAppbarLayoutBinding
 import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionName
-import com.freegang.xpler.utils.other.KResourceUtils
-import com.freegang.xpler.xp.*
 import com.ss.android.ugc.aweme.detail.ui.DetailActivity
 import com.ss.android.ugc.aweme.familiar.feed.slides.detail.SlidesDetailActivity
 import com.ss.android.ugc.aweme.feed.model.Aweme
@@ -96,9 +95,9 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
         if (activity is MainActivity) {
             val methods = activity.findMethodsByReturnType(Aweme::class.java)
             if (methods.isNotEmpty()) {
-                var aweme = methods.first().call(activity)
+                var aweme = methods.first().call<Any>(activity)
                 if (aweme == null) {
-                    val curFragment = activity.findMethod("getCurFragment", *arrayOf<Any>())?.call(activity)
+                    val curFragment = activity.findMethod("getCurFragment", *arrayOf<Any>())?.call<Any>(activity)
                     val curFragmentMethods = curFragment?.findMethodsByReturnType(Aweme::class.java) ?: listOf()
                     if (curFragmentMethods.isNotEmpty()) {
                         aweme = curFragmentMethods.first().call(curFragment!!)
@@ -112,7 +111,7 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
             val any1 = activity.getObjectField<Any>("LIZJ") ?: return
             val methods = any1.findMethodsByReturnType(Aweme::class.java)
             if (methods.isNotEmpty()) {
-                val aweme = methods.first().call(any1)
+                val aweme = methods.first().call<Any>(any1)
                 DownloadLogic(this@HAbsActivity, activity, aweme as? Aweme)
             }
         }
@@ -125,9 +124,9 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
         if (activity is SlidesDetailActivity || activity is DetailActivity || activity is MainActivity) {
             val methods = activity.findMethodsByReturnType(Aweme::class.java)
             if (methods.isNotEmpty()) {
-                var aweme = methods.first().call(activity)
+                var aweme = methods.first().call<Any>(activity)
                 if (aweme == null) {
-                    val curFragment = activity.findMethod("getCurFragment", *arrayOf<Any>())?.call(activity)
+                    val curFragment = activity.findMethod("getCurFragment", *arrayOf<Any>())?.call<Any>(activity)
                     val curFragmentMethods = curFragment?.findMethodsByReturnType(Aweme::class.java) ?: listOf()
                     if (curFragmentMethods.isNotEmpty()) {
                         aweme = curFragmentMethods.first().call(curFragment!!)
@@ -208,7 +207,7 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
         viewGroup.removeAllViews()
 
         //重新构建视图
-        val appbar = KResourceUtils.inflateView<RelativeLayout>(viewGroup.context, R.layout.hook_appbar_layout)
+        val appbar = KtXposedHelpers.inflateView<RelativeLayout>(viewGroup.context, R.layout.hook_appbar_layout)
         val binding = HookAppbarLayoutBinding.bind(appbar)
         binding.backBtn.setOnClickListener {
             backBtn.performClick()

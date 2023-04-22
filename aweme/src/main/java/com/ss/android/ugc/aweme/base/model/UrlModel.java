@@ -24,4 +24,8 @@ public class UrlModel {
     public int height;
 
     public long size;
+
+    public UrlModel() {
+        throw new RuntimeException("sub!");
+    }
 }

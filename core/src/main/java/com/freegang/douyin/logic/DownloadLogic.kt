@@ -4,8 +4,6 @@ import android.app.Activity
 import android.widget.Toast
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
-import com.freegang.douyin.model.DeAweme
-import com.freegang.douyin.model.UrlStruct
 import com.freegang.webdav.WebDav
 import com.freegang.xpler.utils.app.IProgressNotification
 import com.freegang.xpler.utils.app.KAlbumUtils
@@ -14,7 +12,6 @@ import com.freegang.xpler.utils.io.KFileUtils.need
 import com.freegang.xpler.utils.io.KFileUtils.pureFileName
 import com.freegang.xpler.utils.io.KFileUtils.subMax
 import com.freegang.xpler.utils.net.KHttpUtils
-import com.freegang.xpler.xp.getObjectField
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -40,56 +37,6 @@ class DownloadLogic(
         } else {
             hook.showToast(activity, "未获取到基本信息")
         }
-    }
-
-
-    private fun deAweme(activity: Activity) {
-        if (aweme == null) {
-            hook.showToast(activity, "未获取到基本信息")
-            return
-        }
-        val deAweme = DeAweme()
-
-        //视频描述
-        deAweme.desc = aweme.getObjectField<String>("desc") ?: ""
-
-        //用户信息
-        val user = aweme.getObjectField<Any>("author")
-        deAweme.nickname = user?.getObjectField<String>("nickname") ?: ""
-        deAweme.shortId = user?.getObjectField<String>("uniqueId") ?: ""
-        if (deAweme.shortId.isEmpty()) deAweme.shortId = user?.getObjectField<String>("shortId") ?: "" //如果uniqueId为空, shortId为账号
-
-        //视频
-        deAweme.videoUrlList = aweme
-            .getObjectField<Any>("video")
-            ?.getObjectField<Any>("h264PlayAddr")
-            ?.getObjectField<List<String>>("urlList")
-            ?: listOf()
-
-        //图文列表
-        val imageUrlList = mutableListOf<UrlStruct>()
-        val imagesStructList = aweme.getObjectField<List<Any>>("images")
-        imagesStructList?.forEach { imagesStruct ->
-            val urlList = imagesStruct.getObjectField<List<String>>("urlList")
-            val imageUrlStruct = UrlStruct(urlList ?: listOf())
-            imageUrlList.add(imageUrlStruct)
-        }
-        deAweme.imageUrlStructList = imageUrlList
-
-        //背景音乐
-        deAweme.musicUrlList = aweme
-            .getObjectField<Any>("music")
-            ?.getObjectField<Any>("playUrl")
-            ?.getObjectField<List<String>>("urlList")
-            ?: listOf()
-
-
-        if (deAweme.isEmpty()) {
-            hook.showToast(activity, "未获取到视频信息!")
-            return
-        }
-
-        //showChoiceDialog(deAweme)
     }
 
     /**
@@ -129,10 +76,17 @@ class DownloadLogic(
      * @param aweme
      */
     private fun downloadVideo(aweme: Aweme, isWebDav: Boolean = false) {
+        val videoUrlList = aweme.video?.h264PlayAddr?.urlList ?: emptyList()
+        if (videoUrlList.isEmpty()) {
+            hook.showToast(activity, "未获取到视频信息")
+            return
+        }
+
         //构建视频文件名
-        val shortId = if (aweme.author.shortId == null || aweme.author.shortId.isEmpty()) aweme.author.uniqueId else aweme.author.shortId
+        val shortId = if (aweme.author.shortId.isNullOrEmpty()) aweme.author.uniqueId else aweme.author.shortId
         val pureNickname = aweme.author.nickname.pureFileName
-        val pureFileName = if (aweme.desc?.isBlank() == true) {
+
+        val pureFileName = if (aweme.desc.isNullOrBlank()) {
             "${pureNickname}_${shortId}_${System.currentTimeMillis() / 1000}"
         } else {
             "${pureNickname}_${shortId}_${aweme.desc.pureFileName.subMax()}"
@@ -146,9 +100,9 @@ class DownloadLogic(
 
         if (config.isNotification) {
             //发送通知
-            showDownloadByNotification(aweme.video.h264PlayAddr.urlList, parentPath, pureFileName, isWebDav)
+            showDownloadByNotification(videoUrlList, parentPath, pureFileName, isWebDav)
         } else {
-            showDownloadByDialog(aweme.video.h264PlayAddr.urlList, parentPath, pureFileName, isWebDav)
+            showDownloadByDialog(videoUrlList, parentPath, pureFileName, isWebDav)
         }
     }
 
@@ -157,10 +111,17 @@ class DownloadLogic(
      * @param aweme
      */
     private fun downloadMusic(aweme: Aweme, isWebDav: Boolean = false) {
+        val musicUrlList = aweme.music?.playUrl?.urlList ?: emptyList()
+        if (musicUrlList.isEmpty()) {
+            hook.showToast(activity, "未获取到背景音乐")
+            return
+        }
+
         //构建背景音乐文件名
-        val shortId = if (aweme.author.shortId == null || aweme.author.shortId.isEmpty()) aweme.author.uniqueId else aweme.author.shortId
+        val shortId = if (aweme.author.shortId.isNullOrEmpty()) aweme.author.uniqueId else aweme.author.shortId
         val pureNickname = aweme.author.nickname.pureFileName
-        val pureFileName = if (aweme.desc?.isBlank() == true) {
+
+        val pureFileName = if (aweme.desc.isNullOrBlank()) {
             "${pureNickname}_${shortId}_${System.currentTimeMillis() / 1000}"
         } else {
             "${pureNickname}_${shortId}_${aweme.desc.pureFileName.subMax()}"
@@ -173,9 +134,9 @@ class DownloadLogic(
         if (config.isOwnerDir) parentPath = parentPath.child("${pureNickname}(${shortId})")
 
         if (config.isNotification) {
-            showDownloadByNotification(aweme.music.playUrl.urlList, parentPath, pureFileName, isWebDav)
+            showDownloadByNotification(musicUrlList, parentPath, pureFileName, isWebDav)
         } else {
-            showDownloadByDialog(aweme.music.playUrl.urlList, parentPath, pureFileName, isWebDav)
+            showDownloadByDialog(musicUrlList, parentPath, pureFileName, isWebDav)
         }
     }
 
@@ -184,10 +145,16 @@ class DownloadLogic(
      * @param aweme
      */
     private fun downloadImages(aweme: Aweme, isWebDav: Boolean = false) {
+        val imageUrlStructList = aweme.images ?: emptyList()
+        if (imageUrlStructList.isEmpty()) {
+            hook.showToast(activity, "未获取到图片信息")
+            return
+        }
+
         //构建图片文件名
-        val shortId = if (aweme.author.shortId == null || aweme.author.shortId.isEmpty()) aweme.author.uniqueId else aweme.author.shortId
+        val shortId = if (aweme.author.shortId.isNullOrEmpty()) aweme.author.uniqueId else aweme.author.shortId
         val pureNickname = aweme.author.nickname.pureFileName
-        val pureFileName = if (aweme.desc?.isBlank() == true) {
+        val pureFileName = if (aweme.desc.isNullOrBlank()) {
             "${pureNickname}_${shortId}_${System.currentTimeMillis() / 1000}"
         } else {
             "${pureNickname}_${shortId}_${aweme.desc.pureFileName.subMax()}"
@@ -210,7 +177,7 @@ class DownloadLogic(
                     hook.launch {
                         val imageFiles = mutableListOf<File>()
                         var downloadCount = 0 //下载计数器
-                        aweme.images.forEachIndexed { index, urlStruct ->
+                        imageUrlStructList.forEachIndexed { index, urlStruct ->
                             val downloadFile = File(parentPath.need(), "${pureFileName}_${index + 1}.jpg")
                             val finished = download(urlStruct.urlList.first(), downloadFile, it, "$index/${aweme.images.size} %s%%")
                             if (finished) {
@@ -264,7 +231,7 @@ class DownloadLogic(
                     //下载逻辑
                     hook.launch {
                         var downloadCount = 0 //下载计数器
-                        aweme.images.forEachIndexed { index, urlStruct ->
+                        imageUrlStructList.forEachIndexed { index, urlStruct ->
                             val downloadFile = File(parentPath.need(), "${pureFileName}_${index + 1}.jpg")
                             val finished =
                                 download(urlStruct.urlList.first(), downloadFile, notify, "$index/${aweme.images.size} %s%%")

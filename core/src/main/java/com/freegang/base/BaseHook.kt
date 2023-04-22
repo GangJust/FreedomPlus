@@ -15,15 +15,15 @@ import android.widget.Toast
 import com.freegang.view.KDialog
 import com.freegang.view.adapter.DialogChoiceAdapter
 import com.freegang.xpler.R
+import com.freegang.xpler.core.KtOnHook
+import com.freegang.xpler.core.KtXposedHelpers
+import com.freegang.xpler.core.inflateModuleView
 import com.freegang.xpler.databinding.DialogChoiceLayoutBinding
 import com.freegang.xpler.databinding.DialogMessageLayoutBinding
 import com.freegang.xpler.databinding.DialogProgressLayoutBinding
 import com.freegang.xpler.utils.app.IProgressNotification
 import com.freegang.xpler.utils.app.KNotifiUtils
 import com.freegang.xpler.utils.log.KLogCat
-import com.freegang.xpler.utils.other.KResourceUtils
-import com.freegang.xpler.xp.KtOnHook
-import com.freegang.xpler.xp.inflateModuleView
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -106,25 +106,25 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
         val dialogView = context.inflateModuleView<FrameLayout>(R.layout.dialog_message_layout)
         val binding = DialogMessageLayoutBinding.bind(dialogView)
 
-        binding.messageDialogContainer.background = KResourceUtils.getDrawable(R.drawable.dialog_background)
+        binding.messageDialogContainer.background = KtXposedHelpers.getDrawable(R.drawable.dialog_background)
         if (singleButton) {
             binding.messageDialogCancel.visibility = View.GONE
-            binding.messageDialogConfirm.background = KResourceUtils.getDrawable(R.drawable.dialog_single_button_background)
+            binding.messageDialogConfirm.background = KtXposedHelpers.getDrawable(R.drawable.dialog_single_button_background)
         } else {
-            binding.messageDialogCancel.background = KResourceUtils.getDrawable(R.drawable.dialog_cancel_button_background)
-            binding.messageDialogConfirm.background = KResourceUtils.getDrawable(R.drawable.dialog_confirm_button_background)
+            binding.messageDialogCancel.background = KtXposedHelpers.getDrawable(R.drawable.dialog_cancel_button_background)
+            binding.messageDialogConfirm.background = KtXposedHelpers.getDrawable(R.drawable.dialog_confirm_button_background)
         }
         binding.messageDialogTitle.text = title
         binding.messageDialogContent.text = content
         binding.messageDialogCancel.text = cancel
         binding.messageDialogConfirm.text = confirm
         binding.messageDialogCancel.setOnClickListener {
-            onCancel.invoke()
             kDialog!!.dismiss()
+            onCancel.invoke()
         }
         binding.messageDialogConfirm.setOnClickListener {
-            onConfirm.invoke()
             kDialog!!.dismiss()
+            onConfirm.invoke()
         }
 
         kDialog!!.setView(binding.root)
@@ -141,10 +141,10 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
         kDialog = if (kDialog == null) KDialog() else kDialog
         val kDialog = if (needMultiple) KDialog() else kDialog
 
-        val dialogView = KResourceUtils.inflateView<FrameLayout>(context, R.layout.dialog_progress_layout)
+        val dialogView = KtXposedHelpers.inflateView<FrameLayout>(context, R.layout.dialog_progress_layout)
         val binding = DialogProgressLayoutBinding.bind(dialogView)
 
-        binding.progressDialogContainer.background = KResourceUtils.getDrawable(R.drawable.dialog_background)
+        binding.progressDialogContainer.background = KtXposedHelpers.getDrawable(R.drawable.dialog_background)
         binding.progressDialogBar.progress = progress
         binding.progressDialogTitle.text = title
         listener.invoke(kDialog!!, ProgressDialogNotification(binding.progressDialogBar, binding.progressDialogText))
@@ -165,25 +165,25 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
         kDialog = if (kDialog == null) KDialog() else kDialog
         val kDialog = if (needMultiple) KDialog() else kDialog
 
-        val dialogView = KResourceUtils.inflateView<FrameLayout>(context, R.layout.dialog_choice_layout)
+        val dialogView = KtXposedHelpers.inflateView<FrameLayout>(context, R.layout.dialog_choice_layout)
         val binding = DialogChoiceLayoutBinding.bind(dialogView)
 
-        binding.choiceDialogContainer.background = KResourceUtils.getDrawable(R.drawable.dialog_background)
-        binding.choiceDialogCancel.background = KResourceUtils.getDrawable(R.drawable.dialog_single_button_background)
+        binding.choiceDialogContainer.background = KtXposedHelpers.getDrawable(R.drawable.dialog_background)
+        binding.choiceDialogCancel.background = KtXposedHelpers.getDrawable(R.drawable.dialog_single_button_background)
 
         binding.choiceDialogTitle.text = title
         binding.choiceDialogCancel.text = cancel
         binding.choiceDialogCancel.setOnClickListener {
-            onCancel.invoke()
             kDialog!!.dismiss()
+            onCancel.invoke()
         }
 
         binding.choiceDialogList.adapter = DialogChoiceAdapter(context, items)
         binding.choiceDialogList.divider = ColorDrawable(Color.TRANSPARENT)
-        binding.choiceDialogList.selector = KResourceUtils.getDrawable(R.drawable.item_selector_background)
+        binding.choiceDialogList.selector = KtXposedHelpers.getDrawable(R.drawable.item_selector_background)
         binding.choiceDialogList.setOnItemClickListener { _, view, position, _ ->
-            onChoice.invoke(view, items[position], position)
             kDialog!!.dismiss()
+            onChoice.invoke(view, items[position], position)
         }
 
         kDialog!!.setView(binding.root)

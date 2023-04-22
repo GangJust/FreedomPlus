@@ -1,4 +1,4 @@
-package com.freegang.xpler.xp.bridge
+package com.freegang.xpler.core.bridge
 
 import de.robv.android.xposed.XposedHelpers
 

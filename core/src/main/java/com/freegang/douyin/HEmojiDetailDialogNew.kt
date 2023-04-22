@@ -5,12 +5,12 @@ import android.widget.TextView
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
 import com.freegang.douyin.logic.SaveEmojiLogic
+import com.freegang.xpler.core.findFieldByType
+import com.freegang.xpler.core.getObjectField
+import com.freegang.xpler.core.hookClass
+import com.freegang.xpler.core.hookMethodAll
 import com.freegang.xpler.utils.app.KActivityUtils.contentView
 import com.freegang.xpler.utils.view.KViewUtils
-import com.freegang.xpler.xp.findFieldByType
-import com.freegang.xpler.xp.getObjectField
-import com.freegang.xpler.xp.hookClass
-import com.freegang.xpler.xp.hookMethodAll
 import com.ss.android.ugc.aweme.emoji.model.Emoji
 import com.ss.android.ugc.aweme.emoji.similaremoji.EmojiDetailDialogNew
 import com.ss.android.ugc.aweme.emoji.store.view.EmojiBottomSheetDialog

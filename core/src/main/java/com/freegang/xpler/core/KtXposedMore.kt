@@ -1,13 +1,20 @@
-package com.freegang.xpler.xp
+package com.freegang.xpler.core
 
 import android.app.Activity
 import android.content.Context
+import android.content.res.XmlResourceParser
+import android.graphics.drawable.Drawable
 import android.view.View
+import androidx.annotation.AnimRes
+import androidx.annotation.AnimatorRes
+import androidx.annotation.ColorRes
+import androidx.annotation.DrawableRes
 import androidx.annotation.LayoutRes
-import com.freegang.xpler.utils.other.KResourceUtils
-import com.freegang.xpler.xp.bridge.ConstructorHook
-import com.freegang.xpler.xp.bridge.MethodHook
-import com.freegang.xpler.xp.bridge.MethodHookImpl
+import androidx.annotation.StringRes
+import com.freegang.xpler.core.KtXposedHelpers.Companion.setLpparam
+import com.freegang.xpler.core.bridge.ConstructorHook
+import com.freegang.xpler.core.bridge.MethodHook
+import com.freegang.xpler.core.bridge.MethodHookImpl
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
@@ -35,8 +42,8 @@ fun Method.hook(block: MethodHook.() -> Unit) {
  * @param args 参数列表值
  * @return 该方法被调用之后的返回值, 可能是 null 即没有返回值
  */
-fun Method.call(obj: Any, vararg args: Any?): Any? {
-    return XposedBridge.invokeOriginalMethod(this, obj, args)
+fun <T> Method.call(obj: Any, vararg args: Any?): T? {
+    return XposedBridge.invokeOriginalMethod(this, obj, args) as? T
 }
 
 
@@ -199,12 +206,12 @@ fun Any.setObjectField(fieldName: String, value: Any) {
     XposedHelpers.setObjectField(this, fieldName, value)
 }
 
-fun Any.traverseFiled(block: (type: Class<*>, name: String, value: Any?) -> Unit) {
-    this::class.java.declaredFields.forEach {
-        it.isAccessible = true
-        block.invoke(it.type, it.name, it.get(this))
-    }
-}
+/**
+ * 需要在 [de.robv.android.xposed.callbacks.XC_LoadPackage.handleLoadPackage] 时
+ * 调用 [setLpparam]方法进行存储, 否则将无法使用
+ * 可以参考 [com.freegang.xpler.HookInit.handleLoadPackage] 的实现
+ */
+val Any.lpparam: XC_LoadPackage.LoadPackageParam get() = KtXposedHelpers.lpparam
 
 
 //String
@@ -215,7 +222,6 @@ fun Any.traverseFiled(block: (type: Class<*>, name: String, value: Any?) -> Unit
  * @throws ClassNotFoundError
  * @return 被找到的类
  */
-@Throws(ClassNotFoundError::class)
 fun String.toClass(classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER): Class<*>? {
     return XposedHelpers.findClass(this, classLoader)
 }
@@ -227,7 +233,6 @@ fun String.toClass(classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER): Cla
  * @throws ClassNotFoundError
  * @return KtXposedHelpers
  */
-@Throws(ClassNotFoundError::class)
 fun String.hookClass(classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER): KtXposedHelpers {
     val clazz = XposedHelpers.findClass(this, classLoader)
     return KtXposedHelpers.hookClass(clazz)
@@ -242,7 +247,6 @@ fun String.hookClass(classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER): K
  * @throws ClassNotFoundError|NoSuchMethodException
  * @return KtXposedHelpers
  */
-@Throws(ClassNotFoundError::class, NoSuchMethodException::class)
 fun String.hookMethod(classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER, vararg argsTypes: Any, block: MethodHook.() -> Unit)
         : KtXposedHelpers {
     if (!this.contains("#")) throw NoSuchMethodException("please refer to: \"com.xxx.ClassName#MethodName\".hookMethod(...)")
@@ -384,12 +388,52 @@ fun ClassLoader.findClassByXposed(className: String): Class<*>? {
  * 需要注意的是, 模块中的xml不能直接引入模块自身的资源文件,
  * 如: @color/module_blank, @drawable/ic_logo 等
  *
- * 否则无法加载成功, 如需使用模块中的资源, 见: [KResourceUtils]
+ * 否则无法加载成功, 如需使用模块中的资源, 见: [KtXposedHelpers]
  *
  * @param id module layout xml id
  */
 fun <T : View> Context.inflateModuleView(@LayoutRes id: Int): T {
-    return KResourceUtils.inflateView(this, id)
+    return KtXposedHelpers.inflateView(this, id)
+}
+
+/**
+ * 获取模块中的 drawable
+ *
+ * @param id id
+ * @return Drawable
+ */
+fun Context.getModuleDrawable(@DrawableRes id: Int): Drawable? {
+    return KtXposedHelpers.getDrawable(id)
+}
+
+/**
+ * 获取模块中的 color
+ *
+ * @param id id
+ * @return color int
+ */
+fun Context.getModuleColor(@ColorRes id: Int): Int {
+    return KtXposedHelpers.getColor(id)
+}
+
+/**
+ * 获取模块中的 Animation
+ *
+ * @param id id
+ * @return Animation XmlResourceParser
+ */
+fun Context.getAnimation(@AnimatorRes @AnimRes id: Int): XmlResourceParser {
+    return KtXposedHelpers.getAnimation(id)
+}
+
+/**
+ * 获取模块中的 String
+ *
+ * @param id id
+ * @return String
+ */
+fun Context.getString(@StringRes id: Int): String {
+    return KtXposedHelpers.moduleRes.getString(id)
 }
 
 
@@ -458,26 +502,6 @@ fun XC_MethodHook.MethodHookParam.xposedLog(log: String) {
  */
 fun XC_MethodHook.MethodHookParam.xposedLog(log: Throwable) {
     XposedBridge.log(log)
-}
-
-/**
- * 遍历被Hook的某个方法中的参数列表, 如果参数列表为空, 代码块不执行
- *
- * @param block 代码块
- */
-fun XC_MethodHook.MethodHookParam.forEachArgs(block: (any: Any) -> Unit) {
-    if (args == null || args.isEmpty()) return
-    this.args.forEach(block)
-}
-
-/**
- * 遍历被Hook的某个方法中的参数列表, 如果参数列表为空, 代码块不执行
- *
- * @param block 代码块
- */
-fun XC_MethodHook.MethodHookParam.forEachIndexArgs(block: (index: Int, any: Any) -> Unit) {
-    if (args == null || args.isEmpty()) return
-    this.args.forEachIndexed(block)
 }
 
 /**
