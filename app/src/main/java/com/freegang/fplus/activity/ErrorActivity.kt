@@ -26,9 +26,9 @@ import com.freegang.fplus.FreedomTheme
 import com.freegang.fplus.Themes
 import com.freegang.fplus.resource.StringRes
 import com.freegang.fplus.viewmodel.AppVM
-import com.freegang.xpler.utils.app.KAppVersionUtils.appLabelName
-import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionCode
-import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionName
+import com.freegang.xpler.utils.app.appLabelName
+import com.freegang.xpler.utils.app.appVersionCode
+import com.freegang.xpler.utils.app.appVersionName
 import com.freegang.xpler.utils.log.KLogCat
 
 class ErrorActivity : ComponentActivity() {

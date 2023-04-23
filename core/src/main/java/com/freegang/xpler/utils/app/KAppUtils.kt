@@ -1,12 +1,18 @@
 package com.freegang.xpler.utils.app
 
+import android.Manifest
+import android.app.Application
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.Environment
+import android.provider.Settings
+import androidx.core.content.PermissionChecker
 import java.io.File
+import kotlin.io.path.ExperimentalPathApi
 
-object KAppVersionUtils {
+object KAppUtils {
 
     /**
      * 返回某个App的版本名
@@ -107,10 +113,30 @@ object KAppVersionUtils {
         return versionName1.compareTo(versionName2, true)
     }
 
-    ///
-    val Context.appLabelName get() = this.resources.getString(getPackageInfo(this).applicationInfo.labelRes)
-
-    val Context.appVersionName get() = getVersionName(this)
-
-    val Context.appVersionCode get() = getVersionCode(this)
+    /**
+     * 判断是否具有某个权限
+     * @param application Application
+     * @param permission 权限名
+     */
+    @JvmStatic
+    fun checkPermission(application: Application, permission: String): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // 管理外部存储
+            if (permission == Manifest.permission.MANAGE_EXTERNAL_STORAGE) return Environment.isExternalStorageManager()
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            //悬浮窗
+            if (permission == Manifest.permission.SYSTEM_ALERT_WINDOW) return Settings.canDrawOverlays(application)
+            //修改系统设置
+            if (permission == Manifest.permission.WRITE_SETTINGS) return Settings.System.canWrite(application)
+        }
+        return PermissionChecker.checkSelfPermission(application, permission) == PermissionChecker.PERMISSION_GRANTED
+    }
 }
+
+///
+val Context.appLabelName get() = this.resources.getString(KAppUtils.getPackageInfo(this).applicationInfo.labelRes)
+
+val Context.appVersionName get() = KAppUtils.getVersionName(this)
+
+val Context.appVersionCode get() = KAppUtils.getVersionCode(this)

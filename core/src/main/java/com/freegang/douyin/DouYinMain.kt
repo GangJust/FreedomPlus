@@ -6,7 +6,7 @@ import com.freegang.config.Config
 import com.freegang.xpler.core.EmptyHook
 import com.freegang.xpler.core.hookClass
 import com.freegang.xpler.utils.app.KAppCrashUtils
-import com.freegang.xpler.utils.io.KStorageUtils.hasOperationStorage
+import com.freegang.xpler.utils.io.hasOperationStorage
 import com.freegang.xpler.utils.log.KLogCat
 import com.ss.android.ugc.aweme.app.host.AwemeHostApplication
 import de.robv.android.xposed.callbacks.XC_LoadPackage

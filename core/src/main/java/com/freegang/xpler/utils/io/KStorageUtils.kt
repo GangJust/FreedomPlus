@@ -51,13 +51,14 @@ object KStorageUtils {
             return false
         }
     }
-
-    val Context.storageRootPath: String
-        get() = getStoragePath(this)
-
-    val Context.storageRootFile: File
-        get() = getStoragePath(this).toFile()
-
-    val Context.hasOperationStorage: Boolean
-        get() = hasOperationStorage(this)
 }
+
+///
+val Context.storageRootPath: String
+    get() = KStorageUtils.getStoragePath(this)
+
+val Context.storageRootFile: File
+    get() = KStorageUtils.getStoragePath(this).toFile()
+
+val Context.hasOperationStorage: Boolean
+    get() = KStorageUtils.hasOperationStorage(this)

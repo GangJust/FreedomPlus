@@ -23,6 +23,8 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
+import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.lifecycleScope
 import com.freegang.fplus.FreedomTheme
 import com.freegang.fplus.R
@@ -32,10 +34,12 @@ import com.freegang.fplus.component.*
 import com.freegang.fplus.resource.StringRes
 import com.freegang.fplus.viewmodel.HomeVM
 import com.freegang.xpler.HookStatus
-import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionName
+import com.freegang.xpler.utils.app.appVersionName
+import com.freegang.xpler.utils.io.storageRootPath
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import kotlin.random.Random
 
 
@@ -600,12 +604,7 @@ class HomeActivity : ComponentActivity() {
                             indication = null,
                             interactionSource = remember { MutableInteractionSource() },
                             onClick = {
-                                startActivity(
-                                    Intent().apply {
-                                        action = "com.android.fileexplorer.export.VIEW_HOME"
-                                        addCategory("android.intent.category.DEFAULT")
-                                    }
-                                )
+
                             }
                         ),
                 )

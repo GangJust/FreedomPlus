@@ -14,7 +14,7 @@ import com.freegang.douyin.logic.SaveEmojiLogic
 import com.freegang.xpler.R
 import com.freegang.xpler.core.*
 import com.freegang.xpler.databinding.HookAppbarLayoutBinding
-import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionName
+import com.freegang.xpler.utils.app.appVersionName
 import com.ss.android.ugc.aweme.detail.ui.DetailActivity
 import com.ss.android.ugc.aweme.familiar.feed.slides.detail.SlidesDetailActivity
 import com.ss.android.ugc.aweme.feed.model.Aweme

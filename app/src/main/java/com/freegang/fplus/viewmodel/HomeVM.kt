@@ -9,10 +9,10 @@ import com.freegang.config.Config
 import com.freegang.config.Version
 import com.freegang.config.VersionConfig
 import com.freegang.webdav.WebDav
-import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionCode
-import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionName
+import com.freegang.xpler.utils.app.appVersionCode
+import com.freegang.xpler.utils.app.appVersionName
 import com.freegang.xpler.utils.io.KFileUtils.child
-import com.freegang.xpler.utils.io.KStorageUtils.storageRootFile
+import com.freegang.xpler.utils.io.storageRootFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

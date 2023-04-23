@@ -5,7 +5,7 @@ import android.os.Environment
 import android.util.JsonWriter
 import com.freegang.xpler.utils.io.KFileUtils.child
 import com.freegang.xpler.utils.io.KFileUtils.need
-import com.freegang.xpler.utils.io.KStorageUtils.storageRootFile
+import com.freegang.xpler.utils.io.storageRootFile
 import com.freegang.xpler.utils.json.KJSONUtils
 import com.freegang.xpler.utils.json.KJSONUtils.getBooleanOrDefault
 import com.freegang.xpler.utils.json.KJSONUtils.getLongOrDefault

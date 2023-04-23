@@ -7,15 +7,29 @@ import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.charset.StandardCharsets
+import java.security.cert.X509Certificate
+import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 
 object KHttpUtils {
-    private const val DEFAULT_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
+    val ANDROUD_UA get() = System.getProperty("http.agent")
 
     private fun commonConnection(url: URL): HttpURLConnection {
         val connect: HttpURLConnection = url.openConnection() as HttpURLConnection
         connect.requestMethod = "GET"
-        connect.setRequestProperty("User-Agent", DEFAULT_UA)
+        connect.connectTimeout = 5000
+        connect.readTimeout = 5000
+        connect.instanceFollowRedirects = true
+        connect.useCaches = false
+        connect.doInput = true
+        connect.setRequestProperty("User-Agent", ANDROUD_UA)
         connect.setRequestProperty("Accept", "*/*")
+        // 如果是 HTTPS 请求，信任所有证书
+        if (connect is HttpsURLConnection) {
+            trustAllHosts()
+        }
         return connect
     }
 
@@ -38,9 +52,7 @@ object KHttpUtils {
         var connect: HttpURLConnection? = null
         try {
             connect = commonConnection(URL(sourceUrl))
-            val inputStream = if (connect.responseCode == HttpURLConnection.HTTP_OK
-                || connect.responseCode == HttpURLConnection.HTTP_CREATED
-            ) {
+            val inputStream = if (connect.responseCode == HttpURLConnection.HTTP_OK || connect.responseCode == HttpURLConnection.HTTP_CREATED) {
                 InputStreamReader(connect.inputStream, StandardCharsets.UTF_8)
             } else {
                 InputStreamReader(connect.errorStream, StandardCharsets.UTF_8)
@@ -60,38 +72,6 @@ object KHttpUtils {
             }
         }
         return body
-    }
-
-    /**
-     * 获取重定向地址
-     *
-     * @param sourceUrl 目标URL地址
-     * @return 重定向后的地址
-     */
-    @JvmStatic
-    fun getRedirectsUrl(sourceUrl: String): String {
-        var redirectUrl = ""
-        var connect: HttpURLConnection? = null
-        try {
-            connect = commonConnection(URL(sourceUrl))
-            connect.instanceFollowRedirects = false
-            redirectUrl = if (connect.responseCode == 302) {
-                connect.getHeaderField("Location")
-            } else {
-                connect.url.toString()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            KLogCat.e("发生异常:\n${e.stackTraceToString()}")
-        } finally {
-            try {
-                connect?.disconnect()
-            } catch (e: IOException) {
-                e.printStackTrace()
-                KLogCat.e("发生异常:\n${e.stackTraceToString()}")
-            }
-        }
-        return redirectUrl
     }
 
     /**
@@ -147,5 +127,32 @@ object KHttpUtils {
     @FunctionalInterface
     interface DownloadListener {
         fun downloading(real: Int, total: Int, isInterrupt: Boolean)
+    }
+
+    /**
+     * 信任所有证书
+     */
+    private fun trustAllHosts() {
+        try {
+            HttpsURLConnection.setDefaultHostnameVerifier { _, _ -> true }
+            val sslContext = SSLContext.getInstance("TLS")
+            sslContext.init(null, arrayOf<TrustManager>(TrustAllCerts()), null)
+            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.socketFactory)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    /**
+     * 自定义的 TrustManager 实现，信任所有证书
+     */
+    private class TrustAllCerts : X509TrustManager {
+        override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {}
+
+        override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {}
+
+        override fun getAcceptedIssuers(): Array<X509Certificate> {
+            return arrayOf()
+        }
     }
 }

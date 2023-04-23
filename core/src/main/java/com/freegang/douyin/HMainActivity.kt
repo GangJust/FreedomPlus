@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.text.Html
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat.startActivity
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
 import com.freegang.config.Version
@@ -21,8 +20,8 @@ import com.freegang.xpler.core.findMethodsByReturnType
 import com.freegang.xpler.core.thisActivity
 import com.freegang.xpler.core.thisContext
 import com.freegang.xpler.utils.app.KActivityUtils.contentView
-import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionCode
-import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionName
+import com.freegang.xpler.utils.app.appVersionCode
+import com.freegang.xpler.utils.app.appVersionName
 import com.freegang.xpler.utils.view.KViewUtils
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.main.MainActivity

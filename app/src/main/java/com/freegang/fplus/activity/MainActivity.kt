@@ -14,66 +14,71 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Text
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
 import com.freegang.fplus.FreedomTheme
 import com.freegang.fplus.Themes
 import com.freegang.fplus.component.FMessageDialog
 
 class MainActivity : ComponentActivity() {
-
-    private val requestMultiplePermissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { map ->
-        val denied = map.filterValues { !it }.mapNotNull { it.key }
-        if (denied.isEmpty()) {
-            toHomeActivity()
-            return@registerForActivityResult
+    /// Android 11+
+    private val startActivityForResultByStorageManager =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                // 管理外部存储权限
+                if (!Environment.isExternalStorageManager()) {
+                    Toast.makeText(applicationContext, "Android11+ 必须申请该权限!", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
-        //处理未授予权限
-        Toast.makeText(applicationContext, "请开启必要权限!", Toast.LENGTH_SHORT).show()
-        startActivity(
-            Intent(
-                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                Uri.parse("package:${packageName}")
-            )
-        )
-    }
+    /// Android 11-
+    private val requestMultiplePermissions =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            if (permissions.all { it.value }) {
+                startHomeActivity()
+            } else {
+                Toast.makeText(applicationContext, "请开启必要权限!", Toast.LENGTH_SHORT).show()
+                startActivity(
+                    Intent(
+                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.parse("package:${packageName}")
+                    )
+                )
+            }
+        }
 
     /// 检查是否具有某个权限
     private fun checkPermission(permission: String): Boolean {
-        return PermissionChecker.checkSelfPermission(application, permission) == PermissionChecker.PERMISSION_GRANTED
+        return ContextCompat.checkSelfPermission(this, permission) == PermissionChecker.PERMISSION_GRANTED
     }
 
-    /// 请求权限
+    /// 外置存储器读/写权限
     private fun requestPermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {  //Android11+ 必须要的管理外部存储完全管理权限, 跳转
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // Android11+ 检查管理外部存储权限
             if (!Environment.isExternalStorageManager()) {
-                startActivity(
+                startActivityForResultByStorageManager.launch(
                     Intent(
                         Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
                         Uri.parse("package:${packageName}")
                     )
                 )
-                return
             }
-        } else {  //Android11以下, 必须要的外部存储读写权限
-            val permissions = arrayOf(
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            )
-            if (!checkPermission(permissions[0]) || !checkPermission(permissions[1])) {
+        } else {
+            // Android11- 检查文件读写权限
+            if (!permissions.all { checkPermission(it) }) {
                 requestMultiplePermissions.launch(permissions)
-                return
             }
         }
-        toHomeActivity()
     }
 
     /// 进入App
-    private fun toHomeActivity() {
+    private fun startHomeActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (!Environment.isExternalStorageManager()) return
         } else {
-            if (!checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) return
+            if (!permissions.all { checkPermission(it) }) return
         }
 
         startActivity(Intent(application, HomeActivity::class.java))
@@ -117,6 +122,13 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
-        toHomeActivity()
+        startHomeActivity()
+    }
+
+    companion object {
+        private val permissions = arrayOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        )
     }
 }

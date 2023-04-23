@@ -8,9 +8,6 @@ import android.os.Looper
 import android.os.Process
 import android.widget.Toast
 import com.freegang.xpler.utils.app.KActivityUtils.topActivity
-import com.freegang.xpler.utils.app.KAppVersionUtils.appLabelName
-import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionCode
-import com.freegang.xpler.utils.app.KAppVersionUtils.appVersionName
 import com.freegang.xpler.utils.log.KLogCat
 import kotlin.system.exitProcess
 
