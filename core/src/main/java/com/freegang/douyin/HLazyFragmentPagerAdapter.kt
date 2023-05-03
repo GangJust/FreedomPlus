@@ -18,13 +18,13 @@ class HLazyFragmentPagerAdapter(lpparam: XC_LoadPackage.LoadPackageParam) : KtOn
             .methodAllByName("finishUpdate") {
                 onAfter {
                     val viewGroup = argsOrEmpty[0] as? ViewGroup ?: return@onAfter
-                    changeView(viewGroup)
+                    changeViewAlpha(viewGroup)
                 }
             }
     }
 
     //透明度
-    private fun changeView(viewGroup: ViewGroup) {
+    private fun changeViewAlpha(viewGroup: ViewGroup) {
         if (!config.isTranslucent) return
         val views = KViewUtils.findViewsExact(viewGroup, View::class.java) {
             var result = it::class.java.name.contains("FeedRightScaleView") //点赞、评论..

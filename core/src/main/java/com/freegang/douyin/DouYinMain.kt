@@ -11,11 +11,12 @@ import com.freegang.xpler.utils.log.KLogCat
 import com.ss.android.ugc.aweme.app.host.AwemeHostApplication
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.luckypray.dexkit.DexKitBridge
+import java.lang.reflect.Method
 
 class DouYinMain(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHook>(lpparam) {
     companion object {
-        private var _commonPageFragment: Class<*>? = null
-        val commonPageFragment get() = _commonPageFragment!!
+        var commonPageClazz: Class<*>? = null
+        var emojiMethods: List<Method> = emptyList()
     }
 
     override fun onInit() {
@@ -59,10 +60,19 @@ class DouYinMain(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHook>
     private fun initDexKit() {
         System.loadLibrary("dexkit")
         DexKitBridge.create(lpparam.appInfo.sourceDir)?.use { bridge ->
-            val findMaps = bridge.batchFindClassesUsingStrings {
-                addQuery("CommonPageFragment", setOf("a1128.b7947", "DetailActOtherNitaView"))
+            if (commonPageClazz == null) {
+                val findMaps = bridge.batchFindClassesUsingStrings {
+                    addQuery("CommonPage", setOf("a1128.b7947", "DetailActOtherNitaView"))
+                }
+                commonPageClazz = findMaps["CommonPage"]?.firstOrNull()?.getClassInstance(lpparam.classLoader)
             }
-            _commonPageFragment = findMaps["CommonPageFragment"]?.first()?.getClassInstance(lpparam.classLoader)
+
+            if (emojiMethods.isEmpty()) {
+                emojiMethods = bridge.findMethod {
+                    methodReturnType = "V"
+                    methodParamTypes = arrayOf("Lcom/ss/android/ugc/aweme/emoji/model/Emoji;")
+                }.filter { it.isMethod }.map { it.getMethodInstance(lpparam.classLoader) }
+            }
         }
     }
 }

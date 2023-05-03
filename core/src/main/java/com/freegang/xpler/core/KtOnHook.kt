@@ -10,7 +10,7 @@ import java.lang.reflect.ParameterizedType
 /// 使用案例, 详见: https://github.com/GangJust/Xpler/blob/main/docs/readme.md
 
 @Target(AnnotationTarget.FIELD)
-annotation class FieldGet(val name: String, val tag: String)
+annotation class FieldGet(val name: String, val tag: String = "")
 
 @Target(AnnotationTarget.FUNCTION)
 annotation class OnBefore(val name: String, val unhook: Boolean = false)
@@ -44,24 +44,27 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
 
     init {
         mTargetClazz = this.setTargetClass()
-        if (mTargetClazz != EmptyHook::class.java) {
-            if (targetClazz == Any::class.java) throw ClassFormatError("Please override the `setTargetClass()` to specify the hook target class!")
-            hookHelper = KtXposedHelpers.hookClass(targetClazz)
+        run {
+            if (mTargetClazz == NoneHook::class.java) return@run
+            if (mTargetClazz != EmptyHook::class.java) {
+                if (targetClazz == Any::class.java) throw ClassFormatError("Please override the `setTargetClass()` to specify the hook target class!")
+                hookHelper = KtXposedHelpers.hookClass(targetClazz)
 
-            getMineAllMethods()
-            getMineAllFields()
+                getMineAllMethods()
+                getMineAllFields()
 
-            invOnBefore()
-            invOnAfter()
-            invOnReplace()
+                invOnBefore()
+                invOnAfter()
+                invOnReplace()
 
-            invOnConstructorBefore()
-            invOnConstructorAfter()
-            invOnConstructorReplace()
+                invOnConstructorBefore()
+                invOnConstructorAfter()
+                invOnConstructorReplace()
 
-            defaultHookAllMethod()
+                defaultHookAllMethod()
+            }
+            this.onInit()
         }
-        this.onInit()
     }
 
     /**
@@ -140,7 +143,6 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
 
             hookHelper?.method(key.name.ifEmpty { value.name }, *getTargetMethodParamTypes(value)) {
                 onAfter {
-                    //KLogCat.d("测试1: ${method.name}")
                     val invArgs = arrayOf(this, *argsOrEmpty)
                     setAnyField(thisObject, fieldMap)
                     value.invoke(this@KtOnHook, *invArgs)
@@ -348,4 +350,12 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     }
 }
 
+/**
+ * 当某个Hook目标类未知时, 可以通过泛型该类进行占位
+ */
 class EmptyHook {}
+
+/**
+ * 该类一般用在 [KtOnHook.setTargetClass] 时, 将不会执行该Hook目标的逻辑
+ */
+class NoneHook {}

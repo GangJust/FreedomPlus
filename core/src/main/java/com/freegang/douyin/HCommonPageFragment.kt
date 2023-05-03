@@ -9,6 +9,7 @@ import com.freegang.base.BaseHook
 import com.freegang.douyin.logic.SaveCommentLogic
 import com.freegang.xpler.R
 import com.freegang.xpler.core.KtXposedHelpers
+import com.freegang.xpler.core.NoneHook
 import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.call
 import com.freegang.xpler.core.findMethodsByReturnType
@@ -20,24 +21,24 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlinx.coroutines.delay
 
 class HCommonPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Any>(lpparam) {
-    override fun setTargetClass(): Class<*> = DouYinMain.commonPageFragment
+    override fun setTargetClass(): Class<*> = DouYinMain.commonPageClazz ?: NoneHook::class.java
 
     @OnAfter("onViewCreated")
     fun onViewCreatedAfter(param: XC_MethodHook.MethodHookParam, view: View, bundle: Bundle?) {
         hookBlock(param) {
-            rebuildDetailFragmentTopBarView(thisObject, view as ViewGroup)
+            rebuildTopBarView(thisObject, view as ViewGroup)
         }
     }
 
-    private fun rebuildDetailFragmentTopBarView(thisObject: Any, view: ViewGroup) {
+    private fun rebuildTopBarView(thisObject: Any, view: ViewGroup) {
         launch {
             delay(200L)
 
             val methods = thisObject.findMethodsByReturnType(Aweme::class.java)
-            val aweme = methods.first().call<Aweme>(thisObject) ?: return@launch
+            val aweme = methods.firstOrNull()?.call<Aweme>(thisObject) ?: return@launch
 
-            // awemeType 【134:评论区图片, 133:评论区视频, 0:主页视频详情, 68:主页图文详情】 by 25.1.0
-            if (aweme.awemeType == 0 || aweme.awemeType == 68) return@launch
+            // awemeType 【134:评论区图片, 133:评论区视频, 0:主页视频详情, 68:主页图文详情, 13:好友分享视频/图文】 by 25.1.0、25.2.0
+            if (aweme.awemeType == 0 || aweme.awemeType == 68 || aweme.awemeType == 13) return@launch
 
             val views = KViewUtils.findViewsByDesc(view, ImageView::class.java, "返回")
             if (views.isEmpty()) return@launch

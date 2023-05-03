@@ -11,11 +11,11 @@ class ClipboardLogic(
     private var primaryClipChangedListener: ClipboardManager.OnPrimaryClipChangedListener? = null
 
     // 添加剪贴板监听
-    fun addClipboardListener(context: Context, notify: (clipData: ClipData?) -> Unit) {
+    fun addClipboardListener(context: Context, notify: (clipData: ClipData) -> Unit) {
         val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         primaryClipChangedListener = ClipboardManager.OnPrimaryClipChangedListener {
-            val clipData = clipboardManager.primaryClip
-            if (!clipboardManager.hasPrimaryClip() || clipData!!.itemCount <= 0) return@OnPrimaryClipChangedListener
+            if (!clipboardManager.hasPrimaryClip() || (clipboardManager.primaryClip?.itemCount ?: 0) <= 0) return@OnPrimaryClipChangedListener
+            val clipData = clipboardManager.primaryClip!!
 
             //获取剪贴板内容
             val clipDataItem = clipData.getItemAt(0)

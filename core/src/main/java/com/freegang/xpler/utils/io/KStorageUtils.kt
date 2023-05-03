@@ -41,14 +41,15 @@ object KStorageUtils {
      * @return File
      */
     @JvmStatic
+    @Synchronized
     fun hasOperationStorage(context: Context): Boolean {
-        try {
+        return try {
             val test = getStorageFile(context).child(".temp")
             val created = test.createNewFile()
-            if (created || test.exists()) return test.delete()
-            return true
+            if (created || test.exists()) test.delete()
+            true
         } catch (e: Exception) {
-            return false
+            false
         }
     }
 }

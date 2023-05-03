@@ -21,10 +21,10 @@ class SaveCommentLogic(
 
     init {
         if (aweme != null) {
-            val imageUrl = aweme.images ?: emptyList()
-            val videoUrl = aweme.video?.h264PlayAddr?.urlList ?: emptyList()
+            val imageUrl = getImagesUrlList(aweme)
+            val videoUrl = getVideoUrlList(aweme)
             if (imageUrl.isNotEmpty()) {
-                onSaveCommentImage(imageUrl.first().urlList)
+                onSaveCommentImage(imageUrl)
             } else if (videoUrl.isNotEmpty()) {
                 onSaveCommentVideo(videoUrl)
             } else {
@@ -35,13 +35,22 @@ class SaveCommentLogic(
         }
     }
 
+    private fun getVideoUrlList(aweme: Aweme): List<String> {
+        val video = aweme.video ?: return emptyList()
+        return video.h264PlayAddr?.urlList ?: video.playAddrH265?.urlList ?: video.playAddr?.urlList ?: emptyList()
+    }
+
+    private fun getImagesUrlList(aweme: Aweme): List<String> {
+        val image = aweme.images ?: return emptyList()
+        if (image.isEmpty()) return emptyList()
+        return image.first()?.urlList ?: return emptyList()
+    }
+
     // 保存评论区图片
     private fun onSaveCommentImage(urlList: List<String>) {
         hook.launch {
             //默认保存路径: `/外置存储器/DCIM/Freedom/emoji`
-            val parentPath = Config.getFreedomDir(context)
-                .child("emoji")
-                .need()
+            val parentPath = Config.getFreedomDir(context).child("emoji").need()
 
             //构建保存文件名
             val file = File(parentPath, "${System.currentTimeMillis() / 1000}.gif")
@@ -62,7 +71,7 @@ class SaveCommentLogic(
     // 保存评论区视频
     private fun onSaveCommentVideo(urlList: List<String>) {
         hook.launch {
-            //默认保存路径: `/外置存储器/DCIM/Freedom/emoji`
+            //默认保存路径: `/外置存储器/DCIM/Freedom/video/comment`
             val parentPath = Config.getFreedomDir(context).child("video").child("comment").need()
 
             //构建保存文件名

@@ -19,16 +19,13 @@ class SaveEmojiLogic(
 ) {
 
     init {
-        onSaveEmoji(context, urlList)
+        onSaveEmoji(urlList)
     }
 
-    // 保存评论区图片
-    private fun onSaveEmoji(context: Context, urlList: List<String>) {
+    private fun onSaveEmoji(urlList: List<String>) {
         hook.launch {
             //默认保存路径: `/外置存储器/DCIM/Freedom/emoji`
-            val parentPath = Config.getFreedomDir(context)
-                .child("emoji")
-                .need()
+            val parentPath = Config.getFreedomDir(context).child("emoji").need()
 
             //构建保存文件名
             val file = File(parentPath, "${System.currentTimeMillis() / 1000}.gif")

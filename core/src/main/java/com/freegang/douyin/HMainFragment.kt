@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
-import com.freegang.xpler.core.EmptyHook
+import com.freegang.xpler.core.FieldGet
 import com.freegang.xpler.core.hookClass
 import com.freegang.xpler.utils.view.KViewUtils
 import com.ss.android.ugc.aweme.homepage.ui.view.MainFlippableViewPager
@@ -14,11 +14,20 @@ import com.ss.android.ugc.aweme.homepage.ui.view.MainTabStripScrollView
 import com.ss.android.ugc.aweme.main.MainFragment
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
-class HMainFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHook>(lpparam) {
+class HMainFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainFragment>(lpparam) {
     private val config get() = Config.get()
 
+    @FieldGet("mCommonTitleBar", tag = "MainTitleBar")
+    val mCommonTitleBar: View? = null
+
     override fun onInit() {
-        lpparam.hookClass(MainFragment::class.java)
+        lpparam.hookClass(targetClazz)
+            .methodAll {
+                onAfter {
+                    if (!config.isTranslucent) return@onAfter
+                    mCommonTitleBar?.alpha = 0.5f
+                }
+            }
             .method("onViewCreated", View::class.java, Bundle::class.java) {
                 onAfter {
                     if (!config.isHideTab) return@onAfter

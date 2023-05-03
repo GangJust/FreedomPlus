@@ -11,7 +11,6 @@ import com.freegang.config.Config
 import com.freegang.config.Version
 import com.freegang.douyin.logic.ClipboardLogic
 import com.freegang.douyin.logic.DownloadLogic
-import com.freegang.xpler.core.KtXposedHelpers
 import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.OnBefore
 import com.freegang.xpler.core.call
@@ -31,7 +30,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
-class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainActivity>(KtXposedHelpers.lpparam) {
+class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainActivity>(lpparam) {
     private val config get() = Config.get()
     private val clipboardLogic = ClipboardLogic(this)
     private val supportVersions = listOf(
@@ -52,6 +51,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         "24.9.0",
         "25.0.0",
         "25.1.0",
+        "25.2.0",
     )
 
     @OnAfter(name = "onCreate")
@@ -64,7 +64,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
     @OnAfter(name = "onResume")
     fun onResume(it: XC_MethodHook.MethodHookParam) {
         hookBlock(it) {
-            changeView(thisActivity.contentView)
+            changeViewAlpha(thisActivity.contentView)
             showSupportDialog(thisActivity as MainActivity)
             checkVersionDialog(thisActivity as MainActivity)
             addClipboardListener(thisActivity as MainActivity)
@@ -86,7 +86,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         }
 
         if (aweme == null) {
-            val curFragment = activity.findMethod("getCurFragment", *arrayOf<Any>())?.call<Any>(activity)
+            val curFragment = activity.findMethod("getCurFragment", *emptyArray<Any>())?.call<Any>(activity)
             val curFragmentMethods = curFragment?.findMethodsByReturnType(Aweme::class.java) ?: listOf()
             if (curFragmentMethods.isNotEmpty()) {
                 aweme = curFragmentMethods.first().call(curFragment!!)
@@ -104,7 +104,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
     }
 
     //透明度
-    private fun changeView(viewGroup: ViewGroup) {
+    private fun changeViewAlpha(viewGroup: ViewGroup) {
         if (!config.isTranslucent) return
         launch {
             delay(200L)
@@ -118,6 +118,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
     }
 
     //抖音版本(版本是否兼容提示)
+    @Synchronized
     private fun showSupportDialog(activity: MainActivity) {
         val versionName = activity.appVersionName
         val versionCode = activity.appVersionCode
@@ -132,9 +133,9 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
                 title = "Freedom+",
                 content = Html.fromHtml(
                     """当前抖音版本为: <span style='color:#F56C6C;'>${versionName}</span><br/>
-                       Freedom+已经兼容适配以下版本:<br/>
+                       Freedom+最小兼容以下版本:<br/>
                        ${supportVersions.joinToString(", ") { s -> if (s == versionName) "<span style='color:#F56C6C;'>$s</span>" else s }}<br/>
-                       ${if (supportVersions.contains(versionName)) "当前版本已兼容适配!" else "当前版本<span style='color:#F56C6C;'>不能保证</span>所有功能都正常使用!"}
+                       适配列表仅作为参考，请自行测试各项功能！
                        """.trimIndent()
                 ),
                 cancel = "此版本不再提示",
@@ -150,6 +151,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
     }
 
     //检查模块版本
+    @Synchronized
     private fun checkVersionDialog(activity: MainActivity) {
         launch {
             delay(2000L)

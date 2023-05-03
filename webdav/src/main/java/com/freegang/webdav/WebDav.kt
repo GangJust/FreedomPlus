@@ -1,6 +1,5 @@
 package com.freegang.webdav
 
-import android.util.Log
 import com.thegrizzlylabs.sardineandroid.DavResource
 import com.thegrizzlylabs.sardineandroid.impl.OkHttpSardine
 import kotlinx.coroutines.Dispatchers
@@ -79,7 +78,6 @@ class WebDav(
      */
     suspend fun put(file: File, path: String = "/") {
         withContext(Dispatchers.IO) {
-            Log.d("GLog", "上传文件: ${host.plus("/$path/${file.name}".format())}")
             mSardine.put(host.plus("/$path/${file.name}".format()), file, null, true)
         }
     }
