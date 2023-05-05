@@ -53,7 +53,6 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook
             launch {
                 delay(500L)
 
-                //重新构建当前视图
                 val emojiDialog = thisObject as EmojiDetailDialogNew
                 if (urlList.isEmpty()) return@launch
 
@@ -62,6 +61,7 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook
                 if (views.isEmpty()) return@launch
                 views.first().apply {
                     text = "添加表情 (长按保存)"
+                    isHapticFeedbackEnabled = false
                     setOnLongClickListener {
                         SaveEmojiLogic(this@HEmojiDetailDialogNew, it.context, urlList)
                         true

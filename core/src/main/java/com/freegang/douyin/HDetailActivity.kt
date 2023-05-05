@@ -13,7 +13,6 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 class HDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<DetailActivity>(lpparam) {
     private val config get() = Config.get()
     private val clipboardLogic = ClipboardLogic(this)
-    private var commentAweme: Aweme? = null
 
     @OnAfter("onResume")
     fun onResume(it: XC_MethodHook.MethodHookParam) {

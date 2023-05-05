@@ -58,7 +58,7 @@ class SaveCommentLogic(
                 KHttpUtils.download(urlList.first(), FileOutputStream(file)) { real, total, isInterrupt ->
                     if (real >= total) {
                         hook.showToast(context, "保存成功!")
-                        hook.vibrate(context, 100L)
+                        hook.vibrate(context, 5L)
                     }
                     if (isInterrupt) {
                         hook.showToast(context, "保存失败!")
@@ -80,7 +80,7 @@ class SaveCommentLogic(
                 KHttpUtils.download(urlList.first(), FileOutputStream(file)) { real, total, isInterrupt ->
                     if (real >= total) {
                         hook.showToast(context, "保存成功!")
-                        hook.vibrate(context, 100L)
+                        hook.vibrate(context, 5L)
                     }
                     if (isInterrupt) {
                         hook.showToast(context, "保存失败!")

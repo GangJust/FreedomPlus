@@ -37,8 +37,8 @@ class HCommonPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<A
             val methods = thisObject.findMethodsByReturnType(Aweme::class.java)
             val aweme = methods.firstOrNull()?.call<Aweme>(thisObject) ?: return@launch
 
-            // awemeType 【134:评论区图片, 133:评论区视频, 0:主页视频详情, 68:主页图文详情, 13:好友分享视频/图文】 by 25.1.0、25.2.0
-            if (aweme.awemeType == 0 || aweme.awemeType == 68 || aweme.awemeType == 13) return@launch
+            // awemeType 【134:评论区图片, 133:评论区视频, 0:主页视频详情, 68:主页图文详情, 13:私信视频/图文, 6000:私信图片】 by 25.1.0、25.2.0
+            if (aweme.awemeType == 0 || aweme.awemeType == 68 || aweme.awemeType == 13 || aweme.awemeType == 6000) return@launch
 
             val views = KViewUtils.findViewsByDesc(view, ImageView::class.java, "返回")
             if (views.isEmpty()) return@launch
