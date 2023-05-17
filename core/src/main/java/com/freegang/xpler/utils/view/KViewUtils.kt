@@ -284,6 +284,25 @@ object KViewUtils {
         return views
     }
 
+    /**
+     * 遍历某个ViewGroup
+     */
+    fun traverseViewGroup(
+        viewGroup: ViewGroup,
+        logic: (it: View) -> Unit,
+    ) {
+        val stack = Stack<View>()
+        stack.push(viewGroup)
+        while (!stack.isEmpty()) {
+            val current = stack.pop()
+            logic.invoke(current)
+            if (current is ViewGroup) {
+                for (i in current.childCount - 1 downTo 0) {
+                    stack.push(current.getChildAt(i))
+                }
+            }
+        }
+    }
 
     /**
      * 获取某个ViewGroup视图树中所有指定类型的 ChildView

@@ -3,8 +3,8 @@ package com.freegang.douyin.logic
 import android.content.Context
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
-import com.freegang.xpler.utils.io.KFileUtils.child
-import com.freegang.xpler.utils.io.KFileUtils.need
+import com.freegang.xpler.utils.io.child
+import com.freegang.xpler.utils.io.need
 import com.freegang.xpler.utils.net.KHttpUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -17,6 +17,9 @@ class SaveEmojiLogic(
     private val context: Context,
     private val urlList: List<String>,
 ) {
+    companion object {
+        private val config: Config get() = Config.get()
+    }
 
     init {
         onSaveEmoji(urlList)
@@ -33,7 +36,7 @@ class SaveEmojiLogic(
                 KHttpUtils.download(urlList.first(), FileOutputStream(file)) { real, total, isInterrupt ->
                     if (real >= total) {
                         hook.showToast(context, "保存成功!")
-                        hook.vibrate(context, 5L)
+                        if (config.isVibrate) hook.vibrate(context, 5L)
                     }
                     if (isInterrupt) {
                         hook.showToast(context, "保存失败!")

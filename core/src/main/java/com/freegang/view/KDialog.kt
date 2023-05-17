@@ -1,11 +1,13 @@
 package com.freegang.view
 
+import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.view.Gravity
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import android.widget.PopupWindow
 import com.freegang.xpler.utils.app.KActivityUtils.topActivity
 import com.freegang.xpler.utils.log.KLogCat
@@ -28,6 +30,9 @@ class KDialog : PopupWindow() {
 
     override fun dismiss() {
         if (!isShowing) return
+        //关闭键盘
+        val imm = contentView.context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        imm?.hideSoftInputFromWindow(contentView.windowToken, InputMethodManager.RESULT_UNCHANGED_SHOWN)
         super.dismiss()
     }
 

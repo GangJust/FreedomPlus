@@ -15,6 +15,8 @@ import java.lang.reflect.Method
 
 class DouYinMain(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHook>(lpparam) {
     companion object {
+        var diggClazz: Class<*>? = null
+        var longPressPanel: Class<*>? = null
         var commonPageClazz: Class<*>? = null
         var emojiMethods: List<Method> = emptyList()
     }
@@ -50,6 +52,7 @@ class DouYinMain(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHook>
                     HDetailActivity(lpparam)
                     HCommonPageFragment(lpparam)
                     HLazyFragmentPagerAdapter(lpparam)
+                    HLongPressPanel(lpparam)
                     HGifEmojiDetailActivity(lpparam)
                     HEmojiDetailDialog(lpparam)
                     HEmojiDetailDialogNew(lpparam)
@@ -60,13 +63,33 @@ class DouYinMain(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHook>
     private fun initDexKit() {
         System.loadLibrary("dexkit")
         DexKitBridge.create(lpparam.appInfo.sourceDir)?.use { bridge ->
+            if (diggClazz == null) {
+                val findMaps = bridge.batchFindClassesUsingStrings {
+                    addQuery(
+                        "Digg",
+                        setOf(
+                            "com/ss/android/ugc/aweme/feed/quick/presenter/FeedDiggPresenter",
+                            "handle_digg_click",
+                            "homepage_hot",
+                            "homepage_familiar",
+                            "feed_digg_api_monitor",
+                        )
+                    )
+                }
+                diggClazz = findMaps["Digg"]?.firstOrNull()?.getClassInstance(lpparam.classLoader)
+            }
+            if (longPressPanel == null) {
+                val findMaps = bridge.batchFindClassesUsingStrings {
+                    addQuery("longPressPanel", setOf("LongPressPanelFragmentImpl"))
+                }
+                longPressPanel = findMaps["longPressPanel"]?.firstOrNull()?.getClassInstance(lpparam.classLoader)
+            }
             if (commonPageClazz == null) {
                 val findMaps = bridge.batchFindClassesUsingStrings {
                     addQuery("CommonPage", setOf("a1128.b7947", "DetailActOtherNitaView"))
                 }
                 commonPageClazz = findMaps["CommonPage"]?.firstOrNull()?.getClassInstance(lpparam.classLoader)
             }
-
             if (emojiMethods.isEmpty()) {
                 emojiMethods = bridge.findMethod {
                     methodReturnType = "V"

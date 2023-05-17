@@ -1,5 +1,6 @@
 package com.freegang.douyin
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -52,6 +53,8 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         "25.0.0",
         "25.1.0",
         "25.2.0",
+        "25.3.0",
+        "25.4.0",
     )
 
     @OnAfter(name = "onCreate")
@@ -74,6 +77,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
     @OnBefore(name = "onPause")
     fun onPause(it: XC_MethodHook.MethodHookParam) {
         hookBlock(it) {
+            saveConfig(thisContext)
             clipboardLogic.removeClipboardListener(thisContext)
         }
     }
@@ -141,10 +145,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
                 cancel = "此版本不再提示",
                 confirm = "确定",
                 onCancel = {
-                    config.isSupportHint = false
-                    config.dyVersionName = versionName
-                    config.dyVersionCode = versionCode
-                    config.save(activity)
+                    saveConfig(activity)
                 }
             )
         }
@@ -174,5 +175,15 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
                 )
             }
         }
+    }
+
+    //保存配置信息
+    private fun saveConfig(context: Context) {
+        val versionName = context.appVersionName
+        val versionCode = context.appVersionCode
+        config.isSupportHint = false
+        config.dyVersionName = versionName
+        config.dyVersionCode = versionCode
+        config.save(context)
     }
 }

@@ -65,7 +65,7 @@ class KtXposedHelpers {
          *
          * @param context context
          * @param id id
-         * @param inflateView
+         * @return View
          */
         fun <T : View> inflateView(context: Context, @LayoutRes id: Int): T {
             return LayoutInflater.from(context).inflate(getLayout(id), null, false) as T

@@ -9,14 +9,39 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Switch
+import androidx.compose.material.SwitchDefaults
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -28,7 +53,9 @@ import com.freegang.fplus.FreedomTheme
 import com.freegang.fplus.R
 import com.freegang.fplus.Themes
 import com.freegang.fplus.asDp
-import com.freegang.fplus.component.*
+import com.freegang.fplus.component.FCard
+import com.freegang.fplus.component.FCardBorder
+import com.freegang.fplus.component.FMessageDialog
 import com.freegang.fplus.resource.StringRes
 import com.freegang.fplus.viewmodel.HomeVM
 import com.freegang.xpler.HookStatus
@@ -135,7 +162,7 @@ class HomeActivity : ComponentActivity() {
         var rotate by remember { mutableStateOf(0f) }
         val rotateAnimate by animateFloatAsState(
             targetValue = rotate,
-            animationSpec = tween(durationMillis = Random.nextInt(500, 1500))
+            animationSpec = tween(durationMillis = Random.nextInt(500, 1500)),
         )
 
         //更新日志弹窗
@@ -276,6 +303,7 @@ class HomeActivity : ComponentActivity() {
         if (version != null) {
             val version = version!!
             if (version.name.compareTo("v${application.appVersionName}") >= 1 && showNewVersionDialog) {
+
                 FMessageDialog(
                     title = "发现新版本 ${version.name}!",
                     confirm = "确定",
@@ -510,10 +538,25 @@ class HomeActivity : ComponentActivity() {
                     }
                 )
                 SwitchItem(
+                    text = "震动反馈",
+                    checked = model.isVibrate.observeAsState(false),
+                    onCheckedChange = {
+                        model.changeIsVibrate(it)
+                    }
+                )
+                SwitchItem(
                     text = "首页控件半透明",
                     checked = model.isTranslucent.observeAsState(false),
                     onCheckedChange = {
                         model.changeIsTranslucent(it)
+                    }
+                )
+                SwitchItem(
+                    text = "清爽模式",
+                    subtext = "开启后首页长按视频进入清爽模式",
+                    checked = model.isNeat.observeAsState(false),
+                    onCheckedChange = {
+                        model.changeIsNeat(it)
                     }
                 )
                 SwitchItem(

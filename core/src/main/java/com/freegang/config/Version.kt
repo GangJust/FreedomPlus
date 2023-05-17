@@ -1,9 +1,9 @@
 package com.freegang.config
 
-import com.freegang.xpler.utils.json.KJSONUtils.firstJsonObject
-import com.freegang.xpler.utils.json.KJSONUtils.getLongOrDefault
-import com.freegang.xpler.utils.json.KJSONUtils.getStringOrDefault
-import com.freegang.xpler.utils.json.KJSONUtils.parseJSON
+import com.freegang.xpler.utils.json.firstJsonObject
+import com.freegang.xpler.utils.json.getLongOrDefault
+import com.freegang.xpler.utils.json.getStringOrDefault
+import com.freegang.xpler.utils.json.parseJSON
 import com.freegang.xpler.utils.net.KHttpUtils
 
 object Version {
@@ -12,6 +12,7 @@ object Version {
 
     // 获取Github最后一次 releases
     fun getRemoteReleasesLatest(): VersionConfig? {
+        //return null
         val get = KHttpUtils.get(githubReleasesApi)
         if (get.isEmpty()) return null
         if (!get.contains("browser_download_url")) return null

@@ -3,13 +3,13 @@ package com.freegang.config
 import android.content.Context
 import android.os.Environment
 import android.util.JsonWriter
-import com.freegang.xpler.utils.io.KFileUtils.child
-import com.freegang.xpler.utils.io.KFileUtils.need
+import com.freegang.xpler.utils.io.child
+import com.freegang.xpler.utils.io.need
 import com.freegang.xpler.utils.io.storageRootFile
 import com.freegang.xpler.utils.json.KJSONUtils
-import com.freegang.xpler.utils.json.KJSONUtils.getBooleanOrDefault
-import com.freegang.xpler.utils.json.KJSONUtils.getLongOrDefault
-import com.freegang.xpler.utils.json.KJSONUtils.getStringOrDefault
+import com.freegang.xpler.utils.json.getBooleanOrDefault
+import com.freegang.xpler.utils.json.getLongOrDefault
+import com.freegang.xpler.utils.json.getStringOrDefault
 import java.io.File
 import java.io.FileWriter
 
@@ -18,7 +18,11 @@ data class Config(
     var isOwnerDir: Boolean = false, //是否按视频创作者单独创建文件夹
     var isDownload: Boolean = false, //是否开启视频/图文/音乐下载
     var isEmoji: Boolean = false, //是否开启表情包保存
+    var isVibrate: Boolean = false, //是否开启震动反馈
     var isTranslucent: Boolean = false, //是否开启首页控件半透明
+    var isNeat: Boolean = false, //是否开启清爽模式
+    var isNeatHint: Boolean = true, //是否显示清爽模式提示
+    var neatState: Boolean = false, //当前是否处于清爽模式
     var isNotification: Boolean = false, //是否通知栏下载
     var isWebDav: Boolean = false, //是否开启WebDav
     var webDavHost: String = "", //WebDav地址
@@ -52,7 +56,11 @@ data class Config(
                 isOwnerDir = json.getBooleanOrDefault("isOwnerDir"),
                 isDownload = json.getBooleanOrDefault("isDownload"),
                 isEmoji = json.getBooleanOrDefault("isEmoji"),
+                isVibrate = json.getBooleanOrDefault("isVibrate"),
                 isTranslucent = json.getBooleanOrDefault("isTranslucent"),
+                isNeat = json.getBooleanOrDefault("isNeat"),
+                isNeatHint = json.getBooleanOrDefault("isNeatHint"),
+                neatState = json.getBooleanOrDefault("neatState"),
                 isNotification = json.getBooleanOrDefault("isNotification"),
                 isWebDav = json.getBooleanOrDefault("isWebDav"),
                 webDavHost = json.getStringOrDefault("webDavHost"),
@@ -95,7 +103,11 @@ data class Config(
             .name("isOwnerDir").value(isOwnerDir)
             .name("isDownload").value(isDownload)
             .name("isEmoji").value(isEmoji)
+            .name("isVibrate").value(isVibrate)
             .name("isTranslucent").value(isTranslucent)
+            .name("isNeat").value(isNeat)
+            .name("isNeatHint").value(isNeatHint)
+            .name("neatState").value(neatState)
             .name("isNotification").value(isNotification)
             .name("isWebDav").value(isWebDav)
             .name("webDavHost").value(webDavHost)

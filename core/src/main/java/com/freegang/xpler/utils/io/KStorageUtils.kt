@@ -1,8 +1,6 @@
 package com.freegang.xpler.utils.io
 
 import android.content.Context
-import com.freegang.xpler.utils.io.KFileUtils.child
-import com.freegang.xpler.utils.io.KFileUtils.toFile
 import java.io.File
 
 object KStorageUtils {

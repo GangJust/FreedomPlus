@@ -15,6 +15,7 @@ import com.freegang.xpler.core.KtXposedHelpers.Companion.setLpparam
 import com.freegang.xpler.core.bridge.ConstructorHook
 import com.freegang.xpler.core.bridge.MethodHook
 import com.freegang.xpler.core.bridge.MethodHookImpl
+import com.freegang.xpler.utils.log.KLogCat
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
@@ -509,10 +510,10 @@ fun XC_MethodHook.MethodHookParam.xposedLog(log: Throwable) {
  */
 fun XC_MethodHook.MethodHookParam.dumpStackLog() {
     try {
-        Thread.dumpStack()
+        throw Exception("Stack trace")
     } catch (e: Exception) {
-        e.printStackTrace()
         XposedBridge.log(e)
+        KLogCat.d(e.stackTraceToString())
     }
 }
 

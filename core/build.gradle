@@ -54,5 +54,5 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
 
     implementation project(":webdav")
-    implementation 'org.luckypray:DexKit:1.1.4'
+    implementation 'org.luckypray:DexKit:1.1.6'
 }

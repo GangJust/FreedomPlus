@@ -68,6 +68,36 @@
 # 关闭警告信息
 -dontwarn android.content.res.*
 -dontwarn de.robv.android.xposed.**
+
+# 抖音
+-dontwarn com.ss.android.ugc.aweme.app.host.AwemeHostApplication
+-dontwarn com.ss.android.ugc.aweme.base.model.UrlModel
+-dontwarn com.ss.android.ugc.aweme.comment.ui.GifEmojiDetailActivity
+-dontwarn com.ss.android.ugc.aweme.detail.ui.DetailActivity
+-dontwarn com.ss.android.ugc.aweme.emoji.model.Emoji
+-dontwarn com.ss.android.ugc.aweme.emoji.similaremoji.EmojiDetailDialogNew
+-dontwarn com.ss.android.ugc.aweme.emoji.store.view.EmojiBottomSheetDialog
+-dontwarn com.ss.android.ugc.aweme.emoji.views.EmojiDetailDialog
+-dontwarn com.ss.android.ugc.aweme.feed.model.Aweme
+-dontwarn com.ss.android.ugc.aweme.feed.model.Video
+-dontwarn com.ss.android.ugc.aweme.feed.model.VideoUrlModel
+-dontwarn com.ss.android.ugc.aweme.homepage.ui.view.MainFlippableViewPager
+-dontwarn com.ss.android.ugc.aweme.homepage.ui.view.MainTabStripScrollView
+-dontwarn com.ss.android.ugc.aweme.kiwi.model.QModel
+-dontwarn com.ss.android.ugc.aweme.main.MainActivity
+-dontwarn com.ss.android.ugc.aweme.music.model.Music
+-dontwarn com.ss.android.ugc.aweme.profile.model.User
+-dontwarn com.ss.ugc.aweme.ImageUrlStruct
+-dontwarn org.bouncycastle.jsse.BCSSLParameters
+-dontwarn org.bouncycastle.jsse.BCSSLSocket
+-dontwarn org.bouncycastle.jsse.provider.BouncyCastleJsseProvider
+-dontwarn org.conscrypt.Conscrypt$Version
+-dontwarn org.conscrypt.Conscrypt
+-dontwarn org.conscrypt.ConscryptHostnameVerifier
+-dontwarn org.openjsse.javax.net.ssl.SSLParameters
+-dontwarn org.openjsse.javax.net.ssl.SSLSocket
+-dontwarn org.openjsse.net.ssl.OpenJSSE
+
 # 模块核心
 -keepclassmembers class com.freegang.xpler.core.** { *; }
 -keepclassmembers class * {

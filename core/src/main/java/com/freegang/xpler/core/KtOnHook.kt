@@ -81,8 +81,8 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     /**
      * 查找某类
      */
-    open fun findClass(className: String): Class<*> {
-        return XposedHelpers.findClass(className, lpparam.classLoader)
+    open fun findClass(className: String, classLoader: ClassLoader? = null): Class<*> {
+        return XposedHelpers.findClass(className, classLoader ?: lpparam.classLoader)
     }
 
     /**

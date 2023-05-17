@@ -5,6 +5,8 @@ import android.content.Context.VIBRATOR_SERVICE
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.view.View
@@ -12,6 +14,7 @@ import android.widget.FrameLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.view.isVisible
 import com.freegang.view.KDialog
 import com.freegang.view.adapter.DialogChoiceAdapter
 import com.freegang.xpler.R
@@ -36,6 +39,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<T>(lpparam) {
+    private val handler: Handler = Handler(Looper.getMainLooper())
     private val mainScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
     private var toast: Toast? = null
     private var kDialog: KDialog? = null
@@ -66,8 +70,12 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
         return job
     }
 
+    fun refresh(block: () -> Unit) {
+        handler.post(block)
+    }
+
     fun showToast(context: Context, message: String) {
-        mainScope.launch {
+        refresh {
             toast = if (toast == null) {
                 Toast.makeText(context.applicationContext, null, Toast.LENGTH_LONG)
             } else {
@@ -156,10 +164,15 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
     fun showChoiceDialog(
         context: Context,
         title: CharSequence,
+        showInput1: Boolean,
+        input1Hint: CharSequence,
+        input1DefaultValue: CharSequence,
+        input2Hint: CharSequence,
+        input2DefaultValue: CharSequence,
         items: Array<String>,
         cancel: CharSequence = "取消",
         needMultiple: Boolean = false,
-        onChoice: (view: View, item: CharSequence, position: Int) -> Unit,
+        onChoice: (view: View, owner: String, filename: String, item: CharSequence, position: Int) -> Unit,
         onCancel: () -> Unit = {},
     ) {
         kDialog = if (kDialog == null) KDialog() else kDialog
@@ -172,6 +185,19 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
         binding.choiceDialogCancel.background = KtXposedHelpers.getDrawable(R.drawable.dialog_single_button_background)
 
         binding.choiceDialogTitle.text = title
+
+        binding.choiceDialogInput1.background = KtXposedHelpers.getDrawable(R.drawable.dialog_input_background)
+        binding.choiceDialogInput1.hint = input1Hint
+        binding.choiceDialogInput1.setText(input1DefaultValue)
+        if (!showInput1) {
+            binding.choiceDialogInput1.setText("")
+            binding.choiceDialogInput1.isVisible = false
+        }
+
+        binding.choiceDialogInput2.background = KtXposedHelpers.getDrawable(R.drawable.dialog_input_background)
+        binding.choiceDialogInput2.hint = input2Hint
+        binding.choiceDialogInput2.setText(input2DefaultValue)
+
         binding.choiceDialogCancel.text = cancel
         binding.choiceDialogCancel.setOnClickListener {
             kDialog!!.dismiss()
@@ -183,7 +209,7 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
         binding.choiceDialogList.selector = KtXposedHelpers.getDrawable(R.drawable.item_selector_background)
         binding.choiceDialogList.setOnItemClickListener { _, view, position, _ ->
             kDialog!!.dismiss()
-            onChoice.invoke(view, items[position], position)
+            onChoice.invoke(view, "${binding.choiceDialogInput1.text}", "${binding.choiceDialogInput2.text}", items[position], position)
         }
 
         kDialog!!.setView(binding.root)

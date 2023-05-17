@@ -11,7 +11,7 @@ import com.freegang.config.VersionConfig
 import com.freegang.webdav.WebDav
 import com.freegang.xpler.utils.app.appVersionCode
 import com.freegang.xpler.utils.app.appVersionName
-import com.freegang.xpler.utils.io.KFileUtils.child
+import com.freegang.xpler.utils.io.child
 import com.freegang.xpler.utils.io.storageRootFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,8 +36,14 @@ class HomeVM(application: Application) : AppVM(application) {
     private var _isEmoji = MutableLiveData(false)
     val isEmoji: LiveData<Boolean> = _isEmoji
 
+    private var _isVibrate = MutableLiveData(false)
+    val isVibrate: LiveData<Boolean> = _isVibrate
+
     private var _isTranslucent = MutableLiveData(false)
     val isTranslucent: LiveData<Boolean> = _isTranslucent
+
+    private var _isNeat = MutableLiveData(false)
+    val isNeat: LiveData<Boolean> = _isNeat
 
     private var _isNotification = MutableLiveData(false)
     val isNotification: LiveData<Boolean> = _isNotification
@@ -88,7 +94,9 @@ class HomeVM(application: Application) : AppVM(application) {
             changeIsOwnerDir(config.isOwnerDir)
             changeIsDownload(config.isDownload)
             changeIsEmoji(config.isEmoji)
+            changeIsVibrate(config.isVibrate)
             changeIsTranslucent(config.isTranslucent)
+            changeIsNeat(config.isNeat)
             changeIsNotification(config.isNotification)
             changeIsWebDav(config.isWebDav)
             setWebDavConfig(config.webDavHost, config.webDavUsername, config.webDavPassword)
@@ -115,10 +123,22 @@ class HomeVM(application: Application) : AppVM(application) {
         config.isEmoji = value
     }
 
+    // 震动反馈保存
+    fun changeIsVibrate(value: Boolean) {
+        _isVibrate.value = value
+        config.isVibrate = value
+    }
+
     // 首页控件半透明
     fun changeIsTranslucent(value: Boolean) {
         _isTranslucent.value = value
         config.isTranslucent = value
+    }
+
+    // 清爽模式
+    fun changeIsNeat(value: Boolean) {
+        _isNeat.value = value
+        config.isNeat = value
     }
 
     // 是否通知栏下载
@@ -160,9 +180,7 @@ class HomeVM(application: Application) : AppVM(application) {
         val username = webDavUsername.value ?: return false
         val password = webDavPassword.value ?: return false
 
-        if (host.isBlank() or username.isBlank() or password.isBlank()) return false
-
-        return true
+        return !(host.isBlank() or username.isBlank() or password.isBlank())
     }
 
     // 保存WebDav配置
@@ -194,7 +212,9 @@ class HomeVM(application: Application) : AppVM(application) {
             config.isOwnerDir = isOwnerDir.value ?: false
             config.isDownload = isDownload.value ?: false
             config.isEmoji = isEmoji.value ?: false
+            config.isVibrate = isVibrate.value ?: false
             config.isTranslucent = isTranslucent.value ?: false
+            config.isNeat = isNeat.value ?: false
             config.isNotification = isNotification.value ?: false
             config.isWebDav = isWebDav.value ?: false
             config.webDavHost = webDavHost.value ?: ""
