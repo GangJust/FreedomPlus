@@ -91,7 +91,7 @@ val String.pureFileName: String
             ":" to "-",
             "?" to "？"
         )
-        var pureName = this
+        var pureName = this.replace("\\s".toRegex(), "")
         for (entry in replaceMap) pureName = pureName.replace(entry.key, entry.value)
         return pureName
     }

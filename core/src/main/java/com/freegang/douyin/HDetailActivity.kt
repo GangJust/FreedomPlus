@@ -4,7 +4,13 @@ import com.freegang.base.BaseHook
 import com.freegang.config.Config
 import com.freegang.douyin.logic.ClipboardLogic
 import com.freegang.douyin.logic.DownloadLogic
-import com.freegang.xpler.core.*
+import com.freegang.xpler.core.OnAfter
+import com.freegang.xpler.core.OnBefore
+import com.freegang.xpler.core.call
+import com.freegang.xpler.core.findMethodsByReturnType
+import com.freegang.xpler.core.getObjectField
+import com.freegang.xpler.core.thisActivity
+import com.freegang.xpler.core.thisContext
 import com.ss.android.ugc.aweme.detail.ui.DetailActivity
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import de.robv.android.xposed.XC_MethodHook
@@ -21,7 +27,7 @@ class HDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Detai
         }
     }
 
-    @OnBefore(name = "onPause")
+    @OnBefore("onPause")
     fun onPause(it: XC_MethodHook.MethodHookParam) {
         hookBlock(it) {
             clipboardLogic.removeClipboardListener(thisContext)

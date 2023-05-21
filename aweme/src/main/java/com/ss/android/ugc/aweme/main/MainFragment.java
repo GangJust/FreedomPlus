@@ -25,4 +25,10 @@ public class MainFragment extends AbsFragment {
         super.onPause();
         throw new RuntimeException("sub!");
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        throw new RuntimeException("sub!");
+    }
 }

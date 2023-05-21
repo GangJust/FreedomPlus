@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#99000000">
+
+    <!-- 外层包裹 FrameLayout 内部才能够设置 Margin -->
+    <LinearLayout
+        android:id="@+id/freedomDialogContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="48dp"
+        android:background="#ffffffff"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="16dp"
+            android:text="Freedom+"
+            android:textColor="#ff666666"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/neatItemText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="16dp"
+            android:text="清爽模式"
+            android:textColor="#ff333333"
+            android:textSize="16sp" />
+
+
+        <TextView
+            android:id="@+id/commentItemText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="16dp"
+            android:text="评论"
+            android:textColor="#ff333333"
+            android:textSize="16sp" />
+
+
+        <TextView
+            android:id="@+id/shareItemText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="16dp"
+            android:text="分享"
+            android:textColor="#ff333333"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/awemeItemText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="16dp"
+            android:text="菜单"
+            android:textColor="#ff333333"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/choiceDialogCancel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="16dp"
+            android:text="取消"
+            android:textAlignment="center"
+            android:textColor="#FFEDA664"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+</FrameLayout>

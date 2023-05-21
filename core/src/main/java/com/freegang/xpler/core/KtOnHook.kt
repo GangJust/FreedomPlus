@@ -1,6 +1,7 @@
 package com.freegang.xpler.core
 
 import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import java.lang.reflect.Field
@@ -10,28 +11,129 @@ import java.lang.reflect.ParameterizedType
 /// 使用案例, 详见: https://github.com/GangJust/Xpler/blob/main/docs/readme.md
 
 @Target(AnnotationTarget.FIELD)
-annotation class FieldGet(val name: String, val tag: String = "")
+annotation class FieldGet(val name: String)
 
+/**
+ * 该注解适用于方法, 将作用于Hook目标的成员方法
+ *
+ * 被该注解标注的方法将会在Hook目标的成员方法执行开始时执行逻辑
+ *
+ * 等价于: [XC_MethodReplacement.beforeHookedMethod]
+ *
+ * 须知: 注解只是为了勾住方法, 被该注解标注的方法,
+ * 参数名需要与Hook目标方法的参数名一致,
+ * 并且还需在首位增加一个 [XC_MethodHook.MethodHookParam] 的方法参数
+ * 这是必要的
+ *
+ * @param name Hook目标方法名, 当多个方法名时, 同一逻辑将作用在多个方法上, 需参数一致
+ */
 @Target(AnnotationTarget.FUNCTION)
-annotation class OnBefore(val name: String, val unhook: Boolean = false)
+annotation class OnBefore(vararg val name: String)
 
+/**
+ * 该注解适用于方法, 将作用于Hook目标的成员方法
+ *
+ * 被该注解标注的方法将会在Hook目标的成员方法执行结束后执行逻辑
+ *
+ * 等价于: [XC_MethodReplacement.afterHookedMethod]
+ *
+ * 须知: 注解只是为了勾住方法, 被该注解标注的方法,
+ * 参数名需要与Hook目标方法的参数名一致,
+ * 并且还需在首位增加一个 [XC_MethodHook.MethodHookParam] 的方法参数
+ * 这是必要的
+ *
+ * @param name Hook目标方法名, 当多个方法名时, 同一逻辑将作用在多个方法上, 需参数一致
+ */
 @Target(AnnotationTarget.FUNCTION)
-annotation class OnAfter(val name: String, val unhook: Boolean = false)
+annotation class OnAfter(vararg val name: String)
 
+/**
+ * 该注解适用于方法, 将作用于Hook目标的成员方法
+ *
+ * 被该注解标注的方法将会替换Hook目标的成员方法逻辑
+ *
+ * 等价于: [XC_MethodReplacement.replaceHookedMethod]
+ *
+ * 须知: 注解只是为了勾住方法, 被该注解标注的方法,
+ * 参数名需要与Hook目标方法的参数名一致,
+ * 并且还需在首位增加一个 [XC_MethodHook.MethodHookParam] 的方法参数
+ * 这是必要的
+ *
+ * @param name Hook目标方法名, 当多个方法名时, 同一逻辑将作用在多个方法上, 需参数一致
+ */
 @Target(AnnotationTarget.FUNCTION)
-annotation class OnReplace(val name: String, val unhook: Boolean = false)
+annotation class OnReplace(vararg val name: String)
 
+/**
+ * 该注解适用于方法, 将作用于Hook目标的构造方法
+ *
+ * 被该注解标注的方法将会在Hook目标的构造方法执行结束开始时执行逻辑
+ *
+ * 等价于: [XC_MethodReplacement.beforeHookedMethod]
+ *
+ * 须知: 注解只是为了勾住方法, 被该注解标注的方法,
+ * 参数名需要与Hook目标方法的参数名一致,
+ * 并且还需在首位增加一个 [XC_MethodHook.MethodHookParam] 的方法参数
+ * 这是必要的
+ *
+ */
 @Target(AnnotationTarget.FUNCTION)
-annotation class OnConstructorBefore(val unhook: Boolean = false)
+annotation class OnConstructorBefore()
 
+/**
+ * 该注解适用于方法, 将作用于Hook目标的构造方法
+ *
+ * 被该注解标注的方法将会在Hook目标的构造方法执行结束后执行逻辑
+ *
+ * 等价于: [XC_MethodReplacement.afterHookedMethod]
+ * 须知: 注解只是为了勾住方法, 被该注解标注的方法,
+ * 参数名需要与Hook目标方法的参数名一致,
+ * 并且还需在首位增加一个 [XC_MethodHook.MethodHookParam] 的方法参数
+ * 这是必要的
+ */
 @Target(AnnotationTarget.FUNCTION)
-annotation class OnConstructorAfter(val unhook: Boolean = false)
+annotation class OnConstructorAfter()
 
+/**
+ * 该注解适用于方法, 将作用于Hook目标的构造方法
+ *
+ * 被该注解标注的方法将会替换Hook目标的构造方法逻辑
+ *
+ * 等价于: [XC_MethodReplacement.replaceHookedMethod]
+ * 须知: 注解只是为了勾住方法, 被该注解标注的方法,
+ * 参数名需要与Hook目标方法的参数名一致,
+ * 并且还需在首位增加一个 [XC_MethodHook.MethodHookParam] 的方法参数
+ * 这是必要的
+ */
 @Target(AnnotationTarget.FUNCTION)
-annotation class OnConstructorReplace(val unhook: Boolean = false)
+annotation class OnConstructorReplace()
 
+/**
+ * 该注解适用于方法参数, 将作用于Hook目标成员方法的方法参数，被该注解标注的方法参数将被指定 [Class] 类型
+ *
+ * 须知: 注解只是为了勾住方法, 被该注解标注的方法,
+ * 参数名需要与Hook目标方法的参数名一致,
+ * 并且还需在首位增加一个 [XC_MethodHook.MethodHookParam] 的方法参数
+ * 这是必要的
+ *
+ * @param name 应该是一个完整的类名, 如: com.sample.User
+ */
 @Target(AnnotationTarget.VALUE_PARAMETER)
 annotation class Param(val name: String)
+
+/**
+ * 该注解适用于方法, 将作用于Hook目标的成员方法
+ *
+ * 被该注解标注的方法将会在执行一次Hook之后立即解开Hook
+ * (即Hook逻辑只会执行一次)
+ *
+ * 须知: 注解只是为了勾住方法, 被该注解标注的方法,
+ * 参数名需要与Hook目标方法的参数名一致,
+ * 并且还需在首位增加一个 [XC_MethodHook.MethodHookParam] 的方法参数
+ * 这是必要的
+ */
+@Target(AnnotationTarget.VALUE_PARAMETER)
+annotation class HookOnce()
 
 abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackageParam) {
     private var mTargetClazz: Class<*>
@@ -118,14 +220,17 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
         for ((key, value) in methodMap) {
             if (value.getAnnotation(OnReplace::class.java) != null) continue
 
-            hookHelper?.method(key.name.ifEmpty { value.name }, *getTargetMethodParamTypes(value)) {
-                onBefore {
-                    val invArgs = arrayOf(this, *argsOrEmpty)
-                    setAnyField(thisObject, fieldMap)
-                    value.invoke(this@KtOnHook, *invArgs)
-                }
-                if (key.unhook) {
-                    onUnhook { _, _ -> }
+            val names = if (key.name.isEmpty()) arrayOf(value.name) else key.name
+            names.forEach {
+                hookHelper?.method(it, *getTargetMethodParamTypes(value)) {
+                    onBefore {
+                        val invArgs = arrayOf(this, *argsOrEmpty)
+                        setAnyField(thisObject, fieldMap)
+                        value.invoke(this@KtOnHook, *invArgs)
+                    }
+                    if (value.getAnnotation(HookOnce::class.java) != null) {
+                        onUnhook { _, _ -> }
+                    }
                 }
             }
         }
@@ -141,14 +246,17 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
         for ((key, value) in methodMap) {
             if (value.getAnnotation(OnReplace::class.java) != null) continue
 
-            hookHelper?.method(key.name.ifEmpty { value.name }, *getTargetMethodParamTypes(value)) {
-                onAfter {
-                    val invArgs = arrayOf(this, *argsOrEmpty)
-                    setAnyField(thisObject, fieldMap)
-                    value.invoke(this@KtOnHook, *invArgs)
-                }
-                if (key.unhook) {
-                    onUnhook { _, _ -> }
+            val names = if (key.name.isEmpty()) arrayOf(value.name) else key.name
+            names.forEach {
+                hookHelper?.method(it, *getTargetMethodParamTypes(value)) {
+                    onAfter {
+                        val invArgs = arrayOf(this, *argsOrEmpty)
+                        setAnyField(thisObject, fieldMap)
+                        value.invoke(this@KtOnHook, *invArgs)
+                    }
+                    if (value.getAnnotation(HookOnce::class.java) != null) {
+                        onUnhook { _, _ -> }
+                    }
                 }
             }
         }
@@ -164,14 +272,17 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
         val methodMap = getAnnotationMethod(OnReplace::class.java)
         val fieldMap = getAnnotationFiled(FieldGet::class.java)
         for ((key, value) in methodMap) {
-            hookHelper?.method(key.name.ifEmpty { value.name }, *getTargetMethodParamTypes(value)) {
-                onReplace {
-                    val invArgs = arrayOf(this, *argsOrEmpty)
-                    setAnyField(thisObject, fieldMap)
-                    value.invoke(this@KtOnHook, *invArgs) ?: Unit
-                }
-                if (key.unhook) {
-                    onUnhook { _, _ -> }
+            val names = if (key.name.isEmpty()) arrayOf(value.name) else key.name
+            names.forEach {
+                hookHelper?.method(it, *getTargetMethodParamTypes(value)) {
+                    onReplace {
+                        val invArgs = arrayOf(this, *argsOrEmpty)
+                        setAnyField(thisObject, fieldMap)
+                        value.invoke(this@KtOnHook, *invArgs) ?: Unit
+                    }
+                    if (value.getAnnotation(HookOnce::class.java) != null) {
+                        onUnhook { _, _ -> }
+                    }
                 }
             }
         }
@@ -184,7 +295,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     private fun invOnConstructorBefore() {
         val methodMap = getAnnotationMethod(OnConstructorBefore::class.java)
         val fieldMap = getAnnotationFiled(FieldGet::class.java)
-        for ((key, value) in methodMap) {
+        for ((_, value) in methodMap) {
             if (value.getAnnotation(OnConstructorReplace::class.java) != null) continue
 
             hookHelper?.constructor(*getTargetMethodParamTypes(value)) {
@@ -193,7 +304,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
                     setAnyField(thisObject, fieldMap)
                     value.invoke(this@KtOnHook, *invArgs)
                 }
-                if (key.unhook) {
+                if (value.getAnnotation(HookOnce::class.java) != null) {
                     onUnhook { _, _ -> }
                 }
             }
@@ -207,7 +318,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     private fun invOnConstructorAfter() {
         val methodMap = getAnnotationMethod(OnConstructorAfter::class.java)
         val fieldMap = getAnnotationFiled(FieldGet::class.java)
-        for ((key, value) in methodMap) {
+        for ((_, value) in methodMap) {
             if (value.getAnnotation(OnConstructorReplace::class.java) != null) continue
 
             hookHelper?.constructor(*getTargetMethodParamTypes(value)) {
@@ -216,7 +327,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
                     setAnyField(thisObject, fieldMap)
                     value.invoke(this@KtOnHook, *invArgs)
                 }
-                if (key.unhook) {
+                if (value.getAnnotation(HookOnce::class.java) != null) {
                     onUnhook { _, _ -> }
                 }
             }
@@ -230,7 +341,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     private fun invOnConstructorReplace() {
         val methodMap = getAnnotationMethod(OnConstructorReplace::class.java)
         val fieldMap = getAnnotationFiled(FieldGet::class.java)
-        for ((key, value) in methodMap) {
+        for ((_, value) in methodMap) {
             hookHelper?.constructor(*getTargetMethodParamTypes(value)) {
                 onReplace {
                     val invArgs = arrayOf(this, *argsOrEmpty)
@@ -238,7 +349,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
                     value.invoke(this@KtOnHook, *invArgs)
                     thisObject
                 }
-                if (key.unhook) {
+                if (value.getAnnotation(HookOnce::class.java) != null) {
                     onUnhook { _, _ -> }
                 }
             }
@@ -331,7 +442,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     }
 
     /**
-     * 子类便捷生成修改指定hook方法
+     * 子类便捷生成修改指定hook方法, 模板代码
      * 该方法被复写不会发生任何hook调用
      *
      * @param param XC_MethodHook.MethodHookParam
@@ -341,7 +452,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     }
 
     /**
-     * 子类便捷使用
+     * 子类便捷使用带param参数的方法
      * @param param XC_MethodHook.MethodHookParam
      * @param block XC_MethodHook.MethodHookParam.()
      */
@@ -351,7 +462,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
 }
 
 /**
- * 当某个Hook目标类未知时, 可以通过泛型该类进行占位
+ * 该类一般用在泛型, 当某个Hook目标类未知时, 可以通过泛型该类进行占位
  */
 class EmptyHook {}
 

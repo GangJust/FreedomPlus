@@ -5,7 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.text.Html
-import android.view.View
 import android.view.ViewGroup
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
@@ -22,7 +21,7 @@ import com.freegang.xpler.core.thisContext
 import com.freegang.xpler.utils.app.KActivityUtils.contentView
 import com.freegang.xpler.utils.app.appVersionCode
 import com.freegang.xpler.utils.app.appVersionName
-import com.freegang.xpler.utils.view.KViewUtils
+import com.freegang.xpler.utils.view.traverse
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.main.MainActivity
 import de.robv.android.xposed.XC_MethodHook
@@ -57,14 +56,14 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         "25.4.0",
     )
 
-    @OnAfter(name = "onCreate")
+    @OnAfter("onCreate")
     fun onCreate(it: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {
         hookBlock(it) {
             showToast(thisContext, "Freedom+ Attach!")
         }
     }
 
-    @OnAfter(name = "onResume")
+    @OnAfter("onResume")
     fun onResume(it: XC_MethodHook.MethodHookParam) {
         hookBlock(it) {
             changeViewAlpha(thisActivity.contentView)
@@ -74,12 +73,17 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         }
     }
 
-    @OnBefore(name = "onPause")
+    @OnBefore("onPause")
     fun onPause(it: XC_MethodHook.MethodHookParam) {
         hookBlock(it) {
             saveConfig(thisContext)
             clipboardLogic.removeClipboardListener(thisContext)
         }
+    }
+
+    @OnAfter("onDestroy")
+    fun onDestroy(it: XC_MethodHook.MethodHookParam) {
+
     }
 
     private fun findVideoAweme(activity: MainActivity): Aweme? {
@@ -112,12 +116,12 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         if (!config.isTranslucent) return
         launch {
             delay(200L)
-            val views = KViewUtils.findViewsExact(viewGroup, View::class.java) {
-                var result = it::class.java.name.contains("MainBottomTabContainer") //底部
-                result = result or it::class.java.name.contains("MainTitleBar") //顶部
-                result
+            viewGroup.traverse {
+                //底部
+                if (it::class.java.name.contains("MainBottomTabContainer")) {
+                    it.alpha = 0.5f
+                }
             }
-            views.forEach { it.alpha = 0.5f }
         }
     }
 

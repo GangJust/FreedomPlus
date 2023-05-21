@@ -21,7 +21,6 @@ data class Config(
     var isVibrate: Boolean = false, //是否开启震动反馈
     var isTranslucent: Boolean = false, //是否开启首页控件半透明
     var isNeat: Boolean = false, //是否开启清爽模式
-    var isNeatHint: Boolean = true, //是否显示清爽模式提示
     var neatState: Boolean = false, //当前是否处于清爽模式
     var isNotification: Boolean = false, //是否通知栏下载
     var isWebDav: Boolean = false, //是否开启WebDav
@@ -59,7 +58,6 @@ data class Config(
                 isVibrate = json.getBooleanOrDefault("isVibrate"),
                 isTranslucent = json.getBooleanOrDefault("isTranslucent"),
                 isNeat = json.getBooleanOrDefault("isNeat"),
-                isNeatHint = json.getBooleanOrDefault("isNeatHint"),
                 neatState = json.getBooleanOrDefault("neatState"),
                 isNotification = json.getBooleanOrDefault("isNotification"),
                 isWebDav = json.getBooleanOrDefault("isWebDav"),
@@ -106,7 +104,6 @@ data class Config(
             .name("isVibrate").value(isVibrate)
             .name("isTranslucent").value(isTranslucent)
             .name("isNeat").value(isNeat)
-            .name("isNeatHint").value(isNeatHint)
             .name("neatState").value(neatState)
             .name("isNotification").value(isNotification)
             .name("isWebDav").value(isWebDav)

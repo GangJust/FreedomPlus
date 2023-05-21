@@ -6,11 +6,14 @@ import com.freegang.config.Config
 import com.freegang.xpler.core.EmptyHook
 import com.freegang.xpler.core.hookClass
 import com.freegang.xpler.utils.app.KAppCrashUtils
+import com.freegang.xpler.utils.io.KStorageUtils
+import com.freegang.xpler.utils.io.child
 import com.freegang.xpler.utils.io.hasOperationStorage
 import com.freegang.xpler.utils.log.KLogCat
 import com.ss.android.ugc.aweme.app.host.AwemeHostApplication
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.luckypray.dexkit.DexKitBridge
+import java.io.File
 import java.lang.reflect.Method
 
 class DouYinMain(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHook>(lpparam) {
@@ -28,8 +31,13 @@ class DouYinMain(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHook>
                     val app = thisObject as Application
 
                     //日志工具
-                    KLogCat.init(app)
+                    //KLogCat.init(app)
+                    //KLogCat.openStorage()
+
+                    KLogCat.init(app, File(KStorageUtils.getStoragePath(app)).child("Download"))
                     KLogCat.openStorage()
+                    //val classStr = KClassUtils.classToString(LongPressLayout::class.java)
+                    //KLogCat.d("\n\n$classStr")
 
                     //全局异常捕获工具
                     KAppCrashUtils.instance.init(app, "抖音异常崩溃!")
@@ -50,9 +58,9 @@ class DouYinMain(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHook>
                     HMainActivity(lpparam)
                     HMainFragment(lpparam)
                     HDetailActivity(lpparam)
+                    HFlippableViewPager(lpparam)
+                    HVerticalViewPager(lpparam)
                     HCommonPageFragment(lpparam)
-                    HLazyFragmentPagerAdapter(lpparam)
-                    HLongPressPanel(lpparam)
                     HGifEmojiDetailActivity(lpparam)
                     HEmojiDetailDialog(lpparam)
                     HEmojiDetailDialogNew(lpparam)

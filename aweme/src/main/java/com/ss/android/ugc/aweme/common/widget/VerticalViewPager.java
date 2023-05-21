@@ -1,4 +1,4 @@
-package dmt.viewpager;
+package com.ss.android.ugc.aweme.common.widget;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -15,32 +15,31 @@ import android.view.accessibility.AccessibilityEvent;
 import android.widget.Scroller;
 
 import androidx.viewpager.widget.PagerAdapter;
-import androidx.viewpager.widget.ViewPager.OnPageChangeListener;
 
 import java.util.ArrayList;
 
-public abstract class DmtViewPager extends ViewGroup {
-    public DmtViewPager(Context context) {
+public class VerticalViewPager extends ViewGroup {
+    public VerticalViewPager(Context context) {
         super(context);
         throw new RuntimeException("sub!!");
     }
 
-    public DmtViewPager(Context context, AttributeSet attrs) {
+    public VerticalViewPager(Context context, AttributeSet attrs) {
         super(context, attrs);
         throw new RuntimeException("sub!!");
     }
 
-    public DmtViewPager(Context context, AttributeSet attrs, int defStyleAttr) {
+    public VerticalViewPager(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         throw new RuntimeException("sub!!");
     }
 
-    public DmtViewPager(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public VerticalViewPager(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         throw new RuntimeException("sub!!");
     }
 
-    private int getClientWidth() {
+    private int getClientHeight() {
         throw new RuntimeException("sub!!");
     }
 
@@ -60,7 +59,7 @@ public abstract class DmtViewPager extends ViewGroup {
         throw new RuntimeException("sub!!");
     }
 
-    public boolean canScrollHorizontally(int i1) {
+    public boolean canScrollVertically(int i1) {
         throw new RuntimeException("sub!!");
     }
 
@@ -77,6 +76,10 @@ public abstract class DmtViewPager extends ViewGroup {
     }
 
     public boolean dispatchPopulateAccessibilityEvent(AccessibilityEvent a1) {
+        throw new RuntimeException("sub!!");
+    }
+
+    public boolean dispatchStatusBarTap() {
         throw new RuntimeException("sub!!");
     }
 
@@ -114,11 +117,19 @@ public abstract class DmtViewPager extends ViewGroup {
         throw new RuntimeException("sub!!");
     }
 
-    public int getCurrentDragLeftBoundPosition() {
+    public int getCurrentAnimDuration() {
         throw new RuntimeException("sub!!");
     }
 
     public int getCurrentItem() {
+        throw new RuntimeException("sub!!");
+    }
+
+    public int getExpectedAdapterCount() {
+        throw new RuntimeException("sub!!");
+    }
+
+    public boolean getFirstLayout() {
         throw new RuntimeException("sub!!");
     }
 
@@ -130,7 +141,7 @@ public abstract class DmtViewPager extends ViewGroup {
         throw new RuntimeException("sub!!");
     }
 
-    public int getPositionForSaveInstanceState() {
+    public int getScrollState() {
         throw new RuntimeException("sub!!");
     }
 
@@ -178,6 +189,10 @@ public abstract class DmtViewPager extends ViewGroup {
         throw new RuntimeException("sub!!");
     }
 
+    public void onScrollChanged(int i1, int i2, int i3, int i4) {
+        throw new RuntimeException("sub!!");
+    }
+
     public void onSizeChanged(int i1, int i2, int i3, int i4) {
         throw new RuntimeException("sub!!");
     }
@@ -190,11 +205,19 @@ public abstract class DmtViewPager extends ViewGroup {
         throw new RuntimeException("sub!!");
     }
 
+    public void scrollTo(int i1, int i2) {
+        throw new RuntimeException("sub!!");
+    }
+
     public void setAdapter(PagerAdapter p1) {
         throw new RuntimeException("sub!!");
     }
 
-    public void setCanTouchBeforeScrollIdle(boolean b1) {
+    public void setCanTouch(boolean b1) {
+        throw new RuntimeException("sub!!");
+    }
+
+    public void setChildrenDrawingOrderEnabledCompat(boolean b1) {
         throw new RuntimeException("sub!!");
     }
 
@@ -202,11 +225,23 @@ public abstract class DmtViewPager extends ViewGroup {
         throw new RuntimeException("sub!!");
     }
 
-    public void setCurrentItemWithoutScroll(int i1) {
+    public void setCurrentItemWithDefaultVelocity(int i1) {
         throw new RuntimeException("sub!!");
     }
 
-    public void setDefaultGutterSize(int i1) {
+    public void setDisableScroll(boolean b1) {
+        throw new RuntimeException("sub!!");
+    }
+
+    public void setEnablePrefetchView(boolean b1) {
+        throw new RuntimeException("sub!!");
+    }
+
+    public void setEnablePrepopulate(boolean b1) {
+        throw new RuntimeException("sub!!");
+    }
+
+    public void setEventType(String s1) {
         throw new RuntimeException("sub!!");
     }
 
@@ -215,14 +250,6 @@ public abstract class DmtViewPager extends ViewGroup {
     }
 
     public void setOffscreenPageLimit(int i1) {
-        throw new RuntimeException("sub!!");
-    }
-
-    public void setOnPageChangeListener(OnPageChangeListener o1) {
-        throw new RuntimeException("sub!!");
-    }
-
-    public void setOptPagerDegreeFraction(float f1) {
         throw new RuntimeException("sub!!");
     }
 
@@ -251,4 +278,3 @@ public abstract class DmtViewPager extends ViewGroup {
         throw new RuntimeException("sub!!");
     }
 }
-

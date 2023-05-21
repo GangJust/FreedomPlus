@@ -39,7 +39,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<T>(lpparam) {
-    private val handler: Handler = Handler(Looper.getMainLooper())
+    protected val handler: Handler = Handler(Looper.getMainLooper())
     private val mainScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
     private var toast: Toast? = null
     private var kDialog: KDialog? = null
