@@ -31,11 +31,16 @@ class DouYinMain(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHook>
                     val app = thisObject as Application
 
                     //日志工具
-                    //KLogCat.init(app)
-                    //KLogCat.openStorage()
-
-                    KLogCat.init(app, File(KStorageUtils.getStoragePath(app)).child("Download"))
+                    KLogCat.init(app)
                     KLogCat.openStorage()
+
+                    val log = File(KStorageUtils.getStoragePath(app)).child("Download")
+                    log.listFiles()?.forEach {
+                        if(it.name.contains("抖音") && it.name.contains(".log")) it.delete()
+                    }
+
+                    //KLogCat.init(app, File(KStorageUtils.getStoragePath(app)).child("Download"))
+                    //KLogCat.openStorage()
                     //val classStr = KClassUtils.classToString(LongPressLayout::class.java)
                     //KLogCat.d("\n\n$classStr")
 

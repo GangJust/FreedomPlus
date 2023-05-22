@@ -3,6 +3,7 @@ package com.freegang.douyin
 import android.annotation.SuppressLint
 import android.content.res.Resources
 import android.view.MotionEvent
+import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.Toast
@@ -17,11 +18,12 @@ import com.freegang.xpler.core.callMethod
 import com.freegang.xpler.core.getModuleDrawable
 import com.freegang.xpler.core.inflateModuleView
 import com.freegang.xpler.databinding.DialogFreedomLayoutBinding
-import com.freegang.xpler.utils.reflect.KXpTest
 import com.freegang.xpler.utils.view.KViewUtils
 import com.freegang.xpler.utils.view.findParentExact
+import com.freegang.xpler.utils.view.findViewsByDesc
 import com.freegang.xpler.utils.view.findViewsByType
 import com.freegang.xpler.utils.view.traverse
+import com.ss.android.ugc.aweme.base.ui.SmartAvatarBorderView
 import com.ss.android.ugc.aweme.common.widget.VerticalViewPager
 import com.ss.android.ugc.aweme.familiar.feed.slides.ui.SlidesPhotosViewPager
 import com.ss.android.ugc.aweme.feed.quick.presenter.FeedDoctorFrameLayout
@@ -106,6 +108,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                                 // 判断是否满足触发长按事件的条件：尚未触发长按、满足自定义的长按条件、移动距离不超过阈值
                                 if (!isLongPressTriggered && isLongPress(event, pressDuration) && moveDistance <= 100) {
                                     isLongPressTriggered = true // 设置长按事件已触发
+                                    result = true //阻断事件
                                 }
                             }
 
@@ -133,7 +136,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                 }
             }
 
-            if(it is InteractStickerParent){
+            if (it is InteractStickerParent) {
                 it.isVisible = config.isNeat && !config.neatState
                 it.traverse { v ->
                     if (config.isTranslucent && v !is ViewGroup) v.alpha = 0.5f
@@ -214,12 +217,48 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
             Toast.makeText(it.context, if (config.neatState) "清爽模式" else "普通模式", Toast.LENGTH_SHORT).show()
         }
 
+        //主页
+        binding.ownerItemText.background = KtXposedHelpers.getDrawable(R.drawable.item_selector_background)
+        binding.ownerItemText.setOnClickListener {
+            dialog.dismiss()
+            launch {
+                //KXpTest.testViewGroup(view)
+
+                //如果是清爽模式的状态下
+                if (config.neatState) {
+                    //先取消控件隐藏
+                    config.neatState = false
+                    changeView(view)
+
+                    //等待200毫秒, 记录坐标, 评论按钮
+                    delay(200)
+                    val commentOutLocation = IntArray(2) { 0 }
+                    view.findViewsByType(SmartAvatarBorderView::class.java).lastOrNull()?.getLocationOnScreen(commentOutLocation)
+
+                    //模拟点击
+                    KViewUtils.motionClickView(view, commentOutLocation[0].toFloat(), commentOutLocation[1].toFloat())
+
+                    //恢复清爽模式
+                    config.neatState = true
+                    changeView(view)
+                } else {
+                    //记录坐标, 评论按钮
+                    val commentOutLocation = IntArray(2) { 0 }
+                    view.findViewsByType(SmartAvatarBorderView::class.java).lastOrNull()?.getLocationOnScreen(commentOutLocation)
+
+                    //等待200毫秒, 模拟点击
+                    delay(200)
+                    KViewUtils.motionClickView(view, commentOutLocation[0].toFloat(), commentOutLocation[1].toFloat())
+                }
+            }
+        }
+
         //评论
         binding.commentItemText.background = KtXposedHelpers.getDrawable(R.drawable.item_selector_background)
         binding.commentItemText.setOnClickListener {
             dialog.dismiss()
             launch {
-                KXpTest.testViewGroup(view)
+                //KXpTest.testViewGroup(view)
 
                 //如果是清爽模式的状态下
                 if (config.neatState) {
@@ -242,6 +281,42 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                     //记录坐标, 评论按钮
                     val commentOutLocation = IntArray(2) { 0 }
                     view.findViewsByType(FeedDoctorFrameLayout::class.java).lastOrNull()?.getLocationOnScreen(commentOutLocation)
+
+                    //等待200毫秒, 模拟点击
+                    delay(200)
+                    KViewUtils.motionClickView(view, commentOutLocation[0].toFloat(), commentOutLocation[1].toFloat())
+                }
+            }
+        }
+
+        //收藏
+        binding.favoriteItemText.background = KtXposedHelpers.getDrawable(R.drawable.item_selector_background)
+        binding.favoriteItemText.setOnClickListener {
+            dialog.dismiss()
+            launch {
+                //KXpTest.testViewGroup(view)
+
+                //如果是清爽模式的状态下
+                if (config.neatState) {
+                    //先取消控件隐藏
+                    config.neatState = false
+                    changeView(view)
+
+                    //等待200毫秒, 记录坐标, 收藏按钮
+                    delay(200)
+                    val commentOutLocation = IntArray(2) { 0 }
+                    view.findViewsByDesc(View::class.java, "收藏").lastOrNull()?.getLocationOnScreen(commentOutLocation)
+
+                    //模拟点击
+                    KViewUtils.motionClickView(view, commentOutLocation[0].toFloat(), commentOutLocation[1].toFloat())
+
+                    //恢复清爽模式
+                    config.neatState = true
+                    changeView(view)
+                } else {
+                    //记录坐标, 收藏按钮
+                    val commentOutLocation = IntArray(2) { 0 }
+                    view.findViewsByDesc(View::class.java, "收藏").lastOrNull()?.getLocationOnScreen(commentOutLocation)
 
                     //等待200毫秒, 模拟点击
                     delay(200)
