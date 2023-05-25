@@ -1,6 +1,6 @@
 # FreedomPlus
 
-[![](https://img.shields.io/github/v/release/GangJust/FreedomPlus)](https://github.com/GangJust/FreedomPlus/releases)  [![](https://img.shields.io/github/downloads/GangJust/FreedomPlus/total?color=g)]()
+[![](https://img.shields.io/github/v/release/GangJust/FreedomPlus)](https://github.com/GangJust/FreedomPlus/releases) [![](https://img.shields.io/github/downloads/GangJust/FreedomPlus/total?color=g)]() [![](https://img.shields.io/badge/QQ%E7%BE%A4-770498642-yellow)](https://qm.qq.com/cgi-bin/qm/qr?k=WxbfjDHjU1zQETlZ7Xeeusg2TxfzNsm8&jump_from=webapi&authKey=02HyI2e2oH3AXd/cYfr8mWEtIWYMku5RWWunRiW/zp7k1i6p99diZp1+pbEat6Jh)
 
 依赖于抖音运行的开源Xposed模块
 
@@ -21,7 +21,7 @@
 
 ## 支持版本
 
-- 23.5.0、23.6.0、23.7.0、23.8.0、23.9.0、24.0.0、24.1.0、24.2.0、24.3.0、24.4.0、24.5.0、24.6.0、24.7.0、24.8.0、24.9.0、25.0.0、25.1.0、25.2.0、25.3.0、25.4.0
+- 23.5.0、23.6.0、23.7.0、23.8.0、23.9.0、24.0.0、24.1.0、24.2.0、24.3.0、24.4.0、24.5.0、24.6.0、24.7.0、24.8.0、24.9.0、25.0.0、25.1.0、25.2.0、25.3.0、25.4.0、25.5.0
 
 
 
