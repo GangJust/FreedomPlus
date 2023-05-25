@@ -6,14 +6,11 @@ import com.freegang.config.Config
 import com.freegang.xpler.core.EmptyHook
 import com.freegang.xpler.core.hookClass
 import com.freegang.xpler.utils.app.KAppCrashUtils
-import com.freegang.xpler.utils.io.KStorageUtils
-import com.freegang.xpler.utils.io.child
 import com.freegang.xpler.utils.io.hasOperationStorage
 import com.freegang.xpler.utils.log.KLogCat
 import com.ss.android.ugc.aweme.app.host.AwemeHostApplication
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.luckypray.dexkit.DexKitBridge
-import java.io.File
 import java.lang.reflect.Method
 
 class DouYinMain(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHook>(lpparam) {
@@ -34,18 +31,13 @@ class DouYinMain(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHook>
                     KLogCat.init(app)
                     KLogCat.openStorage()
 
-                    val log = File(KStorageUtils.getStoragePath(app)).child("Download")
-                    log.listFiles()?.forEach {
-                        if(it.name.contains("抖音") && it.name.contains(".log")) it.delete()
-                    }
-
                     //KLogCat.init(app, File(KStorageUtils.getStoragePath(app)).child("Download"))
                     //KLogCat.openStorage()
                     //val classStr = KClassUtils.classToString(LongPressLayout::class.java)
                     //KLogCat.d("\n\n$classStr")
 
                     //全局异常捕获工具
-                    KAppCrashUtils.instance.init(app, "抖音异常崩溃!")
+                    KAppCrashUtils.instance.init(app, "抖音异常退出!")
 
                     //文件读写权限检查
                     if (!app.hasOperationStorage) {

@@ -9,7 +9,7 @@ import android.view.Window
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.PopupWindow
-import com.freegang.xpler.utils.app.KActivityUtils.topActivity
+import com.freegang.xpler.utils.app.topActivity
 import com.freegang.xpler.utils.log.KLogCat
 
 class KDialog : PopupWindow() {

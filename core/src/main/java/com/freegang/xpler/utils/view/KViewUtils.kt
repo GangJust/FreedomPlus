@@ -1,12 +1,18 @@
 package com.freegang.xpler.utils.view
 
 import android.content.Context
-import android.os.SystemClock
-import android.view.MotionEvent
+import android.graphics.Rect
+import android.os.Build
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewParent
+import android.widget.ListView
+import android.widget.TextView
 import androidx.annotation.IdRes
+import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager.widget.ViewPager
+import org.json.JSONArray
+import org.json.JSONObject
 import java.lang.reflect.Field
 import java.util.*
 import kotlin.collections.ArrayDeque
@@ -384,34 +390,13 @@ object KViewUtils {
 
     //
     /**
-     * 通过事件分发模拟点击某个指定坐标
-     * 如果你需要触发某个view的点击事件，请参考: [View.performClick] 方法
-     *
-     * @param view 目标view, 或者是它的父view
-     * @param x x坐标轴
-     * @param y y坐标轴
-     */
-    fun motionClickView(view: View, x: Float, y: Float) {
-        var downTime = SystemClock.uptimeMillis()
-        val downEvent = MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, x, y, 0)
-        downTime += 10
-        val upEvent = MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_UP, x, y, 0)
-        view.dispatchTouchEvent(downEvent)
-        view.dispatchTouchEvent(upEvent)
-        downEvent.recycle()
-        upEvent.recycle()
-    }
-
-
-    //
-    /**
      * 遍历 ViewGroup 及其子 View
      *
      * @param viewGroup 需要遍历的 ViewGroup
      * @param call 遍历回调函数，接收一个 View 参数
      */
     @JvmStatic
-    fun traverseViewGroup(viewGroup: ViewGroup, call: (it: View) -> Unit) {
+    fun traverse(viewGroup: ViewGroup, call: (it: View) -> Unit) {
         val stack = Stack<View>()
         stack.push(viewGroup)
         while (!stack.isEmpty()) {
@@ -477,7 +462,7 @@ object KViewUtils {
     fun <T : View> findViewsByDesc(
         viewGroup: ViewGroup,
         targetType: Class<T>,
-        containsDesc: Regex,
+        containsDesc: Regex
     ): List<T> {
         return findViewsExact(viewGroup, targetType) {
             val desc = it.contentDescription ?: ""
@@ -560,6 +545,7 @@ object KViewUtils {
      * @param deep 回退深度, 默认找到第1个
      * @param T 父View实例
      */
+    @JvmStatic
     fun <T : View> findParentExact(
         view: View,
         targetType: Class<T>,
@@ -576,7 +562,160 @@ object KViewUtils {
         return null
     }
 
-    //
+    /**
+     * 将ViewGroup及其所有子View转换为JSON字符串表示。
+     *
+     * @param viewGroup 要转换的ViewGroup
+     * @return 转换后的JSON字符串
+     */
+    @JvmStatic
+    fun viewToJson(viewGroup: ViewGroup): String {
+        // 创建根JSONObject
+        val rootJsonObject = getViewJsonItem(0, viewGroup)
+        val jsonArray = JSONArray()
+        rootJsonObject.put("children", jsonArray)
+        // 创建存放JSONArray的栈
+        val jsonStack = Stack<JSONArray>()
+        jsonStack.push(jsonArray)
+
+        // 创建存放ViewGroup的栈
+        val viewStack = Stack<ViewGroup>()
+        viewStack.push(viewGroup)
+
+        // 循环处理ViewGroup及其子View
+        while (!viewStack.isEmpty()) {
+            // 弹出当前的JSONArray和ViewGroup
+            val currentJSONArray = jsonStack.pop()
+            val currentViewGroup = viewStack.pop()
+
+            // 遍历子View
+            val childCount = currentViewGroup.childCount
+            for (i in 0 until childCount) {
+                val child = currentViewGroup.getChildAt(i)
+                // 创建子View的JSONObject
+                val jsonObject = getViewJsonItem(i, child)
+
+                if (child is ViewGroup) {
+                    // 如果子View是ViewGroup，则创建子View的JSONArray，并将子View的JSONObject添加到当前的JSONArray中
+                    val childJsonArray = JSONArray()
+                    jsonObject.put("children", childJsonArray)
+                    currentJSONArray.put(jsonObject)
+                    // 将子View的JSONArray入栈，将子ViewGroup入栈
+                    jsonStack.push(childJsonArray)
+                    viewStack.push(child)
+                } else {
+                    // 如果子View不是ViewGroup，则直接将子View的JSONObject添加到当前的JSONArray中
+                    currentJSONArray.put(jsonObject)
+                }
+            }
+        }
+
+        // 返回根JSONObject的字符串表示
+        return rootJsonObject.toString()
+    }
+
+    /**
+     * 获取View的JSONObject表示。
+     *
+     * @param view 要转换的View
+     * @return View的JSONObject表示
+     */
+    private fun getViewJsonItem(
+        index: Int,
+        view: View,
+    ): JSONObject {
+        val jsonObject = JSONObject()
+        val pkg = view.javaClass.`package`
+        jsonObject.put("index", index)
+        jsonObject.put("package", pkg?.name ?: "")
+        jsonObject.put("superClass", view.javaClass.superclass)
+        jsonObject.put("className", view.javaClass.name)
+        jsonObject.put("id", view.id)
+        jsonObject.put("idHex", getIdHex(view))
+        jsonObject.put("idName", getIdName(view))
+        when (view.visibility) {
+            View.VISIBLE -> jsonObject.put("visibility", "VISIBLE")
+            View.GONE -> jsonObject.put("visibility", "GONE")
+            View.INVISIBLE -> jsonObject.put("visibility", "INVISIBLE")
+        }
+        //文本框
+        if (view is TextView) {
+            jsonObject.put("text", "${view.text}")
+            jsonObject.put("hint", "${view.hint}")
+            jsonObject.put("selectable", view.isTextSelectable)
+            jsonObject.put("minHeight", view.minHeight)
+            jsonObject.put("maxHeight", view.maxHeight)
+            jsonObject.put("lineHeight", view.lineHeight)
+            jsonObject.put("minLines", view.minLines)
+            jsonObject.put("maxLines", view.maxLines)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                jsonObject.put("singleLine", view.isSingleLine)
+            }
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            jsonObject.put("tooltipText", "${view.tooltipText}")
+        }
+        jsonObject.put("contentDesc", "${view.contentDescription}")
+        jsonObject.put("enabled", "${view.isEnabled}")
+        jsonObject.put("pressed", "${view.isPressed}")
+        jsonObject.put("hovered", "${view.isHovered}")
+        jsonObject.put("focusable", "${view.isFocusable}")
+        jsonObject.put("focused", "${view.isFocused}")
+        jsonObject.put("selected", "${view.isSelected}")
+        jsonObject.put("clickable", "${view.isClickable}")
+        jsonObject.put("longClickable", "${view.isLongClickable}")
+        //点击事件
+        val clickListener = getOnClickListener(view)
+        if (clickListener != null) {
+            jsonObject.put("onClickListener", clickListener)
+        }
+        val longClickListener = getOnLongClickListener(view)
+        if (longClickListener != null) {
+            jsonObject.put("longClickListener", longClickListener)
+        }
+        val onTouchListener = getOnTouchListener(view)
+        if (onTouchListener != null) {
+            jsonObject.put("onTouchListener", onTouchListener)
+        }
+        //列表类适配器
+        if (view is ViewPager) {
+            jsonObject.put("ViewPagerAdapter", "${view.adapter}")
+            jsonObject.put("ViewPagerCurrentItem", "${view.currentItem}")
+        }
+        if (view is ListView) {
+            jsonObject.put("ListViewAdapter", "${view.adapter}")
+        }
+        if (view is RecyclerView) {
+            jsonObject.put("RecyclerViewAdapter", "${view.adapter}")
+        }
+        jsonObject.put("tag", "${view.tag}")
+        jsonObject.put("viewPosition", "${view.x}, ${view.y}")
+        jsonObject.put("pivotPosition", "${view.pivotX}, ${view.pivotY}")
+        jsonObject.put("rotationPosition", "${view.rotationX}, ${view.rotationY}")
+        val outOnScreen = IntArray(2) { 0 }
+        view.getLocationOnScreen(outOnScreen)
+        jsonObject.put("locationOnScreen", "${outOnScreen[0]}, ${outOnScreen[1]}")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val outInSurface = IntArray(2) { 0 }
+            view.getLocationInSurface(outOnScreen)
+            jsonObject.put("locationInSurface", "${outInSurface[0]}, ${outInSurface[1]}")
+        }
+        val outInWindow = IntArray(2) { 0 }
+        view.getLocationInWindow(outInWindow)
+        jsonObject.put("locationInWindow", "${outInWindow[0]}, ${outInWindow[1]}")
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val outRect = Rect()
+            view.getClipBounds(outRect)
+            jsonObject.put("clipBounds", outRect.toShortString())
+        } else {
+            jsonObject.put("clipBounds", "${view.clipBounds?.toShortString()}")
+        }
+        jsonObject.put("rect", Rect(view.left, view.top, view.right, view.bottom).toShortString())
+        return jsonObject
+    }
+
+
     /**
      * 构建View节点树
      * @param viewGroup ViewGroup
@@ -605,7 +744,7 @@ object KViewUtils {
     data class ViewNode(
         var parent: ViewGroup? = null,  //父视图
         var view: View? = null,  //当前视图
-        var depth: Int = 0,  //当前树的深度
+        var depth: Int = 1,  //当前树的深度
         var children: MutableList<ViewNode> = mutableListOf(), //子节点
     ) {
 
@@ -679,11 +818,7 @@ fun ViewGroup.getViewTree(): KViewUtils.ViewNode {
 }
 
 fun ViewGroup.traverse(call: (it: View) -> Unit) {
-    KViewUtils.traverseViewGroup(this, call)
-}
-
-fun <T : View> ViewGroup.findViewsByIdName(targetType: Class<T>, idName: String): List<T> {
-    return KViewUtils.findViewsByIdName(this, targetType, idName)
+    KViewUtils.traverse(this, call)
 }
 
 fun <T : View> ViewGroup.findViewsByType(targetType: Class<T>): List<T> {
@@ -706,5 +841,6 @@ fun <T : View> View.findParentExact(targetType: Class<T>, deep: Int = 1): T? {
     return KViewUtils.findParentExact(this, targetType, deep)
 }
 
-
 val View.idName get() = KViewUtils.getIdName(this)
+
+val View.idHex get() = KViewUtils.getIdHex(this)

@@ -7,7 +7,6 @@ import android.os.Build
 import android.os.Looper
 import android.os.Process
 import android.widget.Toast
-import com.freegang.xpler.utils.app.KActivityUtils.topActivity
 import com.freegang.xpler.utils.log.KLogCat
 import kotlin.system.exitProcess
 

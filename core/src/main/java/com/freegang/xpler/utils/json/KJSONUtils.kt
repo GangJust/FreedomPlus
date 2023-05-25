@@ -24,7 +24,10 @@ object KJSONUtils {
     @JvmOverloads
     fun getString(json: JSONObject, key: String, default: String = ""): String {
         return try {
-            json.getString(key)
+            if (json.isNull(key))
+                default
+            else
+                json.getString(key)
         } catch (e: JSONException) {
             default
         }
@@ -34,7 +37,10 @@ object KJSONUtils {
     @JvmOverloads
     fun getInt(json: JSONObject, key: String, default: Int = 0): Int {
         return try {
-            json.getInt(key)
+            if (json.isNull(key))
+                default
+            else
+                json.getInt(key)
         } catch (e: JSONException) {
             default
         }
@@ -44,7 +50,10 @@ object KJSONUtils {
     @JvmOverloads
     fun getLong(json: JSONObject, key: String, default: Long = 0L): Long {
         return try {
-            json.getLong(key)
+            if (json.isNull(key))
+                default
+            else
+                json.getLong(key)
         } catch (e: JSONException) {
             default
         }
@@ -54,7 +63,10 @@ object KJSONUtils {
     @JvmOverloads
     fun getDouble(json: JSONObject, key: String, default: Double = 0.0): Double {
         return try {
-            json.getDouble(key)
+            if (json.isNull(key))
+                default
+            else
+                json.getDouble(key)
         } catch (e: JSONException) {
             default
         }
@@ -64,7 +76,10 @@ object KJSONUtils {
     @JvmOverloads
     fun getBoolean(json: JSONObject, key: String, default: Boolean = false): Boolean {
         return try {
-            json.getBoolean(key)
+            if (json.isNull(key))
+                default
+            else
+                json.getBoolean(key)
         } catch (e: JSONException) {
             default
         }
@@ -150,7 +165,10 @@ object KJSONUtils {
     @JvmOverloads
     fun getString(array: JSONArray, index: Int, default: String = ""): String {
         return try {
-            array.getString(index)
+            if (array.isNull(index))
+                default
+            else
+                array.getString(index)
         } catch (e: JSONException) {
             default
         }
@@ -160,7 +178,10 @@ object KJSONUtils {
     @JvmOverloads
     fun getInt(array: JSONArray, index: Int, default: Int = 0): Int {
         return try {
-            array.getInt(index)
+            if (array.isNull(index))
+                default
+            else
+                array.getInt(index)
         } catch (e: JSONException) {
             default
         }
@@ -170,7 +191,10 @@ object KJSONUtils {
     @JvmOverloads
     fun getLong(array: JSONArray, index: Int, default: Long = 0): Long {
         return try {
-            array.getLong(index)
+            if (array.isNull(index))
+                default
+            else
+                array.getLong(index)
         } catch (e: JSONException) {
             default
         }
@@ -180,7 +204,10 @@ object KJSONUtils {
     @JvmOverloads
     fun getDouble(array: JSONArray, index: Int, default: Double = 0.0): Double {
         return try {
-            array.getDouble(index)
+            if (array.isNull(index))
+                default
+            else
+                array.getDouble(index)
         } catch (e: JSONException) {
             default
         }
@@ -190,7 +217,10 @@ object KJSONUtils {
     @JvmOverloads
     fun getBoolean(array: JSONArray, index: Int, default: Boolean = false): Boolean {
         return try {
-            array.getBoolean(index)
+            if (array.isNull(index))
+                default
+            else
+                array.getBoolean(index)
         } catch (e: JSONException) {
             default
         }

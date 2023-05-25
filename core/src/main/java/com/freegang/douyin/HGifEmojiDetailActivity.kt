@@ -9,7 +9,7 @@ import com.freegang.douyin.logic.SaveEmojiLogic
 import com.freegang.xpler.core.OnBefore
 import com.freegang.xpler.core.getObjectField
 import com.freegang.xpler.core.thisActivity
-import com.freegang.xpler.utils.app.KActivityUtils.contentView
+import com.freegang.xpler.utils.app.contentView
 import com.freegang.xpler.utils.view.findViewsByExact
 import com.freegang.xpler.utils.view.idName
 import com.ss.android.ugc.aweme.comment.ui.GifEmojiDetailActivity

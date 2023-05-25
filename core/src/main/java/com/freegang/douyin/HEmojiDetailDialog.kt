@@ -9,7 +9,7 @@ import com.freegang.xpler.core.findFieldByType
 import com.freegang.xpler.core.getObjectField
 import com.freegang.xpler.core.hookClass
 import com.freegang.xpler.core.hookMethodAll
-import com.freegang.xpler.utils.app.KActivityUtils.contentView
+import com.freegang.xpler.utils.app.contentView
 import com.freegang.xpler.utils.view.KViewUtils
 import com.ss.android.ugc.aweme.base.model.UrlModel
 import com.ss.android.ugc.aweme.emoji.store.view.EmojiBottomSheetDialog

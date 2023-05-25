@@ -8,7 +8,7 @@ import com.freegang.douyin.logic.SaveEmojiLogic
 import com.freegang.xpler.core.hook
 import com.freegang.xpler.core.hookClass
 import com.freegang.xpler.core.hookConstructorsAll
-import com.freegang.xpler.utils.app.KActivityUtils.contentView
+import com.freegang.xpler.utils.app.contentView
 import com.freegang.xpler.utils.view.KViewUtils
 import com.ss.android.ugc.aweme.emoji.model.Emoji
 import com.ss.android.ugc.aweme.emoji.similaremoji.EmojiDetailDialogNew

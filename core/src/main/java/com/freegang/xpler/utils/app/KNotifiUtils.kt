@@ -1,5 +1,6 @@
 package com.freegang.xpler.utils.app
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -18,6 +19,7 @@ object KNotifiUtils {
     /**
      * 显示普通消息通知
      */
+    @SuppressLint("WrongConstant")
     @JvmStatic
     @JvmOverloads
     fun showNotification(
@@ -56,6 +58,7 @@ object KNotifiUtils {
     /**
      * 显示进度条通知
      */
+    @SuppressLint("WrongConstant")
     @JvmStatic
     @JvmOverloads
     fun showProgressNotification(
@@ -98,7 +101,7 @@ object KNotifiUtils {
 
 
     //kotlin
-    fun showProgressNotification(
+    internal fun showProgressNotification(
         context: Context,
         notifyId: Int,
         channelId: String = "渠道ID",

@@ -6,10 +6,11 @@ import java.io.File
 object KStorageUtils {
 
     /**
-     * 需要部分权限
-     * 获取外置存储器的根地址, 通常是: /storage/emulated/0/
-     * @param context context
-     * @return String
+     * 获取外置存储器的根路径。
+     * 通常为：/storage/emulated/0/。
+     *
+     * @param context 上下文
+     * @return 外置存储器的根路径
      */
     @JvmStatic
     fun getStoragePath(context: Context): String {
@@ -22,10 +23,11 @@ object KStorageUtils {
     }
 
     /**
-     * 需要部分权限
-     * 获取外置存储器的根地址, 通常是: /storage/emulated/0/
-     * @param context context
-     * @return File
+     * 获取外置存储器的根文件对象。
+     * 通常为：/storage/emulated/0/。
+     *
+     * @param context 上下文
+     * @return 外置存储器的根文件对象
      */
     @JvmStatic
     fun getStorageFile(context: Context): File {
@@ -33,10 +35,12 @@ object KStorageUtils {
     }
 
     /**
-     * 需要部分权限
-     * 在外置存储器的根地址, 通常是: /storage/emulated/0/ 尝试创建和删除一个`.temp`文件, 根据是否创建和删除成功来判断外置存储读写权限
-     * @param context context
-     * @return File
+     * 检查外置存储器的读写权限。
+     * 在外置存储器的根路径下尝试创建和删除一个名为`.temp`的临时文件，
+     * 根据创建和删除成功与否来判断外置存储器的读写权限是否可用。
+     *
+     * @param context 上下文
+     * @return 外置存储器的读写权限是否可用
      */
     @JvmStatic
     @Synchronized
@@ -53,11 +57,20 @@ object KStorageUtils {
 }
 
 ///
+/**
+ * 获取外置存储器的根路径，通常是：/storage/emulated/0/
+ */
 val Context.storageRootPath: String
     get() = KStorageUtils.getStoragePath(this)
 
+/**
+ * 获取外置存储器的根文件对象，通常是：/storage/emulated/0/
+ */
 val Context.storageRootFile: File
     get() = KStorageUtils.getStoragePath(this).toFile()
 
+/**
+ * 检查外置存储器的读写权限
+ */
 val Context.hasOperationStorage: Boolean
     get() = KStorageUtils.hasOperationStorage(this)

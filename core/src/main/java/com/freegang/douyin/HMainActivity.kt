@@ -18,9 +18,9 @@ import com.freegang.xpler.core.findMethod
 import com.freegang.xpler.core.findMethodsByReturnType
 import com.freegang.xpler.core.thisActivity
 import com.freegang.xpler.core.thisContext
-import com.freegang.xpler.utils.app.KActivityUtils.contentView
 import com.freegang.xpler.utils.app.appVersionCode
 import com.freegang.xpler.utils.app.appVersionName
+import com.freegang.xpler.utils.app.contentView
 import com.freegang.xpler.utils.view.traverse
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.main.MainActivity

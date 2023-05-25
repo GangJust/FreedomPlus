@@ -8,23 +8,13 @@ import android.view.Window
 object KActivityUtils {
 
     /**
-     * 反射获取当顶部活跃的Activity
-     * @return activity
+     * 反射获取当前顶部活跃的Activity
+     * @return Activity
      */
-    @SuppressLint("PrivateApi", "DiscouragedPrivateApi")
     fun getTopActivity(): Activity? {
         return try {
-            val activityThreadClass = Class.forName("android.app.ActivityThread")
-            val currentActivityThreadMethod = activityThreadClass.getDeclaredMethod("currentActivityThread")
-            currentActivityThreadMethod.isAccessible = true
-            val activityThread = currentActivityThreadMethod.invoke(null)
-
-            val activitiesField = activityThreadClass.getDeclaredField("mActivities")
-            activitiesField.isAccessible = true
-            val activities = activitiesField.get(activityThread) as Map<*, *>
-
+            val activities = getActivities()
             var topActivity: Activity? = null
-
             for (activityRecord in activities.values) {
                 val activityRecordClass = activityRecord!!.javaClass
                 val pausedField = activityRecordClass.getDeclaredField("paused")
@@ -45,10 +35,40 @@ object KActivityUtils {
         }
     }
 
-    val Any.topActivity get() = getTopActivity()
+    /**
+     * 反射获取当前的所有Activity
+     * @return List<Activity>
+     */
+    fun getActivityList(): List<Activity> {
+        val activities = getActivities()
+        val activityList = mutableListOf<Activity>()
+        for (activityRecord in activities.values) {
+            val activityRecordClass = activityRecord!!.javaClass
+            val activityField = activityRecordClass.getDeclaredField("activity")
+            activityField.isAccessible = true
 
-    val Window.contentView: ViewGroup get() = this.decorView.findViewById(Window.ID_ANDROID_CONTENT)
+            val activity = activityField.get(activityRecord) as Activity
+            activityList.add(activity)
+        }
 
-    val Activity.contentView get() = this.window.contentView
+        return activityList
+    }
 
+    @SuppressLint("PrivateApi", "DiscouragedPrivateApi")
+    private fun getActivities(): Map<*, *> {
+        val activityThreadClass = Class.forName("android.app.ActivityThread")
+        val currentActivityThreadMethod = activityThreadClass.getDeclaredMethod("currentActivityThread")
+        currentActivityThreadMethod.isAccessible = true
+        val currentActivityThread = currentActivityThreadMethod.invoke(null)
+
+        val activitiesField = activityThreadClass.getDeclaredField("mActivities")
+        activitiesField.isAccessible = true
+        return activitiesField.get(currentActivityThread) as Map<*, *>
+    }
 }
+
+val Any.topActivity get() = KActivityUtils.getTopActivity()
+
+val Activity.contentView get() = this.window.decorView.findViewById<ViewGroup>(Window.ID_ANDROID_CONTENT)
+
+val Window.contentView get() = this.decorView.findViewById<ViewGroup>(Window.ID_ANDROID_CONTENT)

@@ -34,16 +34,6 @@
             android:textSize="16sp" />
 
         <TextView
-            android:id="@+id/ownerItemText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingHorizontal="24dp"
-            android:paddingVertical="16dp"
-            android:text="主页"
-            android:textColor="#ff333333"
-            android:textSize="16sp" />
-
-        <TextView
             android:id="@+id/commentItemText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

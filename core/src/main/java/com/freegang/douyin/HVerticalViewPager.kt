@@ -6,6 +6,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
@@ -18,12 +19,12 @@ import com.freegang.xpler.core.callMethod
 import com.freegang.xpler.core.getModuleDrawable
 import com.freegang.xpler.core.inflateModuleView
 import com.freegang.xpler.databinding.DialogFreedomLayoutBinding
-import com.freegang.xpler.utils.view.KViewUtils
+import com.freegang.xpler.utils.app.KAppUtils
+import com.freegang.xpler.utils.other.KAutomationUtils
 import com.freegang.xpler.utils.view.findParentExact
 import com.freegang.xpler.utils.view.findViewsByDesc
 import com.freegang.xpler.utils.view.findViewsByType
 import com.freegang.xpler.utils.view.traverse
-import com.ss.android.ugc.aweme.base.ui.SmartAvatarBorderView
 import com.ss.android.ugc.aweme.common.widget.VerticalViewPager
 import com.ss.android.ugc.aweme.familiar.feed.slides.ui.SlidesPhotosViewPager
 import com.ss.android.ugc.aweme.feed.quick.presenter.FeedDoctorFrameLayout
@@ -126,11 +127,14 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
     //改变View状态
     @SuppressLint("ClickableViewAccessibility")
     private fun changeView(viewGroup: ViewGroup) {
-        //KXpTest.testViewGroup(viewGroup)
         viewGroup.traverse {
             //透明度、清爽模式
             if (it is PenetrateTouchRelativeLayout) {
-                it.isVisible = config.isNeat && !config.neatState
+                if (!config.isNeat) {
+                    it.isVisible = true
+                } else {
+                    it.isVisible = !config.neatState
+                }
                 it.traverse { v ->
                     if (config.isTranslucent && v !is ViewGroup) v.alpha = 0.5f
                 }
@@ -187,6 +191,20 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                 }
             }
         }
+
+        //是否评论区视频
+        val isComment = isComment(viewGroup)
+        viewGroup.findViewsByType(PenetrateTouchRelativeLayout::class.java).forEach {
+            if (isComment) {
+                it.isVisible = false
+            } else {
+                if (!config.isNeat) {
+                    it.isVisible = true
+                } else {
+                    it.isVisible = !config.neatState
+                }
+            }
+        }
     }
 
     // 判断手指是否在视图上保持足够长的时间（自定义的长按时间）
@@ -199,6 +217,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
     private fun showOptionsMenu() {
         //val view = view!!.rootView as ViewGroup
         val view = view!!
+        val screenSize = KAppUtils.screenSize()
 
         val dialog = KDialog()
         val frameLayout = view.context.inflateModuleView<FrameLayout>(R.layout.dialog_freedom_layout)
@@ -217,48 +236,12 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
             Toast.makeText(it.context, if (config.neatState) "清爽模式" else "普通模式", Toast.LENGTH_SHORT).show()
         }
 
-        //主页
-        binding.ownerItemText.background = KtXposedHelpers.getDrawable(R.drawable.item_selector_background)
-        binding.ownerItemText.setOnClickListener {
-            dialog.dismiss()
-            launch {
-                //KXpTest.testViewGroup(view)
-
-                //如果是清爽模式的状态下
-                if (config.neatState) {
-                    //先取消控件隐藏
-                    config.neatState = false
-                    changeView(view)
-
-                    //等待200毫秒, 记录坐标, 评论按钮
-                    delay(200)
-                    val commentOutLocation = IntArray(2) { 0 }
-                    view.findViewsByType(SmartAvatarBorderView::class.java).lastOrNull()?.getLocationOnScreen(commentOutLocation)
-
-                    //模拟点击
-                    KViewUtils.motionClickView(view, commentOutLocation[0].toFloat(), commentOutLocation[1].toFloat())
-
-                    //恢复清爽模式
-                    config.neatState = true
-                    changeView(view)
-                } else {
-                    //记录坐标, 评论按钮
-                    val commentOutLocation = IntArray(2) { 0 }
-                    view.findViewsByType(SmartAvatarBorderView::class.java).lastOrNull()?.getLocationOnScreen(commentOutLocation)
-
-                    //等待200毫秒, 模拟点击
-                    delay(200)
-                    KViewUtils.motionClickView(view, commentOutLocation[0].toFloat(), commentOutLocation[1].toFloat())
-                }
-            }
-        }
-
         //评论
         binding.commentItemText.background = KtXposedHelpers.getDrawable(R.drawable.item_selector_background)
         binding.commentItemText.setOnClickListener {
             dialog.dismiss()
             launch {
-                //KXpTest.testViewGroup(view)
+                //KXpTest.testViewGroup(view.rootView as ViewGroup)
 
                 //如果是清爽模式的状态下
                 if (config.neatState) {
@@ -266,25 +249,39 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                     config.neatState = false
                     changeView(view)
 
-                    //等待200毫秒, 记录坐标, 评论按钮
+                    //等待200毫秒, 记录坐标
                     delay(200)
-                    val commentOutLocation = IntArray(2) { 0 }
-                    view.findViewsByType(FeedDoctorFrameLayout::class.java).lastOrNull()?.getLocationOnScreen(commentOutLocation)
+                    val location = IntArray(2) { 0 }
+                    view.findViewsByType(FeedDoctorFrameLayout::class.java).forEach {
+                        val temp = IntArray(2) { 0 }
+                        it.getLocationOnScreen(temp)
+                        if (temp[1] > 0 && temp[1] < screenSize.height) {
+                            location[0] = temp[0] + it.right / 2
+                            location[1] = temp[1] + it.bottom / 2
+                        }
+                    }
 
                     //模拟点击
-                    KViewUtils.motionClickView(view, commentOutLocation[0].toFloat(), commentOutLocation[1].toFloat())
+                    KAutomationUtils.simulateClickByView(view, location[0].toFloat(), location[1].toFloat())
 
                     //恢复清爽模式
                     config.neatState = true
                     changeView(view)
                 } else {
-                    //记录坐标, 评论按钮
-                    val commentOutLocation = IntArray(2) { 0 }
-                    view.findViewsByType(FeedDoctorFrameLayout::class.java).lastOrNull()?.getLocationOnScreen(commentOutLocation)
-
-                    //等待200毫秒, 模拟点击
+                    //等待200毫秒, 记录坐标
                     delay(200)
-                    KViewUtils.motionClickView(view, commentOutLocation[0].toFloat(), commentOutLocation[1].toFloat())
+                    val location = IntArray(2) { 0 }
+                    view.findViewsByType(FeedDoctorFrameLayout::class.java).forEach {
+                        val temp = IntArray(2) { 0 }
+                        it.getLocationOnScreen(temp)
+                        if (temp[1] > 0 && temp[1] < screenSize.height) {
+                            location[0] = temp[0] + it.right / 2
+                            location[1] = temp[1] + it.bottom / 2
+                        }
+                    }
+
+                    //模拟点击
+                    KAutomationUtils.simulateClickByView(view, location[0].toFloat(), location[1].toFloat())
                 }
             }
         }
@@ -302,25 +299,40 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                     config.neatState = false
                     changeView(view)
 
-                    //等待200毫秒, 记录坐标, 收藏按钮
+                    //等待200毫秒, 记录坐标
                     delay(200)
-                    val commentOutLocation = IntArray(2) { 0 }
-                    view.findViewsByDesc(View::class.java, "收藏").lastOrNull()?.getLocationOnScreen(commentOutLocation)
+                    val location = IntArray(2) { 0 }
+                    view.findViewsByDesc(View::class.java, "收藏").forEach {
+                        val temp = IntArray(2) { 0 }
+                        it.getLocationOnScreen(temp)
+                        if (temp[1] > 0 && temp[1] < screenSize.height) {
+                            location[0] = temp[0] + it.right / 2
+                            location[1] = temp[1] + it.bottom / 2
+                        }
+                    }
 
                     //模拟点击
-                    KViewUtils.motionClickView(view, commentOutLocation[0].toFloat(), commentOutLocation[1].toFloat())
+                    //showToast(it.context, "点击: ${location[0]}, ${location[1]}")
+                    KAutomationUtils.simulateClickByView(view, location[0].toFloat(), location[1].toFloat())
 
                     //恢复清爽模式
                     config.neatState = true
                     changeView(view)
                 } else {
-                    //记录坐标, 收藏按钮
-                    val commentOutLocation = IntArray(2) { 0 }
-                    view.findViewsByDesc(View::class.java, "收藏").lastOrNull()?.getLocationOnScreen(commentOutLocation)
-
-                    //等待200毫秒, 模拟点击
+                    //等待200毫秒, 记录坐标
                     delay(200)
-                    KViewUtils.motionClickView(view, commentOutLocation[0].toFloat(), commentOutLocation[1].toFloat())
+                    val location = IntArray(2) { 0 }
+                    view.findViewsByDesc(View::class.java, "收藏").forEach {
+                        val temp = IntArray(2) { 0 }
+                        it.getLocationOnScreen(temp)
+                        if (temp[1] > 0 && temp[1] < screenSize.height) {
+                            location[0] = temp[0] + it.right / 2
+                            location[1] = temp[1] + it.bottom / 2
+                        }
+                    }
+
+                    //模拟点击
+                    KAutomationUtils.simulateClickByView(view, location[0].toFloat(), location[1].toFloat())
                 }
             }
         }
@@ -336,25 +348,39 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                     config.neatState = false
                     changeView(view)
 
-                    //等待200毫秒, 记录坐标, 分享按钮
+                    //等待200毫秒, 记录坐标
                     delay(200)
-                    val commentOutLocation = IntArray(2) { 0 }
-                    view.findViewsByType(FrameLayoutHoldTouchListener::class.java).lastOrNull()?.getLocationOnScreen(commentOutLocation)
+                    val location = IntArray(2) { 0 }
+                    view.findViewsByType(FrameLayoutHoldTouchListener::class.java).forEach {
+                        val temp = IntArray(2) { 0 }
+                        it.getLocationOnScreen(temp)
+                        if (temp[1] > 0 && temp[1] < screenSize.height) {
+                            location[0] = temp[0] + it.right / 2
+                            location[1] = temp[1] + it.bottom / 2
+                        }
+                    }
 
                     //模拟点击
-                    KViewUtils.motionClickView(view, commentOutLocation[0].toFloat(), commentOutLocation[1].toFloat())
+                    KAutomationUtils.simulateClickByView(view, location[0].toFloat(), location[1].toFloat())
 
                     //恢复清爽模式
                     config.neatState = true
                     changeView(view)
                 } else {
-                    //记录坐标, 分享按钮
-                    val commentOutLocation = IntArray(2) { 0 }
-                    view.findViewsByType(FrameLayoutHoldTouchListener::class.java).lastOrNull()?.getLocationOnScreen(commentOutLocation)
-
-                    //等待200毫秒, 模拟点击
+                    //等待200毫秒, 记录坐标
                     delay(200)
-                    KViewUtils.motionClickView(view, commentOutLocation[0].toFloat(), commentOutLocation[1].toFloat())
+                    val location = IntArray(2) { 0 }
+                    view.findViewsByType(FrameLayoutHoldTouchListener::class.java).forEach {
+                        val temp = IntArray(2) { 0 }
+                        it.getLocationOnScreen(temp)
+                        if (temp[1] > 0 && temp[1] < screenSize.height) {
+                            location[0] = temp[0] + it.right / 2
+                            location[1] = temp[1] + it.bottom / 2
+                        }
+                    }
+
+                    //模拟点击
+                    KAutomationUtils.simulateClickByView(view, location[0].toFloat(), location[1].toFloat())
                 }
             }
         }
@@ -372,6 +398,24 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
             dialog.dismiss()
         }
 
-        dialog.show()
+        if (!isComment(view)) {
+            dialog.show()
+        }
+    }
+
+    private fun isComment(viewGroup: ViewGroup): Boolean {
+        return try {
+            val rootView = viewGroup.rootView as ViewGroup
+            rootView.traverse {
+                if (it is TextView) {
+                    if (it.text.contains("保存")) {
+                        throw Exception("true")
+                    }
+                }
+            }
+            false
+        } catch (e: Exception) {
+            true
+        }
     }
 }

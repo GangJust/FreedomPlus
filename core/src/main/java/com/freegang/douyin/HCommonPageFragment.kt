@@ -37,7 +37,7 @@ class HCommonPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<A
             val methods = thisObject.findMethodsByReturnType(Aweme::class.java)
             val aweme = methods.firstOrNull()?.call<Aweme>(thisObject) ?: return@launch
 
-            // awemeType 【134:评论区图片, 133|136:评论区视频, 0:主页视频详情, 68:主页图文详情, 13:私信视频/图文, 6000:私信图片】 by 25.1.0、25.2.0
+            // awemeType 【134:评论区图片, 133|136:评论区视频, 0:主页视频详情, 68:主页图文详情, 13:私信视频/图文, 6000:私信图片】 by 25.1.0 至今
             if (aweme.awemeType != 134 && aweme.awemeType != 133 && aweme.awemeType != 136) return@launch
 
 
