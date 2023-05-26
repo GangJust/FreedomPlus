@@ -4,7 +4,6 @@ import com.freegang.xpler.utils.json.firstJsonObject
 import com.freegang.xpler.utils.json.getLongOrDefault
 import com.freegang.xpler.utils.json.getStringOrDefault
 import com.freegang.xpler.utils.json.parseJSON
-import com.freegang.xpler.utils.net.KHttpUtils
 
 object Version {
     // Api
@@ -12,11 +11,11 @@ object Version {
 
     // 获取Github最后一次 releases
     fun getRemoteReleasesLatest(): VersionConfig? {
-        //return null
-        val get = KHttpUtils.get(githubReleasesApi)
-        if (get.isEmpty()) return null
-        if (!get.contains("browser_download_url")) return null
-        return parseVersionConfig(get)
+        return null
+        //val get = KHttpUtils.get(githubReleasesApi)
+        //if (get.isEmpty()) return null
+        //if (!get.contains("browser_download_url")) return null
+        //return parseVersionConfig(get)
     }
 
     // 解析出版本信息

@@ -1,6 +1,7 @@
 package com.freegang.xpler.core
 
 import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.content.res.XmlResourceParser
 import android.graphics.drawable.Drawable
@@ -169,8 +170,10 @@ fun Any.findFieldByType(type: Class<*>, isAssignableFrom: Boolean = false): List
  * @return 该方法被调用之后的返回值, 可能是 null 即没有返回值
  */
 fun <T> Any.callMethod(methodName: String, vararg args: Any?): T? {
-    val method = XposedHelpers.findMethodBestMatch(this::class.java, methodName, *XposedHelpers.getParameterTypes(*args))
-    return XposedBridge.invokeOriginalMethod(method, this, args) as? T
+    //不知道为什么, 按照太极开发文档所述, 以下方式反而无法调用
+    //val method = XposedHelpers.findMethodBestMatch(this::class.java, methodName, *XposedHelpers.getParameterTypes(*args))
+    //return XposedBridge.invokeOriginalMethod(method, this, args) as? T
+    return XposedHelpers.callMethod(this, methodName, *args) as? T
 }
 
 /**
@@ -182,8 +185,11 @@ fun <T> Any.callMethod(methodName: String, vararg args: Any?): T? {
  * @return 该方法被调用之后的返回值, 可能是 null 即没有返回值
  */
 fun <T> Any.callMethod(methodName: String, argsTypes: Array<Class<*>>, vararg args: Any): T? {
-    val method = XposedHelpers.findMethodBestMatch(this::class.java, methodName, *argsTypes)
-    return XposedBridge.invokeOriginalMethod(method, this, args) as? T
+
+    //不知道为什么, 按照太极开发文档所述, 以下方式反而无法调用
+    //val method = XposedHelpers.findMethodBestMatch(this::class.java, methodName, *argsTypes)
+    //return XposedBridge.invokeOriginalMethod(method, this, args) as? T
+    return XposedHelpers.callMethod(this, methodName, *args) as? T
 }
 
 /**
@@ -516,6 +522,15 @@ fun XC_MethodHook.MethodHookParam.dumpStackLog() {
         KLogCat.d(e.stackTraceToString())
     }
 }
+
+/**
+ * 将被Hook的某个方法中的持有实例转为Application, 如果该实例对象不是Application则抛出异常
+ */
+val XC_MethodHook.MethodHookParam.thisApplication: Application
+    get() {
+        if (thisObject !is Application) throw Exception("$thisObject unable to cast to Application")
+        return thisObject as Application
+    }
 
 /**
  * 将被Hook的某个方法中的持有实例转为Activity, 如果该实例对象不是Activity则抛出异常

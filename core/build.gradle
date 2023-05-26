@@ -41,7 +41,8 @@ android {
 dependencies {
     //Xposed Api
     compileOnly files('libs/api-82.jar')
-    compileOnly files('libs/api-82-sources.jar')
+    //compileOnly files('libs/api-82-sources.jar') //引入源代码gradle高版本无法正常依赖
+
     //Sub App
     compileOnly project(":aweme")
 

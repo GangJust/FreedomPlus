@@ -2,6 +2,7 @@ package com.freegang.xpler.utils.log
 
 import android.app.Application
 import android.util.Log
+import com.freegang.xpler.utils.other.forCalc
 import java.io.File
 import java.io.FileWriter
 import java.text.SimpleDateFormat
@@ -169,9 +170,13 @@ class KLogCat {
      */
     private fun buildStorageFile(date: Date): File? {
         val application = application ?: return null
-        val appName = application.resources.getString(application.applicationInfo.labelRes)
-        val versionName = application.packageManager.getPackageInfo(application.packageName, 0).versionName ?: ""
-        return File(getStorageFolder(), "${appName}_${versionName}_".plus(dateFormat.format(date)).plus(".log"))
+        try {
+            val appName = application.resources.getString(application.applicationInfo.labelRes)
+            val versionName = application.packageManager.getPackageInfo(application.packageName, 0).versionName ?: ""
+            return File(getStorageFolder(), "${appName}_${versionName}_".plus(dateFormat.format(date)).plus(".log"))
+        } catch (e: Exception) {
+            return File(getStorageFolder(), dateFormat.format(date).plus(".log"))
+        }
     }
 
     /**
@@ -333,14 +338,5 @@ class KLogCat {
         fun e(vararg msg: String) {
             instance.println(Log.ERROR, instance.tag, *msg)
         }
-    }
-
-    /// 简化计算
-    private fun <T> Int.forCalc(from: Int, initValue: T, both: (Int) -> T): T {
-        var value = initValue
-        repeat(this) {
-            value = both(from + it)
-        }
-        return value
     }
 }

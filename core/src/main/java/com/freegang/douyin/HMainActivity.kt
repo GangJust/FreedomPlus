@@ -1,5 +1,6 @@
 package com.freegang.douyin
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -52,9 +53,9 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
     fun onResume(it: XC_MethodHook.MethodHookParam) {
         hookBlock(it) {
             changeViewAlpha(thisActivity.contentView)
-            showSupportDialog(thisActivity as MainActivity)
-            checkVersionDialog(thisActivity as MainActivity)
-            addClipboardListener(thisActivity as MainActivity)
+            showSupportDialog(thisActivity as Activity)
+            checkVersionDialog(thisActivity as Activity)
+            addClipboardListener(thisActivity as Activity)
         }
     }
 
@@ -71,7 +72,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
 
     }
 
-    private fun findVideoAweme(activity: MainActivity): Aweme? {
+    private fun findVideoAweme(activity: Activity): Aweme? {
         var aweme: Any? = null
         val methods = activity.findMethodsByReturnType(Aweme::class.java)
         if (methods.isNotEmpty()) {
@@ -88,7 +89,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         return aweme as? Aweme
     }
 
-    private fun addClipboardListener(activity: MainActivity) {
+    private fun addClipboardListener(activity: Activity) {
         if (!config.isDownload) return
         clipboardLogic.addClipboardListener(activity) {
             val aweme = findVideoAweme(activity)
@@ -112,7 +113,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
 
     //抖音版本(版本是否兼容提示)
     @Synchronized
-    private fun showSupportDialog(activity: MainActivity) {
+    private fun showSupportDialog(activity: Activity) {
         val versionName = activity.appVersionName
         val versionCode = activity.appVersionCode
 
@@ -142,7 +143,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
 
     //检查模块版本
     @Synchronized
-    private fun checkVersionDialog(activity: MainActivity) {
+    private fun checkVersionDialog(activity: Activity) {
         launch {
             delay(2000L)
             val version = withContext(Dispatchers.IO) { Version.getRemoteReleasesLatest() } ?: return@launch

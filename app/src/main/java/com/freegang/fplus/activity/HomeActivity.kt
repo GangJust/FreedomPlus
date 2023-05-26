@@ -489,6 +489,13 @@ class HomeActivity : ComponentActivity() {
             )
         }
 
+        //获取模块状态
+        var moduleHint = StringRes.moduleHintFailed
+        if (HookStatus.isEnabled) {
+            moduleHint = StringRes.moduleHintSucceeded
+        } else if (HookStatus.isExpModuleActive(this)) {
+            moduleHint = StringRes.moduleHintSucceeded
+        }
 
         //view
         Column(
@@ -507,7 +514,7 @@ class HomeActivity : ComponentActivity() {
                             content = {
                                 Text(
                                     modifier = Modifier.align(Alignment.Center),
-                                    text = if (HookStatus.isEnabled) StringRes.moduleHintSucceeded else StringRes.moduleHintFailed,
+                                    text = moduleHint,
                                     style = Themes.nowTypography.body1,
                                 )
                             },

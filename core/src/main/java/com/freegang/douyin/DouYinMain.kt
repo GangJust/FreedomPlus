@@ -1,68 +1,59 @@
 package com.freegang.douyin
 
 import android.app.Application
-import com.freegang.base.BaseHook
+import android.widget.Toast
 import com.freegang.config.Config
-import com.freegang.xpler.core.EmptyHook
-import com.freegang.xpler.core.hookClass
+import com.freegang.xpler.core.lpparam
+import com.freegang.xpler.core.toClass
 import com.freegang.xpler.utils.app.KAppCrashUtils
 import com.freegang.xpler.utils.io.hasOperationStorage
 import com.freegang.xpler.utils.log.KLogCat
-import com.ss.android.ugc.aweme.app.host.AwemeHostApplication
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.luckypray.dexkit.DexKitBridge
 import java.lang.reflect.Method
 
-class DouYinMain(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHook>(lpparam) {
+class DouYinMain(private val app: Application) {
     companion object {
+        val awemeHostApplication get() = "com.ss.android.ugc.aweme.app.host.AwemeHostApplication".toClass(lpparam.classLoader)!!
+
         var diggClazz: Class<*>? = null
         var longPressPanel: Class<*>? = null
         var commonPageClazz: Class<*>? = null
         var emojiMethods: List<Method> = emptyList()
     }
 
-    override fun onInit() {
-        lpparam.hookClass(AwemeHostApplication::class.java)
-            .method("onCreate") {
-                onBefore {
-                    val app = thisObject as Application
+    init {
+        run {
+            KLogCat.d("KLogCat init: $app")
+            //日志工具
+            KLogCat.init(app)
+            //KLogCat.openStorage()
 
-                    //日志工具
-                    KLogCat.init(app)
-                    KLogCat.openStorage()
+            //全局异常捕获工具
+            KAppCrashUtils.instance.init(app, "抖音异常退出!")
 
-                    //KLogCat.init(app, File(KStorageUtils.getStoragePath(app)).child("Download"))
-                    //KLogCat.openStorage()
-                    //val classStr = KClassUtils.classToString(LongPressLayout::class.java)
-                    //KLogCat.d("\n\n$classStr")
-
-                    //全局异常捕获工具
-                    KAppCrashUtils.instance.init(app, "抖音异常退出!")
-
-                    //文件读写权限检查
-                    if (!app.hasOperationStorage) {
-                        showToast(app, "抖音没有文件读写权限!")
-                        return@onBefore
-                    }
-
-                    //加载配置
-                    Config.read(app)
-
-                    //初始化DexKit
-                    initDexKit()
-
-                    //Hook
-                    HMainActivity(lpparam)
-                    HMainFragment(lpparam)
-                    HDetailActivity(lpparam)
-                    HFlippableViewPager(lpparam)
-                    HVerticalViewPager(lpparam)
-                    HCommonPageFragment(lpparam)
-                    HGifEmojiDetailActivity(lpparam)
-                    HEmojiDetailDialog(lpparam)
-                    HEmojiDetailDialogNew(lpparam)
-                }
+            //文件读写权限检查
+            if (!app.hasOperationStorage) {
+                Toast.makeText(app, "抖音没有文件读写权限!", Toast.LENGTH_SHORT).show()
+                return@run
             }
+
+            //加载配置
+            Config.read(app)
+
+            //初始化DexKit
+            initDexKit()
+
+            //Hook
+            HMainActivity(lpparam)
+            HMainFragment(lpparam)
+            HDetailActivity(lpparam)
+            HFlippableViewPager(lpparam)
+            HVerticalViewPager(lpparam)
+            HCommonPageFragment(lpparam)
+            HGifEmojiDetailActivity(lpparam)
+            HEmojiDetailDialog(lpparam)
+            HEmojiDetailDialogNew(lpparam)
+        }
     }
 
     private fun initDexKit() {

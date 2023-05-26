@@ -6,7 +6,7 @@ import androidx.annotation.Nullable;
 
 import com.bytedance.ies.uikit.base.AbsActivity;
 
-public  class MainActivity extends AbsActivity {
+public class MainActivity extends AbsActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
