@@ -18,7 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
 import com.freegang.fplus.FreedomTheme
 import com.freegang.fplus.Themes
-import com.freegang.fplus.component.FMessageDialog
+import com.freegang.ui.component.FMessageDialog
 
 class MainActivity : ComponentActivity() {
     /// Android 11+
@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
             if (!permissions.all { checkPermission(it) }) return
         }
 
-        startActivity(Intent(application, HomeActivity::class.java))
+        startActivity(Intent(application, DoHomeActivity::class.java))
         finish()
     }
 

@@ -12,11 +12,11 @@ import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.annotation.LayoutRes
 import androidx.annotation.StringRes
+import com.freegang.ktutils.log.KLogCat
 import com.freegang.xpler.core.KtXposedHelpers.Companion.setLpparam
 import com.freegang.xpler.core.bridge.ConstructorHook
 import com.freegang.xpler.core.bridge.MethodHook
 import com.freegang.xpler.core.bridge.MethodHookImpl
-import com.freegang.xpler.utils.log.KLogCat
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
@@ -45,7 +45,7 @@ fun Method.hook(block: MethodHook.() -> Unit) {
  * @return 该方法被调用之后的返回值, 可能是 null 即没有返回值
  */
 fun <T> Method.call(obj: Any, vararg args: Any?): T? {
-    return XposedBridge.invokeOriginalMethod(this, obj, args) as? T
+    return XposedBridge.invokeOriginalMethod(this, obj, args) as T?
 }
 
 
@@ -140,7 +140,7 @@ fun Any.findMethodsByReturnType(returnType: Class<*>, isAssignableFrom: Boolean 
  * @param isAssignableFrom 该类型是否需要对返回值类型做子类对比
  * @return 被找到的目标字段列表, 可能是 empty 即没有该字段
  */
-fun Any.findFieldByType(type: Class<*>, isAssignableFrom: Boolean = false): List<Field> {
+fun Any.findFieldByType(type: Class<*>, isAssignableFrom: Boolean = false, compName: Boolean = true): List<Field> {
     val result = mutableListOf<Field>()
     val fields = this::class.java.declaredFields
     if (isAssignableFrom) {
@@ -155,6 +155,12 @@ fun Any.findFieldByType(type: Class<*>, isAssignableFrom: Boolean = false): List
 
     for (field in fields) {
         if (field.type == type) {
+            field.isAccessible = true
+            result.add(field)
+            continue
+        }
+
+        if (compName && field.type.name == type.name) {
             field.isAccessible = true
             result.add(field)
         }
@@ -172,8 +178,8 @@ fun Any.findFieldByType(type: Class<*>, isAssignableFrom: Boolean = false): List
 fun <T> Any.callMethod(methodName: String, vararg args: Any?): T? {
     //不知道为什么, 按照太极开发文档所述, 以下方式反而无法调用
     //val method = XposedHelpers.findMethodBestMatch(this::class.java, methodName, *XposedHelpers.getParameterTypes(*args))
-    //return XposedBridge.invokeOriginalMethod(method, this, args) as? T
-    return XposedHelpers.callMethod(this, methodName, *args) as? T
+    //return XposedBridge.invokeOriginalMethod(method, this, args) as T?
+    return XposedHelpers.callMethod(this, methodName, *args) as T?
 }
 
 /**
@@ -188,8 +194,8 @@ fun <T> Any.callMethod(methodName: String, argsTypes: Array<Class<*>>, vararg ar
 
     //不知道为什么, 按照太极开发文档所述, 以下方式反而无法调用
     //val method = XposedHelpers.findMethodBestMatch(this::class.java, methodName, *argsTypes)
-    //return XposedBridge.invokeOriginalMethod(method, this, args) as? T
-    return XposedHelpers.callMethod(this, methodName, *args) as? T
+    //return XposedBridge.invokeOriginalMethod(method, this, args) as T?
+    return XposedHelpers.callMethod(this, methodName, *args) as T?
 }
 
 /**
@@ -200,7 +206,7 @@ fun <T> Any.callMethod(methodName: String, argsTypes: Array<Class<*>>, vararg ar
  */
 fun <T> Any.getObjectField(fieldName: String): T? {
     val field = XposedHelpers.findFieldIfExists(this::class.java, fieldName) ?: return null
-    return field.get(this) as? T
+    return field.get(this) as T?
 }
 
 /**
@@ -254,7 +260,11 @@ fun String.hookClass(classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER): K
  * @throws ClassNotFoundError|NoSuchMethodException
  * @return KtXposedHelpers
  */
-fun String.hookMethod(classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER, vararg argsTypes: Any, block: MethodHook.() -> Unit)
+fun String.hookMethod(
+    classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER,
+    vararg argsTypes: Any,
+    block: MethodHook.() -> Unit
+)
         : KtXposedHelpers {
     if (!this.contains("#")) throw NoSuchMethodException("please refer to: \"com.xxx.ClassName#MethodName\".hookMethod(...)")
     val indexOf = this.indexOf("#")
@@ -279,7 +289,7 @@ fun String.hookMethod(classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER, v
  */
 fun <T> Class<*>.getStaticObjectField(fieldName: String): T? {
     val get = XposedHelpers.getStaticObjectField(this, fieldName) ?: null
-    return get as? T
+    return get as T?
 }
 
 /**

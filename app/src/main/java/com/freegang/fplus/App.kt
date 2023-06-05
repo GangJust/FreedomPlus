@@ -2,8 +2,8 @@ package com.freegang.fplus
 
 import android.app.Application
 import com.freegang.fplus.activity.ErrorActivity
-import com.freegang.xpler.utils.app.KAppCrashUtils
-import com.freegang.xpler.utils.log.KLogCat
+import com.freegang.ktutils.app.KAppCrashUtils
+import com.freegang.ktutils.log.KLogCat
 
 class App : Application() {
     override fun onCreate() {

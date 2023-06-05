@@ -4,15 +4,15 @@ import android.content.Context
 import android.widget.Toast
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
+import com.freegang.ktutils.app.IProgressNotification
+import com.freegang.ktutils.app.KMediaUtils
+import com.freegang.ktutils.io.child
+import com.freegang.ktutils.io.need
+import com.freegang.ktutils.io.pureFileName
+import com.freegang.ktutils.io.pureName
+import com.freegang.ktutils.io.secureFilename
+import com.freegang.ktutils.net.KHttpUtils
 import com.freegang.webdav.WebDav
-import com.freegang.xpler.utils.app.IProgressNotification
-import com.freegang.xpler.utils.app.KAlbumUtils
-import com.freegang.xpler.utils.io.child
-import com.freegang.xpler.utils.io.need
-import com.freegang.xpler.utils.io.pureFileName
-import com.freegang.xpler.utils.io.pureName
-import com.freegang.xpler.utils.io.secureFilename
-import com.freegang.xpler.utils.net.KHttpUtils
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -45,7 +45,8 @@ class DownloadLogic(
     init {
         if (aweme != null) {
             //整理内容
-            mShortId = if (aweme.author.uniqueId.isNullOrEmpty()) aweme.author.shortId else aweme.author.uniqueId //如果uniqueId为空, shortId为账号
+            mShortId =
+                if (aweme.author.uniqueId.isNullOrEmpty()) aweme.author.shortId else aweme.author.uniqueId //如果uniqueId为空, shortId为账号
             mPureNickname = aweme.author.nickname.pureFileName
 
             //mOwnerDir: 如果需要按视频创作者单独创建文件夹: `/外置存储器/DCIM/Freedom/${video|music|picture}/昵称(账号)`
@@ -190,11 +191,12 @@ class DownloadLogic(
                         var downloadCount = 0 //下载计数器
                         structList.forEachIndexed { index, urlStruct ->
                             val downloadFile = File(mImageParent.need(), "${mPureFileName}_${index + 1}.jpg")
-                            val finished = download(urlStruct.urlList.first(), downloadFile, it, "$index/${aweme.images.size} %s%%")
+                            val finished =
+                                download(urlStruct.urlList.first(), downloadFile, it, "$index/${aweme.images.size} %s%%")
                             if (finished) {
                                 downloadCount += 1
                                 imageFiles.add(downloadFile)
-                                KAlbumUtils.refresh(context, downloadFile.absolutePath)
+                                KMediaUtils.notifyGallery(context, downloadFile.absolutePath)
                             }
                         }
 
@@ -248,7 +250,7 @@ class DownloadLogic(
                                 download(urlStruct.urlList.first(), downloadFile, notify, "$index/${aweme.images.size} %s%%")
                             if (finished) {
                                 downloadCount += 1
-                                KAlbumUtils.refresh(context, downloadFile.absolutePath)
+                                KMediaUtils.notifyGallery(context, downloadFile.absolutePath)
                             }
                         }
 
@@ -309,7 +311,7 @@ class DownloadLogic(
                         val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
                         it.setFinishedText(message)
                         hook.showToast(context, message)
-                        KAlbumUtils.refresh(context, downloadFile.absolutePath)
+                        KMediaUtils.notifyGallery(context, downloadFile.absolutePath)
 
                         //上传WebDav
                         if (isWebDav) {
@@ -348,7 +350,7 @@ class DownloadLogic(
                         dialog.dismiss()
                         notify.setFinishedText(message)
                         hook.showToast(context, message)
-                        KAlbumUtils.refresh(context, downloadFile.absolutePath)
+                        KMediaUtils.notifyGallery(context, downloadFile.absolutePath)
 
                         //上传WebDav
                         if (isWebDav) {

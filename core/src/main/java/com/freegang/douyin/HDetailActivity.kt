@@ -50,7 +50,7 @@ class HDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Detai
                 aweme = methods.first().call(any1!!)
             }
         }
-        return aweme as? Aweme
+        return aweme as Aweme?
     }
 
     private fun addClipboardListener(activity: DetailActivity) {

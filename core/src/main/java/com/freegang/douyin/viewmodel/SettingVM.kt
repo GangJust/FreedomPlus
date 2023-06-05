@@ -1,6 +1,7 @@
-package com.freegang.fplus.viewmodel
+package com.freegang.douyin.viewmodel
 
 import android.app.Application
+import android.content.res.AssetManager
 import android.os.Environment
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -9,8 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.freegang.config.Config
 import com.freegang.config.Version
 import com.freegang.config.VersionConfig
-import com.freegang.ktutils.app.appVersionCode
-import com.freegang.ktutils.app.appVersionName
+import com.freegang.ktutils.app.readAssetsAsText
 import com.freegang.ktutils.io.child
 import com.freegang.ktutils.io.storageRootFile
 import com.freegang.webdav.WebDav
@@ -20,7 +20,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 
-class HomeVM(application: Application) : AndroidViewModel(application) {
+class SettingVM(application: Application) : AndroidViewModel(application) {
 
     private var _versionConfig = MutableLiveData<VersionConfig>()
     val versionConfig: LiveData<VersionConfig> = _versionConfig
@@ -208,28 +208,28 @@ class HomeVM(application: Application) : AndroidViewModel(application) {
     }
 
     // 保存模块配置
-    fun saveModuleConfig() {
-        viewModelScope.launch {
-            config.isOwnerDir = isOwnerDir.value ?: false
-            config.isDownload = isDownload.value ?: false
-            config.isEmoji = isEmoji.value ?: false
-            config.isVibrate = isVibrate.value ?: false
-            config.isTranslucent = isTranslucent.value ?: false
-            config.isNeat = isNeat.value ?: false
-            config.isNotification = isNotification.value ?: false
-            config.isWebDav = isWebDav.value ?: false
-            config.webDavHost = webDavHost.value ?: ""
-            config.webDavUsername = webDavUsername.value ?: ""
-            config.webDavPassword = webDavPassword.value ?: ""
-            config.isHideTab = isHideTab.value ?: false
-            config.hideTabKeywords = hideTabKeywords.value ?: ""
+    fun saveModuleConfig(asset: AssetManager) {
+        config.isOwnerDir = isOwnerDir.value ?: false
+        config.isDownload = isDownload.value ?: false
+        config.isEmoji = isEmoji.value ?: false
+        config.isVibrate = isVibrate.value ?: false
+        config.isTranslucent = isTranslucent.value ?: false
+        config.isNeat = isNeat.value ?: false
+        config.isNotification = isNotification.value ?: false
+        config.isWebDav = isWebDav.value ?: false
+        config.webDavHost = webDavHost.value ?: ""
+        config.webDavUsername = webDavUsername.value ?: ""
+        config.webDavPassword = webDavPassword.value ?: ""
+        config.isHideTab = isHideTab.value ?: false
+        config.hideTabKeywords = hideTabKeywords.value ?: ""
 
-            config.isSupportHint = getApplication<Application>().appVersionCode != config.versionCode
-            config.versionName = getApplication<Application>().appVersionName
-            config.versionCode = getApplication<Application>().appVersionCode
 
-            config.save(getApplication())
-        }
+        val version = asset.readAssetsAsText("version").split("-")
+        config.isSupportHint = version[1].toLong() != config.versionCode
+        config.versionName = version[0]
+        config.versionCode = version[1].toLong()
+
+        config.save(getApplication())
     }
 
     // 图片迁移

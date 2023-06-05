@@ -2,6 +2,7 @@ package com.freegang.xpler
 
 import android.app.Application
 import com.freegang.douyin.DouYinMain
+import com.freegang.xpler.loader.injectClassLoader
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
@@ -15,6 +16,7 @@ class HookMain : IXposedHookLoadPackage {
         when (lpparam.packageName) {
             HookPackages.douYinPackageName -> {
                 if (DouYinMain.awemeHostApplication.isInstance(application)) {
+                    injectClassLoader(application.classLoader)
                     DouYinMain(application)
                 }
             }

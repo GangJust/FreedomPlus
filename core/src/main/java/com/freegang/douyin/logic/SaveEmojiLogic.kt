@@ -3,9 +3,9 @@ package com.freegang.douyin.logic
 import android.content.Context
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
-import com.freegang.xpler.utils.io.child
-import com.freegang.xpler.utils.io.need
-import com.freegang.xpler.utils.net.KHttpUtils
+import com.freegang.ktutils.io.child
+import com.freegang.ktutils.io.need
+import com.freegang.ktutils.net.KHttpUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File

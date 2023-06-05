@@ -1,9 +1,10 @@
 package com.freegang.config
 
-import com.freegang.xpler.utils.json.firstJsonObject
-import com.freegang.xpler.utils.json.getLongOrDefault
-import com.freegang.xpler.utils.json.getStringOrDefault
-import com.freegang.xpler.utils.json.parseJSON
+import com.freegang.ktutils.json.firstJsonObject
+import com.freegang.ktutils.json.getLongOrDefault
+import com.freegang.ktutils.json.getStringOrDefault
+import com.freegang.ktutils.json.parseJSON
+
 
 object Version {
     // Api

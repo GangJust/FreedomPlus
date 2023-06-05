@@ -6,10 +6,10 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
+import com.freegang.ktutils.view.findViewsByDesc
+import com.freegang.ktutils.view.traverse
 import com.freegang.xpler.core.FieldGet
 import com.freegang.xpler.core.hookClass
-import com.freegang.xpler.utils.view.findViewsByDesc
-import com.freegang.xpler.utils.view.traverse
 import com.ss.android.ugc.aweme.homepage.ui.view.MainTabStripScrollView
 import com.ss.android.ugc.aweme.main.MainFragment
 import de.robv.android.xposed.callbacks.XC_LoadPackage

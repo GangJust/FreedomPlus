@@ -5,11 +5,11 @@ import android.widget.TextView
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
 import com.freegang.douyin.logic.SaveEmojiLogic
+import com.freegang.ktutils.app.contentView
+import com.freegang.ktutils.view.KViewUtils
 import com.freegang.xpler.core.hook
 import com.freegang.xpler.core.hookClass
 import com.freegang.xpler.core.hookConstructorsAll
-import com.freegang.xpler.utils.app.contentView
-import com.freegang.xpler.utils.view.KViewUtils
 import com.ss.android.ugc.aweme.emoji.model.Emoji
 import com.ss.android.ugc.aweme.emoji.similaremoji.EmojiDetailDialogNew
 import com.ss.android.ugc.aweme.emoji.store.view.EmojiBottomSheetDialog
@@ -28,7 +28,7 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook
                 if (Modifier.isAbstract(method.modifiers)) continue
                 method.hook {
                     onBefore {
-                        val emoji = args[0] as? Emoji ?: return@onBefore
+                        val emoji = args[0] as Emoji? ?: return@onBefore
                         urlList = emoji.animateUrl?.urlList ?: emoji.staticUrl?.urlList ?: emptyList()
                     }
                     //onUnhook { _, _ -> }

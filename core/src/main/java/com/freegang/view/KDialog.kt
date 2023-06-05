@@ -9,8 +9,8 @@ import android.view.Window
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.PopupWindow
-import com.freegang.xpler.utils.app.topActivity
-import com.freegang.xpler.utils.log.KLogCat
+import com.freegang.ktutils.app.topActivity
+import com.freegang.ktutils.log.KLogCat
 
 class KDialog : PopupWindow() {
 
@@ -31,7 +31,7 @@ class KDialog : PopupWindow() {
     override fun dismiss() {
         if (!isShowing) return
         //关闭键盘
-        val imm = contentView.context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        val imm = contentView.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
         imm?.hideSoftInputFromWindow(contentView.windowToken, InputMethodManager.RESULT_UNCHANGED_SHOWN)
         super.dismiss()
     }
@@ -44,7 +44,8 @@ class KDialog : PopupWindow() {
     fun show(gravity: Int, offsetX: Int, offsetY: Int) {
         //父布局, 默认为Android根布局
         try {
-            val activity = topActivity ?: throw NullPointerException("`${this::class.java.name}#show()`错误, 无法获取到当前Activity!")
+            val activity =
+                topActivity ?: throw NullPointerException("`${this::class.java.name}#show()`错误, 无法获取到当前Activity!")
             val parentView: View = activity.window.decorView.findViewById(Window.ID_ANDROID_CONTENT)
             show(parentView, gravity, offsetX, offsetY)
         } catch (e: Exception) {

@@ -1,16 +1,11 @@
 package com.freegang.fplus.activity
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -23,19 +18,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -44,26 +36,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.lifecycleScope
 import com.freegang.fplus.FreedomTheme
-import com.freegang.fplus.R
 import com.freegang.fplus.Themes
 import com.freegang.fplus.asDp
-import com.freegang.fplus.component.FCard
-import com.freegang.fplus.component.FCardBorder
-import com.freegang.fplus.component.FMessageDialog
 import com.freegang.fplus.resource.StringRes
 import com.freegang.fplus.viewmodel.HomeVM
+import com.freegang.ui.component.FCard
+import com.freegang.ui.component.FCardBorder
+import com.freegang.ui.component.FMessageDialog
 import com.freegang.xpler.HookStatus
-import com.freegang.xpler.utils.app.appVersionName
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlin.random.Random
 
 
 class HomeActivity : ComponentActivity() {
@@ -154,43 +137,8 @@ class HomeActivity : ComponentActivity() {
         )
     }
 
-    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun TopBarView() {
-        val isDark by model.isDark.observeAsState(false)
-
-        var rotate by remember { mutableStateOf(0f) }
-        val rotateAnimate by animateFloatAsState(
-            targetValue = rotate,
-            animationSpec = tween(durationMillis = Random.nextInt(500, 1500)),
-        )
-
-        //更新日志弹窗
-        var showUpdateLogDialog by remember { mutableStateOf(false) }
-        var updateLog by remember { mutableStateOf("") }
-        if (showUpdateLogDialog) {
-            FMessageDialog(
-                title = "更新日志",
-                onlyConfirm = true,
-                confirm = "确定",
-                onConfirm = { showUpdateLogDialog = false },
-                content = {
-                    LazyColumn(
-                        modifier = Modifier,
-                        content = {
-                            item {
-                                Text(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    text = updateLog,
-                                )
-                            }
-                        },
-                    )
-                },
-            )
-        }
-
-
         //view
         TopAppBar(
             modifier = Modifier.padding(vertical = 24.dp),
@@ -209,46 +157,6 @@ class HomeActivity : ComponentActivity() {
                             style = Themes.nowTypography.subtitle2,
                         )
                     }
-                    Icon(
-                        modifier = Modifier
-                            .size(20.dp)
-                            .clickable(
-                                indication = null,
-                                interactionSource = remember { MutableInteractionSource() },
-                                onClick = { model.toggleThemeModel() },
-                            ),
-                        painter = painterResource(id = if (isDark) R.drawable.ic_light_mode else R.drawable.ic_dark_mode),
-                        contentDescription = if (isDark) "浅色模式" else "深色模式",
-                        tint = Themes.nowColors.icon,
-                    )
-                    Spacer(modifier = Modifier.padding(horizontal = 16.dp))
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_motion),
-                        contentDescription = "检查更新/日志",
-                        tint = Themes.nowColors.icon,
-                        modifier = Modifier
-                            .size(20.dp)
-                            .rotate(rotateAnimate)
-                            .combinedClickable(
-                                indication = null,
-                                interactionSource = remember { MutableInteractionSource() },
-                                onClick = {
-                                    rotate = if (rotate == 0f) 360f else 0f
-                                },
-                                onLongClick = {
-                                    lifecycleScope.launch {
-                                        updateLog = withContext(Dispatchers.IO) {
-                                            val inputStream = assets.open("update.log")
-                                            val bytes = inputStream.readBytes()
-                                            val text = bytes.decodeToString()
-                                            inputStream.close()
-                                            text
-                                        }
-                                        showUpdateLogDialog = updateLog.isNotBlank()
-                                    }
-                                }
-                            )
-                    )
                 }
             },
         )
@@ -256,86 +164,6 @@ class HomeActivity : ComponentActivity() {
 
     @Composable
     fun BodyView() {
-        //旧数据迁移
-        var showNeedMigrateOldDataDialog by remember { mutableStateOf(model.freedomData.exists()) }
-        if (showNeedMigrateOldDataDialog) {
-            var showMigrateToContent by remember { mutableStateOf("存在[Freedom]下载数据, 正在迁移至[Freedom+]下载目录!") }
-            var showMigrateToConfirm by remember { mutableStateOf("请稍后...") }
-
-            FMessageDialog(
-                title = "提示",
-                onlyConfirm = true,
-                confirm = showMigrateToConfirm,
-                onConfirm = {
-                    if (showMigrateToConfirm == "确定") {
-                        showNeedMigrateOldDataDialog = false
-                    }
-                },
-                content = {
-                    Text(text = showMigrateToContent)
-                },
-            )
-
-            //数据迁移
-            LaunchedEffect(key1 = "migrateData") {
-                val result = withContext(Dispatchers.IO) {
-                    model.freedomData.copyRecursively(
-                        target = model.freedomPlusData,
-                        overwrite = true,
-                        onError = { _, _ ->
-                            OnErrorAction.TERMINATE
-                        },
-                    )
-                }
-                showMigrateToConfirm = "确定"
-                showMigrateToContent = if (!result) {
-                    "旧数据迁移失败, 请手动将[外置存储器/Download/Freedom]目录合并至[外置存储器/DCIM/Freedom]中!"
-                } else {
-                    val deleteAll = model.freedomData.deleteRecursively()
-                    if (deleteAll) "旧数据迁移成功!" else "旧数据迁移成功, 但旧数据删除失败, 请手动将[外置存储器/Download/Freedom]删除!"
-                }
-            }
-        }
-
-        //版本更新弹窗
-        var showNewVersionDialog by remember { mutableStateOf(true) }
-        val version by model.versionConfig.observeAsState()
-        if (version != null) {
-            val version = version!!
-            if (version.name.compareTo("v${application.appVersionName}") >= 1 && showNewVersionDialog) {
-
-                FMessageDialog(
-                    title = "发现新版本 ${version.name}!",
-                    confirm = "确定",
-                    cancel = "取消",
-                    onCancel = {
-                        showNewVersionDialog = false
-                    },
-                    onConfirm = {
-                        startActivity(
-                            Intent(
-                                Intent.ACTION_VIEW,
-                                Uri.parse(version.browserDownloadUrl),
-                            )
-                        )
-                    },
-                    content = {
-                        LazyColumn(
-                            modifier = Modifier,
-                            content = {
-                                item {
-                                    Text(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        text = version.body,
-                                    )
-                                }
-                            },
-                        )
-                    }
-                )
-            }
-        }
-
         //WebDav配置编辑
         var showWebDavConfigEditorDialog by remember { mutableStateOf(false) }
         if (showWebDavConfigEditorDialog) {
@@ -620,97 +448,17 @@ class HomeActivity : ComponentActivity() {
                         }
                     },
                 )
-
-                //数据目录
-                FCard(
-                    content = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            content = {
-                                Icon(
-                                    modifier = Modifier.size(24.dp),
-                                    painter = painterResource(id = R.drawable.ic_find_file),
-                                    contentDescription = "Github",
-                                    tint = Themes.nowColors.icon,
-                                )
-                                Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-                                Text(
-                                    text = "数据目录: `外置存储器/DCIM/Freedm`",
-                                    style = Themes.nowTypography.body1,
-                                )
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 24.dp, vertical = 16.dp),
-                        )
-                    },
-                    modifier = Modifier
-                        .padding(top = 24.dp, bottom = 4.dp)
-                        .clickable(
-                            indication = null,
-                            interactionSource = remember { MutableInteractionSource() },
-                            onClick = {
-
-                            }
-                        ),
-                )
-
-                //源码地址
-                FCard(
-                    content = {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 24.dp, vertical = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            content = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_github),
-                                    contentDescription = "Github",
-                                    tint = Themes.nowColors.icon,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                                Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-                                Column {
-                                    Text(
-                                        text = "源码地址",
-                                        style = Themes.nowTypography.body1,
-                                    )
-                                    Text(
-                                        text = "https://github.com/GangJust/FreedomPlus",
-                                        style = Themes.nowTypography.overline,
-                                    )
-                                }
-                            },
-                        )
-                    },
-                    modifier = Modifier
-                        .padding(vertical = 4.dp)
-                        .clickable(
-                            indication = null,
-                            interactionSource = remember { MutableInteractionSource() },
-                            onClick = {
-                                startActivity(
-                                    Intent(
-                                        Intent.ACTION_VIEW,
-                                        Uri.parse("https://github.com/GangJust/FreedomPlus"),
-                                    )
-                                )
-                            }
-                        ),
-                )
             },
         )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
             FreedomTheme(
                 window = window,
                 isImmersive = true,
-                isDark = model.isDark.observeAsState(false).value,
+                isDark = false,
                 followSystem = false,
                 content = {
                     Scaffold(
@@ -731,7 +479,6 @@ class HomeActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         model.loadConfig()
-        model.checkVersion()
     }
 
     override fun onPause() {

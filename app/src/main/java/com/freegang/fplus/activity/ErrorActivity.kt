@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,7 +16,6 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -25,15 +23,12 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.freegang.fplus.FreedomTheme
 import com.freegang.fplus.Themes
 import com.freegang.fplus.resource.StringRes
-import com.freegang.fplus.viewmodel.AppVM
-import com.freegang.xpler.utils.app.appLabelName
-import com.freegang.xpler.utils.app.appVersionCode
-import com.freegang.xpler.utils.app.appVersionName
-import com.freegang.xpler.utils.log.KLogCat
+import com.freegang.ktutils.app.appLabelName
+import com.freegang.ktutils.app.appVersionCode
+import com.freegang.ktutils.app.appVersionName
+import com.freegang.ktutils.log.KLogCat
 
 class ErrorActivity : ComponentActivity() {
-    private val model by viewModels<AppVM>()
-
     private var mMessage: String? = null
     private var mStackTrace: String? = null
 
@@ -79,7 +74,7 @@ class ErrorActivity : ComponentActivity() {
             FreedomTheme(
                 window = window,
                 isImmersive = true,
-                isDark = model.isDark.observeAsState(false).value,
+                isDark = false,
                 followSystem = false,
                 content = {
                     Scaffold(

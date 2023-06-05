@@ -6,12 +6,12 @@ import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
 import com.freegang.douyin.logic.SaveEmojiLogic
+import com.freegang.ktutils.app.contentView
+import com.freegang.ktutils.view.findViewsByExact
+import com.freegang.ktutils.view.idName
 import com.freegang.xpler.core.OnBefore
 import com.freegang.xpler.core.getObjectField
 import com.freegang.xpler.core.thisActivity
-import com.freegang.xpler.utils.app.contentView
-import com.freegang.xpler.utils.view.findViewsByExact
-import com.freegang.xpler.utils.view.idName
 import com.ss.android.ugc.aweme.comment.ui.GifEmojiDetailActivity
 import com.ss.android.ugc.aweme.emoji.model.Emoji
 import de.robv.android.xposed.XC_MethodHook
@@ -26,7 +26,7 @@ class HGifEmojiDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHo
     fun onCreate(it: XC_MethodHook.MethodHookParam, bundle: Bundle?) {
         hookBlock(it) {
             if (!config.isEmoji) return
-            val gifEmoji = thisActivity.intent.getSerializableExtra("gif_emoji") as? Emoji ?: return
+            val gifEmoji = thisActivity.intent.getSerializableExtra("gif_emoji") as Emoji? ?: return
             val animateUrl = gifEmoji.getObjectField<Any>("animateUrl")
             urlList = animateUrl?.getObjectField<List<String>>("urlList") ?: emptyList()
             if (urlList.isEmpty()) return

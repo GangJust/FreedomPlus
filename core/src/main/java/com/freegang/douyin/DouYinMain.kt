@@ -3,11 +3,12 @@ package com.freegang.douyin
 import android.app.Application
 import android.widget.Toast
 import com.freegang.config.Config
+import com.freegang.ktutils.app.KAppCrashUtils
+import com.freegang.ktutils.io.hasOperationStorage
+import com.freegang.ktutils.log.KLogCat
+import com.freegang.plugin.activity.PluginActivityBridge
 import com.freegang.xpler.core.lpparam
 import com.freegang.xpler.core.toClass
-import com.freegang.xpler.utils.app.KAppCrashUtils
-import com.freegang.xpler.utils.io.hasOperationStorage
-import com.freegang.xpler.utils.log.KLogCat
 import io.luckypray.dexkit.DexKitBridge
 import java.lang.reflect.Method
 
@@ -23,7 +24,6 @@ class DouYinMain(private val app: Application) {
 
     init {
         run {
-            KLogCat.d("KLogCat init: $app")
             //日志工具
             KLogCat.init(app)
             //KLogCat.openStorage()
@@ -36,6 +36,10 @@ class DouYinMain(private val app: Application) {
                 Toast.makeText(app, "抖音没有文件读写权限!", Toast.LENGTH_SHORT).show()
                 return@run
             }
+
+            //插件化注入
+            PluginActivityBridge.init(app)
+            //PluginResourceBridge.injectRes(app.resources)
 
             //加载配置
             Config.read(app)
@@ -53,6 +57,7 @@ class DouYinMain(private val app: Application) {
             HGifEmojiDetailActivity(lpparam)
             HEmojiDetailDialog(lpparam)
             HEmojiDetailDialogNew(lpparam)
+            HHomeSideBarEntranceManagerV1(lpparam)
         }
     }
 

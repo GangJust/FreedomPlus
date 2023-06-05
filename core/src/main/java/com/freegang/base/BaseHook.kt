@@ -15,6 +15,9 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.isVisible
+import com.freegang.ktutils.app.IProgressNotification
+import com.freegang.ktutils.app.KNotifiUtils
+import com.freegang.ktutils.log.KLogCat
 import com.freegang.view.KDialog
 import com.freegang.view.adapter.DialogChoiceAdapter
 import com.freegang.xpler.R
@@ -24,9 +27,6 @@ import com.freegang.xpler.core.inflateModuleView
 import com.freegang.xpler.databinding.DialogChoiceLayoutBinding
 import com.freegang.xpler.databinding.DialogMessageLayoutBinding
 import com.freegang.xpler.databinding.DialogProgressLayoutBinding
-import com.freegang.xpler.utils.app.IProgressNotification
-import com.freegang.xpler.utils.app.KNotifiUtils
-import com.freegang.xpler.utils.log.KLogCat
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -209,7 +209,13 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
         binding.choiceDialogList.selector = KtXposedHelpers.getDrawable(R.drawable.item_selector_background)
         binding.choiceDialogList.setOnItemClickListener { _, view, position, _ ->
             kDialog!!.dismiss()
-            onChoice.invoke(view, "${binding.choiceDialogInput1.text}", "${binding.choiceDialogInput2.text}", items[position], position)
+            onChoice.invoke(
+                view,
+                "${binding.choiceDialogInput1.text}",
+                "${binding.choiceDialogInput2.text}",
+                items[position],
+                position
+            )
         }
 
         kDialog!!.setView(binding.root)

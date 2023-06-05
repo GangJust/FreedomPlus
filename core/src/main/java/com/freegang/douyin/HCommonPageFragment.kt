@@ -6,7 +6,9 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import com.freegang.base.BaseHook
+import com.freegang.config.Config
 import com.freegang.douyin.logic.SaveCommentLogic
+import com.freegang.ktutils.view.KViewUtils
 import com.freegang.xpler.R
 import com.freegang.xpler.core.KtXposedHelpers
 import com.freegang.xpler.core.NoneHook
@@ -14,18 +16,20 @@ import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.call
 import com.freegang.xpler.core.findMethodsByReturnType
 import com.freegang.xpler.databinding.HookAppbarLayoutBinding
-import com.freegang.xpler.utils.view.KViewUtils
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlinx.coroutines.delay
 
 class HCommonPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Any>(lpparam) {
+    private val config get() = Config.get()
+
     override fun setTargetClass(): Class<*> = DouYinMain.commonPageClazz ?: NoneHook::class.java
 
     @OnAfter("onViewCreated")
     fun onViewCreatedAfter(param: XC_MethodHook.MethodHookParam, view: View, bundle: Bundle?) {
         hookBlock(param) {
+            if (!config.isEmoji) return
             rebuildTopBarView(thisObject, view as ViewGroup)
         }
     }
@@ -60,7 +64,7 @@ class HCommonPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<A
                 SaveCommentLogic(this@HCommonPageFragment, it.context, aweme)
             }
             binding.saveBtn.setOnLongClickListener {
-                showToast(it.context, "类型: ${aweme.awemeType}")
+                //showToast(it.context, "类型: ${aweme.awemeType}")
                 true
             }
             viewGroup.addView(appbar)

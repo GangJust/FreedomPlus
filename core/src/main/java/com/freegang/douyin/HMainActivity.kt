@@ -12,6 +12,10 @@ import com.freegang.config.Config
 import com.freegang.config.Version
 import com.freegang.douyin.logic.ClipboardLogic
 import com.freegang.douyin.logic.DownloadLogic
+import com.freegang.ktutils.app.appVersionCode
+import com.freegang.ktutils.app.appVersionName
+import com.freegang.ktutils.app.contentView
+import com.freegang.ktutils.view.traverse
 import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.OnBefore
 import com.freegang.xpler.core.call
@@ -19,10 +23,6 @@ import com.freegang.xpler.core.findMethod
 import com.freegang.xpler.core.findMethodsByReturnType
 import com.freegang.xpler.core.thisActivity
 import com.freegang.xpler.core.thisContext
-import com.freegang.xpler.utils.app.appVersionCode
-import com.freegang.xpler.utils.app.appVersionName
-import com.freegang.xpler.utils.app.contentView
-import com.freegang.xpler.utils.view.traverse
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.main.MainActivity
 import de.robv.android.xposed.XC_MethodHook
@@ -39,7 +39,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         "24.0.0", "24.1.0", "24.2.0", "24.3.0", "24.4.0",
         "24.5.0", "24.6.0", "24.7.0", "24.8.0", "24.9.0",
         "25.0.0", "25.1.0", "25.2.0", "25.3.0", "25.4.0",
-        "25.5.0",
+        "25.5.0", "25.6.0",
     )
 
     @OnAfter("onCreate")
@@ -53,9 +53,9 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
     fun onResume(it: XC_MethodHook.MethodHookParam) {
         hookBlock(it) {
             changeViewAlpha(thisActivity.contentView)
-            showSupportDialog(thisActivity as Activity)
-            checkVersionDialog(thisActivity as Activity)
-            addClipboardListener(thisActivity as Activity)
+            showSupportDialog(thisActivity)
+            checkVersionDialog(thisActivity)
+            addClipboardListener(thisActivity)
         }
     }
 
@@ -86,7 +86,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
                 aweme = curFragmentMethods.first().call(curFragment!!)
             }
         }
-        return aweme as? Aweme
+        return aweme as Aweme?
     }
 
     private fun addClipboardListener(activity: Activity) {
@@ -169,11 +169,11 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
 
     //保存配置信息
     private fun saveConfig(context: Context) {
-        val versionName = context.appVersionName
-        val versionCode = context.appVersionCode
+        val dyVersionName = context.appVersionName
+        val dyVersionCode = context.appVersionCode
         config.isSupportHint = false
-        config.dyVersionName = versionName
-        config.dyVersionCode = versionCode
+        config.dyVersionName = dyVersionName
+        config.dyVersionCode = dyVersionCode
         config.save(context)
     }
 }

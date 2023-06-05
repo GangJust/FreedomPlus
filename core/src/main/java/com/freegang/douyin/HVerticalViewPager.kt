@@ -11,6 +11,12 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
+import com.freegang.ktutils.app.KAppUtils
+import com.freegang.ktutils.other.KAutomationUtils
+import com.freegang.ktutils.view.findParentExact
+import com.freegang.ktutils.view.findViewsByDesc
+import com.freegang.ktutils.view.findViewsByType
+import com.freegang.ktutils.view.traverse
 import com.freegang.view.KDialog
 import com.freegang.xpler.R
 import com.freegang.xpler.core.KtXposedHelpers
@@ -19,12 +25,6 @@ import com.freegang.xpler.core.callMethod
 import com.freegang.xpler.core.getModuleDrawable
 import com.freegang.xpler.core.inflateModuleView
 import com.freegang.xpler.databinding.DialogFreedomLayoutBinding
-import com.freegang.xpler.utils.app.KAppUtils
-import com.freegang.xpler.utils.other.KAutomationUtils
-import com.freegang.xpler.utils.view.findParentExact
-import com.freegang.xpler.utils.view.findViewsByDesc
-import com.freegang.xpler.utils.view.findViewsByType
-import com.freegang.xpler.utils.view.traverse
 import com.ss.android.ugc.aweme.common.widget.VerticalViewPager
 import com.ss.android.ugc.aweme.familiar.feed.slides.ui.SlidesPhotosViewPager
 import com.ss.android.ugc.aweme.feed.quick.presenter.FeedDoctorFrameLayout
@@ -35,7 +35,6 @@ import com.ss.android.ugc.aweme.sticker.infoSticker.interact.consume.view.Intera
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlinx.coroutines.delay
 import kotlin.math.sqrt
-
 
 class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<VerticalViewPager>(lpparam) {
     private val config: Config = Config.get()
@@ -67,7 +66,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
         KtXposedHelpers.hookClass(LongPressLayout::class.java)
             .methodAll {
                 onBefore {
-                    //KXpTest.testXC_M(this)
+                    if (!config.isNeat) return@onBefore
                     if (method.name.contains("setListener")) {
                         listener = argsOrEmpty.firstOrNull()
                         result = Unit
@@ -80,7 +79,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
         KtXposedHelpers.hookClass(SlidesPhotosViewPager::class.java)
             .methodAll {
                 onAfter {
-                    //KXpTest.testXC_M(this)
+                    if (!config.isNeat) return@onAfter
                     if (method.name.contains("onInterceptTouchEvent|onTouchEvent".toRegex())) {
                         val event = argsOrEmpty.firstOrNull() as MotionEvent? ?: return@onAfter
                         val screenWidth = Resources.getSystem().displayMetrics.widthPixels // 获取屏幕宽度
@@ -149,6 +148,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
 
             //自定义长按事件, 响应操作菜单 (视频)
             if (it is LongPressLayout) {
+                if (!config.isNeat) return@traverse
                 val description = it.contentDescription ?: ""
                 if (description.contains("进入直播间")) return@traverse
 
