@@ -15,8 +15,9 @@ class XplerClassloader(
      */
     private fun needSkipLoader(name: String?): Boolean {
         val skipPrefix = mutableListOf(
-            "kotlinx.",
             "kotlin.",
+            "kotlinx.",
+            "android.",
             "androidx.",
         )
         return skipPrefix.any { name?.startsWith(it) ?: false }
@@ -42,12 +43,14 @@ class XplerClassloader(
                 return module.loadClass(name)
             } catch (_: ClassNotFoundException) {
                 //module not found
+                //KLogCat.d("module未找到: $name")
             }
         } else {
             try {
                 return app.loadClass(name)
             } catch (_: ClassNotFoundException) {
                 //target not found
+                //KLogCat.d("app未找到: $name")
             }
         }
 
@@ -55,13 +58,14 @@ class XplerClassloader(
             return parent.loadClass(name)
         } catch (_: ClassNotFoundException) {
             //parent not found
+            //KLogCat.d("parent未找到: $name")
         }
 
         throw ClassNotFoundException(name)
     }
 
     override fun getResource(name: String?): URL {
-        return app.getResource(name) ?: parent.getResource(name)
+        return module.getResource(name) ?: app.getResource(name) ?: parent.getResource(name)
     }
 }
 

@@ -1,5 +1,8 @@
 package com.freegang.fplus.activity
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -31,6 +34,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Email
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -328,7 +332,7 @@ class DoHomeActivity : ComponentActivity() {
                         )
                         Spacer(modifier = Modifier.padding(horizontal = 8.dp))
                         Text(
-                            text = "数据目录: `外置存储器/DCIM/Freedm`",
+                            text = "数据目录: `外置存储器/DCIM/Freedom`",
                             style = Themes.nowTypography.body1,
                         )
                     },
@@ -375,8 +379,45 @@ class DoHomeActivity : ComponentActivity() {
                 )
             }
 
-            //交流群
+            //开源说明
             FCard(
+                modifier = Modifier
+                    .padding(vertical = 4.dp)
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() },
+                        onClick = { toEmail() }
+                    ),
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    content = {
+                        Icon(
+                            imageVector = Icons.Rounded.Email,
+                            contentDescription = "开源说明",
+                            tint = Themes.nowColors.icon,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                        Column {
+                            Text(
+                                text = "开源说明",
+                                style = Themes.nowTypography.body1,
+                            )
+                            Text(
+                                text = "代码开源旨在个人学习，如果认为代码内容存在不当，请联系删除",
+                                style = Themes.nowTypography.overline,
+                            )
+                        }
+                    },
+                )
+            }
+
+            //交流群
+            /*FCard(
                 modifier = Modifier
                     .padding(vertical = 4.dp)
                     .clickable(
@@ -410,10 +451,10 @@ class DoHomeActivity : ComponentActivity() {
                         }
                     },
                 )
-            }
+            }*/
 
             //打赏
-            FCard(
+            /*FCard(
                 modifier = Modifier
                     .padding(vertical = 4.dp)
                     .clickable(
@@ -430,7 +471,7 @@ class DoHomeActivity : ComponentActivity() {
                     content = {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_spicy_strips),
-                            contentDescription = "Github",
+                            contentDescription = "请我吃辣条",
                             tint = Themes.nowColors.icon,
                             modifier = Modifier.size(24.dp)
                         )
@@ -447,7 +488,7 @@ class DoHomeActivity : ComponentActivity() {
                         }
                     },
                 )
-            }
+            }*/
         }
     }
 
@@ -495,6 +536,21 @@ class DoHomeActivity : ComponentActivity() {
                 Uri.parse("https://github.com/GangJust/FreedomPlus"),
             )
         )
+    }
+
+    private fun toEmail() {
+        try {
+            startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("mailto:freegang555@gmail.com"),
+                )
+            )
+        } catch (e: Exception) {
+            val manager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            manager.setPrimaryClip(ClipData.newPlainText("feedback email", "freegang555@gmail.com"))
+            Toast.makeText(applicationContext, "未安装邮箱类App，邮箱已复制！", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun joinQQGroup(key: String = "xQKRAH6dNm-F6NDxyn87sX_kvnqEBWxs"): Boolean {

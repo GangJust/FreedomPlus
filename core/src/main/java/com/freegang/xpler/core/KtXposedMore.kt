@@ -51,36 +51,6 @@ fun <T> Method.call(obj: Any, vararg args: Any?): T? {
 
 //Object
 /**
- * 从实例对象中直接寻找某个方法,
- *
- * @param methodName 目标方法名
- * @param args 参数列表值
- * @return 被找到的目标方法, 可能是 null 即没有该方法
- */
-fun Any.findMethod(methodName: String, vararg args: Any): Method? {
-    return try {
-        XposedHelpers.findMethodExact(this::class.java, methodName, *args)
-    } catch (e: Exception) {
-        null
-    }
-}
-
-/**
- * 从实例对象中直接寻找某个方法,
- *
- * @param methodName 目标方法名
- * @param argsTypes 参数类型列表
- * @return 被找到的目标方法, 可能是 null 即没有该方法
- */
-fun Any.findMethod(methodName: String, vararg argsTypes: Class<*>): Method? {
-    return try {
-        XposedHelpers.findMethodExact(this::class.java, methodName, *argsTypes)
-    } catch (e: Exception) {
-        null
-    }
-}
-
-/**
  * 从实例对象中直接寻找某些名称相同的所有方法,
  *
  * 不在乎参数类型列表, 返回值类型

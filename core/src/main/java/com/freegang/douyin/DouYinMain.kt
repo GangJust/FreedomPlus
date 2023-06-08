@@ -6,9 +6,10 @@ import com.freegang.config.Config
 import com.freegang.ktutils.app.KAppCrashUtils
 import com.freegang.ktutils.io.hasOperationStorage
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.plugin.activity.PluginActivityBridge
+import com.freegang.plugin.PluginBridge
 import com.freegang.xpler.core.lpparam
 import com.freegang.xpler.core.toClass
+import com.freegang.xpler.loader.hostClassloader
 import io.luckypray.dexkit.DexKitBridge
 import java.lang.reflect.Method
 
@@ -38,8 +39,8 @@ class DouYinMain(private val app: Application) {
             }
 
             //插件化注入
-            PluginActivityBridge.init(app)
-            //PluginResourceBridge.injectRes(app.resources)
+            val subClazz = hostClassloader!!.loadClass("com.ss.android.ugc.aweme.bullet.ui.BulletContainerActivity")
+            PluginBridge.init(app, subClazz)
 
             //加载配置
             Config.read(app)

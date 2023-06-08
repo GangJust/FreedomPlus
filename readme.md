@@ -1,6 +1,6 @@
 # FreedomPlus
 
-[![](https://img.shields.io/github/v/release/GangJust/FreedomPlus)](https://github.com/GangJust/FreedomPlus/releases) [![](https://img.shields.io/github/downloads/GangJust/FreedomPlus/total?color=g)]() [![](https://img.shields.io/badge/QQ%E7%BE%A4-770498642-yellow)](https://qm.qq.com/cgi-bin/qm/qr?k=WxbfjDHjU1zQETlZ7Xeeusg2TxfzNsm8&jump_from=webapi&authKey=02HyI2e2oH3AXd/cYfr8mWEtIWYMku5RWWunRiW/zp7k1i6p99diZp1+pbEat6Jh)
+[![](https://img.shields.io/github/v/release/GangJust/FreedomPlus)](https://github.com/GangJust/FreedomPlus/releases) [![](https://img.shields.io/github/downloads/GangJust/FreedomPlus/total?color=g)]()
 
 依赖于抖音运行的开源Xposed模块
 

@@ -46,37 +46,41 @@ class HHomeSideBarEntranceManagerV1(lpparam: XC_LoadPackage.LoadPackageParam) : 
                 val v = contentView.findViewsByType(SideBarNestedScrollView::class.java).firstOrNull() ?: return@launch
 
                 val sideRootView = v.children.first() as ViewGroup
+                if (sideRootView.children.last().contentDescription == "扩展功能") return@launch
+
                 val text = sideRootView.findViewsByType(TextView::class.java).firstOrNull() ?: return@launch
-                val isNight = KColorUtils.isLightColor(text.currentTextColor)
+                val isLight = KColorUtils.isLightColor(text.currentTextColor)
 
                 val setting = KtXposedHelpers.inflateView<ViewGroup>(v.context, R.layout.side_freedom_setting)
+                setting.contentDescription = "扩展功能"
                 val binding = SideFreedomSettingBinding.bind(setting)
 
-                val backRes: Int
-                val iconRes: Int
+                val backgroundRes: Int
+                val iconColorRes: Int
                 val dividerColorRes: Int
                 val textColorRes: Int
-                if (isNight) {
-                    backRes = R.drawable.dialog_background_night
-                    iconRes = R.drawable.ic_freedom_night
+                if (isLight) {
+                    backgroundRes = R.drawable.dialog_background_night
+                    iconColorRes = R.drawable.ic_freedom_night
                     dividerColorRes = Color.parseColor("#14FFFFFF")
                     textColorRes = Color.parseColor("#E6FFFFFF")
                 } else {
-                    backRes = R.drawable.dialog_background
-                    iconRes = R.drawable.ic_freedom
+                    backgroundRes = R.drawable.dialog_background
+                    iconColorRes = R.drawable.ic_freedom
                     dividerColorRes = Color.parseColor("#1F161823")
                     textColorRes = Color.parseColor("#FF161823")
                 }
 
-                binding.freedomSettingContainer.background = KtXposedHelpers.getDrawable(backRes)
+                binding.freedomSettingContainer.background = KtXposedHelpers.getDrawable(backgroundRes)
                 binding.freedomSettingText.setTextColor(textColorRes)
                 binding.freedomSettingDivider.setBackgroundColor(dividerColorRes)
-                binding.freedomSettingIcon.background = KtXposedHelpers.getDrawable(iconRes)
+                binding.freedomSettingIcon.background = KtXposedHelpers.getDrawable(iconColorRes)
                 binding.freedomSettingTitle.text = "Freedom+"
                 binding.freedomSettingTitle.setTextColor(textColorRes)
                 binding.freedomSetting.setOnClickListener {
                     val intent = Intent(it.context, FreedomSettingActivity::class.java)
-                    it.context.startActivity(intent)
+                    intent.putExtra("isLight", isLight)
+                    activity.startActivity(intent)
                 }
                 sideRootView.addView(binding.root)
             }

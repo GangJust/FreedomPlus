@@ -31,7 +31,6 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.DateRange
-import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -48,8 +47,7 @@ import com.freegang.config.Config
 import com.freegang.douyin.viewmodel.SettingVM
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.appVersionName
-import com.freegang.plugin.activity.PluginActivityBridge
-import com.freegang.plugin.activity.PluginBaseActivity
+import com.freegang.plugin.XplerActivity
 import com.freegang.ui.ModuleTheme
 import com.freegang.ui.asDp
 import com.freegang.ui.component.FCard
@@ -59,15 +57,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class FreedomSettingActivity : PluginBaseActivity() {
+class FreedomSettingActivity : XplerActivity() {
     private val model by viewModels<SettingVM>()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            HomeView()
-        }
-    }
+    private var isLight = false
 
     @Composable
     private fun HomeView() {
@@ -77,62 +69,58 @@ class FreedomSettingActivity : PluginBaseActivity() {
         if (version != null) {
             val version = version!!
             if (version.name.compareTo("v${application.appVersionName}") >= 1 && showNewVersionDialog) {
-                ModuleTheme {
-                    FMessageDialog(
-                        title = "发现新版本 ${version.name}!",
-                        confirm = "确定",
-                        cancel = "取消",
-                        onCancel = {
-                            showNewVersionDialog = false
-                        },
-                        onConfirm = {
-                            startActivity(
-                                Intent(
-                                    Intent.ACTION_VIEW,
-                                    Uri.parse(version.browserDownloadUrl),
-                                )
+                FMessageDialog(
+                    title = "发现新版本 ${version.name}!",
+                    confirm = "确定",
+                    cancel = "取消",
+                    onCancel = {
+                        showNewVersionDialog = false
+                    },
+                    onConfirm = {
+                        startActivity(
+                            Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse(version.browserDownloadUrl),
                             )
-                        },
-                        content = {
-                            LazyColumn(
-                                modifier = Modifier,
-                                content = {
-                                    item {
-                                        Text(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            text = version.body,
-                                        )
-                                    }
-                                },
-                            )
-                        }
-                    )
-                }
+                        )
+                    },
+                    content = {
+                        LazyColumn(
+                            modifier = Modifier,
+                            content = {
+                                item {
+                                    Text(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        text = version.body,
+                                    )
+                                }
+                            },
+                        )
+                    }
+                )
             }
         }
 
         //重启抖音提示
         var showRestartAppDialog by remember { mutableStateOf(false) }
         if (showRestartAppDialog) {
-            ModuleTheme {
-                FMessageDialog(
-                    title = "提示",
-                    cancel = "取消",
-                    confirm = "重启",
-                    onCancel = {
-                        showRestartAppDialog = false
-                    },
-                    onConfirm = {
-                        showRestartAppDialog = false
-                        Config.read(PluginActivityBridge.application)
-                        model.saveModuleConfig(resources.assets)
-                        KAppUtils.restartApplication(PluginActivityBridge.application)
-                    },
-                    content = {
-                        Text(text = "需要重启应用生效, 若未重启请手动重启")
-                    },
-                )
-            }
+            FMessageDialog(
+                title = "提示",
+                cancel = "取消",
+                confirm = "重启",
+                onCancel = {
+                    showRestartAppDialog = false
+                },
+                onConfirm = {
+                    showRestartAppDialog = false
+                    Config.read(application)
+                    model.saveModuleConfig(mResources.moduleAssets)
+                    KAppUtils.restartApplication(application)
+                },
+                content = {
+                    Text(text = "需要重启应用生效, 若未重启请手动重启")
+                },
+            )
         }
 
         //WebDav配置编辑
@@ -142,114 +130,31 @@ class FreedomSettingActivity : PluginBaseActivity() {
             var username by remember { mutableStateOf(model.webDavUsername.value ?: "") }
             var password by remember { mutableStateOf(model.webDavPassword.value ?: "") }
             var isWaiting by remember { mutableStateOf(false) }
-            ModuleTheme {
-                FMessageDialog(
-                    title = "配置WebDav",
-                    cancel = "取消",
-                    confirm = "确定",
-                    isWaiting = isWaiting,
-                    onCancel = {
-                        showWebDavConfigEditorDialog = false
-                    },
-                    onConfirm = {
-                        isWaiting = true
-                        model.setWebDavConfig(host, username, password)
-                        model.initWebDav { test ->
-                            isWaiting = false
-                            if (test) {
-                                showWebDavConfigEditorDialog = false
-                                model.changeIsWebDav(true)
-                                Toast.makeText(applicationContext, "测试成功!", Toast.LENGTH_SHORT).show()
-                                return@initWebDav
-                            }
-                            model.changeIsWebDav(false)
-                            Toast.makeText(applicationContext, "测试失败, 请检查配置!", Toast.LENGTH_SHORT).show()
+            FMessageDialog(
+                title = "配置WebDav",
+                cancel = "取消",
+                confirm = "确定",
+                isWaiting = isWaiting,
+                onCancel = {
+                    showWebDavConfigEditorDialog = false
+                },
+                onConfirm = {
+                    isWaiting = true
+                    model.setWebDavConfig(host, username, password)
+                    model.initWebDav { test ->
+                        isWaiting = false
+                        if (test) {
+                            showWebDavConfigEditorDialog = false
+                            model.changeIsWebDav(true)
+                            Toast.makeText(applicationContext, "测试成功!", Toast.LENGTH_SHORT).show()
+                            return@initWebDav
                         }
-                    },
-                    content = {
-                        Column {
-                            FCard(
-                                border = FCardBorder(borderWidth = 1.0.dp),
-                                content = {
-                                    BasicTextField(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 12.dp, horizontal = 12.dp),
-                                        value = host,
-                                        maxLines = 1,
-                                        singleLine = true,
-                                        decorationBox = { innerTextField ->
-                                            if (host.isEmpty()) Text(text = "http://服务器地址:端口")
-                                            innerTextField.invoke() //必须调用这行哦
-                                        },
-                                        onValueChange = {
-                                            host = it
-                                        },
-                                    )
-                                },
-                            )
-                            FCard(
-                                modifier = Modifier.padding(vertical = 8.dp),
-                                border = FCardBorder(borderWidth = 1.0.dp),
-                                content = {
-                                    BasicTextField(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 12.dp, horizontal = 12.dp),
-                                        value = username,
-                                        maxLines = 1,
-                                        singleLine = true,
-                                        decorationBox = { innerTextField ->
-                                            if (username.isEmpty()) Text(text = "用户名")
-                                            innerTextField.invoke() //必须调用这行哦
-                                        },
-                                        onValueChange = {
-                                            username = it
-                                        },
-                                    )
-                                },
-                            )
-                            FCard(
-                                border = FCardBorder(borderWidth = 1.0.dp),
-                                content = {
-                                    BasicTextField(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 12.dp, horizontal = 12.dp),
-                                        value = password,
-                                        maxLines = 1,
-                                        singleLine = true,
-                                        decorationBox = { innerTextField ->
-                                            if (password.isEmpty()) Text(text = "密码")
-                                            innerTextField.invoke() //必须调用这行哦
-                                        },
-                                        onValueChange = {
-                                            password = it
-                                        }
-                                    )
-                                },
-                            )
-                        }
-                    },
-                )
-            }
-        }
-
-        //隐藏Tab关键字编辑
-        var showHideTabKeywordsEditorDialog by remember { mutableStateOf(false) }
-        if (showHideTabKeywordsEditorDialog) {
-            var hideTabKeywords by remember { mutableStateOf(model.hideTabKeywords.value ?: "") }
-            ModuleTheme {
-                FMessageDialog(
-                    title = "请输入关键字, 用逗号分开",
-                    cancel = "取消",
-                    confirm = "确定",
-                    onCancel = { showHideTabKeywordsEditorDialog = false },
-                    onConfirm = {
-                        showHideTabKeywordsEditorDialog = false
-                        model.setHideTabKeywords(hideTabKeywords)
-                    },
-                    content = {
+                        model.changeIsWebDav(false)
+                        Toast.makeText(applicationContext, "测试失败, 请检查配置!", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                content = {
+                    Column {
                         FCard(
                             border = FCardBorder(borderWidth = 1.0.dp),
                             content = {
@@ -257,163 +162,242 @@ class FreedomSettingActivity : PluginBaseActivity() {
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(vertical = 12.dp, horizontal = 12.dp),
-                                    value = hideTabKeywords,
+                                    value = host,
                                     maxLines = 1,
                                     singleLine = true,
+                                    textStyle = MaterialTheme.typography.body2,
+                                    decorationBox = { innerTextField ->
+                                        if (host.isEmpty()) Text(text = "http://服务器地址:端口")
+                                        innerTextField.invoke() //必须调用这行哦
+                                    },
                                     onValueChange = {
-                                        hideTabKeywords = it
+                                        host = it
                                     },
                                 )
                             },
                         )
-                    },
-                )
-            }
+                        FCard(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            border = FCardBorder(borderWidth = 1.0.dp),
+                            content = {
+                                BasicTextField(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 12.dp, horizontal = 12.dp),
+                                    value = username,
+                                    maxLines = 1,
+                                    singleLine = true,
+                                    textStyle = MaterialTheme.typography.body2,
+                                    decorationBox = { innerTextField ->
+                                        if (username.isEmpty()) Text(text = "用户名")
+                                        innerTextField.invoke() //必须调用这行哦
+                                    },
+                                    onValueChange = {
+                                        username = it
+                                    },
+                                )
+                            },
+                        )
+                        FCard(
+                            border = FCardBorder(borderWidth = 1.0.dp),
+                            content = {
+                                BasicTextField(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 12.dp, horizontal = 12.dp),
+                                    value = password,
+                                    maxLines = 1,
+                                    singleLine = true,
+                                    textStyle = MaterialTheme.typography.body2,
+                                    decorationBox = { innerTextField ->
+                                        if (password.isEmpty()) Text(text = "密码")
+                                        innerTextField.invoke() //必须调用这行哦
+                                    },
+                                    onValueChange = {
+                                        password = it
+                                    }
+                                )
+                            },
+                        )
+                    }
+                },
+            )
+        }
+
+        //隐藏Tab关键字编辑
+        var showHideTabKeywordsEditorDialog by remember { mutableStateOf(false) }
+        if (showHideTabKeywordsEditorDialog) {
+            var hideTabKeywords by remember { mutableStateOf(model.hideTabKeywords.value ?: "") }
+            FMessageDialog(
+                title = "请输入关键字, 用逗号分开",
+                cancel = "取消",
+                confirm = "确定",
+                onCancel = { showHideTabKeywordsEditorDialog = false },
+                onConfirm = {
+                    showHideTabKeywordsEditorDialog = false
+                    model.setHideTabKeywords(hideTabKeywords)
+                },
+                content = {
+                    FCard(
+                        border = FCardBorder(borderWidth = 1.0.dp),
+                        content = {
+                            BasicTextField(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 12.dp, horizontal = 12.dp),
+                                value = hideTabKeywords,
+                                maxLines = 1,
+                                singleLine = true,
+                                textStyle = MaterialTheme.typography.body2,
+                                onValueChange = {
+                                    hideTabKeywords = it
+                                },
+                            )
+                        },
+                    )
+                },
+            )
         }
 
         //开启隐藏Tab关键字, 复确认弹窗
         var showHideTabTipsDialog by remember { mutableStateOf(false) }
         if (showHideTabTipsDialog) {
-            ModuleTheme {
-                FMessageDialog(
-                    title = "提示",
-                    cancel = "关闭",
-                    confirm = "开启",
-                    onCancel = {
-                        showHideTabTipsDialog = false
-                        model.changeIsHideTab(false)
-                    },
-                    onConfirm = {
-                        showHideTabTipsDialog = false
-                        showRestartAppDialog = true
-                        model.changeIsHideTab(true)
-                    },
-                    content = {
-                        Text(text = "一旦开启顶部Tab隐藏, 将禁止左右滑动切换, 具体效果自行查看!")
-                    },
-                )
-            }
+            FMessageDialog(
+                title = "提示",
+                cancel = "关闭",
+                confirm = "开启",
+                onCancel = {
+                    showHideTabTipsDialog = false
+                    model.changeIsHideTab(false)
+                },
+                onConfirm = {
+                    showHideTabTipsDialog = false
+                    showRestartAppDialog = true
+                    model.changeIsHideTab(true)
+                },
+                content = {
+                    Text(text = "一旦开启顶部Tab隐藏, 将禁止左右滑动切换, 具体效果自行查看!")
+                },
+            )
         }
 
-        ModuleTheme {
-            Scaffold(
-                modifier = Modifier.padding(horizontal = 24.dp),
-                topBar = { TopBarView() }
-            ) {
-                Box(Modifier.padding(it)) {
-                    LazyColumn(
-                        content = {
-                            item {
-                                // 选项
-                                SwitchItem(
-                                    text = "视频创作者单独创建文件夹",
-                                    checked = model.isOwnerDir.observeAsState(false),
-                                    onCheckedChange = {
-                                        model.changeIsOwnerDir(it)
-                                    },
-                                )
-                                SwitchItem(
-                                    text = "视频/图文/音乐下载",
-                                    checked = model.isDownload.observeAsState(false),
-                                    onCheckedChange = {
-                                        model.changeIsDownload(it)
-                                    }
-                                )
-                                SwitchItem(
-                                    text = "表情包保存",
-                                    checked = model.isEmoji.observeAsState(false),
-                                    onCheckedChange = {
-                                        model.changeIsEmoji(it)
-                                    }
-                                )
-                                SwitchItem(
-                                    text = "震动反馈",
-                                    checked = model.isVibrate.observeAsState(false),
-                                    onCheckedChange = {
-                                        model.changeIsVibrate(it)
-                                    }
-                                )
-                                SwitchItem(
-                                    text = "首页控件半透明",
-                                    checked = model.isTranslucent.observeAsState(false),
-                                    onCheckedChange = {
-                                        showRestartAppDialog = true
-                                        model.changeIsTranslucent(it)
-                                    }
-                                )
-                                SwitchItem(
-                                    text = "清爽模式",
-                                    subtext = "开启后首页长按视频进入清爽模式",
-                                    checked = model.isNeat.observeAsState(false),
-                                    onCheckedChange = {
-                                        showRestartAppDialog = true
-                                        model.changeIsNeat(it)
-                                    }
-                                )
-                                SwitchItem(
-                                    text = "通知栏下载",
-                                    subtext = "开启通知栏下载, 否则将显示下载弹窗",
-                                    checked = model.isNotification.observeAsState(false),
-                                    onCheckedChange = {
-                                        model.changeIsNotification(it)
-                                    },
-                                )
-                                var isWebDavWaiting by remember { mutableStateOf(false) }
-                                SwitchItem(
-                                    text = "WebDav",
-                                    subtext = "点击配置WebDav",
-                                    isWaiting = isWebDavWaiting,
-                                    checked = model.isWebDav.observeAsState(false),
-                                    onClick = {
+        Scaffold(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            topBar = { TopBarView() }
+        ) {
+            Box(Modifier.padding(it)) {
+                LazyColumn(
+                    content = {
+                        item {
+                            // 选项
+                            SwitchItem(
+                                text = "视频创作者单独创建文件夹",
+                                checked = model.isOwnerDir.observeAsState(false),
+                                onCheckedChange = {
+                                    model.changeIsOwnerDir(it)
+                                },
+                            )
+                            SwitchItem(
+                                text = "视频/图文/音乐下载",
+                                checked = model.isDownload.observeAsState(false),
+                                onCheckedChange = {
+                                    model.changeIsDownload(it)
+                                }
+                            )
+                            SwitchItem(
+                                text = "表情包保存",
+                                checked = model.isEmoji.observeAsState(false),
+                                onCheckedChange = {
+                                    model.changeIsEmoji(it)
+                                }
+                            )
+                            SwitchItem(
+                                text = "震动反馈",
+                                checked = model.isVibrate.observeAsState(false),
+                                onCheckedChange = {
+                                    model.changeIsVibrate(it)
+                                }
+                            )
+                            SwitchItem(
+                                text = "首页控件半透明",
+                                checked = model.isTranslucent.observeAsState(false),
+                                onCheckedChange = {
+                                    showRestartAppDialog = true
+                                    model.changeIsTranslucent(it)
+                                }
+                            )
+                            SwitchItem(
+                                text = "清爽模式",
+                                subtext = "开启后首页长按视频进入清爽模式",
+                                checked = model.isNeat.observeAsState(false),
+                                onCheckedChange = {
+                                    showRestartAppDialog = true
+                                    model.changeIsNeat(it)
+                                }
+                            )
+                            SwitchItem(
+                                text = "通知栏下载",
+                                subtext = "开启通知栏下载, 否则将显示下载弹窗",
+                                checked = model.isNotification.observeAsState(false),
+                                onCheckedChange = {
+                                    model.changeIsNotification(it)
+                                },
+                            )
+                            var isWebDavWaiting by remember { mutableStateOf(false) }
+                            SwitchItem(
+                                text = "WebDav",
+                                subtext = "点击配置WebDav",
+                                isWaiting = isWebDavWaiting,
+                                checked = model.isWebDav.observeAsState(false),
+                                onClick = {
+                                    showWebDavConfigEditorDialog = true
+                                },
+                                onCheckedChange = {
+                                    model.changeIsWebDav(it)
+                                    if (it && !model.hasWebDavConfig()) {
                                         showWebDavConfigEditorDialog = true
-                                    },
-                                    onCheckedChange = {
-                                        model.changeIsWebDav(it)
-                                        if (it && !model.hasWebDavConfig()) {
-                                            showWebDavConfigEditorDialog = true
-                                            model.changeIsWebDav(false)
-                                            Toast.makeText(applicationContext, "请先进行WebDav配置!", Toast.LENGTH_SHORT).show()
-                                            return@SwitchItem
-                                        }
-                                        if (it) {
-                                            isWebDavWaiting = true
-                                            model.initWebDav { test ->
-                                                isWebDavWaiting = false
-                                                if (test) {
-                                                    model.changeIsWebDav(true)
-                                                    Toast.makeText(applicationContext, "WebDav连接成功!", Toast.LENGTH_SHORT)
-                                                        .show()
-                                                    return@initWebDav
-                                                }
-                                                Toast.makeText(
-                                                    applicationContext,
-                                                    "WebDav连接失败, 请检查配置!",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                                model.changeIsWebDav(false)
+                                        model.changeIsWebDav(false)
+                                        Toast.makeText(applicationContext, "请先进行WebDav配置!", Toast.LENGTH_SHORT).show()
+                                        return@SwitchItem
+                                    }
+                                    if (it) {
+                                        isWebDavWaiting = true
+                                        model.initWebDav { test ->
+                                            isWebDavWaiting = false
+                                            if (test) {
+                                                model.changeIsWebDav(true)
+                                                Toast.makeText(applicationContext, "WebDav连接成功!", Toast.LENGTH_SHORT)
+                                                    .show()
+                                                return@initWebDav
                                             }
+                                            Toast.makeText(
+                                                applicationContext,
+                                                "WebDav连接失败, 请检查配置!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            model.changeIsWebDav(false)
                                         }
-                                    },
-                                )
-                                SwitchItem(
-                                    text = "隐藏顶部tab",
-                                    subtext = "点击设置关键字",
-                                    checked = model.isHideTab.observeAsState(false),
-                                    onClick = {
-                                        showHideTabKeywordsEditorDialog = true
-                                    },
-                                    onCheckedChange = {
-                                        showRestartAppDialog = true
-                                        if (it) {
-                                            showHideTabTipsDialog = true
-                                        }
-                                        model.changeIsHideTab(it)
-                                    },
-                                )
-                            }
-                        },
-                    )
-                }
+                                    }
+                                },
+                            )
+                            SwitchItem(
+                                text = "隐藏顶部tab",
+                                subtext = "点击设置关键字",
+                                checked = model.isHideTab.observeAsState(false),
+                                onClick = {
+                                    showHideTabKeywordsEditorDialog = true
+                                },
+                                onCheckedChange = {
+                                    showRestartAppDialog = true
+                                    if (it) {
+                                        showHideTabTipsDialog = true
+                                    }
+                                    model.changeIsHideTab(it)
+                                },
+                            )
+                        }
+                    },
+                )
             }
         }
     }
@@ -424,27 +408,25 @@ class FreedomSettingActivity : PluginBaseActivity() {
         var showUpdateLogDialog by remember { mutableStateOf(false) }
         var updateLog by remember { mutableStateOf("") }
         if (showUpdateLogDialog) {
-            ModuleTheme {
-                FMessageDialog(
-                    title = "更新日志",
-                    onlyConfirm = true,
-                    confirm = "确定",
-                    onConfirm = { showUpdateLogDialog = false },
-                    content = {
-                        LazyColumn(
-                            modifier = Modifier,
-                            content = {
-                                item {
-                                    Text(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        text = updateLog,
-                                    )
-                                }
-                            },
-                        )
-                    },
-                )
-            }
+            FMessageDialog(
+                title = "更新日志",
+                onlyConfirm = true,
+                confirm = "确定",
+                onConfirm = { showUpdateLogDialog = false },
+                content = {
+                    LazyColumn(
+                        modifier = Modifier,
+                        content = {
+                            item {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = updateLog,
+                                )
+                            }
+                        },
+                    )
+                },
+            )
         }
 
         TopAppBar(
@@ -488,7 +470,7 @@ class FreedomSettingActivity : PluginBaseActivity() {
                             onClick = {
                                 lifecycleScope.launch {
                                     updateLog = withContext(Dispatchers.IO) {
-                                        val inputStream = resources.assets.open("update.log")
+                                        val inputStream = mResources.moduleAssets.open("update.log")
                                         val bytes = inputStream.readBytes()
                                         val text = bytes.decodeToString()
                                         inputStream.close()
@@ -501,7 +483,7 @@ class FreedomSettingActivity : PluginBaseActivity() {
                     imageVector = Icons.Rounded.DateRange,
                     contentDescription = "更新日志"
                 )
-                Spacer(modifier = Modifier.padding(horizontal = 12.dp))
+                /*Spacer(modifier = Modifier.padding(horizontal = 12.dp))
                 Icon(
                     modifier = Modifier
                         .size(20.dp)
@@ -512,7 +494,7 @@ class FreedomSettingActivity : PluginBaseActivity() {
                         ),
                     imageVector = Icons.Rounded.FavoriteBorder,
                     contentDescription = "打赏"
-                )
+                )*/
             }
         }
     }
@@ -588,6 +570,28 @@ class FreedomSettingActivity : PluginBaseActivity() {
         )
     }
 
+    @Composable
+    private fun AutoTheme(
+        content: @Composable () -> Unit,
+    ) {
+        ModuleTheme(
+            isDark = isLight,
+            followSystem = false,
+        ) {
+            content()
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        initExtraData()
+        setContent {
+            AutoTheme {
+                HomeView()
+            }
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         model.loadConfig()
@@ -596,8 +600,12 @@ class FreedomSettingActivity : PluginBaseActivity() {
 
     override fun onPause() {
         super.onPause()
-        model.saveModuleConfig(resources.assets)
-        Config.read(PluginActivityBridge.application)
+        model.saveModuleConfig(mResources.moduleAssets)
+        Config.read(application)
+    }
+
+    private fun initExtraData() {
+        isLight = intent.getBooleanExtra("isLight", false)
     }
 
     private fun rewardByAlipay() {

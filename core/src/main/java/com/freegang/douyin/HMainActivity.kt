@@ -15,11 +15,11 @@ import com.freegang.douyin.logic.DownloadLogic
 import com.freegang.ktutils.app.appVersionCode
 import com.freegang.ktutils.app.appVersionName
 import com.freegang.ktutils.app.contentView
+import com.freegang.ktutils.reflect.findMethodAndInvoke
 import com.freegang.ktutils.view.traverse
 import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.OnBefore
 import com.freegang.xpler.core.call
-import com.freegang.xpler.core.findMethod
 import com.freegang.xpler.core.findMethodsByReturnType
 import com.freegang.xpler.core.thisActivity
 import com.freegang.xpler.core.thisContext
@@ -80,7 +80,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         }
 
         if (aweme == null) {
-            val curFragment = activity.findMethod("getCurFragment", *emptyArray<Any>())?.call<Any>(activity)
+            val curFragment = activity.findMethodAndInvoke("getCurFragment")
             val curFragmentMethods = curFragment?.findMethodsByReturnType(Aweme::class.java) ?: listOf()
             if (curFragmentMethods.isNotEmpty()) {
                 aweme = curFragmentMethods.first().call(curFragment!!)

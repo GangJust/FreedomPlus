@@ -19,6 +19,26 @@ fun ModuleTheme(
     followSystem: Boolean = true,
     content: @Composable () -> Unit,
 ) {
+    if (followSystem) {
+        if (isSystemInDarkTheme()) {
+            DarkTheme(content = content)
+        } else {
+            LightTheme(content = content)
+        }
+        return
+    }
+
+    if (isDark) {
+        DarkTheme(content = content)
+    } else {
+        LightTheme(content = content)
+    }
+}
+
+@Composable
+fun LightTheme(
+    content: @Composable () -> Unit,
+) {
     MaterialTheme(
         typography = MaterialTheme.typography.copy(
             h1 = TextStyle(fontSize = 57.sp),
@@ -53,13 +73,65 @@ fun ModuleTheme(
     ) {
         rememberSystemUiController().run {
             setSystemBarsColor(
-                color = Color(0xFFF8FAFB),
-                darkIcons = if (followSystem) !isSystemInDarkTheme() else !isDark,
+                color = Color(0xFFFDFAF8),
+                darkIcons = true,
             )
             Surface(
                 modifier = Modifier,
-                color = Color(0xFFF8FAFB),
-                contentColor = Color(0xFFF8FAFB),
+                color = Color(0xFFFDFAF8),
+                contentColor = Color(0xFFFDFAF8),
+            ) {
+                content()
+            }
+        }
+    }
+}
+
+@Composable
+fun DarkTheme(
+    content: @Composable () -> Unit,
+) {
+    MaterialTheme(
+        typography = MaterialTheme.typography.copy(
+            h1 = TextStyle(fontSize = 57.sp, color = Color(0xFFFFFFFF)),
+            h2 = TextStyle(fontSize = 45.sp, color = Color(0xFFFFFFFF)),
+            h3 = TextStyle(fontSize = 36.sp, color = Color(0xFFFFFFFF)),
+            h4 = TextStyle(fontSize = 32.sp, color = Color(0xFFFFFFFF)),
+            h5 = TextStyle(fontSize = 28.sp, color = Color(0xFFFFFFFF)),
+            h6 = TextStyle(fontSize = 24.sp, color = Color(0xFFFFFFFF)),
+            subtitle1 = TextStyle(fontSize = 22.sp, color = Color(0xFFFFFFFF)),
+            subtitle2 = TextStyle(fontSize = 16.sp, color = Color(0xFFE3E2E6)),
+            body1 = TextStyle(fontSize = 16.sp, color = Color(0xFFFFFFFF)),
+            body2 = TextStyle(fontSize = 14.sp, color = Color(0xFFE3E2E6)),
+            button = TextStyle(fontSize = 14.sp, color = Color(0xFFFFFFFF)),
+            caption = TextStyle(fontSize = 12.sp, color = Color(0xFFFFFFFF)),
+            overline = TextStyle(fontSize = 11.sp, color = Color(0xFFFFFFFF)),
+        ),
+        colors = MaterialTheme.colors.copy(
+            primary = Color(0xFFAFC6FF),
+            primaryVariant = Color(0xFF17448F),
+            secondary = Color(0xFFBFC6DC),
+            secondaryVariant = Color(0xFF404659),
+            background = Color(0xFF2C2F39),
+            surface = Color(0xFF2C2F39),
+            error = Color(0xFFFFB4AB),
+            onPrimary = Color(0xFF002D6D),
+            onSecondary = Color(0xFF293042),
+            onBackground = Color(0xFFE3E2E6),
+            onSurface = Color(0xFFE3E2E6),
+            onError = Color(0xFF690005),
+            isLight = false,
+        ),
+    ) {
+        rememberSystemUiController().run {
+            setSystemBarsColor(
+                color = Color(0xFF2C2F39),
+                darkIcons = false,
+            )
+            Surface(
+                modifier = Modifier,
+                color = Color(0xFF2C2F39),
+                contentColor = Color(0xFF2C2F39),
             ) {
                 content()
             }
