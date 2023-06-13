@@ -43,12 +43,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
+import com.freegang.base.BaseActivity
 import com.freegang.config.Config
 import com.freegang.douyin.viewmodel.SettingVM
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.appVersionName
-import com.freegang.plugin.XplerActivity
-import com.freegang.ui.ModuleTheme
 import com.freegang.ui.asDp
 import com.freegang.ui.component.FCard
 import com.freegang.ui.component.FCardBorder
@@ -57,9 +56,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class FreedomSettingActivity : XplerActivity() {
+class FreedomSettingActivity : BaseActivity() {
     private val model by viewModels<SettingVM>()
-    private var isLight = false
 
     @Composable
     private fun HomeView() {
@@ -570,21 +568,8 @@ class FreedomSettingActivity : XplerActivity() {
         )
     }
 
-    @Composable
-    private fun AutoTheme(
-        content: @Composable () -> Unit,
-    ) {
-        ModuleTheme(
-            isDark = isLight,
-            followSystem = false,
-        ) {
-            content()
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        initExtraData()
         setContent {
             AutoTheme {
                 HomeView()
@@ -602,10 +587,6 @@ class FreedomSettingActivity : XplerActivity() {
         super.onPause()
         model.saveModuleConfig(mResources.moduleAssets)
         Config.read(application)
-    }
-
-    private fun initExtraData() {
-        isLight = intent.getBooleanExtra("isLight", false)
     }
 
     private fun rewardByAlipay() {

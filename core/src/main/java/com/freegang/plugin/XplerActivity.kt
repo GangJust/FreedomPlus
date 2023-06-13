@@ -62,13 +62,13 @@ open class XplerActivity : ComponentActivity() {
     protected class PluginResource(resources: Resources) :
         Resources(resources.assets, resources.displayMetrics, resources.configuration) {
 
-        val moduleResources by lazy {
+        private val moduleResources by lazy {
             val assetManager = AssetManager::class.java.newInstance()
             assetManager.findMethodAndInvoke("addAssetPath", KtXposedHelpers.modulePath)
             Resources(assetManager, resources.displayMetrics, resources.configuration)
         }
 
-        val moduleAssets get() = moduleResources.assets
+        val moduleAssets: AssetManager get() = moduleResources.assets
 
         override fun getText(id: Int): CharSequence {
             return try {

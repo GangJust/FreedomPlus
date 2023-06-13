@@ -234,8 +234,7 @@ fun String.hookMethod(
     classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER,
     vararg argsTypes: Any,
     block: MethodHook.() -> Unit
-)
-        : KtXposedHelpers {
+): KtXposedHelpers {
     if (!this.contains("#")) throw NoSuchMethodException("please refer to: \"com.xxx.ClassName#MethodName\".hookMethod(...)")
     val indexOf = this.indexOf("#")
     val className = this.substring(0, indexOf)

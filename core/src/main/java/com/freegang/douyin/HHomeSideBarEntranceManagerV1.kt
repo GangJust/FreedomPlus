@@ -2,6 +2,7 @@ package com.freegang.douyin
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.ActivityOptions
 import android.content.Intent
 import android.graphics.Color
 import android.view.View
@@ -80,7 +81,12 @@ class HHomeSideBarEntranceManagerV1(lpparam: XC_LoadPackage.LoadPackageParam) : 
                 binding.freedomSetting.setOnClickListener {
                     val intent = Intent(it.context, FreedomSettingActivity::class.java)
                     intent.putExtra("isLight", isLight)
-                    activity.startActivity(intent)
+                    val options = ActivityOptions.makeCustomAnimation(
+                        activity,
+                        android.R.anim.slide_in_left,
+                        android.R.anim.slide_out_right
+                    )
+                    activity.startActivity(intent, options.toBundle())
                 }
                 sideRootView.addView(binding.root)
             }
