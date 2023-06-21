@@ -19,7 +19,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlinx.coroutines.delay
 
 class HGifEmojiDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<GifEmojiDetailActivity>(lpparam) {
-    private val config: Config get() = Config.get()
+    private val config get() = Config.get()
     private var urlList: List<String> = emptyList()
 
     @OnBefore("onCreate")

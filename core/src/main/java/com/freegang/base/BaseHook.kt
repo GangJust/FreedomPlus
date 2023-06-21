@@ -97,6 +97,17 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
         vibrator.vibrate(milliseconds)
     }
 
+    @Synchronized
+    fun showDialog(
+        view: View,
+        needMultiple: Boolean = false,
+    ) {
+        kDialog = if (kDialog == null) KDialog() else kDialog
+        val kDialog = if (needMultiple) KDialog() else kDialog
+        kDialog!!.setView(view)
+        kDialog.show()
+    }
+
     fun showMessageDialog(
         context: Context,
         title: CharSequence,
@@ -108,9 +119,6 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
         onConfirm: () -> Unit = {},
         onCancel: () -> Unit = {},
     ) {
-        kDialog = if (kDialog == null) KDialog() else kDialog
-        val kDialog = if (needMultiple) KDialog() else kDialog
-
         val dialogView = context.inflateModuleView<FrameLayout>(R.layout.dialog_message_layout)
         val binding = DialogMessageLayoutBinding.bind(dialogView)
 
@@ -135,8 +143,7 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
             onConfirm.invoke()
         }
 
-        kDialog!!.setView(binding.root)
-        kDialog.show()
+        showDialog(binding.root, needMultiple)
     }
 
     fun showProgressDialog(
@@ -146,9 +153,6 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
         progress: Int = 0,
         listener: (dialog: KDialog, progress: ProgressDialogNotification) -> Unit,
     ) {
-        kDialog = if (kDialog == null) KDialog() else kDialog
-        val kDialog = if (needMultiple) KDialog() else kDialog
-
         val dialogView = KtXposedHelpers.inflateView<FrameLayout>(context, R.layout.dialog_progress_layout)
         val binding = DialogProgressLayoutBinding.bind(dialogView)
 
@@ -157,8 +161,7 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
         binding.progressDialogTitle.text = title
         listener.invoke(kDialog!!, ProgressDialogNotification(binding.progressDialogBar, binding.progressDialogText))
 
-        kDialog.setView(binding.root)
-        kDialog.show()
+        showDialog(binding.root, needMultiple)
     }
 
     fun showChoiceDialog(
@@ -175,9 +178,6 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
         onChoice: (view: View, owner: String, filename: String, item: CharSequence, position: Int) -> Unit,
         onCancel: () -> Unit = {},
     ) {
-        kDialog = if (kDialog == null) KDialog() else kDialog
-        val kDialog = if (needMultiple) KDialog() else kDialog
-
         val dialogView = KtXposedHelpers.inflateView<FrameLayout>(context, R.layout.dialog_choice_layout)
         val binding = DialogChoiceLayoutBinding.bind(dialogView)
 
@@ -218,8 +218,7 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
             )
         }
 
-        kDialog!!.setView(binding.root)
-        kDialog.show()
+        showDialog(binding.root, needMultiple)
     }
 
     fun showNotification(

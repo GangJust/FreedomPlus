@@ -46,6 +46,9 @@ class SettingVM(application: Application) : AndroidViewModel(application) {
     private var _isNeat = MutableLiveData(false)
     val isNeat: LiveData<Boolean> = _isNeat
 
+    private var _isLongPressMode = MutableLiveData(false)
+    val isLongPressMode: LiveData<Boolean> = _isLongPressMode
+
     private var _isNotification = MutableLiveData(false)
     val isNotification: LiveData<Boolean> = _isNotification
 
@@ -98,6 +101,7 @@ class SettingVM(application: Application) : AndroidViewModel(application) {
             changeIsVibrate(config.isVibrate)
             changeIsTranslucent(config.isTranslucent)
             changeIsNeat(config.isNeat)
+            changeIsLongPressMode(config.isLongPressMode)
             changeIsNotification(config.isNotification)
             changeIsWebDav(config.isWebDav)
             setWebDavConfig(config.webDavHost, config.webDavUsername, config.webDavPassword)
@@ -140,6 +144,13 @@ class SettingVM(application: Application) : AndroidViewModel(application) {
     fun changeIsNeat(value: Boolean) {
         _isNeat.value = value
         config.isNeat = value
+    }
+
+
+    //清爽模式弹窗响应模式
+    fun changeIsLongPressMode(value: Boolean) {
+        _isLongPressMode.value = value
+        config.isLongPressMode = value
     }
 
     // 是否通知栏下载
@@ -215,6 +226,7 @@ class SettingVM(application: Application) : AndroidViewModel(application) {
         config.isVibrate = isVibrate.value ?: false
         config.isTranslucent = isTranslucent.value ?: false
         config.isNeat = isNeat.value ?: false
+        config.isLongPressMode = isLongPressMode.value ?: false
         config.isNotification = isNotification.value ?: false
         config.isWebDav = isWebDav.value ?: false
         config.webDavHost = webDavHost.value ?: ""

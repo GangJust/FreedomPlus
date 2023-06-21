@@ -17,8 +17,8 @@ class DouYinMain(private val app: Application) {
     companion object {
         val awemeHostApplication get() = "com.ss.android.ugc.aweme.app.host.AwemeHostApplication".toClass(lpparam.classLoader)!!
 
-        var diggClazz: Class<*>? = null
-        var longPressPanel: Class<*>? = null
+        //var diggClazz: Class<*>? = null
+        //var longPressPanel: Class<*>? = null
         var commonPageClazz: Class<*>? = null
         var emojiMethods: List<Method> = emptyList()
     }
@@ -65,7 +65,7 @@ class DouYinMain(private val app: Application) {
     private fun initDexKit() {
         System.loadLibrary("dexkit")
         DexKitBridge.create(lpparam.appInfo.sourceDir)?.use { bridge ->
-            if (diggClazz == null) {
+            /*if (diggClazz == null) {
                 val findMaps = bridge.batchFindClassesUsingStrings {
                     addQuery(
                         "Digg",
@@ -79,13 +79,13 @@ class DouYinMain(private val app: Application) {
                     )
                 }
                 diggClazz = findMaps["Digg"]?.firstOrNull()?.getClassInstance(lpparam.classLoader)
-            }
-            if (longPressPanel == null) {
+            }*/
+            /*if (longPressPanel == null) {
                 val findMaps = bridge.batchFindClassesUsingStrings {
                     addQuery("longPressPanel", setOf("LongPressPanelFragmentImpl"))
                 }
                 longPressPanel = findMaps["longPressPanel"]?.firstOrNull()?.getClassInstance(lpparam.classLoader)
-            }
+            }*/
             if (commonPageClazz == null) {
                 val findMaps = bridge.batchFindClassesUsingStrings {
                     addQuery("CommonPage", setOf("a1128.b7947", "DetailActOtherNitaView"))

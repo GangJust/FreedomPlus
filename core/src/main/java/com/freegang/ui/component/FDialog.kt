@@ -35,78 +35,77 @@ fun FMessageDialog(
     FDialog(
         modifier = Modifier.padding(horizontal = 16.dp),
         cornerRadius = cornerRadius,
-        content = {
-            Column(
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.SpaceBetween,
-                content = {
-                    Text(
-                        text = title,
-                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
-                        style = MaterialTheme.typography.body1,
-                    )
-                    BoxWithConstraints(
-                        modifier = Modifier
-                            .padding(start = 24.dp, end = 24.dp, bottom = 16.dp)
-                            .heightIn(max = 320.dp),
-                        contentAlignment = Alignment.Center,
-                        content = { content() }
-                    )
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                        content = {
-                            if (!onlyConfirm) {
-                                CardButton(
-                                    modifier = Modifier.weight(1f),
-                                    shape = RoundedCornerShape(bottomStart = cornerRadius),
-                                    onClick = { onCancel?.invoke() },
-                                    content = {
-                                        Text(
-                                            modifier = Modifier.padding(vertical = 12.dp),
-                                            text = cancel,
-                                            style = MaterialTheme.typography.body1,
-                                        )
-                                    },
-                                )
-                            }
-
-                            if (isWaiting) {
-                                BoxWithConstraints(
-                                    modifier = Modifier.weight(1f),
-                                    contentAlignment = Alignment.Center,
-                                    content = {
-                                        CircularProgressIndicator(
-                                            strokeWidth = 2.dp,
-                                            modifier = Modifier.size(MaterialTheme.typography.body1.fontSize.asDp),
-                                        )
-                                    }
-                                )
-                            } else {
-                                CardButton(
-                                    modifier = Modifier.weight(1f),
-                                    shape = RoundedCornerShape(
-                                        bottomStart = if (onlyConfirm) cornerRadius else 0.dp,
-                                        bottomEnd = cornerRadius,
-                                    ),
-                                    onClick = { onConfirm?.invoke() },
-                                    content = {
-                                        Text(
-                                            modifier = Modifier.padding(vertical = 12.dp),
-                                            text = confirm,
-                                            style = MaterialTheme.typography.body1.copy(
-                                                color = MaterialTheme.colors.primary
-                                            ),
-                                        )
-                                    }
-                                )
-                            }
+    ) {
+        Column(
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.SpaceBetween,
+            content = {
+                Text(
+                    text = title,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                    style = MaterialTheme.typography.body1,
+                )
+                BoxWithConstraints(
+                    modifier = Modifier
+                        .padding(start = 24.dp, end = 24.dp, bottom = 16.dp)
+                        .heightIn(max = 320.dp),
+                    contentAlignment = Alignment.Center,
+                    content = { content() }
+                )
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    content = {
+                        if (!onlyConfirm) {
+                            CardButton(
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(bottomStart = cornerRadius),
+                                onClick = { onCancel?.invoke() },
+                                content = {
+                                    Text(
+                                        modifier = Modifier.padding(vertical = 12.dp),
+                                        text = cancel,
+                                        style = MaterialTheme.typography.body1,
+                                    )
+                                },
+                            )
                         }
-                    )
-                }
-            )
-        }
-    )
+
+                        if (isWaiting) {
+                            BoxWithConstraints(
+                                modifier = Modifier.weight(1f),
+                                contentAlignment = Alignment.Center,
+                                content = {
+                                    CircularProgressIndicator(
+                                        strokeWidth = 2.dp,
+                                        modifier = Modifier.size(MaterialTheme.typography.body1.fontSize.asDp),
+                                    )
+                                }
+                            )
+                        } else {
+                            CardButton(
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(
+                                    bottomStart = if (onlyConfirm) cornerRadius else 0.dp,
+                                    bottomEnd = cornerRadius,
+                                ),
+                                onClick = { onConfirm?.invoke() },
+                                content = {
+                                    Text(
+                                        modifier = Modifier.padding(vertical = 12.dp),
+                                        text = confirm,
+                                        style = MaterialTheme.typography.body1.copy(
+                                            color = MaterialTheme.colors.primary
+                                        ),
+                                    )
+                                }
+                            )
+                        }
+                    }
+                )
+            }
+        )
+    }
 }
 
 
@@ -118,12 +117,11 @@ fun FDialog(
 ) {
     Dialog(
         onDismissRequest = { },
-        content = {
-            Card(
-                modifier = modifier,
-                shape = RoundedCornerShape(cornerRadius),
-                content = content,
-            )
-        },
-    )
+    ) {
+        Card(
+            modifier = modifier,
+            shape = RoundedCornerShape(cornerRadius),
+            content = content,
+        )
+    }
 }

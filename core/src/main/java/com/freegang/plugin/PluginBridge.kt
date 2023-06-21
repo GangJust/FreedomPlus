@@ -5,7 +5,6 @@ import android.app.Application
 import android.app.Instrumentation
 import android.content.ComponentName
 import com.freegang.ktutils.reflect.findField
-import com.freegang.ktutils.reflect.findFieldAndGet
 
 object PluginBridge {
     fun init(application: Application, stubActivityClass: Class<*>) {
@@ -16,7 +15,7 @@ object PluginBridge {
     /**
      * 动态代理 Instrumentation
      */
-    @SuppressLint("PrivateApi")
+    /*@SuppressLint("PrivateApi")
     private fun hookInstrumentation(
         application: Application,
         subActivityClass: Class<*>,
@@ -31,6 +30,49 @@ object PluginBridge {
 
         //替换
         mInstrumentationFiled.set(sCurrentActivityThread, PluginInstrumentation(mInstrumentation, subActivityClass))
+    }*/
+
+    /**
+     * 动态代理 Instrumentation
+     * @url https://github.com/androidmalin/AndroidComponentPlugin/blob/develop_kotlin/pluingImpl/src/main/java/com/malin/plugin/impl/HookInstrumentation.kt#L32
+     */
+    @SuppressLint("DiscouragedPrivateApi", "PrivateApi")
+    private fun hookInstrumentation(
+        application: Application,
+        subActivityClass: Class<*>,
+    ) {
+        // 1.from ContextImpl get mMainThread field value (ActivityThread obj)
+        // 2.from ActivityThread get mInstrumentation field (Instrumentation obj)
+        // 3.replace ActivityThread  mInstrumentation field value use make a Instrumentation instance
+        try {
+            // 1.ContextImpl-->mMainThread
+            // package android.app
+            // class ContextImpl
+            val contextImplClazz = Class.forName("android.app.ContextImpl")
+
+            // final @NonNull ActivityThread mMainThread;
+            val mMainThreadField = contextImplClazz.getDeclaredField("mMainThread").also { it.isAccessible = true }
+
+            // 2.get ActivityThread Object from ContextImpl
+            val activityThreadObj = mMainThreadField.get(application.baseContext)
+
+            // 3.mInstrumentation Object
+            val activityThreadClazz = Class.forName("android.app.ActivityThread")
+
+            // Instrumentation mInstrumentation;
+            val mInstrumentationField = activityThreadClazz.getDeclaredField("mInstrumentation")
+                .also { it.isAccessible = true }
+            val mInstrumentationObj = mInstrumentationField.get(activityThreadObj) as Instrumentation
+
+            // 4.reset set value
+            mInstrumentationField.set(activityThreadObj, PluginInstrumentation(mInstrumentationObj, subActivityClass))
+        } catch (e: IllegalAccessException) {
+            e.printStackTrace()
+        } catch (e: NoSuchFieldException) {
+            e.printStackTrace()
+        } catch (e: ClassNotFoundException) {
+            e.printStackTrace()
+        }
     }
 
     /**

@@ -45,6 +45,8 @@ class HMainFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainFra
         viewGroup.traverse {
             if (it is MainTabStripScrollView) {
                 val hideTabKeywords = config.hideTabKeywords
+                    .removePrefix(",").removePrefix("，")
+                    .removeSuffix(",").removeSuffix("，")
                     .replace("\\s".toRegex(), "")
                     .replace("[,，]".toRegex(), "|")
                 it.findViewsByDesc(View::class.java, hideTabKeywords.toRegex()).forEach { v -> v.isVisible = false }

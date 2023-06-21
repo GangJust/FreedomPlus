@@ -45,8 +45,12 @@ class DownloadLogic(
     init {
         if (aweme != null) {
             //整理内容
-            mShortId =
-                if (aweme.author.uniqueId.isNullOrEmpty()) aweme.author.shortId else aweme.author.uniqueId //如果uniqueId为空, shortId为账号
+            //如果uniqueId为空, shortId为账号
+            mShortId = if (aweme.author.uniqueId.isNullOrEmpty()) {
+                aweme.author.shortId
+            } else {
+                aweme.author.uniqueId
+            }
             mPureNickname = aweme.author.nickname.pureFileName
 
             //mOwnerDir: 如果需要按视频创作者单独创建文件夹: `/外置存储器/DCIM/Freedom/${video|music|picture}/昵称(账号)`
@@ -380,7 +384,7 @@ class DownloadLogic(
             val outputStream = FileOutputStream(downloadFile)
             var finished = false
             KHttpUtils.download(url, outputStream) { real, total, isInterrupt ->
-                hook.refresh { notify.notifyProgress(real * 100 / total, progressText) }
+                hook.refresh { notify.notifyProgress((real * 100 / total).toInt(), progressText) }
                 if (isInterrupt) finished = false
                 if (real >= total) finished = true
             }

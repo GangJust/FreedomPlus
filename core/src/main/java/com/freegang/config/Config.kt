@@ -21,6 +21,7 @@ data class Config(
     var isVibrate: Boolean = false, //是否开启震动反馈
     var isTranslucent: Boolean = false, //是否开启首页控件半透明
     var isNeat: Boolean = false, //是否开启清爽模式
+    var isLongPressMode: Boolean = false, //清爽模式弹窗响应模式 true上半, false下半
     var neatState: Boolean = false, //当前是否处于清爽模式
     var isNotification: Boolean = false, //是否通知栏下载
     var isWebDav: Boolean = false, //是否开启WebDav
@@ -28,7 +29,7 @@ data class Config(
     var webDavUsername: String = "", //WebDav用户名
     var webDavPassword: String = "", //WebDav密码
     var isHideTab: Boolean = false, //是否开启隐藏顶部tab
-    var hideTabKeywords: String = "探索, 商城", //隐藏顶部tab包含的关键字, 逗号隔开
+    var hideTabKeywords: String = "经验, 探索, 商城", //隐藏顶部tab包含的关键字, 逗号隔开
     var versionName: String = "", //版本名称
     var versionCode: Long = 0L, //版本代码
     var dyVersionName: String = "", //抖音版本名称
@@ -58,6 +59,7 @@ data class Config(
                 isVibrate = json.getBooleanOrDefault("isVibrate"),
                 isTranslucent = json.getBooleanOrDefault("isTranslucent"),
                 isNeat = json.getBooleanOrDefault("isNeat"),
+                isLongPressMode = json.getBooleanOrDefault("isLongPressMode"),
                 neatState = json.getBooleanOrDefault("neatState"),
                 isNotification = json.getBooleanOrDefault("isNotification"),
                 isWebDav = json.getBooleanOrDefault("isWebDav"),
@@ -104,6 +106,7 @@ data class Config(
             .name("isVibrate").value(isVibrate)
             .name("isTranslucent").value(isTranslucent)
             .name("isNeat").value(isNeat)
+            .name("isLongPressMode").value(isLongPressMode)
             .name("neatState").value(neatState)
             .name("isNotification").value(isNotification)
             .name("isWebDav").value(isWebDav)

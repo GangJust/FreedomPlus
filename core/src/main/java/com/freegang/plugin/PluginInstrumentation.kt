@@ -31,12 +31,18 @@ class PluginInstrumentation(
         options: Bundle?
     ): ActivityResult? {
         try {
-            val pluginClazz = moduleClassloader!!.loadClass(intent?.component?.className)
             var newIntent = intent
-            if (XplerActivity::class.java.isAssignableFrom(pluginClazz)) {
-                newIntent = Intent(who, stubActivity)
-                intent?.extras?.let { newIntent.putExtras(it) }
-                newIntent.putExtra(PLUGIN_PROXY_ACTIVITY, pluginClazz.name)
+            if (intent?.component != null) {
+                try {
+                    val pluginClazz = moduleClassloader!!.loadClass(intent.component?.className)
+                    if (pluginClazz != null && XplerActivity::class.java.isAssignableFrom(pluginClazz)) {
+                        newIntent = Intent(who, stubActivity)
+                        intent.extras?.let { newIntent.putExtras(it) }
+                        newIntent.putExtra(PLUGIN_PROXY_ACTIVITY, pluginClazz.name)
+                    }
+                } catch (e: Exception) {
+                    //e.printStackTrace()
+                }
             }
 
             val execStartActivity: Method = Instrumentation::class.java.getDeclaredMethod(

@@ -24,6 +24,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.RadioButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
@@ -60,6 +61,104 @@ class FreedomSettingActivity : BaseActivity() {
     private val model by viewModels<SettingVM>()
 
     @Composable
+    private fun TopBarView() {
+        //更新日志弹窗
+        var showUpdateLogDialog by remember { mutableStateOf(false) }
+        var updateLog by remember { mutableStateOf("") }
+        if (showUpdateLogDialog) {
+            FMessageDialog(
+                title = "更新日志",
+                onlyConfirm = true,
+                confirm = "确定",
+                onConfirm = { showUpdateLogDialog = false },
+                content = {
+                    LazyColumn(
+                        modifier = Modifier,
+                        content = {
+                            item {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = updateLog,
+                                    style = MaterialTheme.typography.body1,
+                                )
+                            }
+                        },
+                    )
+                },
+            )
+        }
+
+        TopAppBar(
+            modifier = Modifier.padding(vertical = 24.dp),
+            elevation = 0.dp,
+            backgroundColor = MaterialTheme.colors.background,
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                BoxWithConstraints(modifier = Modifier.padding(end = 24.dp)) {
+                    Icon(
+                        imageVector = Icons.Rounded.ArrowBack,
+                        contentDescription = "返回",
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() },
+                                onClick = {
+                                    onBackPressedDispatcher.onBackPressed()
+                                },
+                            ),
+                    )
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Freedom+",
+                        style = MaterialTheme.typography.h6.copy(color = MaterialTheme.colors.onSurface),
+                    )
+                    Spacer(modifier = Modifier.padding(vertical = 2.dp))
+                    Text(
+                        text = "No one is always happy.",
+                        style = MaterialTheme.typography.subtitle2.copy(color = MaterialTheme.colors.onSurface.copy(0.5f)),
+                    )
+                }
+                Icon(
+                    modifier = Modifier
+                        .size(20.dp)
+                        .clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() },
+                            onClick = {
+                                lifecycleScope.launch {
+                                    updateLog = withContext(Dispatchers.IO) {
+                                        val inputStream = mResources.moduleAssets.open("update.log")
+                                        val bytes = inputStream.readBytes()
+                                        val text = bytes.decodeToString()
+                                        inputStream.close()
+                                        text
+                                    }
+                                    showUpdateLogDialog = updateLog.isNotBlank()
+                                }
+                            },
+                        ),
+                    imageVector = Icons.Rounded.DateRange,
+                    contentDescription = "更新日志"
+                )
+                /*Spacer(modifier = Modifier.padding(horizontal = 12.dp))
+                Icon(
+                    modifier = Modifier
+                        .size(20.dp)
+                        .clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() },
+                            onClick = { rewardByAlipay() },
+                        ),
+                    imageVector = Icons.Rounded.FavoriteBorder,
+                    contentDescription = "打赏"
+                )*/
+            }
+        }
+    }
+
+    @Composable
     private fun HomeView() {
         //版本更新弹窗
         var showNewVersionDialog by remember { mutableStateOf(true) }
@@ -90,6 +189,7 @@ class FreedomSettingActivity : BaseActivity() {
                                     Text(
                                         modifier = Modifier.fillMaxWidth(),
                                         text = version.body,
+                                        style = MaterialTheme.typography.body1,
                                     )
                                 }
                             },
@@ -116,9 +216,53 @@ class FreedomSettingActivity : BaseActivity() {
                     KAppUtils.restartApplication(application)
                 },
                 content = {
-                    Text(text = "需要重启应用生效, 若未重启请手动重启")
+                    Text(
+                        text = "需要重启应用生效, 若未重启请手动重启",
+                        style = MaterialTheme.typography.body1,
+                    )
                 },
             )
+        }
+
+        //清爽模式响应模式
+        var showLongPressModeDialog by remember { mutableStateOf(false) }
+        if (showLongPressModeDialog) {
+            var isLongPressMode by remember { mutableStateOf(model.isLongPressMode.value ?: true) }
+            FMessageDialog(
+                title = "请选择响应模式",
+                confirm = "更改",
+                onlyConfirm = true,
+                onConfirm = { showLongPressModeDialog = false }
+            ) {
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(
+                            selected = isLongPressMode,
+                            onClick = {
+                                isLongPressMode = true
+                                model.changeIsLongPressMode(isLongPressMode)
+                            },
+                        )
+                        Text(
+                            text = "长按视频上半",
+                            style = MaterialTheme.typography.body1,
+                        )
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(
+                            selected = !isLongPressMode,
+                            onClick = {
+                                isLongPressMode = false
+                                model.changeIsLongPressMode(isLongPressMode)
+                            },
+                        )
+                        Text(
+                            text = "长按视频下半",
+                            style = MaterialTheme.typography.body1,
+                        )
+                    }
+                }
+            }
         }
 
         //WebDav配置编辑
@@ -274,7 +418,10 @@ class FreedomSettingActivity : BaseActivity() {
                     model.changeIsHideTab(true)
                 },
                 content = {
-                    Text(text = "一旦开启顶部Tab隐藏, 将禁止左右滑动切换, 具体效果自行查看!")
+                    Text(
+                        text = "一旦开启顶部Tab隐藏, 将禁止左右滑动切换, 具体效果自行查看!",
+                        style = MaterialTheme.typography.body1,
+                    )
                 },
             )
         }
@@ -326,8 +473,11 @@ class FreedomSettingActivity : BaseActivity() {
                             )
                             SwitchItem(
                                 text = "清爽模式",
-                                subtext = "开启后首页长按视频进入清爽模式",
+                                subtext = "长按视频进入清爽模式, 点击更改响应模式",
                                 checked = model.isNeat.observeAsState(false),
+                                onClick = {
+                                    showLongPressModeDialog = true
+                                },
                                 onCheckedChange = {
                                     showRestartAppDialog = true
                                     model.changeIsNeat(it)
@@ -396,103 +546,6 @@ class FreedomSettingActivity : BaseActivity() {
                         }
                     },
                 )
-            }
-        }
-    }
-
-    @Composable
-    private fun TopBarView() {
-        //更新日志弹窗
-        var showUpdateLogDialog by remember { mutableStateOf(false) }
-        var updateLog by remember { mutableStateOf("") }
-        if (showUpdateLogDialog) {
-            FMessageDialog(
-                title = "更新日志",
-                onlyConfirm = true,
-                confirm = "确定",
-                onConfirm = { showUpdateLogDialog = false },
-                content = {
-                    LazyColumn(
-                        modifier = Modifier,
-                        content = {
-                            item {
-                                Text(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    text = updateLog,
-                                )
-                            }
-                        },
-                    )
-                },
-            )
-        }
-
-        TopAppBar(
-            modifier = Modifier.padding(vertical = 24.dp),
-            elevation = 0.dp,
-            backgroundColor = MaterialTheme.colors.background,
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                BoxWithConstraints(modifier = Modifier.padding(end = 24.dp)) {
-                    Icon(
-                        imageVector = Icons.Rounded.ArrowBack,
-                        contentDescription = "返回",
-                        modifier = Modifier
-                            .size(20.dp)
-                            .clickable(
-                                indication = null,
-                                interactionSource = remember { MutableInteractionSource() },
-                                onClick = {
-                                    onBackPressedDispatcher.onBackPressed()
-                                },
-                            ),
-                    )
-                }
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Freedom+",
-                        style = MaterialTheme.typography.h6.copy(color = MaterialTheme.colors.onSurface),
-                    )
-                    Spacer(modifier = Modifier.padding(vertical = 2.dp))
-                    Text(
-                        text = "No one is always happy.",
-                        style = MaterialTheme.typography.subtitle2.copy(color = MaterialTheme.colors.onSurface.copy(0.5f)),
-                    )
-                }
-                Icon(
-                    modifier = Modifier
-                        .size(20.dp)
-                        .clickable(
-                            indication = null,
-                            interactionSource = remember { MutableInteractionSource() },
-                            onClick = {
-                                lifecycleScope.launch {
-                                    updateLog = withContext(Dispatchers.IO) {
-                                        val inputStream = mResources.moduleAssets.open("update.log")
-                                        val bytes = inputStream.readBytes()
-                                        val text = bytes.decodeToString()
-                                        inputStream.close()
-                                        text
-                                    }
-                                    showUpdateLogDialog = updateLog.isNotBlank()
-                                }
-                            },
-                        ),
-                    imageVector = Icons.Rounded.DateRange,
-                    contentDescription = "更新日志"
-                )
-                /*Spacer(modifier = Modifier.padding(horizontal = 12.dp))
-                Icon(
-                    modifier = Modifier
-                        .size(20.dp)
-                        .clickable(
-                            indication = null,
-                            interactionSource = remember { MutableInteractionSource() },
-                            onClick = { rewardByAlipay() },
-                        ),
-                    imageVector = Icons.Rounded.FavoriteBorder,
-                    contentDescription = "打赏"
-                )*/
             }
         }
     }
@@ -586,6 +639,10 @@ class FreedomSettingActivity : BaseActivity() {
     override fun onPause() {
         super.onPause()
         model.saveModuleConfig(mResources.moduleAssets)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
         Config.read(application)
     }
 

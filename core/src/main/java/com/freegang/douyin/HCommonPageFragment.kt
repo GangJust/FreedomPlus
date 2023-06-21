@@ -5,10 +5,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
+import android.widget.TextView
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
 import com.freegang.douyin.logic.SaveCommentLogic
 import com.freegang.ktutils.view.KViewUtils
+import com.freegang.ktutils.view.traverse
 import com.freegang.xpler.R
 import com.freegang.xpler.core.KtXposedHelpers
 import com.freegang.xpler.core.NoneHook
@@ -31,6 +33,7 @@ class HCommonPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<A
         hookBlock(param) {
             if (!config.isEmoji) return
             rebuildTopBarView(thisObject, view as ViewGroup)
+            rebuildOtherView(view)
         }
     }
 
@@ -68,6 +71,17 @@ class HCommonPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<A
                 true
             }
             viewGroup.addView(appbar)
+        }
+    }
+
+    private fun rebuildOtherView(view: ViewGroup) {
+        launch {
+            delay(200L)
+            view.traverse {
+                if (it is TextView && it.text.contains("我也发一张")) {
+                    KViewUtils.hideAll(it.parent as ViewGroup)
+                }
+            }
         }
     }
 }

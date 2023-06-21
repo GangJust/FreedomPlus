@@ -1,7 +1,8 @@
 package com.freegang.douyin
 
 import android.annotation.SuppressLint
-import android.content.res.Resources
+import android.app.ActivityOptions
+import android.content.Intent
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -11,215 +12,174 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
 import com.freegang.config.Config
+import com.freegang.douyin.activity.FreedomSettingActivity
 import com.freegang.ktutils.app.KAppUtils
+import com.freegang.ktutils.app.topActivity
 import com.freegang.ktutils.other.KAutomationUtils
 import com.freegang.ktutils.view.findParentExact
 import com.freegang.ktutils.view.findViewsByDesc
 import com.freegang.ktutils.view.findViewsByType
+import com.freegang.ktutils.view.parentView
 import com.freegang.ktutils.view.traverse
 import com.freegang.view.KDialog
+import com.freegang.view.MaskView
 import com.freegang.xpler.R
 import com.freegang.xpler.core.KtXposedHelpers
-import com.freegang.xpler.core.argsOrEmpty
-import com.freegang.xpler.core.callMethod
 import com.freegang.xpler.core.getModuleDrawable
+import com.freegang.xpler.core.hookClass
 import com.freegang.xpler.core.inflateModuleView
 import com.freegang.xpler.databinding.DialogFreedomLayoutBinding
 import com.ss.android.ugc.aweme.common.widget.VerticalViewPager
-import com.ss.android.ugc.aweme.familiar.feed.slides.ui.SlidesPhotosViewPager
 import com.ss.android.ugc.aweme.feed.quick.presenter.FeedDoctorFrameLayout
 import com.ss.android.ugc.aweme.feed.share.long_click.FrameLayoutHoldTouchListener
-import com.ss.android.ugc.aweme.feed.ui.LongPressLayout
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
 import com.ss.android.ugc.aweme.sticker.infoSticker.interact.consume.view.InteractStickerParent
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlinx.coroutines.delay
-import kotlin.math.sqrt
 
 class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<VerticalViewPager>(lpparam) {
-    private val config: Config = Config.get()
-
-    private var listener: Any? = null
+    private val config get() = Config.get()
 
     private var view: ViewGroup? = null
-
-    //自定义长按事件
-    private var initialTouchX = 0f
-    private var initialTouchY = 0f
-    private var pressDuration = 500L //设置自定义的长按时间，单位为毫秒
-    private var isLongPressTriggered = false
-    private val longPressRunnable = Runnable {
-        showOptionsMenu()
-    }
+    private var dialog: KDialog? = null
+    private var longPressRunnable: Runnable? = null
 
     override fun onInit() {
-        KtXposedHelpers.hookClass(targetClazz)
-            .methodAll {
+        //视频
+        lpparam.hookClass(targetClazz)
+            .method("getCurrentItem") {
                 onAfter {
-                    //KXpTest.testXC_M(this)
-                    val viewGroup = argsOrEmpty.filterIsInstance<ViewGroup>().firstOrNull() ?: return@onAfter
-                    changeView(viewGroup)
+                    if (config.isNeat) {
+                        view = thisObject as? ViewGroup
+                        attachView()
+                    }
                 }
             }
 
-        //暂存长按事件
-        KtXposedHelpers.hookClass(LongPressLayout::class.java)
+        //赞、评论等
+        lpparam.hookClass(PenetrateTouchRelativeLayout::class.java)
             .methodAll {
                 onBefore {
-                    if (!config.isNeat) return@onBefore
-                    if (method.name.contains("setListener")) {
-                        listener = argsOrEmpty.firstOrNull()
-                        result = Unit
+                    //if (method.name.contains("setAlpha")) return@onBefore
+                    if (method.name.contains("setVisibility")) return@onBefore
+                    val root = thisObject as ViewGroup
+                    //透明度
+                    if (config.isTranslucent) {
+                        root.parentView.alpha = 0.5f
+                    }
+                    //清爽模式
+                    if (!config.isNeat) {
+                        root.isVisible = true
+                    } else {
+                        root.isVisible = !config.neatState
                     }
                 }
-            }
-
-        //图文的 ViewPager 在 onInterceptTouchEvent 中消费了触摸事件, 由这里重新设置点击事件
-        //当出现 onTouchEvent 时, 则表示在左右滑动, 跳过事件处理
-        KtXposedHelpers.hookClass(SlidesPhotosViewPager::class.java)
-            .methodAll {
                 onAfter {
-                    if (!config.isNeat) return@onAfter
-                    if (method.name.contains("onInterceptTouchEvent|onTouchEvent".toRegex())) {
-                        val event = argsOrEmpty.firstOrNull() as MotionEvent? ?: return@onAfter
-                        val screenWidth = Resources.getSystem().displayMetrics.widthPixels // 获取屏幕宽度
-                        val responsiveWidth = screenWidth * (2 / 3f) // 计算响应范围的宽度
+                    //if (method.name.contains("setAlpha")) return@onAfter
+                    if (method.name.contains("setVisibility")) return@onAfter
+                    val root = thisObject as ViewGroup
+                    //透明度
+                    if (config.isTranslucent) {
+                        root.parentView.alpha = 0.5f
+                    }
+                    //清爽模式
+                    if (!config.isNeat) {
+                        root.isVisible = true
+                    } else {
+                        root.isVisible = !config.neatState
+                    }
+                }
+            }
 
-                        view = (thisObject as SlidesPhotosViewPager).findParentExact(VerticalViewPager::class.java)
-                        when (event.action) {
-                            MotionEvent.ACTION_DOWN -> {
-                                // 判断触摸点的位置: [屏幕左侧(1/6) | 屏幕中间 | 屏幕右侧(1/6)], 只响应屏幕中间的点击事件
-                                if (event.x < responsiveWidth / 6 || event.x > screenWidth - responsiveWidth / 6) {
-                                    return@onAfter // 不处理触摸事件，直接返回
-                                }
-
-                                // 当用户按下时触发，开始计时并记录初始触摸点的位置
-                                handler.postDelayed(longPressRunnable, pressDuration) // 设置延迟时间，单位为毫秒
-                                isLongPressTriggered = false // 重置长按事件触发状态
-                                initialTouchX = event.x // 记录初始触摸点的水平位置
-                                initialTouchY = event.y // 记录初始触摸点的垂直位置
-                            }
-
-                            MotionEvent.ACTION_MOVE -> {
-                                val moveX = event.x - initialTouchX // 计算触摸点在水平方向上的移动距离
-                                val moveY = event.y - initialTouchY // 计算触摸点在垂直方向上的移动距离
-                                val moveDistance = sqrt((moveX * moveX + moveY * moveY).toDouble()) // 计算总的移动距离
-
-                                // 判断是否满足触发长按事件的条件：尚未触发长按、满足自定义的长按条件、移动距离不超过阈值
-                                if (!isLongPressTriggered && isLongPress(event, pressDuration) && moveDistance <= 100) {
-                                    isLongPressTriggered = true // 设置长按事件已触发
-                                    result = true //阻断事件
-                                }
-                            }
-
-                            else -> {
-                                // 当触摸事件结束或取消时触发，取消长按的延迟任务并重置相关状态
-                                handler.removeCallbacks(longPressRunnable)
-                                isLongPressTriggered = false
-                            }
-                        }
+        //悬浮挑战等
+        lpparam.hookClass(InteractStickerParent::class.java)
+            .methodAll {
+                onBefore {
+                    if (method.name.contains("setAlpha")) return@onBefore
+                    if (method.name.contains("setVisibility")) return@onBefore
+                    val root = thisObject as ViewGroup
+                    //清爽模式
+                    root.isVisible = config.isNeat && !config.neatState
+                    //透明度
+                    root.traverse { v ->
+                        if (config.isTranslucent && v !is ViewGroup) v.alpha = 0.5f
+                    }
+                }
+                onAfter {
+                    if (method.name.contains("setAlpha")) return@onAfter
+                    if (method.name.contains("setVisibility")) return@onAfter
+                    val root = thisObject as ViewGroup
+                    //清爽模式
+                    root.isVisible = config.isNeat && !config.neatState
+                    //透明度
+                    root.traverse { v ->
+                        if (config.isTranslucent && v !is ViewGroup) v.alpha = 0.5f
                     }
                 }
             }
     }
 
-    //改变View状态
     @SuppressLint("ClickableViewAccessibility")
-    private fun changeView(viewGroup: ViewGroup) {
-        viewGroup.traverse {
-            //透明度、清爽模式
-            if (it is PenetrateTouchRelativeLayout) {
-                if (!config.isNeat) {
-                    it.isVisible = true
-                } else {
-                    it.isVisible = !config.neatState
-                }
-                it.traverse { v ->
-                    if (config.isTranslucent && v !is ViewGroup) v.alpha = 0.5f
-                }
-            }
-
-            if (it is InteractStickerParent) {
-                it.isVisible = config.isNeat && !config.neatState
-                it.traverse { v ->
-                    if (config.isTranslucent && v !is ViewGroup) v.alpha = 0.5f
-                }
-            }
-
-            //自定义长按事件, 响应操作菜单 (视频)
-            if (it is LongPressLayout) {
-                if (!config.isNeat) return@traverse
-                val description = it.contentDescription ?: ""
-                if (description.contains("进入直播间")) return@traverse
-
-                val screenWidth = Resources.getSystem().displayMetrics.widthPixels // 获取屏幕宽度
-                val responsiveWidth = screenWidth * (2 / 3f) // 计算响应范围的宽度
-                it.setOnTouchListener { _, event ->
-                    view = viewGroup
-                    when (event.action) {
-                        MotionEvent.ACTION_DOWN -> {
-                            // 判断触摸点的位置: [屏幕左侧(1/5) | 屏幕中间 | 屏幕右侧(1/5)], 只响应屏幕中间的点击事件
-                            if (event.x < responsiveWidth / 5 || event.x > screenWidth - responsiveWidth / 5) {
-                                return@setOnTouchListener true // 不处理触摸事件，直接返回 true
-                            }
-
-                            // 当用户按下时触发，开始计时并记录初始触摸点的位置
-                            handler.postDelayed(longPressRunnable, pressDuration) // 设置延迟时间，单位为毫秒
-                            isLongPressTriggered = false // 重置长按事件触发状态
-                            initialTouchX = event.x // 记录初始触摸点的水平位置
-                            initialTouchY = event.y // 记录初始触摸点的垂直位置
+    private fun attachView() {
+        val view = view!!
+        val parentExact = view.findParentExact(FrameLayout::class.java)
+        val maskView = MaskView(view.context)
+        if (parentExact?.findViewsByType(MaskView::class.java)?.isEmpty() == true) {
+            parentExact.addView(maskView)
+            val size = KAppUtils.screenSize()
+            maskView.setOnTouchListener { _, event ->
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        //预留出长按快进
+                        if (event.x < size.width / 8 || event.x > size.width - size.width / 8) {
+                            return@setOnTouchListener false
                         }
 
-                        MotionEvent.ACTION_MOVE -> {
-                            val moveX = event.x - initialTouchX // 计算触摸点在水平方向上的移动距离
-                            val moveY = event.y - initialTouchY // 计算触摸点在垂直方向上的移动距离
-                            val moveDistance = sqrt((moveX * moveX + moveY * moveY).toDouble()) // 计算总的移动距离
+                        //如果是评论区视频/图片
+                        if (isComment(view)) {
+                            return@setOnTouchListener false
+                        }
 
-                            // 判断是否满足触发长按事件的条件：尚未触发长按、满足自定义的长按条件、移动距离不超过阈值
-                            if (!isLongPressTriggered && isLongPress(event, pressDuration) && moveDistance <= 100) {
-                                isLongPressTriggered = true // 设置长按事件已触发
+                        //
+                        longPressRunnable = Runnable {
+                            val obtain = MotionEvent.obtain(
+                                event.downTime, event.eventTime, MotionEvent.ACTION_CANCEL, event.x, event.y, event.metaState
+                            )
+                            if (config.isLongPressMode) {
+                                if (event.y < size.height / 2) {
+                                    showOptionsMenu()
+                                    view.dispatchTouchEvent(obtain)
+                                }
+                            } else {
+                                if (event.y > size.height / 2) {
+                                    showOptionsMenu()
+                                    view.dispatchTouchEvent(obtain)
+                                }
                             }
                         }
-
-                        else -> {
-                            // 当触摸事件结束或取消时触发，取消长按的延迟任务并重置相关状态
-                            handler.removeCallbacks(longPressRunnable)
-                            isLongPressTriggered = false
-                        }
+                        handler.postDelayed(longPressRunnable!!, 300L)
+                        view.dispatchTouchEvent(event)
+                        return@setOnTouchListener true
                     }
-                    false
+
+                    else -> {
+                        if (longPressRunnable != null) {
+                            handler.removeCallbacks(longPressRunnable!!)
+                        }
+                        view.dispatchTouchEvent(event)
+                    }
                 }
+                return@setOnTouchListener false
             }
         }
-
-        //是否评论区视频
-        val isComment = isComment(viewGroup)
-        viewGroup.findViewsByType(PenetrateTouchRelativeLayout::class.java).forEach {
-            if (isComment) {
-                it.isVisible = false
-            } else {
-                if (!config.isNeat) {
-                    it.isVisible = true
-                } else {
-                    it.isVisible = !config.neatState
-                }
-            }
-        }
-    }
-
-    // 判断手指是否在视图上保持足够长的时间（自定义的长按时间）
-    private fun isLongPress(event: MotionEvent, pressDuration: Long): Boolean {
-        val eventDuration = event.eventTime - event.downTime
-        return eventDuration >= pressDuration
     }
 
     //弹出选项菜单
     private fun showOptionsMenu() {
-        //val view = view!!.rootView as ViewGroup
         val view = view!!
         val screenSize = KAppUtils.screenSize()
 
-        val dialog = KDialog()
+        val dialog = this.dialog ?: KDialog()
         val frameLayout = view.context.inflateModuleView<FrameLayout>(R.layout.dialog_freedom_layout)
         dialog.setView(frameLayout)
 
@@ -232,7 +192,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
         binding.neatItemText.setOnClickListener {
             dialog.dismiss()
             config.neatState = !config.neatState
-            changeView(view)
+            toggleView(view)
             Toast.makeText(it.context, if (config.neatState) "清爽模式" else "普通模式", Toast.LENGTH_SHORT).show()
         }
 
@@ -241,13 +201,11 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
         binding.commentItemText.setOnClickListener {
             dialog.dismiss()
             launch {
-                //KXpTest.testViewGroup(view.rootView as ViewGroup)
-
                 //如果是清爽模式的状态下
                 if (config.neatState) {
                     //先取消控件隐藏
                     config.neatState = false
-                    changeView(view)
+                    toggleView(view)
 
                     //等待200毫秒, 记录坐标
                     delay(200)
@@ -266,7 +224,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
 
                     //恢复清爽模式
                     config.neatState = true
-                    changeView(view)
+                    toggleView(view)
                 } else {
                     //等待200毫秒, 记录坐标
                     delay(200)
@@ -291,13 +249,11 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
         binding.favoriteItemText.setOnClickListener {
             dialog.dismiss()
             launch {
-                //KXpTest.testViewGroup(view)
-
                 //如果是清爽模式的状态下
                 if (config.neatState) {
                     //先取消控件隐藏
                     config.neatState = false
-                    changeView(view)
+                    toggleView(view)
 
                     //等待200毫秒, 记录坐标
                     delay(200)
@@ -312,12 +268,11 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                     }
 
                     //模拟点击
-                    //showToast(it.context, "点击: ${location[0]}, ${location[1]}")
                     KAutomationUtils.simulateClickByView(view, location[0].toFloat(), location[1].toFloat())
 
                     //恢复清爽模式
                     config.neatState = true
-                    changeView(view)
+                    toggleView(view)
                 } else {
                     //等待200毫秒, 记录坐标
                     delay(200)
@@ -346,7 +301,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                 if (config.neatState) {
                     //先取消控件隐藏
                     config.neatState = false
-                    changeView(view)
+                    toggleView(view)
 
                     //等待200毫秒, 记录坐标
                     delay(200)
@@ -365,7 +320,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
 
                     //恢复清爽模式
                     config.neatState = true
-                    changeView(view)
+                    toggleView(view)
                 } else {
                     //等待200毫秒, 记录坐标
                     delay(200)
@@ -385,11 +340,17 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
             }
         }
 
-        //菜单
-        binding.awemeItemText.background = KtXposedHelpers.getDrawable(R.drawable.item_selector_background)
-        binding.awemeItemText.setOnClickListener {
+        //模块设置
+        binding.settingItemText.background = KtXposedHelpers.getDrawable(R.drawable.item_selector_background)
+        binding.settingItemText.setOnClickListener {
             dialog.dismiss()
-            listener?.callMethod<Unit>("onLongPressAwemeSure", initialTouchX, initialTouchY)
+            val intent = Intent(it.context, FreedomSettingActivity::class.java)
+            val options = ActivityOptions.makeCustomAnimation(
+                topActivity,
+                android.R.anim.slide_in_left,
+                android.R.anim.slide_out_right
+            )
+            it.context.startActivity(intent, options.toBundle())
         }
 
         //取消
@@ -398,8 +359,32 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
             dialog.dismiss()
         }
 
-        if (!isComment(view)) {
-            dialog.show()
+        if (isComment(view)) return
+
+        dialog.show()
+    }
+
+    private fun toggleView(viewGroup: ViewGroup) {
+        viewGroup.traverse {
+            if (it is PenetrateTouchRelativeLayout) {
+                //透明度
+                if (config.isTranslucent) {
+                    it.parentView.alpha = 0.5f
+                }
+                //清爽模式
+                if (!config.isNeat) {
+                    it.isVisible = true
+                } else {
+                    it.isVisible = !config.neatState
+                }
+            }
+
+            if (it is InteractStickerParent) {
+                it.isVisible = config.isNeat && !config.neatState
+                it.traverse { v ->
+                    if (config.isTranslucent && v !is ViewGroup) v.alpha = 0.5f
+                }
+            }
         }
     }
 
