@@ -44,17 +44,22 @@ open class XplerActivity : ComponentActivity() {
 
     protected class PluginClassloader : ClassLoader() {
         override fun findClass(name: String?): Class<*> {
-            //KLogCat.d("XplerActivity - 插件加载类: $name")
+            val loadedClass = findLoadedClass(name)
+            if (loadedClass != null) return loadedClass
+
             try {
                 return moduleClassloader!!.loadClass(name)
             } catch (e: Exception) {
-                //KLogCat.d("模块未找到: $name")
+                //e.printStackTrace()
+                //KLogCat.e("模块未找到: $name")
             }
             try {
                 return hostClassloader!!.loadClass(name)
             } catch (e: Exception) {
-                //KLogCat.d("宿主未找到: $name")
+                //e.printStackTrace()
+                //KLogCat.e("宿主未找到: $name")
             }
+
             return super.findClass(name)
         }
     }

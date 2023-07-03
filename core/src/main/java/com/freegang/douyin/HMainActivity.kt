@@ -13,7 +13,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.view.children
 import com.freegang.base.BaseHook
-import com.freegang.config.Config
+import com.freegang.config.ConfigV1
 import com.freegang.config.Version
 import com.freegang.douyin.activity.FreedomSettingActivity
 import com.freegang.douyin.logic.ClipboardLogic
@@ -46,7 +46,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainActivity>(lpparam) {
-    private val config get() = Config.get()
+    private val config get() = ConfigV1.get()
     private val clipboardLogic = ClipboardLogic(this)
     private val supportVersions = listOf(
         "23.5.0", "23.6.0", "23.7.0", "23.8.0", "23.9.0",
@@ -54,6 +54,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         "24.5.0", "24.6.0", "24.7.0", "24.8.0", "24.9.0",
         "25.0.0", "25.1.0", "25.2.0", "25.3.0", "25.4.0",
         "25.5.0", "25.6.0", "25.7.0", "25.8.0", "25.9.0",
+        "25.6.0",
     )
 
     @OnAfter("onCreate")
@@ -197,7 +198,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         val versionCode = activity.appVersionCode
 
         //此版本是否继续提示
-        if (!config.isSupportHint && versionCode == config.dyVersionCode && versionName == config.dyVersionName) return
+        if (!config.isSupportHint && versionCode == config.versionConfig.dyVersionCode && versionName == config.versionConfig.dyVersionName) return
 
         launch {
             delay(2000L)
@@ -226,7 +227,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         launch {
             delay(2000L)
             val version = withContext(Dispatchers.IO) { Version.getRemoteReleasesLatest() } ?: return@launch
-            if (version.name.compareTo("v${config.versionName}") >= 1) {
+            if (version.name.compareTo("v${config.versionConfig.versionName}") >= 1) {
                 showMessageDialog(
                     context = activity,
                     title = "发现新版本 ${version.name}!",
@@ -251,8 +252,9 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         val dyVersionName = context.appVersionName
         val dyVersionCode = context.appVersionCode
         config.isSupportHint = false
-        config.dyVersionName = dyVersionName
-        config.dyVersionCode = dyVersionCode
-        config.save(context)
+        config.versionConfig = config.versionConfig.copy(
+            dyVersionName = dyVersionName,
+            dyVersionCode = dyVersionCode
+        )
     }
 }

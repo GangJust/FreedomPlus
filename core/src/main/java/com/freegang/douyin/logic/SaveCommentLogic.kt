@@ -2,7 +2,8 @@ package com.freegang.douyin.logic
 
 import android.content.Context
 import com.freegang.base.BaseHook
-import com.freegang.config.Config
+import com.freegang.config.ConfigV1
+import com.freegang.ktutils.app.KMediaUtils
 import com.freegang.ktutils.io.child
 import com.freegang.ktutils.io.need
 import com.freegang.ktutils.net.KHttpUtils
@@ -20,7 +21,7 @@ class SaveCommentLogic(
 ) {
 
     companion object {
-        private val config: Config get() = Config.get()
+        private val config get() = ConfigV1.get()
     }
 
     init {
@@ -53,15 +54,16 @@ class SaveCommentLogic(
     // 保存评论区图片
     private fun onSaveCommentImage(urlList: List<String>) {
         hook.launch {
-            //默认保存路径: `/外置存储器/DCIM/Freedom/emoji`
-            val parentPath = Config.getFreedomDir(context).child("emoji").need()
+            //默认保存路径: `/外置存储器/DCIM/Freedom/picture/comment`
+            val parentPath = ConfigV1.getFreedomDir(context).child("picture").child("comment").need()
 
             //构建保存文件名
-            val file = File(parentPath, "${System.currentTimeMillis() / 1000}.gif")
+            val file = File(parentPath, "${System.currentTimeMillis() / 1000}.png")
             withContext(Dispatchers.IO) {
                 KHttpUtils.download(urlList.first(), FileOutputStream(file)) { real, total, isInterrupt ->
                     if (real >= total) {
                         hook.showToast(context, "保存成功!")
+                        KMediaUtils.notifyGallery(context, file.absolutePath)
                         if (config.isVibrate) hook.vibrate(context, 5L)
                     }
                     if (isInterrupt) {
@@ -76,7 +78,7 @@ class SaveCommentLogic(
     private fun onSaveCommentVideo(urlList: List<String>) {
         hook.launch {
             //默认保存路径: `/外置存储器/DCIM/Freedom/video/comment`
-            val parentPath = Config.getFreedomDir(context).child("video").child("comment").need()
+            val parentPath = ConfigV1.getFreedomDir(context).child("video").child("comment").need()
 
             //构建保存文件名
             val file = File(parentPath, "${System.currentTimeMillis() / 1000}.mp4")
@@ -84,6 +86,7 @@ class SaveCommentLogic(
                 KHttpUtils.download(urlList.first(), FileOutputStream(file)) { real, total, isInterrupt ->
                     if (real >= total) {
                         hook.showToast(context, "保存成功!")
+                        KMediaUtils.notifyGallery(context, file.absolutePath)
                         if (config.isVibrate) hook.vibrate(context, 5L)
                     }
                     if (isInterrupt) {

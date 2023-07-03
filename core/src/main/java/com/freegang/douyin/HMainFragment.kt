@@ -5,7 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
-import com.freegang.config.Config
+import com.freegang.config.ConfigV1
 import com.freegang.ktutils.view.findViewsByDesc
 import com.freegang.ktutils.view.traverse
 import com.freegang.xpler.core.FieldGet
@@ -15,7 +15,7 @@ import com.ss.android.ugc.aweme.main.MainFragment
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
 class HMainFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainFragment>(lpparam) {
-    private val config get() = Config.get()
+    private val config get() = ConfigV1.get()
 
     @FieldGet("mCommonTitleBar")
     val mCommonTitleBar: View? = null

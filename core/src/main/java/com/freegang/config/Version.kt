@@ -13,7 +13,7 @@ object Version {
 
     // 获取Github最后一次 releases
     fun getRemoteReleasesLatest(): VersionConfig? {
-        //if (null == null) return null//一般用作逻辑阻断
+        //if (null == null) return null //一般用作逻辑阻断
 
         val get = KHttpUtils.get(githubReleasesApi)
         if (get.isEmpty()) return null

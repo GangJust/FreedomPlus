@@ -34,14 +34,14 @@ class PluginInstrumentation(
             var newIntent = intent
             if (intent?.component != null) {
                 try {
-                    val pluginClazz = moduleClassloader!!.loadClass(intent.component?.className)
+                    val pluginClazz = moduleClassloader?.loadClass(intent.component?.className)
                     if (pluginClazz != null && XplerActivity::class.java.isAssignableFrom(pluginClazz)) {
                         newIntent = Intent(who, stubActivity)
                         intent.extras?.let { newIntent.putExtras(it) }
                         newIntent.putExtra(PLUGIN_PROXY_ACTIVITY, pluginClazz.name)
                     }
                 } catch (e: Exception) {
-                    //e.printStackTrace()
+                    //KLogCat.e(e.stackTraceToString())
                 }
             }
 
@@ -65,16 +65,16 @@ class PluginInstrumentation(
                 newIntent,
                 requestCode,
                 options,
-            ) as ActivityResult
+            ) as ActivityResult?
         } catch (e: Exception) {
-            e.printStackTrace()
+            //KLogCat.e(e.stackTraceToString())
         }
         return null
     }
 
     override fun newActivity(cl: ClassLoader?, className: String?, intent: Intent?): Activity {
         val xplerPlugin = intent?.getStringExtra(PLUGIN_PROXY_ACTIVITY) ?: ""
-        if (xplerPlugin.isNotEmpty()) {
+        if (xplerPlugin.isNotEmpty() && moduleClassloader != null) {
             return moduleClassloader!!.loadClass(xplerPlugin).newInstance() as Activity
         }
         return mBase.newActivity(cl, className, intent)

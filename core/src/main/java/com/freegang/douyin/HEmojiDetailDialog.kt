@@ -3,7 +3,7 @@ package com.freegang.douyin
 import android.os.Bundle
 import android.widget.TextView
 import com.freegang.base.BaseHook
-import com.freegang.config.Config
+import com.freegang.config.ConfigV1
 import com.freegang.douyin.logic.SaveEmojiLogic
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.view.KViewUtils
@@ -19,7 +19,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlinx.coroutines.delay
 
 class HEmojiDetailDialog(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmojiDetailDialog>(lpparam) {
-    private val config get() = Config.get()
+    private val config get() = ConfigV1.get()
     private var urlList: List<String> = emptyList()
 
     override fun onInit() {

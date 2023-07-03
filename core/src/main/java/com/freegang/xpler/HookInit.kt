@@ -2,10 +2,12 @@ package com.freegang.xpler
 
 import android.app.Application
 import com.freegang.xpler.core.KtXposedHelpers
+import com.freegang.xpler.core.getStaticObjectField
 import com.freegang.xpler.core.hookClass
 import com.freegang.xpler.core.thisApplication
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.IXposedHookZygoteInit
+import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
 // Hook init entrance
@@ -41,6 +43,18 @@ class HookInit : IXposedHookLoadPackage, IXposedHookZygoteInit {
             .method("isEnabled") {
                 onAfter {
                     result = true
+                }
+            }
+            .method("getModuleState") {
+                onAfter {
+                    val bridgeTag = XposedBridge::class.java.getStaticObjectField<String>("TAG") ?: ""
+                    result = if (bridgeTag.contains("LSPosed-Bridge")) {
+                        "LSPosed"
+                    } else if (bridgeTag.contains("Xposed")) {
+                        "Xposed"
+                    } else {
+                        "Unknown"
+                    }
                 }
             }
     }

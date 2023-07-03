@@ -3,7 +3,7 @@ package com.freegang.douyin.logic
 import android.content.Context
 import android.widget.Toast
 import com.freegang.base.BaseHook
-import com.freegang.config.Config
+import com.freegang.config.ConfigV1
 import com.freegang.ktutils.app.IProgressNotification
 import com.freegang.ktutils.app.KMediaUtils
 import com.freegang.ktutils.io.child
@@ -28,8 +28,8 @@ class DownloadLogic(
 ) {
 
     companion object {
-        private val config: Config get() = Config.get()
-        private val webdav: WebDav by lazy { WebDav(config.webDavHost, config.webDavUsername, config.webDavPassword) }
+        private val config get() = ConfigV1.get()
+        private val webdav: WebDav by lazy { WebDav(config.webDavConfig) }
         private var downloadNotifyId = 1
     }
 
@@ -57,13 +57,13 @@ class DownloadLogic(
             mOwnerDir = if (config.isOwnerDir) "${mPureNickname}(${mShortId})" else ""
 
             //默认下载路径: `/外置存储器/DCIM/Freedom/video`
-            mVideoParent = Config.getFreedomDir(context).child("video")
+            mVideoParent = ConfigV1.getFreedomDir(context).child("video")
 
             //默认下载路径: `/外置存储器/DCIM/Freedom/music`
-            mMusicParent = Config.getFreedomDir(context).child("music")
+            mMusicParent = ConfigV1.getFreedomDir(context).child("music")
 
             //默认下载路径: `/外置存储器/DCIM/Freedom/picture`
-            mImageParent = Config.getFreedomDir(context).child("picture")
+            mImageParent = ConfigV1.getFreedomDir(context).child("picture")
 
             //构建文件名
             mPureFileName = if (aweme.desc.isNullOrBlank()) {
@@ -99,7 +99,7 @@ class DownloadLogic(
             items.add(if (urlList.isNotEmpty()) "视频(WebDav)" else "图片(WebDav)")
             items.add("背景音乐(WebDav)")
         }
-        hook.showChoiceDialog(
+        hook.showInputChoiceDialog(
             context = context,
             title = "Freedom+",
             showInput1 = config.isOwnerDir,

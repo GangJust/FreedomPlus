@@ -25,6 +25,7 @@ import com.freegang.xpler.core.KtOnHook
 import com.freegang.xpler.core.KtXposedHelpers
 import com.freegang.xpler.core.inflateModuleView
 import com.freegang.xpler.databinding.DialogChoiceLayoutBinding
+import com.freegang.xpler.databinding.DialogInputChoiceLayoutBinding
 import com.freegang.xpler.databinding.DialogMessageLayoutBinding
 import com.freegang.xpler.databinding.DialogProgressLayoutBinding
 import de.robv.android.xposed.callbacks.XC_LoadPackage
@@ -164,7 +165,7 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
         showDialog(binding.root, needMultiple)
     }
 
-    fun showChoiceDialog(
+    fun showInputChoiceDialog(
         context: Context,
         title: CharSequence,
         showInput1: Boolean,
@@ -175,11 +176,11 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
         items: Array<String>,
         cancel: CharSequence = "取消",
         needMultiple: Boolean = false,
-        onChoice: (view: View, owner: String, filename: String, item: CharSequence, position: Int) -> Unit,
+        onChoice: (view: View, input1: String, input2: String, item: CharSequence, position: Int) -> Unit,
         onCancel: () -> Unit = {},
     ) {
-        val dialogView = KtXposedHelpers.inflateView<FrameLayout>(context, R.layout.dialog_choice_layout)
-        val binding = DialogChoiceLayoutBinding.bind(dialogView)
+        val dialogView = KtXposedHelpers.inflateView<FrameLayout>(context, R.layout.dialog_input_choice_layout)
+        val binding = DialogInputChoiceLayoutBinding.bind(dialogView)
 
         binding.choiceDialogContainer.background = KtXposedHelpers.getDrawable(R.drawable.dialog_background)
         binding.choiceDialogCancel.background = KtXposedHelpers.getDrawable(R.drawable.dialog_single_button_background)
@@ -220,6 +221,45 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
 
         showDialog(binding.root, needMultiple)
     }
+
+    fun showChoiceDialog(
+        context: Context,
+        title: CharSequence,
+        items: Array<String>,
+        cancel: CharSequence = "取消",
+        needMultiple: Boolean = false,
+        onChoice: (view: View, item: CharSequence, position: Int) -> Unit,
+        onCancel: () -> Unit = {},
+    ) {
+        val dialogView = KtXposedHelpers.inflateView<FrameLayout>(context, R.layout.dialog_choice_layout)
+        val binding = DialogChoiceLayoutBinding.bind(dialogView)
+
+        binding.choiceDialogContainer.background = KtXposedHelpers.getDrawable(R.drawable.dialog_background)
+        binding.choiceDialogCancel.background = KtXposedHelpers.getDrawable(R.drawable.dialog_single_button_background)
+
+        binding.choiceDialogTitle.text = title
+
+        binding.choiceDialogCancel.text = cancel
+        binding.choiceDialogCancel.setOnClickListener {
+            kDialog!!.dismiss()
+            onCancel.invoke()
+        }
+
+        binding.choiceDialogList.adapter = DialogChoiceAdapter(context, items)
+        binding.choiceDialogList.divider = ColorDrawable(Color.TRANSPARENT)
+        binding.choiceDialogList.selector = KtXposedHelpers.getDrawable(R.drawable.item_selector_background)
+        binding.choiceDialogList.setOnItemClickListener { _, view, position, _ ->
+            kDialog!!.dismiss()
+            onChoice.invoke(
+                view,
+                items[position],
+                position
+            )
+        }
+
+        showDialog(binding.root, needMultiple)
+    }
+
 
     fun showNotification(
         context: Context,

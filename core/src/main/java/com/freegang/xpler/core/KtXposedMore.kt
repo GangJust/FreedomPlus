@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.res.XmlResourceParser
 import android.graphics.drawable.Drawable
 import android.view.View
+import android.view.ViewGroup
 import androidx.annotation.AnimRes
 import androidx.annotation.AnimatorRes
 import androidx.annotation.ColorRes
@@ -527,6 +528,36 @@ val XC_MethodHook.MethodHookParam.thisContext: Context
     get() {
         if (thisObject !is Context) throw Exception("$thisObject unable to cast to Context!")
         return thisObject as Context
+    }
+
+/**
+ * 将被Hook的某个方法中的持有实例转为View, 如果该实例对象不是View则抛出异常
+ */
+val XC_MethodHook.MethodHookParam.thisView: View
+    get() {
+        if (thisObject !is View) throw Exception("$thisObject unable to cast to View!")
+        return thisObject as View
+    }
+
+val XC_MethodHook.MethodHookParam.thisViewOrNull: View?
+    get() {
+        if (thisObject == null || thisObject !is View) return null
+        return thisObject as View?
+    }
+
+/**
+ * 将被Hook的某个方法中的持有实例转为ViewGroup, 如果该实例对象不是ViewGroup则抛出异常
+ */
+val XC_MethodHook.MethodHookParam.thisViewGroup: ViewGroup
+    get() {
+        if (thisObject !is ViewGroup) throw Exception("$thisObject unable to cast to ViewGroup!")
+        return thisObject as ViewGroup
+    }
+
+val XC_MethodHook.MethodHookParam.thisViewGroupOrNull: ViewGroup?
+    get() {
+        if (thisObject == null || thisObject !is ViewGroup) return null
+        return thisObject as ViewGroup?
     }
 
 /**

@@ -1,7 +1,7 @@
 package com.freegang.douyin
 
 import com.freegang.base.BaseHook
-import com.freegang.config.Config
+import com.freegang.config.ConfigV1
 import com.freegang.douyin.logic.ClipboardLogic
 import com.freegang.douyin.logic.DownloadLogic
 import com.freegang.xpler.core.OnAfter
@@ -17,7 +17,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
 class HDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<DetailActivity>(lpparam) {
-    private val config get() = Config.get()
+    private val config get() = ConfigV1.get()
     private val clipboardLogic = ClipboardLogic(this)
 
     @OnAfter("onResume")

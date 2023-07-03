@@ -4,8 +4,7 @@ import com.freegang.xpler.HookInit
 import java.net.URL
 
 class XplerClassloader(
-    private val app: ClassLoader,
-    private val module: ClassLoader,
+    private val host: ClassLoader,
     private val parent: ClassLoader,
 ) : ClassLoader() {
 
@@ -35,37 +34,28 @@ class XplerClassloader(
     }
 
     @Throws(ClassNotFoundException::class)
-    override fun findClass(name: String?): Class<*> {
-        if (needSkipLoader(name)) throw ClassNotFoundException(name)
+    override fun loadClass(name: String?, resolve: Boolean): Class<*> {
+        //if (needSkipLoader(name)) throw ClassNotFoundException(name)  //适配太极需要注释该行
 
         if (moduleLoader(name)) {
             try {
-                return module.loadClass(name)
-            } catch (_: ClassNotFoundException) {
-                //module not found
-                //KLogCat.d("module未找到: $name")
-            }
-        } else {
-            try {
-                return app.loadClass(name)
-            } catch (_: ClassNotFoundException) {
-                //target not found
-                //KLogCat.d("app未找到: $name")
+                return parent.loadClass(name)
+            } catch (e: ClassNotFoundException) {
+                //e.printStackTrace()
             }
         }
 
         try {
-            return parent.loadClass(name)
-        } catch (_: ClassNotFoundException) {
-            //parent not found
-            //KLogCat.d("parent未找到: $name")
+            return host.loadClass(name)
+        } catch (e: ClassNotFoundException) {
+            //e.printStackTrace()
         }
 
         throw ClassNotFoundException(name)
     }
 
     override fun getResource(name: String?): URL {
-        return module.getResource(name) ?: app.getResource(name) ?: parent.getResource(name)
+        return parent.getResource(name) ?: host.getResource(name)
     }
 }
 
@@ -76,13 +66,9 @@ fun injectClassLoader(loader: ClassLoader) {
     if (parent::class.java != XplerClassloader::class.java) {
         hostClassloader = loader
         moduleClassloader = mine
-        xplerClassloader = XplerClassloader(loader, mine!!, parent)
-        fParent.set(mine, xplerClassloader)
+        fParent.set(mine, XplerClassloader(loader, parent))
     }
 }
 
 var hostClassloader: ClassLoader? = null
-
 var moduleClassloader: ClassLoader? = null
-
-var xplerClassloader: XplerClassloader? = null

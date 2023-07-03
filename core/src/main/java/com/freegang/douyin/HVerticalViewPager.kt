@@ -8,130 +8,125 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
-import android.widget.Toast
-import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
-import com.freegang.config.Config
+import com.freegang.config.ConfigV1
 import com.freegang.douyin.activity.FreedomSettingActivity
-import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.topActivity
+import com.freegang.ktutils.display.KDisplayUtils
 import com.freegang.ktutils.other.KAutomationUtils
+import com.freegang.ktutils.view.KFastClickUtils
+import com.freegang.ktutils.view.KViewUtils
 import com.freegang.ktutils.view.findParentExact
-import com.freegang.ktutils.view.findViewsByDesc
 import com.freegang.ktutils.view.findViewsByType
-import com.freegang.ktutils.view.parentView
 import com.freegang.ktutils.view.traverse
-import com.freegang.view.KDialog
 import com.freegang.view.MaskView
-import com.freegang.xpler.R
-import com.freegang.xpler.core.KtXposedHelpers
-import com.freegang.xpler.core.getModuleDrawable
+import com.freegang.xpler.core.argsOrEmpty
 import com.freegang.xpler.core.hookClass
-import com.freegang.xpler.core.inflateModuleView
-import com.freegang.xpler.databinding.DialogFreedomLayoutBinding
+import com.freegang.xpler.core.thisView
+import com.ss.android.ugc.aweme.ad.feed.VideoViewHolderRootView
 import com.ss.android.ugc.aweme.common.widget.VerticalViewPager
 import com.ss.android.ugc.aweme.feed.quick.presenter.FeedDoctorFrameLayout
 import com.ss.android.ugc.aweme.feed.share.long_click.FrameLayoutHoldTouchListener
+import com.ss.android.ugc.aweme.feed.ui.LongPressLayout
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
 import com.ss.android.ugc.aweme.sticker.infoSticker.interact.consume.view.InteractStickerParent
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlinx.coroutines.delay
 
 class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<VerticalViewPager>(lpparam) {
-    private val config get() = Config.get()
-
-    private var view: ViewGroup? = null
-    private var dialog: KDialog? = null
+    private val config get() = ConfigV1.get()
+    private val screenSize get() = KDisplayUtils.screenSize()
     private var longPressRunnable: Runnable? = null
 
     override fun onInit() {
-        //视频
         lpparam.hookClass(targetClazz)
-            .method("getCurrentItem") {
+            .methodAll {
                 onAfter {
-                    if (config.isNeat) {
-                        view = thisObject as? ViewGroup
-                        attachView()
+                    val first = argsOrEmpty.firstOrNull() ?: return@onAfter
+                    if (config.isNeatMode) {
+                        if (first is VerticalViewPager) {
+                            toggleView(first)
+                        }
                     }
                 }
             }
 
-        //赞、评论等
-        lpparam.hookClass(PenetrateTouchRelativeLayout::class.java)
-            .methodAll {
+        lpparam.hookClass(LongPressLayout::class.java)
+            .method("onTouchEvent", MotionEvent::class.java) {
                 onBefore {
-                    //if (method.name.contains("setAlpha")) return@onBefore
-                    if (method.name.contains("setVisibility")) return@onBefore
-                    val root = thisObject as ViewGroup
-                    //透明度
-                    if (config.isTranslucent) {
-                        root.parentView.alpha = 0.5f
-                    }
-                    //清爽模式
-                    if (!config.isNeat) {
-                        root.isVisible = true
-                    } else {
-                        root.isVisible = !config.neatState
-                    }
-                }
-                onAfter {
-                    //if (method.name.contains("setAlpha")) return@onAfter
-                    if (method.name.contains("setVisibility")) return@onAfter
-                    val root = thisObject as ViewGroup
-                    //透明度
-                    if (config.isTranslucent) {
-                        root.parentView.alpha = 0.5f
-                    }
-                    //清爽模式
-                    if (!config.isNeat) {
-                        root.isVisible = true
-                    } else {
-                        root.isVisible = !config.neatState
-                    }
-                }
-            }
+                    val event = args[0] as MotionEvent
+                    val obtain = MotionEvent.obtain(
+                        event.downTime,
+                        event.eventTime,
+                        MotionEvent.ACTION_CANCEL,
+                        event.x,
+                        event.y,
+                        event.metaState
+                    )
 
-        //悬浮挑战等
-        lpparam.hookClass(InteractStickerParent::class.java)
-            .methodAll {
-                onBefore {
-                    if (method.name.contains("setAlpha")) return@onBefore
-                    if (method.name.contains("setVisibility")) return@onBefore
-                    val root = thisObject as ViewGroup
-                    //清爽模式
-                    root.isVisible = config.isNeat && !config.neatState
-                    //透明度
-                    root.traverse { v ->
-                        if (config.isTranslucent && v !is ViewGroup) v.alpha = 0.5f
+                    when (event.action) {
+                        MotionEvent.ACTION_DOWN -> {
+                            //防止双击
+                            if (KFastClickUtils.isFastDoubleClick(500L) && config.isDisableDoubleLike) {
+                                thisView.dispatchTouchEvent(obtain)
+                                result = true
+                                return@onBefore
+                            }
+
+                            //预留出长按快进
+                            if (event.x < screenSize.width / 8 || event.x > screenSize.width - screenSize.width / 8) {
+                                return@onBefore
+                            }
+
+                            //
+                            if (config.longPressMode) {
+                                if (event.y < screenSize.height / 2) {
+                                    longPressRunnable = Runnable {
+                                        val viewGroup = thisView.findParentExact(VideoViewHolderRootView::class.java)
+                                        viewGroup ?: return@Runnable
+                                        showOptionsMenuV1(viewGroup)
+                                        thisView.dispatchTouchEvent(obtain)
+                                    }
+                                    handler.postDelayed(longPressRunnable!!, 300L)
+                                    return@onBefore
+                                }
+                            } else {
+                                if (event.y > screenSize.height / 2) {
+                                    longPressRunnable = Runnable {
+                                        val viewGroup = thisView.findParentExact(VideoViewHolderRootView::class.java)
+                                        viewGroup ?: return@Runnable
+                                        showOptionsMenuV1(viewGroup)
+                                        thisView.dispatchTouchEvent(obtain)
+                                    }
+                                    handler.postDelayed(longPressRunnable!!, 300L)
+                                    return@onBefore
+                                }
+                            }
+                        }
+
+                        else -> {
+                            if (longPressRunnable != null) {
+                                handler.removeCallbacks(longPressRunnable!!)
+                            }
+                        }
                     }
-                }
-                onAfter {
-                    if (method.name.contains("setAlpha")) return@onAfter
-                    if (method.name.contains("setVisibility")) return@onAfter
-                    val root = thisObject as ViewGroup
-                    //清爽模式
-                    root.isVisible = config.isNeat && !config.neatState
-                    //透明度
-                    root.traverse { v ->
-                        if (config.isTranslucent && v !is ViewGroup) v.alpha = 0.5f
-                    }
+
                 }
             }
     }
 
+    @Deprecated("Deprecated")
     @SuppressLint("ClickableViewAccessibility")
-    private fun attachView() {
-        val view = view!!
+    private fun attachView(view: ViewGroup) {
         val parentExact = view.findParentExact(FrameLayout::class.java)
         val maskView = MaskView(view.context)
         if (parentExact?.findViewsByType(MaskView::class.java)?.isEmpty() == true) {
             parentExact.addView(maskView)
-            val size = KAppUtils.screenSize()
             maskView.setOnTouchListener { _, event ->
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
                         //预留出长按快进
-                        if (event.x < size.width / 8 || event.x > size.width - size.width / 8) {
+                        if (event.x < screenSize.width / 8 || event.x > screenSize.width - screenSize.width / 8) {
                             return@setOnTouchListener false
                         }
 
@@ -143,16 +138,21 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                         //
                         longPressRunnable = Runnable {
                             val obtain = MotionEvent.obtain(
-                                event.downTime, event.eventTime, MotionEvent.ACTION_CANCEL, event.x, event.y, event.metaState
+                                event.downTime,
+                                event.eventTime + 100,
+                                MotionEvent.ACTION_CANCEL,
+                                event.x,
+                                event.y,
+                                event.metaState
                             )
-                            if (config.isLongPressMode) {
-                                if (event.y < size.height / 2) {
-                                    showOptionsMenu()
+                            if (config.longPressMode) {
+                                if (event.y < screenSize.height / 2) {
+                                    showOptionsMenuV1(view)
                                     view.dispatchTouchEvent(obtain)
                                 }
                             } else {
-                                if (event.y > size.height / 2) {
-                                    showOptionsMenu()
+                                if (event.y > screenSize.height / 2) {
+                                    showOptionsMenuV1(view)
                                     view.dispatchTouchEvent(obtain)
                                 }
                             }
@@ -174,227 +174,16 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
         }
     }
 
-    //弹出选项菜单
-    private fun showOptionsMenu() {
-        val view = view!!
-        val screenSize = KAppUtils.screenSize()
-
-        val dialog = this.dialog ?: KDialog()
-        val frameLayout = view.context.inflateModuleView<FrameLayout>(R.layout.dialog_freedom_layout)
-        dialog.setView(frameLayout)
-
-        val binding = DialogFreedomLayoutBinding.bind(frameLayout)
-        binding.freedomDialogContainer.background = view.context.getModuleDrawable(R.drawable.dialog_background)
-
-        //清爽模式
-        binding.neatItemText.text = if (!config.neatState) "清爽模式" else "普通模式"
-        binding.neatItemText.background = KtXposedHelpers.getDrawable(R.drawable.item_selector_background)
-        binding.neatItemText.setOnClickListener {
-            dialog.dismiss()
-            config.neatState = !config.neatState
-            toggleView(view)
-            Toast.makeText(it.context, if (config.neatState) "清爽模式" else "普通模式", Toast.LENGTH_SHORT).show()
-        }
-
-        //评论
-        binding.commentItemText.background = KtXposedHelpers.getDrawable(R.drawable.item_selector_background)
-        binding.commentItemText.setOnClickListener {
-            dialog.dismiss()
-            launch {
-                //如果是清爽模式的状态下
-                if (config.neatState) {
-                    //先取消控件隐藏
-                    config.neatState = false
-                    toggleView(view)
-
-                    //等待200毫秒, 记录坐标
-                    delay(200)
-                    val location = IntArray(2) { 0 }
-                    view.findViewsByType(FeedDoctorFrameLayout::class.java).forEach {
-                        val temp = IntArray(2) { 0 }
-                        it.getLocationOnScreen(temp)
-                        if (temp[1] > 0 && temp[1] < screenSize.height) {
-                            location[0] = temp[0] + it.right / 2
-                            location[1] = temp[1] + it.bottom / 2
-                        }
-                    }
-
-                    //模拟点击
-                    KAutomationUtils.simulateClickByView(view, location[0].toFloat(), location[1].toFloat())
-
-                    //恢复清爽模式
-                    config.neatState = true
-                    toggleView(view)
-                } else {
-                    //等待200毫秒, 记录坐标
-                    delay(200)
-                    val location = IntArray(2) { 0 }
-                    view.findViewsByType(FeedDoctorFrameLayout::class.java).forEach {
-                        val temp = IntArray(2) { 0 }
-                        it.getLocationOnScreen(temp)
-                        if (temp[1] > 0 && temp[1] < screenSize.height) {
-                            location[0] = temp[0] + it.right / 2
-                            location[1] = temp[1] + it.bottom / 2
-                        }
-                    }
-
-                    //模拟点击
-                    KAutomationUtils.simulateClickByView(view, location[0].toFloat(), location[1].toFloat())
-                }
-            }
-        }
-
-        //收藏
-        binding.favoriteItemText.background = KtXposedHelpers.getDrawable(R.drawable.item_selector_background)
-        binding.favoriteItemText.setOnClickListener {
-            dialog.dismiss()
-            launch {
-                //如果是清爽模式的状态下
-                if (config.neatState) {
-                    //先取消控件隐藏
-                    config.neatState = false
-                    toggleView(view)
-
-                    //等待200毫秒, 记录坐标
-                    delay(200)
-                    val location = IntArray(2) { 0 }
-                    view.findViewsByDesc(View::class.java, "收藏").forEach {
-                        val temp = IntArray(2) { 0 }
-                        it.getLocationOnScreen(temp)
-                        if (temp[1] > 0 && temp[1] < screenSize.height) {
-                            location[0] = temp[0] + it.right / 2
-                            location[1] = temp[1] + it.bottom / 2
-                        }
-                    }
-
-                    //模拟点击
-                    KAutomationUtils.simulateClickByView(view, location[0].toFloat(), location[1].toFloat())
-
-                    //恢复清爽模式
-                    config.neatState = true
-                    toggleView(view)
-                } else {
-                    //等待200毫秒, 记录坐标
-                    delay(200)
-                    val location = IntArray(2) { 0 }
-                    view.findViewsByDesc(View::class.java, "收藏").forEach {
-                        val temp = IntArray(2) { 0 }
-                        it.getLocationOnScreen(temp)
-                        if (temp[1] > 0 && temp[1] < screenSize.height) {
-                            location[0] = temp[0] + it.right / 2
-                            location[1] = temp[1] + it.bottom / 2
-                        }
-                    }
-
-                    //模拟点击
-                    KAutomationUtils.simulateClickByView(view, location[0].toFloat(), location[1].toFloat())
-                }
-            }
-        }
-
-        //分享
-        binding.shareItemText.background = KtXposedHelpers.getDrawable(R.drawable.item_selector_background)
-        binding.shareItemText.setOnClickListener {
-            dialog.dismiss()
-            launch {
-                //如果是清爽模式的状态下
-                if (config.neatState) {
-                    //先取消控件隐藏
-                    config.neatState = false
-                    toggleView(view)
-
-                    //等待200毫秒, 记录坐标
-                    delay(200)
-                    val location = IntArray(2) { 0 }
-                    view.findViewsByType(FrameLayoutHoldTouchListener::class.java).forEach {
-                        val temp = IntArray(2) { 0 }
-                        it.getLocationOnScreen(temp)
-                        if (temp[1] > 0 && temp[1] < screenSize.height) {
-                            location[0] = temp[0] + it.right / 2
-                            location[1] = temp[1] + it.bottom / 2
-                        }
-                    }
-
-                    //模拟点击
-                    KAutomationUtils.simulateClickByView(view, location[0].toFloat(), location[1].toFloat())
-
-                    //恢复清爽模式
-                    config.neatState = true
-                    toggleView(view)
-                } else {
-                    //等待200毫秒, 记录坐标
-                    delay(200)
-                    val location = IntArray(2) { 0 }
-                    view.findViewsByType(FrameLayoutHoldTouchListener::class.java).forEach {
-                        val temp = IntArray(2) { 0 }
-                        it.getLocationOnScreen(temp)
-                        if (temp[1] > 0 && temp[1] < screenSize.height) {
-                            location[0] = temp[0] + it.right / 2
-                            location[1] = temp[1] + it.bottom / 2
-                        }
-                    }
-
-                    //模拟点击
-                    KAutomationUtils.simulateClickByView(view, location[0].toFloat(), location[1].toFloat())
-                }
-            }
-        }
-
-        //模块设置
-        binding.settingItemText.background = KtXposedHelpers.getDrawable(R.drawable.item_selector_background)
-        binding.settingItemText.setOnClickListener {
-            dialog.dismiss()
-            val intent = Intent(it.context, FreedomSettingActivity::class.java)
-            val options = ActivityOptions.makeCustomAnimation(
-                topActivity,
-                android.R.anim.slide_in_left,
-                android.R.anim.slide_out_right
-            )
-            it.context.startActivity(intent, options.toBundle())
-        }
-
-        //取消
-        binding.choiceDialogCancel.background = view.context.getModuleDrawable(R.drawable.dialog_single_button_background)
-        binding.choiceDialogCancel.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        if (isComment(view)) return
-
-        dialog.show()
-    }
-
-    private fun toggleView(viewGroup: ViewGroup) {
-        viewGroup.traverse {
-            if (it is PenetrateTouchRelativeLayout) {
-                //透明度
-                if (config.isTranslucent) {
-                    it.parentView.alpha = 0.5f
-                }
-                //清爽模式
-                if (!config.isNeat) {
-                    it.isVisible = true
-                } else {
-                    it.isVisible = !config.neatState
-                }
-            }
-
-            if (it is InteractStickerParent) {
-                it.isVisible = config.isNeat && !config.neatState
-                it.traverse { v ->
-                    if (config.isTranslucent && v !is ViewGroup) v.alpha = 0.5f
-                }
-            }
-        }
-    }
-
+    @Deprecated("Deprecated")
     private fun isComment(viewGroup: ViewGroup): Boolean {
         return try {
-            val rootView = viewGroup.rootView as ViewGroup
-            rootView.traverse {
+            viewGroup.rootView.traverse {
                 if (it is TextView) {
                     if (it.text.contains("保存")) {
                         throw Exception("true")
+                    }
+                    if (it.text.contains("我也发一张")) {
+                        KViewUtils.hideAll(it.parent as ViewGroup)
                     }
                 }
             }
@@ -402,5 +191,174 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
         } catch (e: Exception) {
             true
         }
+    }
+
+    private fun showOptionsMenuV1(view: ViewGroup) {
+        showChoiceDialog(
+            context = view.context,
+            title = "Freedom+",
+            items = arrayOf(if (!config.neatModeState) "清爽模式" else "普通模式", "评论", "收藏", "分享", "模块设置"),
+            onChoice = { it, item, _ ->
+                when (item) {
+                    "清爽模式", "普通模式" -> {
+                        config.neatModeState = !config.neatModeState
+                        toggleView(view)
+                        showToast(it.context, if (config.neatModeState) "清爽模式" else "普通模式")
+                    }
+
+                    "评论" -> {
+                        onClickViewV1(view, targetView = FeedDoctorFrameLayout::class.java)
+                    }
+
+                    "收藏" -> {
+                        onClickViewV1(view, targetContent = Regex("收藏"))
+                    }
+
+                    "分享" -> {
+                        onClickViewV1(view, targetView = FrameLayoutHoldTouchListener::class.java)
+                    }
+
+                    "模块设置" -> {
+                        val intent = Intent(it.context, FreedomSettingActivity::class.java)
+                        val options = ActivityOptions.makeCustomAnimation(
+                            topActivity,
+                            android.R.anim.slide_in_left,
+                            android.R.anim.slide_out_right
+                        )
+                        it.context.startActivity(intent, options.toBundle())
+                    }
+                }
+            }
+        )
+    }
+
+    private fun toggleView(viewGroup: ViewGroup) {
+        viewGroup.traverse {
+            if (it is PenetrateTouchRelativeLayout) {
+                if (config.isTranslucent) it.alpha = 0.5f
+                it.visibility = if (config.isNeatMode && config.neatModeState) {
+                    View.GONE
+                } else {
+                    View.VISIBLE
+                }
+            }
+
+            if (it is InteractStickerParent) {
+                if (config.isTranslucent) it.alpha = 0.5f
+                it.visibility = if (config.isNeatMode && config.neatModeState) {
+                    View.GONE
+                } else {
+                    View.VISIBLE
+                }
+            }
+
+            if (it is TextView) {
+                if (it.text.contains("我也发一张")) {
+                    KViewUtils.hideAll(it.parent as ViewGroup)
+                }
+            }
+        }
+    }
+
+    @Deprecated("Deprecated")
+    private fun onClickView(
+        parent: ViewGroup,
+        targetView: Class<out View>? = null,
+        targetText: Regex = Regex(""),
+        targetHint: Regex = Regex(""),
+        targetContent: Regex = Regex(""),
+    ) {
+        launch {
+            //如果是清爽模式的状态下
+            if (config.neatModeState) {
+                //先取消控件隐藏
+                config.neatModeState = false
+                toggleView(parent)
+
+                //等待300毫秒, 记录坐标
+                delay(300)
+                val location = IntArray(2) { 0 }
+                parent.traverse {
+                    var needClick = false
+                    if (it is TextView) {
+                        needClick = "${it.text}".containsNotEmpty(targetText)
+                        needClick = needClick || "${it.hint}".containsNotEmpty(targetHint)
+                    }
+                    needClick = needClick || "${it.contentDescription}".containsNotEmpty(targetContent)
+                    needClick = needClick || (targetView?.isInstance(it) ?: false)
+                    if (!needClick) return@traverse
+
+                    val temp = IntArray(2) { 0 }
+                    it.getLocationOnScreen(temp)
+                    if (temp[1] > 0 && temp[1] < screenSize.height) {
+                        location[0] = temp[0] + it.right / 2
+                        location[1] = temp[1] + it.bottom / 2
+
+                        //模拟点击
+                        KAutomationUtils.simulateClickByView(it, location[0].toFloat(), location[1].toFloat())
+
+                        //恢复清爽模式
+                        config.neatModeState = true
+                        toggleView(parent)
+                    }
+                }
+            } else {
+                //等待300毫秒, 记录坐标
+                delay(300)
+                val location = IntArray(2) { 0 }
+                parent.traverse {
+                    var needClick = false
+                    if (it is TextView) {
+                        needClick = "${it.text}".containsNotEmpty(targetText)
+                        needClick = needClick || "${it.hint}".containsNotEmpty(targetHint)
+                    }
+                    needClick = needClick || "${it.contentDescription}".containsNotEmpty(targetContent)
+                    needClick = needClick || (targetView?.isInstance(it) ?: false)
+                    if (!needClick) return@traverse
+
+                    val temp = IntArray(2) { 0 }
+                    it.getLocationOnScreen(temp)
+                    if (temp[1] > 0 && temp[1] < screenSize.height) {
+                        location[0] = temp[0] + it.right / 2
+                        location[1] = temp[1] + it.bottom / 2
+                        //模拟点击
+                        KAutomationUtils.simulateClickByView(it, location[0].toFloat(), location[1].toFloat())
+                    }
+                }
+            }
+        }
+    }
+
+    private fun onClickViewV1(
+        parent: ViewGroup,
+        targetView: Class<out View>? = null,
+        targetText: Regex = Regex(""),
+        targetHint: Regex = Regex(""),
+        targetContent: Regex = Regex(""),
+    ) {
+        parent.traverse {
+            var needClick = false
+            if (it is TextView) {
+                needClick = "${it.text}".containsNotEmpty(targetText)
+                needClick = needClick || "${it.hint}".containsNotEmpty(targetHint)
+            }
+            needClick = needClick || "${it.contentDescription}".containsNotEmpty(targetContent)
+            needClick = needClick || (targetView?.isInstance(it) ?: false)
+            if (!needClick) return@traverse
+
+            val temp = IntArray(2) { 0 }
+            it.getLocationOnScreen(temp)
+            if (temp[1] > 0 && temp[1] < screenSize.height) {
+                val location = IntArray(2) { 0 }
+                location[0] = temp[0] + it.right / 2
+                location[1] = temp[1] + it.bottom / 2
+                KAutomationUtils.simulateClickByView(it, location[0].toFloat(), location[1].toFloat())
+            }
+        }
+    }
+
+    private fun CharSequence.containsNotEmpty(regex: Regex): Boolean {
+        if (regex.pattern.isEmpty()) return false
+        return contains(regex)
     }
 }

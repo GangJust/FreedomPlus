@@ -7,9 +7,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.freegang.config.Config
+import com.freegang.config.ConfigV1
 import com.freegang.config.Version
 import com.freegang.config.VersionConfig
+import com.freegang.ktutils.app.appVersionCode
+import com.freegang.ktutils.app.appVersionName
 import com.freegang.ktutils.app.readAssetsAsText
 import com.freegang.ktutils.io.child
 import com.freegang.ktutils.io.storageRootFile
@@ -21,12 +23,13 @@ import java.io.File
 import java.io.IOException
 
 class SettingVM(application: Application) : AndroidViewModel(application) {
+    val app: Application get() = getApplication()
 
     private var _versionConfig = MutableLiveData<VersionConfig>()
     val versionConfig: LiveData<VersionConfig> = _versionConfig
 
     // module config
-    private lateinit var config: Config
+    private lateinit var config: ConfigV1
 
     private var _isOwnerDir = MutableLiveData(false)
     val isOwnerDir: LiveData<Boolean> = _isOwnerDir
@@ -43,8 +46,11 @@ class SettingVM(application: Application) : AndroidViewModel(application) {
     private var _isTranslucent = MutableLiveData(false)
     val isTranslucent: LiveData<Boolean> = _isTranslucent
 
-    private var _isNeat = MutableLiveData(false)
-    val isNeat: LiveData<Boolean> = _isNeat
+    private var _isDisableDoubleLike = MutableLiveData(false)
+    val isDisableDoubleLike: LiveData<Boolean> = _isDisableDoubleLike
+
+    private var _isNeatMode = MutableLiveData(false)
+    val isNeatMode: LiveData<Boolean> = _isNeatMode
 
     private var _isLongPressMode = MutableLiveData(false)
     val isLongPressMode: LiveData<Boolean> = _isLongPressMode
@@ -94,17 +100,18 @@ class SettingVM(application: Application) : AndroidViewModel(application) {
     // 读取模块配置
     fun loadConfig() {
         viewModelScope.launch {
-            config = withContext(Dispatchers.IO) { Config.read(getApplication()) }
+            config = withContext(Dispatchers.IO) { ConfigV1.get() }
             changeIsOwnerDir(config.isOwnerDir)
             changeIsDownload(config.isDownload)
             changeIsEmoji(config.isEmoji)
             changeIsVibrate(config.isVibrate)
             changeIsTranslucent(config.isTranslucent)
-            changeIsNeat(config.isNeat)
-            changeIsLongPressMode(config.isLongPressMode)
+            changeIsNeatMode(config.isNeatMode)
+            changeIsDisableDoubleLike(config.isDisableDoubleLike)
+            changeLongPressMode(config.longPressMode)
             changeIsNotification(config.isNotification)
             changeIsWebDav(config.isWebDav)
-            setWebDavConfig(config.webDavHost, config.webDavUsername, config.webDavPassword)
+            setWebDavConfig(config.webDavConfig)
             changeIsHideTab(config.isHideTab)
             setHideTabKeywords(config.hideTabKeywords)
         }
@@ -140,17 +147,22 @@ class SettingVM(application: Application) : AndroidViewModel(application) {
         config.isTranslucent = value
     }
 
-    // 清爽模式
-    fun changeIsNeat(value: Boolean) {
-        _isNeat.value = value
-        config.isNeat = value
+    // 是否禁用双击点赞
+    fun changeIsDisableDoubleLike(value: Boolean) {
+        _isDisableDoubleLike.value = value
+        config.isDisableDoubleLike = value
     }
 
+    // 清爽模式
+    fun changeIsNeatMode(value: Boolean) {
+        _isNeatMode.value = value
+        config.isNeatMode = value
+    }
 
     //清爽模式弹窗响应模式
-    fun changeIsLongPressMode(value: Boolean) {
+    fun changeLongPressMode(value: Boolean) {
         _isLongPressMode.value = value
-        config.isLongPressMode = value
+        config.longPressMode = value
     }
 
     // 是否通知栏下载
@@ -196,14 +208,11 @@ class SettingVM(application: Application) : AndroidViewModel(application) {
     }
 
     // 保存WebDav配置
-    fun setWebDavConfig(host: String, username: String, password: String) {
-        _webDavHost.value = host
-        _webDavUsername.value = username
-        _webDavPassword.value = password
-
-        config.webDavHost = host
-        config.webDavUsername = username
-        config.webDavPassword = password
+    fun setWebDavConfig(webDavConfig: WebDav.Config) {
+        _webDavHost.value = webDavConfig.host
+        _webDavUsername.value = webDavConfig.username
+        _webDavPassword.value = webDavConfig.password
+        config.webDavConfig = webDavConfig
     }
 
     // 隐藏顶部tab
@@ -212,36 +221,22 @@ class SettingVM(application: Application) : AndroidViewModel(application) {
         config.isHideTab = value
     }
 
-    // 保存顶部tab包含的关键字, 逗号隔开
+    // 保存顶部tab隐藏关键字, 逗号隔开
     fun setHideTabKeywords(hideTabKeywords: String) {
         _hideTabKeywords.value = hideTabKeywords
         config.hideTabKeywords = hideTabKeywords
     }
 
-    // 保存模块配置
-    fun saveModuleConfig(asset: AssetManager) {
-        config.isOwnerDir = isOwnerDir.value ?: false
-        config.isDownload = isDownload.value ?: false
-        config.isEmoji = isEmoji.value ?: false
-        config.isVibrate = isVibrate.value ?: false
-        config.isTranslucent = isTranslucent.value ?: false
-        config.isNeat = isNeat.value ?: false
-        config.isLongPressMode = isLongPressMode.value ?: false
-        config.isNotification = isNotification.value ?: false
-        config.isWebDav = isWebDav.value ?: false
-        config.webDavHost = webDavHost.value ?: ""
-        config.webDavUsername = webDavUsername.value ?: ""
-        config.webDavPassword = webDavPassword.value ?: ""
-        config.isHideTab = isHideTab.value ?: false
-        config.hideTabKeywords = hideTabKeywords.value ?: ""
-
-
+    // 保存版本信息
+    fun setVersionConfig(asset: AssetManager) {
         val version = asset.readAssetsAsText("version").split("-")
-        config.isSupportHint = version[1].toLong() != config.versionCode
-        config.versionName = version[0]
-        config.versionCode = version[1].toLong()
-
-        config.save(getApplication())
+        config.isSupportHint = version[1].toLong() != config.versionConfig.versionCode
+        config.versionConfig = ConfigV1.Version(
+            version[0],
+            version[1].toLong(),
+            app.appVersionName,
+            app.appVersionCode
+        )
     }
 
     // 图片迁移

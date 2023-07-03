@@ -16,6 +16,7 @@ import androidx.compose.material.Text
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
+import com.freegang.config.ConfigV1
 import com.freegang.fplus.FreedomTheme
 import com.freegang.fplus.Themes
 import com.freegang.ui.component.FMessageDialog
@@ -81,6 +82,7 @@ class MainActivity : ComponentActivity() {
             if (!permissions.all { checkPermission(it) }) return
         }
 
+        ConfigV1.initialize(application)
         startActivity(Intent(application, DoHomeActivity::class.java))
         finish()
     }

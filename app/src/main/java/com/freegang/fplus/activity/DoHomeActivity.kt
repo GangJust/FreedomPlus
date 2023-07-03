@@ -30,6 +30,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
@@ -55,10 +56,10 @@ import com.freegang.fplus.R
 import com.freegang.fplus.Themes
 import com.freegang.fplus.resource.StringRes
 import com.freegang.fplus.viewmodel.HomeVM
-import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.appVersionName
 import com.freegang.ui.component.FCard
 import com.freegang.ui.component.FMessageDialog
+import com.freegang.xpler.HookPackages
 import com.freegang.xpler.HookStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -71,7 +72,6 @@ class DoHomeActivity : ComponentActivity() {
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun TopBarView() {
-
         var rotate by remember { mutableStateOf(0f) }
         val rotateAnimate by animateFloatAsState(
             targetValue = rotate,
@@ -161,7 +161,7 @@ class DoHomeActivity : ComponentActivity() {
 
     @Composable
     fun BodyView() {
-        //旧数据迁移
+        //旧数据迁移弹窗
         var showNeedMigrateOldDataDialog by remember { mutableStateOf(model.freedomData.exists()) }
         if (showNeedMigrateOldDataDialog) {
             var showMigrateToContent by remember { mutableStateOf("存在[Freedom]下载数据, 正在迁移至[Freedom+]下载目录!") }
@@ -176,10 +176,12 @@ class DoHomeActivity : ComponentActivity() {
                         showNeedMigrateOldDataDialog = false
                     }
                 },
-                content = {
-                    Text(text = showMigrateToContent)
-                },
-            )
+            ) {
+                Text(
+                    text = showMigrateToContent,
+                    style = MaterialTheme.typography.body1,
+                )
+            }
 
             //数据迁移
             LaunchedEffect(key1 = "migrateData") {
@@ -231,20 +233,13 @@ class DoHomeActivity : ComponentActivity() {
                                 Text(
                                     modifier = Modifier.fillMaxWidth(),
                                     text = version.body,
+                                    style = MaterialTheme.typography.body1,
                                 )
                             }
                         },
                     )
                 }
             }
-        }
-
-        //获取模块状态
-        var moduleHint = StringRes.moduleHintFailed
-        if (HookStatus.isEnabled) {
-            moduleHint = StringRes.moduleHintSucceeded
-        } else if (HookStatus.isExpModuleActive(this)) {
-            moduleHint = StringRes.moduleHintSucceeded
         }
 
         //view
@@ -262,11 +257,47 @@ class DoHomeActivity : ComponentActivity() {
                             .fillMaxWidth()
                             .padding(vertical = 24.dp),
                         content = {
-                            Text(
+                            Column(
                                 modifier = Modifier.align(Alignment.Center),
-                                text = moduleHint,
-                                style = Themes.nowTypography.body1,
-                            )
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                val lspatchActive = HookStatus.isLspatchActive(application, HookPackages.douYinPackageName)
+                                if (lspatchActive.isNotEmpty()) {
+                                    Text(
+                                        text = "Lspatch加载成功!",
+                                        style = Themes.nowTypography.body1,
+                                    )
+                                    Spacer(modifier = Modifier.padding(vertical = 2.dp))
+                                    Text(
+                                        text = "Integrated ${lspatchActive[0]} - ${lspatchActive[1]}",
+                                        style = Themes.nowTypography.body2,
+                                    )
+                                } else if (HookStatus.isExpModuleActive(this@DoHomeActivity)) {
+                                    Text(
+                                        text = "太极加载成功!",
+                                        style = Themes.nowTypography.body1,
+                                    )
+                                    Spacer(modifier = Modifier.padding(vertical = 2.dp))
+                                    Text(
+                                        text = "已放弃太极适配, 部分功能在使用时可能出现异常",
+                                        style = Themes.nowTypography.body2,
+                                    )
+                                } else if (HookStatus.isEnabled) {
+                                    Text(
+                                        text = if (HookStatus.moduleState == "Unknown") {
+                                            "未知框架, 加载成功!"
+                                        } else {
+                                            "${HookStatus.moduleState}加载成功!"
+                                        },
+                                        style = Themes.nowTypography.body1,
+                                    )
+                                } else {
+                                    Text(
+                                        text = StringRes.moduleHintFailed,
+                                        style = Themes.nowTypography.body1,
+                                    )
+                                }
+                            }
                         },
                     )
                 }
@@ -279,7 +310,9 @@ class DoHomeActivity : ComponentActivity() {
                     .clickable(
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() },
-                        onClick = { toSetting() }
+                        onClick = {
+
+                        }
                     ),
             ) {
                 Row(
@@ -297,7 +330,7 @@ class DoHomeActivity : ComponentActivity() {
                         Spacer(modifier = Modifier.padding(horizontal = 8.dp))
                         Column {
                             Text(
-                                text = "模块设置已迁移（点击跳转原设置）",
+                                text = "模块设置已迁移",
                                 style = Themes.nowTypography.body1,
                             )
                             Text(
@@ -416,14 +449,14 @@ class DoHomeActivity : ComponentActivity() {
                 )
             }
 
-            //交流群
+            //tg交流群
             /*FCard(
                 modifier = Modifier
                     .padding(vertical = 4.dp)
                     .clickable(
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() },
-                        onClick = { joinQQGroup() }
+                        onClick = { joinTgGroup() }
                     ),
             ) {
                 Row(
@@ -433,19 +466,19 @@ class DoHomeActivity : ComponentActivity() {
                     verticalAlignment = Alignment.CenterVertically,
                     content = {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_qq_group),
-                            contentDescription = "QQ交流群",
+                            painter = painterResource(id = R.drawable.ic_telegram),
+                            contentDescription = "tg交流群",
                             tint = Themes.nowColors.icon,
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.padding(horizontal = 8.dp))
                         Column {
                             Text(
-                                text = "QQ交流群",
+                                text = "tg交流群",
                                 style = Themes.nowTypography.body1,
                             )
                             Text(
-                                text = "一个随时都可能解散的群聊，加群请合理发言~",
+                                text = "闲聊吹水，Bug反馈~",
                                 style = Themes.nowTypography.overline,
                             )
                         }
@@ -482,7 +515,7 @@ class DoHomeActivity : ComponentActivity() {
                                 style = Themes.nowTypography.body1,
                             )
                             Text(
-                                text = "模块免费且开源，打赏与否凭君心情~",
+                                text = "模块免费且开源，不强制打赏~",
                                 style = Themes.nowTypography.overline,
                             )
                         }
@@ -520,15 +553,6 @@ class DoHomeActivity : ComponentActivity() {
         model.checkVersion()
     }
 
-    private fun toSetting() {
-        startActivity(
-            Intent(
-                applicationContext,
-                HomeActivity::class.java,
-            )
-        )
-    }
-
     private fun toBrowse() {
         startActivity(
             Intent(
@@ -553,32 +577,32 @@ class DoHomeActivity : ComponentActivity() {
         }
     }
 
-    private fun joinQQGroup(key: String = "xQKRAH6dNm-F6NDxyn87sX_kvnqEBWxs"): Boolean {
-        val intent = Intent()
-        intent.data =
-            Uri.parse("mqqopensdkapi://bizAgent/qm/qr?url=http%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Ffrom%3Dapp%26p%3Dandroid%26jump_from%3Dwebapi%26k%3D$key")
-        // 此Flag可根据具体产品需要自定义，如设置，则在加群界面按返回，返回手Q主界面，不设置，按返回会返回到呼起产品界面    //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        return try {
-            startActivity(intent)
-            true
+    private fun joinTgGroup() {
+        val uri = Uri.parse("tg群链接")
+        try {
+            val telegramIntent = Intent(Intent.ACTION_VIEW, uri)
+            telegramIntent.setPackage("org.telegram.messenger")
+            startActivity(telegramIntent)
+            return
         } catch (e: Exception) {
-            // 未安装手Q或安装的版本不支持
-            showToast("未安装手Q或安装的版本不支持")
-            false
+            //e.printStackTrace()
         }
+        showToast("未安装telegram")
     }
 
     private fun rewardByAlipay() {
-        if (!KAppUtils.isAppInstalled(this, "com.eg.android.AlipayGphone")) {
-            showToast("谢谢，你没有安装支付宝客户端")
-            return
-        }
-        startActivity(
-            Intent(
-                Intent.ACTION_VIEW,
-                Uri.parse("alipays://platformapi/startapp?appId=09999988&actionType=toAccount&goBack=NO&amount=3.00&userId=2088022940366251&memo=呐，拿去吃辣条!")
+        try {
+            startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("alipays://platformapi/startapp?appId=09999988&actionType=toAccount&goBack=NO&amount=3.00&userId=2088022940366251&memo=呐，拿去吃辣条!")
+                )
             )
-        )
+            return
+        } catch (e: Exception) {
+            //e.printStackTrace()
+        }
+        showToast("谢谢，你没有安装支付宝客户端")
     }
 
     private fun showToast(text: String) {

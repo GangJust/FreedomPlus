@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -31,7 +33,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.DateRange
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -41,11 +42,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.freegang.base.BaseActivity
-import com.freegang.config.Config
 import com.freegang.douyin.viewmodel.SettingVM
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.appVersionName
@@ -53,15 +55,25 @@ import com.freegang.ui.asDp
 import com.freegang.ui.component.FCard
 import com.freegang.ui.component.FCardBorder
 import com.freegang.ui.component.FMessageDialog
+import com.freegang.webdav.WebDav
+import com.freegang.xpler.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.random.Random
 
 class FreedomSettingActivity : BaseActivity() {
     private val model by viewModels<SettingVM>()
 
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     private fun TopBarView() {
+        var rotate by remember { mutableStateOf(0f) }
+        val rotateAnimate by animateFloatAsState(
+            targetValue = rotate,
+            animationSpec = tween(durationMillis = Random.nextInt(500, 1500)),
+        )
+
         //更新日志弹窗
         var showUpdateLogDialog by remember { mutableStateOf(false) }
         var updateLog by remember { mutableStateOf("") }
@@ -123,10 +135,11 @@ class FreedomSettingActivity : BaseActivity() {
                 Icon(
                     modifier = Modifier
                         .size(20.dp)
-                        .clickable(
+                        .rotate(rotateAnimate)
+                        .combinedClickable(
                             indication = null,
                             interactionSource = remember { MutableInteractionSource() },
-                            onClick = {
+                            onLongClick = {
                                 lifecycleScope.launch {
                                     updateLog = withContext(Dispatchers.IO) {
                                         val inputStream = mResources.moduleAssets.open("update.log")
@@ -138,8 +151,11 @@ class FreedomSettingActivity : BaseActivity() {
                                     showUpdateLogDialog = updateLog.isNotBlank()
                                 }
                             },
+                            onClick = {
+                                rotate = if (rotate == 0f) 360f else 0f
+                            },
                         ),
-                    imageVector = Icons.Rounded.DateRange,
+                    painter = painterResource(id = R.drawable.ic_motion),
                     contentDescription = "更新日志"
                 )
                 /*Spacer(modifier = Modifier.padding(horizontal = 12.dp))
@@ -211,8 +227,7 @@ class FreedomSettingActivity : BaseActivity() {
                 },
                 onConfirm = {
                     showRestartAppDialog = false
-                    Config.read(application)
-                    model.saveModuleConfig(mResources.moduleAssets)
+                    model.setVersionConfig(mResources.moduleAssets)
                     KAppUtils.restartApplication(application)
                 },
                 content = {
@@ -232,37 +247,38 @@ class FreedomSettingActivity : BaseActivity() {
                 title = "请选择响应模式",
                 confirm = "更改",
                 onlyConfirm = true,
-                onConfirm = { showLongPressModeDialog = false }
-            ) {
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(
-                            selected = isLongPressMode,
-                            onClick = {
-                                isLongPressMode = true
-                                model.changeIsLongPressMode(isLongPressMode)
-                            },
-                        )
-                        Text(
-                            text = "长按视频上半",
-                            style = MaterialTheme.typography.body1,
-                        )
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(
-                            selected = !isLongPressMode,
-                            onClick = {
-                                isLongPressMode = false
-                                model.changeIsLongPressMode(isLongPressMode)
-                            },
-                        )
-                        Text(
-                            text = "长按视频下半",
-                            style = MaterialTheme.typography.body1,
-                        )
+                onConfirm = { showLongPressModeDialog = false },
+                content = {
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(
+                                selected = isLongPressMode,
+                                onClick = {
+                                    isLongPressMode = true
+                                    model.changeLongPressMode(isLongPressMode)
+                                },
+                            )
+                            Text(
+                                text = "长按视频上半",
+                                style = MaterialTheme.typography.body1,
+                            )
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(
+                                selected = !isLongPressMode,
+                                onClick = {
+                                    isLongPressMode = false
+                                    model.changeLongPressMode(isLongPressMode)
+                                },
+                            )
+                            Text(
+                                text = "长按视频下半",
+                                style = MaterialTheme.typography.body1,
+                            )
+                        }
                     }
                 }
-            }
+            )
         }
 
         //WebDav配置编辑
@@ -282,7 +298,7 @@ class FreedomSettingActivity : BaseActivity() {
                 },
                 onConfirm = {
                     isWaiting = true
-                    model.setWebDavConfig(host, username, password)
+                    model.setWebDavConfig(WebDav.Config(host, username, password))
                     model.initWebDav { test ->
                         isWaiting = false
                         if (test) {
@@ -307,7 +323,7 @@ class FreedomSettingActivity : BaseActivity() {
                                     value = host,
                                     maxLines = 1,
                                     singleLine = true,
-                                    textStyle = MaterialTheme.typography.body2,
+                                    textStyle = MaterialTheme.typography.body1,
                                     decorationBox = { innerTextField ->
                                         if (host.isEmpty()) Text(text = "http://服务器地址:端口")
                                         innerTextField.invoke() //必须调用这行哦
@@ -329,7 +345,7 @@ class FreedomSettingActivity : BaseActivity() {
                                     value = username,
                                     maxLines = 1,
                                     singleLine = true,
-                                    textStyle = MaterialTheme.typography.body2,
+                                    textStyle = MaterialTheme.typography.body1,
                                     decorationBox = { innerTextField ->
                                         if (username.isEmpty()) Text(text = "用户名")
                                         innerTextField.invoke() //必须调用这行哦
@@ -350,7 +366,7 @@ class FreedomSettingActivity : BaseActivity() {
                                     value = password,
                                     maxLines = 1,
                                     singleLine = true,
-                                    textStyle = MaterialTheme.typography.body2,
+                                    textStyle = MaterialTheme.typography.body1,
                                     decorationBox = { innerTextField ->
                                         if (password.isEmpty()) Text(text = "密码")
                                         innerTextField.invoke() //必须调用这行哦
@@ -390,7 +406,7 @@ class FreedomSettingActivity : BaseActivity() {
                                 value = hideTabKeywords,
                                 maxLines = 1,
                                 singleLine = true,
-                                textStyle = MaterialTheme.typography.body2,
+                                textStyle = MaterialTheme.typography.body1,
                                 onValueChange = {
                                     hideTabKeywords = it
                                 },
@@ -472,15 +488,22 @@ class FreedomSettingActivity : BaseActivity() {
                                 }
                             )
                             SwitchItem(
+                                text = "禁用双击点赞",
+                                checked = model.isDisableDoubleLike.observeAsState(false),
+                                onCheckedChange = {
+                                    model.changeIsDisableDoubleLike(it)
+                                }
+                            )
+                            SwitchItem(
                                 text = "清爽模式",
                                 subtext = "长按视频进入清爽模式, 点击更改响应模式",
-                                checked = model.isNeat.observeAsState(false),
+                                checked = model.isNeatMode.observeAsState(false),
                                 onClick = {
                                     showLongPressModeDialog = true
                                 },
                                 onCheckedChange = {
                                     showRestartAppDialog = true
-                                    model.changeIsNeat(it)
+                                    model.changeIsNeatMode(it)
                                 }
                             )
                             SwitchItem(
@@ -638,24 +661,20 @@ class FreedomSettingActivity : BaseActivity() {
 
     override fun onPause() {
         super.onPause()
-        model.saveModuleConfig(mResources.moduleAssets)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Config.read(application)
+        model.setVersionConfig(mResources.moduleAssets)
     }
 
     private fun rewardByAlipay() {
-        if (!KAppUtils.isAppInstalled(this, "com.eg.android.AlipayGphone")) {
-            Toast.makeText(applicationContext, "谢谢，你没有安装支付宝客户端", Toast.LENGTH_SHORT).show()
-            return
-        }
-        startActivity(
-            Intent(
-                Intent.ACTION_VIEW,
-                Uri.parse("alipays://platformapi/startapp?appId=09999988&actionType=toAccount&goBack=NO&amount=3.00&userId=2088022940366251&memo=呐，拿去吃辣条!")
+        try {
+            startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("alipays://platformapi/startapp?appId=09999988&actionType=toAccount&goBack=NO&amount=3.00&userId=2088022940366251&memo=呐，拿去吃辣条!")
+                )
             )
-        )
+        } catch (e: Exception) {
+            //e.printStackTrace()
+            Toast.makeText(applicationContext, "谢谢，你未安装支付宝客户端", Toast.LENGTH_SHORT).show()
+        }
     }
 }

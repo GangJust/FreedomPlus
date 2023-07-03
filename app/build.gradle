@@ -11,12 +11,16 @@ android {
         applicationId "com.freegang.fplus"
         minSdk 24
         targetSdk 33
-        versionCode 32
-        versionName "1.1.3"
+        versionCode 34
+        versionName "1.1.4"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary true
+        }
+
+        ndk {
+            abiFilters 'armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
         }
     }
 
@@ -78,4 +82,7 @@ dependencies {
     implementation "com.google.accompanist:accompanist-insets-ui:0.28.0"
     implementation "com.google.accompanist:accompanist-systemuicontroller:0.28.0"
     implementation "androidx.compose.runtime:runtime-livedata:1.3.3"
+
+    // mmkv
+    implementation 'com.tencent:mmkv:1.3.0'
 }

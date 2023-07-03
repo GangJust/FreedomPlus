@@ -7,7 +7,7 @@ import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
 import com.freegang.base.BaseHook
-import com.freegang.config.Config
+import com.freegang.config.ConfigV1
 import com.freegang.douyin.logic.SaveCommentLogic
 import com.freegang.ktutils.view.KViewUtils
 import com.freegang.ktutils.view.traverse
@@ -24,7 +24,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlinx.coroutines.delay
 
 class HCommonPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Any>(lpparam) {
-    private val config get() = Config.get()
+    private val config get() = ConfigV1.get()
 
     override fun setTargetClass(): Class<*> = DouYinMain.commonPageClazz ?: NoneHook::class.java
 
@@ -65,10 +65,6 @@ class HCommonPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<A
             binding.saveBtn.setOnClickListener {
                 val aweme = methods.first().call<Aweme>(thisObject) //重新获取
                 SaveCommentLogic(this@HCommonPageFragment, it.context, aweme)
-            }
-            binding.saveBtn.setOnLongClickListener {
-                //showToast(it.context, "类型: ${aweme.awemeType}")
-                true
             }
             viewGroup.addView(appbar)
         }

@@ -2,7 +2,8 @@ package com.freegang.douyin.logic
 
 import android.content.Context
 import com.freegang.base.BaseHook
-import com.freegang.config.Config
+import com.freegang.config.ConfigV1
+import com.freegang.ktutils.app.KMediaUtils
 import com.freegang.ktutils.io.child
 import com.freegang.ktutils.io.need
 import com.freegang.ktutils.net.KHttpUtils
@@ -18,7 +19,7 @@ class SaveEmojiLogic(
     private val urlList: List<String>,
 ) {
     companion object {
-        private val config: Config get() = Config.get()
+        private val config get() = ConfigV1.get()
     }
 
     init {
@@ -28,7 +29,7 @@ class SaveEmojiLogic(
     private fun onSaveEmoji(urlList: List<String>) {
         hook.launch {
             //默认保存路径: `/外置存储器/DCIM/Freedom/emoji`
-            val parentPath = Config.getFreedomDir(context).child("emoji").need()
+            val parentPath = ConfigV1.getFreedomDir(context).child("emoji").need()
 
             //构建保存文件名
             val file = File(parentPath, "${System.currentTimeMillis() / 1000}.gif")
@@ -36,6 +37,7 @@ class SaveEmojiLogic(
                 KHttpUtils.download(urlList.first(), FileOutputStream(file)) { real, total, isInterrupt ->
                     if (real >= total) {
                         hook.showToast(context, "保存成功!")
+                        KMediaUtils.notifyGallery(context, file.absolutePath)
                         if (config.isVibrate) hook.vibrate(context, 5L)
                     }
                     if (isInterrupt) {
