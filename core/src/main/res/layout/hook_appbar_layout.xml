@@ -4,7 +4,6 @@
     android:layout_height="wrap_content"
     android:background="#55000000">
 
-
     <TextView
         android:id="@+id/backBtn"
         android:layout_width="wrap_content"
@@ -18,10 +17,16 @@
         android:id="@+id/saveBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
+        android:layout_toLeftOf="@id/rightSpace"
         android:paddingHorizontal="24dp"
         android:paddingVertical="16dp"
         android:text="保存"
         android:textColor="#ffffffff" />
+
+    <FrameLayout
+        android:id="@+id/rightSpace"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true" />
 
 </RelativeLayout>

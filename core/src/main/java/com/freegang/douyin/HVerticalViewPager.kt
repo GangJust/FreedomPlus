@@ -1,59 +1,83 @@
 package com.freegang.douyin
 
-import android.annotation.SuppressLint
 import android.app.ActivityOptions
 import android.content.Intent
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.TextView
+import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
 import com.freegang.douyin.activity.FreedomSettingActivity
 import com.freegang.ktutils.app.topActivity
 import com.freegang.ktutils.display.KDisplayUtils
 import com.freegang.ktutils.other.KAutomationUtils
+import com.freegang.ktutils.reflect.findMethodAndInvoke
 import com.freegang.ktutils.view.KFastClickUtils
-import com.freegang.ktutils.view.KViewUtils
-import com.freegang.ktutils.view.findParentExact
-import com.freegang.ktutils.view.findViewsByType
 import com.freegang.ktutils.view.traverse
-import com.freegang.view.MaskView
 import com.freegang.xpler.core.argsOrEmpty
+import com.freegang.xpler.core.findMethodsByReturnType
 import com.freegang.xpler.core.hookClass
 import com.freegang.xpler.core.thisView
+import com.freegang.xpler.core.thisViewGroup
 import com.ss.android.ugc.aweme.ad.feed.VideoViewHolderRootView
 import com.ss.android.ugc.aweme.common.widget.VerticalViewPager
+import com.ss.android.ugc.aweme.familiar.feed.pinch.ui.PinchPlayPauseView
+import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.feed.quick.presenter.FeedDoctorFrameLayout
 import com.ss.android.ugc.aweme.feed.share.long_click.FrameLayoutHoldTouchListener
-import com.ss.android.ugc.aweme.feed.ui.LongPressLayout
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
 import com.ss.android.ugc.aweme.sticker.infoSticker.interact.consume.view.InteractStickerParent
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlinx.coroutines.delay
+import kotlin.math.abs
 
 class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<VerticalViewPager>(lpparam) {
     private val config get() = ConfigV1.get()
     private val screenSize get() = KDisplayUtils.screenSize()
+    private var isLongPressFast = false
+    private var longPressFastRunnable: Runnable? = null
+
+    private var downX: Float = 0f
+    private var downY: Float = 0f
     private var longPressRunnable: Runnable? = null
+
+    private var isAttentionalMode = false
+
+    private var currentAweme: Aweme? = null
 
     override fun onInit() {
         lpparam.hookClass(targetClazz)
-            .methodAll {
+            .method("getCurrentItem") {
                 onAfter {
-                    val first = argsOrEmpty.firstOrNull() ?: return@onAfter
-                    if (config.isNeatMode) {
-                        if (first is VerticalViewPager) {
-                            toggleView(first)
+                    runCatching {
+                        val adapter = thisObject.findMethodAndInvoke("getAdapter")
+                        val methods = adapter?.findMethodsByReturnType(Aweme::class.java) ?: emptyList()
+                        val filter = methods.filter { it.parameterTypes.size == 1 && it.parameterTypes[0] == Int::class.java }
+                        filter.run {
+                            if (isEmpty()) return@run
+                            val tmpAweme = first().invoke(adapter, result) as Aweme?
+                            if (currentAweme == tmpAweme) return@run
+                            currentAweme = tmpAweme
                         }
                     }
                 }
             }
+            .methodAll {
+                onAfter {
+                    val first = argsOrEmpty.firstOrNull() ?: return@onAfter
+                    if (first !is VerticalViewPager) return@onAfter
+                    toggleView(first)
+                }
+            }
 
-        lpparam.hookClass(LongPressLayout::class.java)
-            .method("onTouchEvent", MotionEvent::class.java) {
+        lpparam.hookClass(VideoViewHolderRootView::class.java)
+            .method("dispatchTouchEvent", MotionEvent::class.java) {
                 onBefore {
+                    if (!config.isNeatMode) return@onBefore
+                    if (currentAweme?.isLive == true) return@onBefore
+
                     val event = args[0] as MotionEvent
                     val obtain = MotionEvent.obtain(
                         event.downTime,
@@ -64,8 +88,16 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                         event.metaState
                     )
 
+                    //避免快速下发 ACTION_DOWN
+                    if (KFastClickUtils.isFastDoubleClick(50L) && event.action == MotionEvent.ACTION_DOWN) {
+                        return@onBefore
+                    }
+
                     when (event.action) {
                         MotionEvent.ACTION_DOWN -> {
+                            downX = event.x
+                            downY = event.y
+
                             //防止双击
                             if (KFastClickUtils.isFastDoubleClick(500L) && config.isDisableDoubleLike) {
                                 thisView.dispatchTouchEvent(obtain)
@@ -75,6 +107,8 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
 
                             //预留出长按快进
                             if (event.x < screenSize.width / 8 || event.x > screenSize.width - screenSize.width / 8) {
+                                longPressFastRunnable = Runnable { isLongPressFast = true }
+                                handler.postDelayed(longPressFastRunnable!!, 200L)
                                 return@onBefore
                             }
 
@@ -82,9 +116,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                             if (config.longPressMode) {
                                 if (event.y < screenSize.height / 2) {
                                     longPressRunnable = Runnable {
-                                        val viewGroup = thisView.findParentExact(VideoViewHolderRootView::class.java)
-                                        viewGroup ?: return@Runnable
-                                        showOptionsMenuV1(viewGroup)
+                                        showOptionsMenuV1(thisViewGroup)
                                         thisView.dispatchTouchEvent(obtain)
                                     }
                                     handler.postDelayed(longPressRunnable!!, 300L)
@@ -93,9 +125,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                             } else {
                                 if (event.y > screenSize.height / 2) {
                                     longPressRunnable = Runnable {
-                                        val viewGroup = thisView.findParentExact(VideoViewHolderRootView::class.java)
-                                        viewGroup ?: return@Runnable
-                                        showOptionsMenuV1(viewGroup)
+                                        showOptionsMenuV1(thisViewGroup)
                                         thisView.dispatchTouchEvent(obtain)
                                     }
                                     handler.postDelayed(longPressRunnable!!, 300L)
@@ -104,93 +134,34 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                             }
                         }
 
+                        MotionEvent.ACTION_MOVE -> {
+                            if (abs(downX - event.x) < 10 && abs(downY - event.y) < 10) return@onBefore //消除误差
+                            longPressRunnable?.runCatching { handler.removeCallbacks(this) }
+                        }
+
+                        MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                            isLongPressFast = false
+                            longPressFastRunnable?.runCatching { handler.removeCallbacks(this) }
+                            longPressRunnable?.runCatching { handler.removeCallbacks(this) }
+                        }
+
                         else -> {
-                            if (longPressRunnable != null) {
-                                handler.removeCallbacks(longPressRunnable!!)
-                            }
+                            isLongPressFast = false
+                            longPressFastRunnable?.runCatching { handler.removeCallbacks(this) }
+                            longPressRunnable?.runCatching { handler.removeCallbacks(this) }
                         }
                     }
 
                 }
             }
-    }
 
-    @Deprecated("Deprecated")
-    @SuppressLint("ClickableViewAccessibility")
-    private fun attachView(view: ViewGroup) {
-        val parentExact = view.findParentExact(FrameLayout::class.java)
-        val maskView = MaskView(view.context)
-        if (parentExact?.findViewsByType(MaskView::class.java)?.isEmpty() == true) {
-            parentExact.addView(maskView)
-            maskView.setOnTouchListener { _, event ->
-                when (event.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        //预留出长按快进
-                        if (event.x < screenSize.width / 8 || event.x > screenSize.width - screenSize.width / 8) {
-                            return@setOnTouchListener false
-                        }
-
-                        //如果是评论区视频/图片
-                        if (isComment(view)) {
-                            return@setOnTouchListener false
-                        }
-
-                        //
-                        longPressRunnable = Runnable {
-                            val obtain = MotionEvent.obtain(
-                                event.downTime,
-                                event.eventTime + 100,
-                                MotionEvent.ACTION_CANCEL,
-                                event.x,
-                                event.y,
-                                event.metaState
-                            )
-                            if (config.longPressMode) {
-                                if (event.y < screenSize.height / 2) {
-                                    showOptionsMenuV1(view)
-                                    view.dispatchTouchEvent(obtain)
-                                }
-                            } else {
-                                if (event.y > screenSize.height / 2) {
-                                    showOptionsMenuV1(view)
-                                    view.dispatchTouchEvent(obtain)
-                                }
-                            }
-                        }
-                        handler.postDelayed(longPressRunnable!!, 300L)
-                        view.dispatchTouchEvent(event)
-                        return@setOnTouchListener true
-                    }
-
-                    else -> {
-                        if (longPressRunnable != null) {
-                            handler.removeCallbacks(longPressRunnable!!)
-                        }
-                        view.dispatchTouchEvent(event)
-                    }
-                }
-                return@setOnTouchListener false
-            }
-        }
-    }
-
-    @Deprecated("Deprecated")
-    private fun isComment(viewGroup: ViewGroup): Boolean {
-        return try {
-            viewGroup.rootView.traverse {
-                if (it is TextView) {
-                    if (it.text.contains("保存")) {
-                        throw Exception("true")
-                    }
-                    if (it.text.contains("我也发一张")) {
-                        KViewUtils.hideAll(it.parent as ViewGroup)
-                    }
+        lpparam.hookClass(PinchPlayPauseView::class.java)
+            .methodAll {
+                onAfter {
+                    if (!config.isNeatMode) return@onAfter
+                    isAttentionalMode = method.name != "onDetachedFromWindow"
                 }
             }
-            false
-        } catch (e: Exception) {
-            true
-        }
     }
 
     private fun showOptionsMenuV1(view: ViewGroup) {
@@ -232,8 +203,8 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
         )
     }
 
-    private fun toggleView(viewGroup: ViewGroup) {
-        viewGroup.traverse {
+    private fun toggleView(view: ViewGroup) {
+        view.traverse {
             if (it is PenetrateTouchRelativeLayout) {
                 if (config.isTranslucent) it.alpha = 0.5f
                 it.visibility = if (config.isNeatMode && config.neatModeState) {
@@ -241,6 +212,9 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                 } else {
                     View.VISIBLE
                 }
+
+                it.isVisible = !isLongPressFast
+                it.isVisible = if (isLongPressFast) false else !isAttentionalMode
             }
 
             if (it is InteractStickerParent) {
@@ -250,81 +224,9 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                 } else {
                     View.VISIBLE
                 }
-            }
 
-            if (it is TextView) {
-                if (it.text.contains("我也发一张")) {
-                    KViewUtils.hideAll(it.parent as ViewGroup)
-                }
-            }
-        }
-    }
-
-    @Deprecated("Deprecated")
-    private fun onClickView(
-        parent: ViewGroup,
-        targetView: Class<out View>? = null,
-        targetText: Regex = Regex(""),
-        targetHint: Regex = Regex(""),
-        targetContent: Regex = Regex(""),
-    ) {
-        launch {
-            //如果是清爽模式的状态下
-            if (config.neatModeState) {
-                //先取消控件隐藏
-                config.neatModeState = false
-                toggleView(parent)
-
-                //等待300毫秒, 记录坐标
-                delay(300)
-                val location = IntArray(2) { 0 }
-                parent.traverse {
-                    var needClick = false
-                    if (it is TextView) {
-                        needClick = "${it.text}".containsNotEmpty(targetText)
-                        needClick = needClick || "${it.hint}".containsNotEmpty(targetHint)
-                    }
-                    needClick = needClick || "${it.contentDescription}".containsNotEmpty(targetContent)
-                    needClick = needClick || (targetView?.isInstance(it) ?: false)
-                    if (!needClick) return@traverse
-
-                    val temp = IntArray(2) { 0 }
-                    it.getLocationOnScreen(temp)
-                    if (temp[1] > 0 && temp[1] < screenSize.height) {
-                        location[0] = temp[0] + it.right / 2
-                        location[1] = temp[1] + it.bottom / 2
-
-                        //模拟点击
-                        KAutomationUtils.simulateClickByView(it, location[0].toFloat(), location[1].toFloat())
-
-                        //恢复清爽模式
-                        config.neatModeState = true
-                        toggleView(parent)
-                    }
-                }
-            } else {
-                //等待300毫秒, 记录坐标
-                delay(300)
-                val location = IntArray(2) { 0 }
-                parent.traverse {
-                    var needClick = false
-                    if (it is TextView) {
-                        needClick = "${it.text}".containsNotEmpty(targetText)
-                        needClick = needClick || "${it.hint}".containsNotEmpty(targetHint)
-                    }
-                    needClick = needClick || "${it.contentDescription}".containsNotEmpty(targetContent)
-                    needClick = needClick || (targetView?.isInstance(it) ?: false)
-                    if (!needClick) return@traverse
-
-                    val temp = IntArray(2) { 0 }
-                    it.getLocationOnScreen(temp)
-                    if (temp[1] > 0 && temp[1] < screenSize.height) {
-                        location[0] = temp[0] + it.right / 2
-                        location[1] = temp[1] + it.bottom / 2
-                        //模拟点击
-                        KAutomationUtils.simulateClickByView(it, location[0].toFloat(), location[1].toFloat())
-                    }
-                }
+                it.isVisible = !isLongPressFast
+                it.isVisible = if (isLongPressFast) false else !isAttentionalMode
             }
         }
     }
@@ -346,16 +248,38 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
             needClick = needClick || (targetView?.isInstance(it) ?: false)
             if (!needClick) return@traverse
 
-            val temp = IntArray(2) { 0 }
-            it.getLocationOnScreen(temp)
-            if (temp[1] > 0 && temp[1] < screenSize.height) {
-                val location = IntArray(2) { 0 }
-                location[0] = temp[0] + it.right / 2
-                location[1] = temp[1] + it.bottom / 2
-                KAutomationUtils.simulateClickByView(it, location[0].toFloat(), location[1].toFloat())
+            val location = IntArray(2) { 0 }
+            it.getLocationOnScreen(location)
+            if (location[1] > 0 && location[1] < screenSize.height) {
+                location[0] = location[0] + it.right / 2
+                location[1] = location[1] + it.bottom / 2
+                if (!KFastClickUtils.isFastDoubleClick(200)) {
+                    KAutomationUtils.simulateClickByView(it, location[0].toFloat(), location[1].toFloat())
+                }
             }
         }
     }
+
+    private fun onSwipeView(
+        view: View,
+        msg: String,
+    ) {
+        launch {
+            delay(500L)
+            if (!KFastClickUtils.isFastDoubleClick(500L)) {
+                if (msg.isNotEmpty()) showToast(view.context, msg)
+                KAutomationUtils.simulateSwipeByView(
+                    view,
+                    screenSize.width / 2f,
+                    screenSize.height / 2f + 200,
+                    screenSize.width / 2f,
+                    screenSize.height / 2f - 200,
+                    20,
+                )
+            }
+        }
+    }
+
 
     private fun CharSequence.containsNotEmpty(regex: Regex): Boolean {
         if (regex.pattern.isEmpty()) return false

@@ -502,7 +502,6 @@ class FreedomSettingActivity : BaseActivity() {
                                     showLongPressModeDialog = true
                                 },
                                 onCheckedChange = {
-                                    showRestartAppDialog = true
                                     model.changeIsNeatMode(it)
                                 }
                             )

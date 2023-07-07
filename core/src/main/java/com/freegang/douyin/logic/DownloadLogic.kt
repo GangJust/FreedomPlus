@@ -6,6 +6,7 @@ import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
 import com.freegang.ktutils.app.IProgressNotification
 import com.freegang.ktutils.app.KMediaUtils
+import com.freegang.ktutils.app.KNotifiUtils
 import com.freegang.ktutils.io.child
 import com.freegang.ktutils.io.need
 import com.freegang.ktutils.io.pureFileName
@@ -69,9 +70,8 @@ class DownloadLogic(
             mPureFileName = if (aweme.desc.isNullOrBlank()) {
                 "${mPureNickname}_${mShortId}_${System.currentTimeMillis() / 1000}"
             } else {
-                "${mPureNickname}_${mShortId}_${aweme.desc.pureFileName.secureFilename}"
+                "${mPureNickname}_${mShortId}_${aweme.desc.pureFileName}"
             }
-
             showChoiceDialog(aweme)
         } else {
             hook.showToast(context, "未获取到基本信息")
@@ -144,7 +144,7 @@ class DownloadLogic(
             return
         }
         //构建视频文件名
-        mPureFileName = mPureFileName.plus(".mp4")
+        mPureFileName = mPureFileName.plus(".mp4").secureFilename
         if (config.isNotification) {
             showDownloadByNotification(videoUrlList, mVideoParent.need(), mPureFileName, isWebDav)
         } else {
@@ -163,7 +163,7 @@ class DownloadLogic(
             return
         }
         //构建视频文件名
-        mPureFileName = mPureFileName.plus(".mp3")
+        mPureFileName = mPureFileName.plus(".mp3").secureFilename
         if (config.isNotification) {
             showDownloadByNotification(musicUrlList, mMusicParent.need(), mPureFileName, isWebDav)
         } else {
@@ -194,7 +194,7 @@ class DownloadLogic(
                         val imageFiles = mutableListOf<File>()
                         var downloadCount = 0 //下载计数器
                         structList.forEachIndexed { index, urlStruct ->
-                            val downloadFile = File(mImageParent.need(), "${mPureFileName}_${index + 1}.jpg")
+                            val downloadFile = File(mImageParent.need(), "${mPureFileName}_${index + 1}.jpg".secureFilename)
                             val finished =
                                 download(urlStruct.urlList.first(), downloadFile, it, "$index/${aweme.images.size} %s%%")
                             if (finished) {
@@ -204,22 +204,28 @@ class DownloadLogic(
                             }
                         }
 
-                        if (downloadCount == aweme.images.size) {
-                            val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
-                            it.setFinishedText(message)
-                            hook.showToast(context, message)
-                        } else {
-                            val failCount = aweme.images.size - downloadCount
-                            it.setFinishedText("下载成功${downloadCount}, 失败${failCount}!")
-                            hook.showToast(context, "下载成功${downloadCount}, 失败${failCount}!")
-                            Toast.makeText(context, "正在上传WebDav!", Toast.LENGTH_SHORT).show()
+                        hook.refresh {
+                            if (downloadCount == aweme.images.size) {
+                                val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
+                                it.setFinishedText(message)
+                                hook.showToast(context, message)
+                            } else {
+                                val failCount = aweme.images.size - downloadCount
+                                it.setFinishedText("下载成功${downloadCount}, 失败${failCount}!")
+                                hook.showToast(context, "下载成功${downloadCount}, 失败${failCount}!")
+                                Toast.makeText(context, "正在上传WebDav!", Toast.LENGTH_SHORT).show()
+
+                            }
                         }
+
 
                         //上传WebDav
                         if (isWebDav) {
                             if (imageFiles.isEmpty()) {
-                                it.setFinishedText("上传WebDav失败, 无法找到已下载的内容!")
-                                hook.showToast(context, "上传WebDav失败, 无法找到已下载的内容!")
+                                hook.refresh {
+                                    it.setFinishedText("上传WebDav失败, 无法找到已下载的内容!")
+                                    hook.showToast(context, "上传WebDav失败, 无法找到已下载的内容!")
+                                }
                                 return@launch
                             }
                             var uploadCount = 0
@@ -227,12 +233,14 @@ class DownloadLogic(
                                 val uploadStatus = uploadToWebDav(image)
                                 if (uploadStatus) uploadCount += 1
                             }
-                            if (uploadCount == imageFiles.size) {
-                                it.setFinishedText("上传WebDav成功!")
-                                hook.showToast(context, "上传WebDav成功!")
-                            } else {
-                                it.setFinishedText("上传WebDav成功${uploadCount}, 失败${imageFiles.size - uploadCount}!")
-                                hook.showToast(context, "上传WebDav成功${uploadCount}, 失败${imageFiles.size - uploadCount}!")
+                            hook.refresh {
+                                if (uploadCount == imageFiles.size) {
+                                    it.setFinishedText("上传WebDav成功!")
+                                    hook.showToast(context, "上传WebDav成功!")
+                                } else {
+                                    it.setFinishedText("上传WebDav成功${uploadCount}, 失败${imageFiles.size - uploadCount}!")
+                                    hook.showToast(context, "上传WebDav成功${uploadCount}, 失败${imageFiles.size - uploadCount}!")
+                                }
                             }
                         }
                     }
@@ -243,13 +251,12 @@ class DownloadLogic(
             hook.showProgressDialog(
                 context = context,
                 title = "Freedom+",
-                needMultiple = true,
                 listener = { dialog, notify ->
                     //下载逻辑
                     hook.launch {
                         var downloadCount = 0 //下载计数器
                         structList.forEachIndexed { index, urlStruct ->
-                            val downloadFile = File(mImageParent.need(), "${mPureFileName}_${index + 1}.jpg")
+                            val downloadFile = File(mImageParent.need(), "${mPureFileName}_${index + 1}.jpg".secureFilename)
                             val finished =
                                 download(urlStruct.urlList.first(), downloadFile, notify, "$index/${aweme.images.size} %s%%")
                             if (finished) {
@@ -258,16 +265,18 @@ class DownloadLogic(
                             }
                         }
 
-                        dialog.dismiss()
-                        if (downloadCount == aweme.images.size) {
-                            val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
-                            notify.setFinishedText(message)
-                            hook.showToast(context, message)
-                        } else {
-                            val failCount = aweme.images.size - downloadCount
-                            notify.setFinishedText("下载成功${downloadCount}, 失败${failCount}!")
-                            hook.showToast(context, "下载成功${downloadCount}, 失败${failCount}!")
-                            Toast.makeText(context, "正在上传WebDav!", Toast.LENGTH_SHORT).show()
+                        hook.refresh {
+                            dialog.dismiss()
+                            if (downloadCount == aweme.images.size) {
+                                val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
+                                notify.setFinishedText(message)
+                                hook.showToast(context, message)
+                            } else {
+                                val failCount = aweme.images.size - downloadCount
+                                notify.setFinishedText("下载成功${downloadCount}, 失败${failCount}!")
+                                hook.showToast(context, "下载成功${downloadCount}, 失败${failCount}!")
+                                Toast.makeText(context, "正在上传WebDav!", Toast.LENGTH_SHORT).show()
+                            }
                         }
 
                         //上传WebDav
@@ -312,20 +321,26 @@ class DownloadLogic(
                     val downloadFile = File(parentPath.need(), pureFileName)
                     val finished = download(urlList.first(), downloadFile, it, "下载中 %s%%")
                     if (finished) {
-                        val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
-                        it.setFinishedText(message)
-                        hook.showToast(context, message)
-                        KMediaUtils.notifyGallery(context, downloadFile.absolutePath)
+                        hook.refresh {
+                            val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
+                            it.setFinishedText(message)
+                            hook.showToast(context, message)
+                            KMediaUtils.notifyGallery(context, downloadFile.absolutePath)
+                        }
 
                         //上传WebDav
                         if (isWebDav) {
                             val uploadStatus = uploadToWebDav(downloadFile)
-                            it.setFinishedText("上传WebDav${if (uploadStatus) "成功!" else "失败!"}")
-                            hook.showToast(context, "上传WebDav${if (uploadStatus) "成功!" else "失败!"}")
+                            hook.refresh {
+                                it.setFinishedText("上传WebDav${if (uploadStatus) "成功!" else "失败!"}")
+                                hook.showToast(context, "上传WebDav${if (uploadStatus) "成功!" else "失败!"}")
+                            }
                         }
                     } else {
-                        it.setFinishedText("下载失败!")
-                        hook.showToast(context, "下载失败!")
+                        hook.refresh {
+                            it.setFinishedText("下载失败!")
+                            hook.showToast(context, "下载失败!")
+                        }
                     }
                 }
             }
@@ -343,18 +358,19 @@ class DownloadLogic(
         hook.showProgressDialog(
             context = context,
             title = "Freedom+",
-            needMultiple = true,
             listener = { dialog, notify ->
                 //下载逻辑
                 hook.launch {
                     val downloadFile = File(parentPath.need(), pureFileName)
                     val finished = download(urlList.first(), downloadFile, notify, "%s%%")
                     if (finished) {
-                        val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
-                        dialog.dismiss()
-                        notify.setFinishedText(message)
-                        hook.showToast(context, message)
-                        KMediaUtils.notifyGallery(context, downloadFile.absolutePath)
+                        hook.refresh {
+                            dialog.dismiss()
+                            val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
+                            notify.setFinishedText(message)
+                            hook.showToast(context, message)
+                            KMediaUtils.notifyGallery(context, downloadFile.absolutePath)
+                        }
 
                         //上传WebDav
                         if (isWebDav) {
@@ -362,9 +378,11 @@ class DownloadLogic(
                             hook.showToast(context, "上传WebDav${if (uploadStatus) "成功!" else "失败!"}")
                         }
                     } else {
-                        dialog.dismiss()
-                        notify.setFinishedText("下载失败!")
-                        hook.showToast(context, "下载失败!")
+                        hook.refresh {
+                            dialog.dismiss()
+                            notify.setFinishedText("下载失败!")
+                            hook.showToast(context, "下载失败!")
+                        }
                     }
                 }
             }
@@ -381,10 +399,13 @@ class DownloadLogic(
         progressText: String,
     ): Boolean {
         return withContext(Dispatchers.IO) {
-            val outputStream = FileOutputStream(downloadFile)
             var finished = false
-            KHttpUtils.download(url, outputStream) { real, total, isInterrupt ->
-                hook.refresh { notify.notifyProgress((real * 100 / total).toInt(), progressText) }
+            KHttpUtils.download(url, FileOutputStream(downloadFile)) { real, total, isInterrupt ->
+                if (notify is KNotifiUtils.ProgressNotification) { //通知栏在ui线程中刷新会造成ui卡顿, 排查了一下午, 麻了
+                    notify.notifyProgress((real * 100 / total).toInt(), progressText)
+                } else {
+                    hook.refresh { notify.notifyProgress((real * 100 / total).toInt(), progressText) }
+                }
                 if (isInterrupt) finished = false
                 if (real >= total) finished = true
             }

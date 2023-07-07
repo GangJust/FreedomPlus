@@ -269,7 +269,7 @@ class DoHomeActivity : ComponentActivity() {
                                     )
                                     Spacer(modifier = Modifier.padding(vertical = 2.dp))
                                     Text(
-                                        text = "Integrated ${lspatchActive[0]} - ${lspatchActive[1]}",
+                                        text = "${lspatchActive[0]} ${lspatchActive[1]} - ${lspatchActive[2]}",
                                         style = Themes.nowTypography.body2,
                                     )
                                 } else if (HookStatus.isExpModuleActive(this@DoHomeActivity)) {
@@ -449,8 +449,8 @@ class DoHomeActivity : ComponentActivity() {
                 )
             }
 
-            //tg交流群
-            /*FCard(
+            //tg频道
+            FCard(
                 modifier = Modifier
                     .padding(vertical = 4.dp)
                     .clickable(
@@ -467,24 +467,24 @@ class DoHomeActivity : ComponentActivity() {
                     content = {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_telegram),
-                            contentDescription = "tg交流群",
+                            contentDescription = "Telegram频道",
                             tint = Themes.nowColors.icon,
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.padding(horizontal = 8.dp))
                         Column {
                             Text(
-                                text = "tg交流群",
+                                text = "Telegram频道",
                                 style = Themes.nowTypography.body1,
                             )
                             Text(
-                                text = "闲聊吹水，Bug反馈~",
+                                text = "版本发布, Bug反馈~",
                                 style = Themes.nowTypography.overline,
                             )
                         }
                     },
                 )
-            }*/
+            }
 
             //打赏
             /*FCard(
@@ -554,12 +554,21 @@ class DoHomeActivity : ComponentActivity() {
     }
 
     private fun toBrowse() {
-        startActivity(
-            Intent(
-                Intent.ACTION_VIEW,
-                Uri.parse("https://github.com/GangJust/FreedomPlus"),
+        try {
+            startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("https://github.com/GangJust/FreedomPlus"),
+                )
             )
-        )
+            return
+        } catch (_: Exception) {
+
+        }
+
+        val manager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        manager.setPrimaryClip(ClipData.newPlainText("github link", "https://github.com/GangJust/FreedomPlus"))
+        showToast("未安装浏览器，链接已复制！")
     }
 
     private fun toEmail() {
@@ -570,24 +579,28 @@ class DoHomeActivity : ComponentActivity() {
                     Uri.parse("mailto:freegang555@gmail.com"),
                 )
             )
-        } catch (e: Exception) {
-            val manager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            manager.setPrimaryClip(ClipData.newPlainText("feedback email", "freegang555@gmail.com"))
-            Toast.makeText(applicationContext, "未安装邮箱类App，邮箱已复制！", Toast.LENGTH_SHORT).show()
+            return
+        } catch (_: Exception) {
         }
+
+        val manager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        manager.setPrimaryClip(ClipData.newPlainText("feedback email", "freegang555@gmail.com"))
+        Toast.makeText(applicationContext, "未安装邮箱类App，邮箱已复制！", Toast.LENGTH_SHORT).show()
     }
 
     private fun joinTgGroup() {
-        val uri = Uri.parse("tg群链接")
+        val uri = Uri.parse("https://t.me/FreedomPlugin")
         try {
             val telegramIntent = Intent(Intent.ACTION_VIEW, uri)
             telegramIntent.setPackage("org.telegram.messenger")
             startActivity(telegramIntent)
             return
-        } catch (e: Exception) {
-            //e.printStackTrace()
+        } catch (_: Exception) {
         }
-        showToast("未安装telegram")
+
+        val manager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        manager.setPrimaryClip(ClipData.newPlainText("telegram link", "https://t.me/FreedomPlugin"))
+        showToast("未安装telegram，链接已复制！")
     }
 
     private fun rewardByAlipay() {
@@ -599,8 +612,7 @@ class DoHomeActivity : ComponentActivity() {
                 )
             )
             return
-        } catch (e: Exception) {
-            //e.printStackTrace()
+        } catch (_: Exception) {
         }
         showToast("谢谢，你没有安装支付宝客户端")
     }

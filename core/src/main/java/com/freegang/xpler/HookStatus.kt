@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.util.Base64
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.json.KJSONUtils
+import com.freegang.ktutils.json.getBooleanOrDefault
 import com.freegang.ktutils.json.getStringOrDefault
 
 object HookStatus {
@@ -83,10 +84,11 @@ object HookStatus {
 
             val json = Base64.decode(config, Base64.DEFAULT).toString(Charsets.UTF_8)
             val patchConfig = KJSONUtils.parse(json)
+            val useManager = patchConfig.getBooleanOrDefault("useManager")
             val lspConfig = patchConfig.getJSONObject("lspConfig")
             val versionName = lspConfig.getStringOrDefault("VERSION_NAME")
             val versionCode = lspConfig.getStringOrDefault("VERSION_CODE")
-            return arrayOf(versionName, versionCode)
+            return arrayOf(if (useManager) "本地模式" else "集成模式", versionName, versionCode)
         } catch (e: Exception) {
             e.printStackTrace()
             //KLogCat.e(e.stackTraceToString())

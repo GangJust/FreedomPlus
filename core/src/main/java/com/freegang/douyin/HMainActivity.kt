@@ -54,7 +54,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         "24.5.0", "24.6.0", "24.7.0", "24.8.0", "24.9.0",
         "25.0.0", "25.1.0", "25.2.0", "25.3.0", "25.4.0",
         "25.5.0", "25.6.0", "25.7.0", "25.8.0", "25.9.0",
-        "25.6.0",
+        "26.0.0",
     )
 
     @OnAfter("onCreate")
@@ -119,8 +119,9 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
             delay(500L)
             val clazz = findClass("com.ss.android.ugc.aweme.homepage.ui.TopLeftFrameLayout") as Class<ViewGroup>
             val view = KViewUtils.findViews(activity.contentView, clazz).firstOrNull() ?: return@launch
-            val firstOrNull =
-                view.children.firstOrNull() ?: view.findViewsByDesc(View::class.java, "侧边栏").firstOrNull() ?: return@launch
+            val firstOrNull = view.children.firstOrNull()
+                ?: view.findViewsByDesc(View::class.java, "侧边栏").firstOrNull()
+                ?: return@launch
             val onClickListener = KViewUtils.getOnClickListener(firstOrNull)
             firstOrNull.setOnClickListener {
                 onClickListener?.onClick(it)

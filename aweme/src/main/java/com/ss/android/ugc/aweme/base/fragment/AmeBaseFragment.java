@@ -6,7 +6,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.com.ss.android.ugc.common.component.fragment.ComponentFragment;
+import com.ss.android.ugc.common.component.fragment.ComponentFragment;
 
 public class AmeBaseFragment extends ComponentFragment {
     @Override

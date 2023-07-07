@@ -1,6 +1,6 @@
 # FreedomPlus
 
-[![](https://img.shields.io/github/v/release/GangJust/FreedomPlus)](https://github.com/GangJust/FreedomPlus/releases) [![](https://img.shields.io/github/downloads/GangJust/FreedomPlus/total?color=g)]()
+[![](https://img.shields.io/github/v/release/GangJust/FreedomPlus)](https://github.com/GangJust/FreedomPlus/releases) [![](https://img.shields.io/github/downloads/GangJust/FreedomPlus/total?color=g)]() [![](https://img.shields.io/badge/telegram-freedom%2B-2481CC)](https://t.me/FreedomPlugin)
 
 依赖于抖音运行的开源Xposed模块
 
@@ -16,6 +16,7 @@
 - 首页控件半透明防烧屏
 - 首页清爽模式隐藏大部分控件
 - 顶部Tab栏自定义隐藏
+- 禁用双击点赞
 
 
 

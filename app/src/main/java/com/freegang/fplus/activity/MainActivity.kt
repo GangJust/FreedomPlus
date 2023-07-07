@@ -90,7 +90,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            FreedomTheme(window = window) {
+            FreedomTheme(
+                window = window,
+                isImmersive = true,
+                isDark = false,
+                followSystem = false,
+            ) {
                 FMessageDialog(
                     title = "Freedom+需要以下权限才能正常运行",
                     cancel = "取消",

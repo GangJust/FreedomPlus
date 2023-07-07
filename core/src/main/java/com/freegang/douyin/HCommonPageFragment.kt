@@ -9,8 +9,9 @@ import android.widget.TextView
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
 import com.freegang.douyin.logic.SaveCommentLogic
+import com.freegang.ktutils.display.KDisplayUtils
 import com.freegang.ktutils.view.KViewUtils
-import com.freegang.ktutils.view.traverse
+import com.freegang.ktutils.view.findViewsByExact
 import com.freegang.xpler.R
 import com.freegang.xpler.core.KtXposedHelpers
 import com.freegang.xpler.core.NoneHook
@@ -32,12 +33,11 @@ class HCommonPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<A
     fun onViewCreatedAfter(param: XC_MethodHook.MethodHookParam, view: View, bundle: Bundle?) {
         hookBlock(param) {
             if (!config.isEmoji) return
-            rebuildTopBarView(thisObject, view as ViewGroup)
-            rebuildOtherView(view)
+            rebuildTopBarView(thisObject, view)
         }
     }
 
-    private fun rebuildTopBarView(thisObject: Any, view: ViewGroup) {
+    private fun rebuildTopBarView(thisObject: Any, view: View) {
         launch {
             delay(200L)
 
@@ -47,10 +47,9 @@ class HCommonPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<A
             // awemeType 【134:评论区图片, 133|136:评论区视频, 0:主页视频详情, 68:主页图文详情, 13:私信视频/图文, 6000:私信图片】 by 25.1.0 至今
             if (aweme.awemeType != 134 && aweme.awemeType != 133 && aweme.awemeType != 136) return@launch
 
-
-            val views = KViewUtils.findViewsByDesc(view, ImageView::class.java, "返回")
-            if (views.isEmpty()) return@launch
-            val backBtn = views.first()
+            val imageViews = KViewUtils.findViewsByDesc(view, ImageView::class.java, "返回")
+            if (imageViews.isEmpty()) return@launch
+            val backBtn = imageViews.first()
 
             //清空旧视图
             val viewGroup = backBtn.parent as ViewGroup
@@ -67,17 +66,13 @@ class HCommonPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<A
                 SaveCommentLogic(this@HCommonPageFragment, it.context, aweme)
             }
             viewGroup.addView(appbar)
-        }
-    }
 
-    private fun rebuildOtherView(view: ViewGroup) {
-        launch {
-            delay(200L)
-            view.traverse {
-                if (it is TextView && it.text.contains("我也发一张")) {
-                    KViewUtils.hideAll(it.parent as ViewGroup)
-                }
+            //我也发一张
+            val textViews = view.findViewsByExact(TextView::class.java) {
+                "${it.text}".contains("我也发一张") || "${it.contentDescription}".contains("我也发一张")
             }
+            if (textViews.isEmpty()) return@launch
+            binding.rightSpace.setPadding(0, 0, KDisplayUtils.dip2px(view.context, 128f), 0)
         }
     }
 }

@@ -2,6 +2,7 @@ package com.freegang.xpler.core
 
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
+import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import java.lang.reflect.Field
@@ -184,7 +185,12 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
      * 查找某类
      */
     open fun findClass(className: String, classLoader: ClassLoader? = null): Class<*> {
-        return XposedHelpers.findClass(className, classLoader ?: lpparam.classLoader)
+        return try {
+            XposedHelpers.findClass(className, classLoader ?: lpparam.classLoader)
+        } catch (e: Exception) {
+            XposedBridge.log(e)
+            Class::class.java
+        }
     }
 
     /**
@@ -392,7 +398,8 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
         //替换 @Param 指定的参数类型
         val finalTargetMethodParamTypes = targetMethodParamTypes.mapIndexed { index, clazz ->
             if (parameterAnnotations[index].isEmpty()) return@mapIndexed clazz //如果某个参数没有注解
-            val param = parameterAnnotations[index].filterIsInstance<Param>().ifEmpty { return@mapIndexed clazz } //如果某个参数有注解, 但没有@Param注解, 直接return
+            val param = parameterAnnotations[index].filterIsInstance<Param>()
+                .ifEmpty { return@mapIndexed clazz } //如果某个参数有注解, 但没有@Param注解, 直接return
             findClass(param[0].name) //寻找注解类
         }.toTypedArray()
 
