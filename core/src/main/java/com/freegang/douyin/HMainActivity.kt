@@ -21,6 +21,7 @@ import com.freegang.douyin.logic.DownloadLogic
 import com.freegang.ktutils.app.appVersionCode
 import com.freegang.ktutils.app.appVersionName
 import com.freegang.ktutils.app.contentView
+import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.color.KColorUtils
 import com.freegang.ktutils.reflect.findMethodAndInvoke
 import com.freegang.ktutils.view.KViewUtils
@@ -54,7 +55,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         "24.5.0", "24.6.0", "24.7.0", "24.8.0", "24.9.0",
         "25.0.0", "25.1.0", "25.2.0", "25.3.0", "25.4.0",
         "25.5.0", "25.6.0", "25.7.0", "25.8.0", "25.9.0",
-        "26.0.0",
+        "26.0.0", "26.1.0"
     )
 
     @OnAfter("onCreate")
@@ -70,7 +71,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
             changeViewAlpha(thisActivity.contentView)
             setFreedomSetting(thisActivity)
             showSupportDialog(thisActivity)
-            checkVersionDialog(thisActivity)
+            //checkVersionDialog(thisActivity)
             addClipboardListener(thisActivity)
         }
     }
@@ -134,7 +135,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
                     if (sideRootView.children.last().contentDescription == "扩展功能") return@launch
 
                     val text = sideRootView.findViewsByType(TextView::class.java).firstOrNull() ?: return@launch
-                    val isLight = KColorUtils.isLightColor(text.currentTextColor)
+                    val isLight = KColorUtils.isDarkColor(text.currentTextColor)
 
                     val setting = KtXposedHelpers.inflateView<ViewGroup>(v.context, R.layout.side_freedom_setting)
                     setting.contentDescription = "扩展功能"
@@ -164,7 +165,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
                     binding.freedomSettingTitle.setTextColor(textColorRes)
                     binding.freedomSetting.setOnClickListener {
                         val intent = Intent(it.context, FreedomSettingActivity::class.java)
-                        intent.putExtra("isLight", isLight)
+                        intent.putExtra("isDark", view.context.isDarkMode)
                         val options = ActivityOptions.makeCustomAnimation(
                             activity,
                             android.R.anim.slide_in_left,
@@ -199,7 +200,12 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         val versionCode = activity.appVersionCode
 
         //此版本是否继续提示
-        if (!config.isSupportHint && versionCode == config.versionConfig.dyVersionCode && versionName == config.versionConfig.dyVersionName) return
+        if (!config.isSupportHint
+            && versionCode == config.versionConfig.dyVersionCode
+            && versionName == config.versionConfig.dyVersionName
+        ) {
+            return
+        }
 
         launch {
             delay(2000L)
@@ -235,6 +241,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
                     content = version.body,
                     cancel = "取消",
                     confirm = "更新",
+                    needMultiple = false,
                     onConfirm = {
                         activity.startActivity(
                             Intent(

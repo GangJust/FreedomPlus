@@ -2,6 +2,7 @@ package com.freegang.plugin
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.Application
 import android.app.Instrumentation
 import android.content.Context
 import android.content.Intent
@@ -17,6 +18,11 @@ class PluginInstrumentation(
 ) : Instrumentation() {
     companion object {
         const val PLUGIN_PROXY_ACTIVITY = "xpler_plugin"
+    }
+
+    @Keep
+    override fun newApplication(cl: ClassLoader?, className: String?, context: Context?): Application {
+        return mBase.newApplication(cl, className, context)
     }
 
     @Keep

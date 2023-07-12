@@ -133,7 +133,7 @@ annotation class Param(val name: String)
  * 并且还需在首位增加一个 [XC_MethodHook.MethodHookParam] 的方法参数
  * 这是必要的
  */
-@Target(AnnotationTarget.VALUE_PARAMETER)
+@Target(AnnotationTarget.FUNCTION)
 annotation class HookOnce()
 
 abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackageParam) {
@@ -147,8 +147,8 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
 
     init {
         mTargetClazz = this.setTargetClass()
-        run {
-            if (mTargetClazz == NoneHook::class.java) return@run
+        runCatching {
+            if (mTargetClazz == NoneHook::class.java) return@runCatching
             if (mTargetClazz != EmptyHook::class.java) {
                 if (targetClazz == Any::class.java) throw ClassFormatError("Please override the `setTargetClass()` to specify the hook target class!")
                 hookHelper = KtXposedHelpers.hookClass(targetClazz)

@@ -19,7 +19,6 @@ import com.freegang.webdav.WebDav
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
 import java.io.IOException
 
 class SettingVM(application: Application) : AndroidViewModel(application) {
@@ -237,32 +236,5 @@ class SettingVM(application: Application) : AndroidViewModel(application) {
             app.appVersionName,
             app.appVersionCode
         )
-    }
-
-    // 图片迁移
-    fun migratePicture() {
-        val userDirs = freedomPlusData.child("picture").listFiles() ?: return
-        for (userDir in userDirs) {
-            if (userDir.isFile) continue
-            val pictureDirs = userDir.listFiles() ?: continue
-            //println(userDir.absolutePath)
-
-            for (pictureDir in pictureDirs) {
-                if (pictureDir.isFile) continue
-                if (pictureDir.list()?.size == 0) {
-                    pictureDir.delete()
-                    continue
-                }
-                val pictures = pictureDir.listFiles() ?: continue
-                //println(pictureDir.absolutePath)
-
-                for (picture in pictures) {
-                    //println(picture.absolutePath)
-                    picture.copyTo(File(userDir, "${pictureDir.name}_${picture.name}"), true)
-                }
-
-                pictureDir.deleteRecursively()
-            }
-        }
     }
 }

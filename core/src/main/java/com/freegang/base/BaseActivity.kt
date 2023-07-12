@@ -6,7 +6,7 @@ import com.freegang.plugin.XplerActivity
 import com.freegang.ui.ModuleTheme
 
 open class BaseActivity : XplerActivity() {
-    private var isLight = false
+    private var isDark = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -14,7 +14,7 @@ open class BaseActivity : XplerActivity() {
     }
 
     private fun initExtraData() {
-        isLight = intent.getBooleanExtra("isLight", false)
+        isDark = intent.getBooleanExtra("isDark", false)
     }
 
     @Composable
@@ -22,7 +22,7 @@ open class BaseActivity : XplerActivity() {
         content: @Composable () -> Unit,
     ) {
         ModuleTheme(
-            isDark = isLight,
+            isDark = isDark,
             followSystem = false,
         ) {
             content()

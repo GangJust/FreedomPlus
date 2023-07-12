@@ -41,7 +41,7 @@
         </provider>
 
         <activity
-            android:name=".activity.DoHomeActivity"
+            android:name=".activity.HomeActivity"
             android:exported="false" />
 
         <activity

@@ -7,9 +7,9 @@ import android.content.ComponentName
 import com.freegang.ktutils.reflect.findField
 
 object PluginBridge {
-    fun init(application: Application, stubActivityClass: Class<*>) {
-        hookPackageManager(application, stubActivityClass)
-        hookInstrumentation(application, stubActivityClass)
+    fun init(application: Application, stubActivity: Class<*>) {
+        hookPackageManager(application, stubActivity)
+        hookInstrumentation(application, stubActivity)
     }
 
     /**

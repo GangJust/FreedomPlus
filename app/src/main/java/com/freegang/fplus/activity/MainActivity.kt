@@ -83,7 +83,7 @@ class MainActivity : ComponentActivity() {
         }
 
         ConfigV1.initialize(application)
-        startActivity(Intent(application, DoHomeActivity::class.java))
+        startActivity(Intent(application, HomeActivity::class.java))
         finish()
     }
 

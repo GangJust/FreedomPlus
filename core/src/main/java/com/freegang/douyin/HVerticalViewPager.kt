@@ -5,26 +5,23 @@ import android.content.Intent
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.TextView
 import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
 import com.freegang.douyin.activity.FreedomSettingActivity
+import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.app.topActivity
 import com.freegang.ktutils.display.KDisplayUtils
 import com.freegang.ktutils.other.KAutomationUtils
-import com.freegang.ktutils.reflect.findMethodAndInvoke
 import com.freegang.ktutils.view.KFastClickUtils
 import com.freegang.ktutils.view.traverse
-import com.freegang.xpler.core.argsOrEmpty
-import com.freegang.xpler.core.findMethodsByReturnType
 import com.freegang.xpler.core.hookClass
 import com.freegang.xpler.core.thisView
 import com.freegang.xpler.core.thisViewGroup
 import com.ss.android.ugc.aweme.ad.feed.VideoViewHolderRootView
 import com.ss.android.ugc.aweme.common.widget.VerticalViewPager
-import com.ss.android.ugc.aweme.familiar.feed.pinch.ui.PinchPlayPauseView
-import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.feed.quick.presenter.FeedDoctorFrameLayout
 import com.ss.android.ugc.aweme.feed.share.long_click.FrameLayoutHoldTouchListener
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
@@ -36,6 +33,8 @@ import kotlin.math.abs
 class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<VerticalViewPager>(lpparam) {
     private val config get() = ConfigV1.get()
     private val screenSize get() = KDisplayUtils.screenSize()
+
+    private var onDragListener: ViewTreeObserver.OnDrawListener? = null
     private var isLongPressFast = false
     private var longPressFastRunnable: Runnable? = null
 
@@ -43,41 +42,21 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
     private var downY: Float = 0f
     private var longPressRunnable: Runnable? = null
 
-    private var isAttentionalMode = false
-
-    private var currentAweme: Aweme? = null
-
     override fun onInit() {
-        lpparam.hookClass(targetClazz)
-            .method("getCurrentItem") {
-                onAfter {
-                    runCatching {
-                        val adapter = thisObject.findMethodAndInvoke("getAdapter")
-                        val methods = adapter?.findMethodsByReturnType(Aweme::class.java) ?: emptyList()
-                        val filter = methods.filter { it.parameterTypes.size == 1 && it.parameterTypes[0] == Int::class.java }
-                        filter.run {
-                            if (isEmpty()) return@run
-                            val tmpAweme = first().invoke(adapter, result) as Aweme?
-                            if (currentAweme == tmpAweme) return@run
-                            currentAweme = tmpAweme
-                        }
-                    }
-                }
-            }
-            .methodAll {
-                onAfter {
-                    val first = argsOrEmpty.firstOrNull() ?: return@onAfter
-                    if (first !is VerticalViewPager) return@onAfter
-                    toggleView(first)
-                }
-            }
-
         lpparam.hookClass(VideoViewHolderRootView::class.java)
+            .constructorsAll {
+                onAfter {
+                    if (onDragListener != null) {
+                        thisView.viewTreeObserver.removeOnDrawListener(onDragListener!!)
+                    }
+                    onDragListener = ViewTreeObserver.OnDrawListener {
+                        toggleView(thisViewGroup)
+                    }
+                    thisView.viewTreeObserver.addOnDrawListener(onDragListener)
+                }
+            }
             .method("dispatchTouchEvent", MotionEvent::class.java) {
                 onBefore {
-                    if (!config.isNeatMode) return@onBefore
-                    if (currentAweme?.isLive == true) return@onBefore
-
                     val event = args[0] as MotionEvent
                     val obtain = MotionEvent.obtain(
                         event.downTime,
@@ -99,7 +78,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                             downY = event.y
 
                             //防止双击
-                            if (KFastClickUtils.isFastDoubleClick(500L) && config.isDisableDoubleLike) {
+                            if (KFastClickUtils.isFastDoubleClick(300L) && config.isDisableDoubleLike) {
                                 thisView.dispatchTouchEvent(obtain)
                                 result = true
                                 return@onBefore
@@ -151,24 +130,46 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                             longPressRunnable?.runCatching { handler.removeCallbacks(this) }
                         }
                     }
-
-                }
-            }
-
-        lpparam.hookClass(PinchPlayPauseView::class.java)
-            .methodAll {
-                onAfter {
-                    if (!config.isNeatMode) return@onAfter
-                    isAttentionalMode = method.name != "onDetachedFromWindow"
                 }
             }
     }
 
+    private fun toggleView(view: ViewGroup) {
+        view.traverse {
+            if (it is PenetrateTouchRelativeLayout) {
+                if (config.isTranslucent) it.alpha = 0.5f
+                it.isVisible = !(config.isNeatMode && config.neatModeState)
+                it.isVisible = if (isLongPressFast) false else !(config.isNeatMode && config.neatModeState)
+
+                if (HDetailPageFragment.isComment) {
+                    it.isVisible = false
+                }
+            }
+
+            if (it is InteractStickerParent) {
+                if (config.isTranslucent) it.alpha = 0.5f
+                it.isVisible = !(config.isNeatMode && config.neatModeState)
+                it.isVisible = if (isLongPressFast) false else !(config.isNeatMode && config.neatModeState)
+
+                if (HDetailPageFragment.isComment) {
+                    it.isVisible = false
+                }
+            }
+        }
+    }
+
     private fun showOptionsMenuV1(view: ViewGroup) {
+        if (HDetailPageFragment.isComment) return
+
+        val items = if (config.isNeatMode) {
+            arrayOf(if (!config.neatModeState) "清爽模式" else "普通模式", "评论", "收藏", "分享", "模块设置")
+        } else {
+            arrayOf("评论", "收藏", "分享", "模块设置")
+        }
         showChoiceDialog(
             context = view.context,
             title = "Freedom+",
-            items = arrayOf(if (!config.neatModeState) "清爽模式" else "普通模式", "评论", "收藏", "分享", "模块设置"),
+            items = items,
             onChoice = { it, item, _ ->
                 when (item) {
                     "清爽模式", "普通模式" -> {
@@ -191,6 +192,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
 
                     "模块设置" -> {
                         val intent = Intent(it.context, FreedomSettingActivity::class.java)
+                        intent.putExtra("isDark", view.context.isDarkMode)
                         val options = ActivityOptions.makeCustomAnimation(
                             topActivity,
                             android.R.anim.slide_in_left,
@@ -201,34 +203,6 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                 }
             }
         )
-    }
-
-    private fun toggleView(view: ViewGroup) {
-        view.traverse {
-            if (it is PenetrateTouchRelativeLayout) {
-                if (config.isTranslucent) it.alpha = 0.5f
-                it.visibility = if (config.isNeatMode && config.neatModeState) {
-                    View.GONE
-                } else {
-                    View.VISIBLE
-                }
-
-                it.isVisible = !isLongPressFast
-                it.isVisible = if (isLongPressFast) false else !isAttentionalMode
-            }
-
-            if (it is InteractStickerParent) {
-                if (config.isTranslucent) it.alpha = 0.5f
-                it.visibility = if (config.isNeatMode && config.neatModeState) {
-                    View.GONE
-                } else {
-                    View.VISIBLE
-                }
-
-                it.isVisible = !isLongPressFast
-                it.isVisible = if (isLongPressFast) false else !isAttentionalMode
-            }
-        }
     }
 
     private fun onClickViewV1(
@@ -279,7 +253,6 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
             }
         }
     }
-
 
     private fun CharSequence.containsNotEmpty(regex: Regex): Boolean {
         if (regex.pattern.isEmpty()) return false

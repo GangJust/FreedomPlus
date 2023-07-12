@@ -66,7 +66,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
-class DoHomeActivity : ComponentActivity() {
+class HomeActivity : ComponentActivity() {
     private val model by viewModels<HomeVM>()
 
     @OptIn(ExperimentalFoundationApi::class)
@@ -208,6 +208,7 @@ class DoHomeActivity : ComponentActivity() {
         var showNewVersionDialog by remember { mutableStateOf(true) }
         val version by model.versionConfig.observeAsState()
         if (version != null) {
+            model.isSupportHint(true)
             val version = version!!
             if (version.name.compareTo("v${application.appVersionName}") >= 1 && showNewVersionDialog) {
                 FMessageDialog(
@@ -272,7 +273,7 @@ class DoHomeActivity : ComponentActivity() {
                                         text = "${lspatchActive[0]} ${lspatchActive[1]} - ${lspatchActive[2]}",
                                         style = Themes.nowTypography.body2,
                                     )
-                                } else if (HookStatus.isExpModuleActive(this@DoHomeActivity)) {
+                                } else if (HookStatus.isExpModuleActive(this@HomeActivity)) {
                                     Text(
                                         text = "太极加载成功!",
                                         style = Themes.nowTypography.body1,
@@ -334,7 +335,7 @@ class DoHomeActivity : ComponentActivity() {
                                 style = Themes.nowTypography.body1,
                             )
                             Text(
-                                text = "模块设置已迁移至抖音内部，点击抖音左上角侧滑栏，滑动至底部唤起模块设置",
+                                text = "模块设置已迁移至抖音内部，抖音左上角侧滑栏/设置页，滑动至底部唤起模块设置",
                                 style = Themes.nowTypography.overline,
                             )
                         }
@@ -551,6 +552,11 @@ class DoHomeActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         model.checkVersion()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        model.setVersionConfig(assets)
     }
 
     private fun toBrowse() {

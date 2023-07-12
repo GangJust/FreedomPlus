@@ -50,14 +50,12 @@ open class XplerActivity : ComponentActivity() {
             try {
                 return moduleClassloader!!.loadClass(name)
             } catch (e: Exception) {
-                //e.printStackTrace()
-                //KLogCat.e("模块未找到: $name")
+                //KLogCat.e(e)
             }
             try {
                 return hostClassloader!!.loadClass(name)
             } catch (e: Exception) {
-                //e.printStackTrace()
-                //KLogCat.e("宿主未找到: $name")
+                //KLogCat.e(e)
             }
 
             return super.findClass(name)

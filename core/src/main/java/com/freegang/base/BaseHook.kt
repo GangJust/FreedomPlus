@@ -3,7 +3,10 @@ package com.freegang.base
 import android.content.Context
 import android.content.Context.VIBRATOR_SERVICE
 import android.graphics.Color
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.NinePatchDrawable
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -17,6 +20,7 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import com.freegang.ktutils.app.IProgressNotification
 import com.freegang.ktutils.app.KNotifiUtils
+import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.view.KDialog
 import com.freegang.view.adapter.DialogChoiceAdapter
@@ -83,6 +87,34 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
                 toast?.cancel()
                 Toast.makeText(context.applicationContext, null, Toast.LENGTH_LONG)
             }
+
+            runCatching {
+                //val view = toast?.findFieldAndGet("mNextView")
+
+                toast?.view?.isClickable = false
+                toast?.view?.isLongClickable = false
+
+                val modeNight = context.isDarkMode
+
+                //背景色
+                val drawable = toast?.view?.background as NinePatchDrawable?
+                drawable?.colorFilter = if (modeNight) {
+                    PorterDuffColorFilter(Color.parseColor("#FF161823"), PorterDuff.Mode.SRC_IN)
+                } else {
+                    PorterDuffColorFilter(Color.parseColor("#FFFFFFFF"), PorterDuff.Mode.SRC_IN)
+                }
+
+                //文字颜色
+                val textView: TextView? = toast?.view?.findViewById(android.R.id.message)
+                textView?.setTextColor(
+                    if (modeNight) {
+                        Color.parseColor("#FFFFFFFF")
+                    } else {
+                        Color.parseColor("#FF161823")
+                    }
+                )
+            }
+
             toast?.setText(message)
             toast?.show()
         }

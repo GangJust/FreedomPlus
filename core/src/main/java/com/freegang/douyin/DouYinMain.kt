@@ -16,12 +16,12 @@ import java.lang.reflect.Method
 class DouYinMain(private val app: Application) {
     companion object {
         val awemeHostApplication get() = "com.ss.android.ugc.aweme.app.host.AwemeHostApplication".toClass(lpparam.classLoader)!!
-        var commonPageClazz: Class<*>? = null
+        var detailPageFragmentClazz: Class<*>? = null
         var emojiMethods: List<Method> = emptyList()
     }
 
     init {
-        run {
+        runCatching {
             //日志工具
             KLogCat.init(app)
             //KLogCat.openStorage()
@@ -32,7 +32,7 @@ class DouYinMain(private val app: Application) {
             //文件读写权限检查
             if (!app.hasOperationStorage) {
                 Toast.makeText(app, "抖音没有文件读写权限!", Toast.LENGTH_LONG).show()
-                return@run
+                return@runCatching
             }
 
             //插件化注入
@@ -51,23 +51,32 @@ class DouYinMain(private val app: Application) {
             HDetailActivity(lpparam)
             HFlippableViewPager(lpparam)
             HVerticalViewPager(lpparam)
-            HCommonPageFragment(lpparam)
+            HDetailPageFragment(lpparam)
             HGifEmojiDetailActivity(lpparam)
             HEmojiDetailDialog(lpparam)
             HEmojiDetailDialogNew(lpparam)
             HHomeSideBarEntranceManagerV1(lpparam)
+            HDouYinSettingNewVersionActivity(lpparam)
         }
     }
 
     private fun initDexKit() {
         System.loadLibrary("dexkit")
         DexKitBridge.create(lpparam.appInfo.sourceDir)?.use { bridge ->
-            if (commonPageClazz == null) {
+            if (detailPageFragmentClazz == null) {
                 val findMaps = bridge.batchFindClassesUsingStrings {
-                    addQuery("CommonPage", setOf("a1128.b7947", "DetailActOtherNitaView"))
+                    addQuery(
+                        "DetailPageFragment",
+                        setOf(
+                            "a1128.b7947",
+                            "com/ss/android/ugc/aweme/detail/ui/DetailPageFragment",
+                            "DetailActOtherNitaView",
+                        ),
+                    )
                 }
-                commonPageClazz = findMaps["CommonPage"]?.firstOrNull()?.getClassInstance(lpparam.classLoader)
+                detailPageFragmentClazz = findMaps["DetailPageFragment"]?.firstOrNull()?.getClassInstance(lpparam.classLoader)
             }
+
             if (emojiMethods.isEmpty()) {
                 emojiMethods = bridge.findMethod {
                     methodReturnType = "V"

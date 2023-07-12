@@ -13,7 +13,7 @@ fun proxySingle(
     block: (proxy: Any, method: Method, args: Array<Any>?) -> Unit,
 ): Any {
     if (!clazz.isInstance(instance)) {
-        throw IllegalArgumentException("`Instance` should be the implementation class of `clazz`.")
+        throw IllegalArgumentException("`$instance` should be the implementation class of `$clazz`.")
     }
 
     return Proxy.newProxyInstance(loader, arrayOf(clazz)) { proxy, method, args ->

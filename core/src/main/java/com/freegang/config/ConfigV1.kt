@@ -40,9 +40,9 @@ class ConfigV1 private constructor() {
     }
 
     /// 是否显示兼容提示
-    var isSupportHint: Boolean = false
+    var isSupportHint: Boolean = true
         get() {
-            field = mmkv.getBoolean("isSupportHint", false)
+            field = mmkv.getBoolean("isSupportHint", true)
             return field
         }
         set(value) {
@@ -187,7 +187,7 @@ class ConfigV1 private constructor() {
             mmkv.putString("webDavPassword", field.password)
         }
 
-    //是否开启隐藏顶部tab
+    /// 是否开启隐藏顶部tab
     var isHideTab: Boolean = false
         get() {
             field = mmkv.getBoolean("isHideTab", false)
@@ -198,7 +198,7 @@ class ConfigV1 private constructor() {
             field = value
         }
 
-    //隐藏顶部tab包含的关键字, 逗号隔开
+    /// 隐藏顶部tab包含的关键字, 逗号隔开
     var hideTabKeywords: String = "经验, 探索, 商城"
         get() {
             field = mmkv.getString("hideTabKeywords", "经验, 探索, 商城")!!
@@ -209,6 +209,7 @@ class ConfigV1 private constructor() {
             field = value
         }
 
+    /// 版本信息
     var versionConfig: ConfigV1.Version = ConfigV1.Version()
         get() {
             return Version(

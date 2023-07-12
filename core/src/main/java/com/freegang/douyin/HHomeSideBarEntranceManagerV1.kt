@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import com.freegang.base.BaseHook
 import com.freegang.douyin.activity.FreedomSettingActivity
 import com.freegang.ktutils.app.contentView
+import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.color.KColorUtils
 import com.freegang.ktutils.view.findViewsByType
 import com.freegang.xpler.R
@@ -50,7 +51,7 @@ class HHomeSideBarEntranceManagerV1(lpparam: XC_LoadPackage.LoadPackageParam) : 
                 if (sideRootView.children.last().contentDescription == "扩展功能") return@launch
 
                 val text = sideRootView.findViewsByType(TextView::class.java).firstOrNull() ?: return@launch
-                val isLight = KColorUtils.isLightColor(text.currentTextColor)
+                val isLight = KColorUtils.isDarkColor(text.currentTextColor)
 
                 val setting = KtXposedHelpers.inflateView<ViewGroup>(v.context, R.layout.side_freedom_setting)
                 setting.contentDescription = "扩展功能"
@@ -80,7 +81,7 @@ class HHomeSideBarEntranceManagerV1(lpparam: XC_LoadPackage.LoadPackageParam) : 
                 binding.freedomSettingTitle.setTextColor(textColorRes)
                 binding.freedomSetting.setOnClickListener {
                     val intent = Intent(it.context, FreedomSettingActivity::class.java)
-                    intent.putExtra("isLight", isLight)
+                    intent.putExtra("isDark", view.context.isDarkMode)
                     val options = ActivityOptions.makeCustomAnimation(
                         activity,
                         android.R.anim.slide_in_left,
