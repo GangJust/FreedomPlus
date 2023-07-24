@@ -7,7 +7,6 @@ import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
-import android.text.Html
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -23,7 +22,7 @@ import com.freegang.ktutils.app.appVersionName
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.color.KColorUtils
-import com.freegang.ktutils.reflect.findMethodAndInvoke
+import com.freegang.ktutils.reflect.methodInvokes
 import com.freegang.ktutils.view.KViewUtils
 import com.freegang.ktutils.view.findViewsByDesc
 import com.freegang.ktutils.view.findViewsByType
@@ -49,14 +48,6 @@ import kotlinx.coroutines.withContext
 class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainActivity>(lpparam) {
     private val config get() = ConfigV1.get()
     private val clipboardLogic = ClipboardLogic(this)
-    private val supportVersions = listOf(
-        "23.5.0", "23.6.0", "23.7.0", "23.8.0", "23.9.0",
-        "24.0.0", "24.1.0", "24.2.0", "24.3.0", "24.4.0",
-        "24.5.0", "24.6.0", "24.7.0", "24.8.0", "24.9.0",
-        "25.0.0", "25.1.0", "25.2.0", "25.3.0", "25.4.0",
-        "25.5.0", "25.6.0", "25.7.0", "25.8.0", "25.9.0",
-        "26.0.0", "26.1.0"
-    )
 
     @OnAfter("onCreate")
     fun onCreate(it: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {
@@ -70,7 +61,6 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         hookBlock(it) {
             changeViewAlpha(thisActivity.contentView)
             setFreedomSetting(thisActivity)
-            showSupportDialog(thisActivity)
             //checkVersionDialog(thisActivity)
             addClipboardListener(thisActivity)
         }
@@ -97,10 +87,10 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         }
 
         if (aweme == null) {
-            val curFragment = activity.findMethodAndInvoke("getCurFragment")
+            val curFragment = activity.methodInvokes("getCurFragment").firstOrNull()
             val curFragmentMethods = curFragment?.findMethodsByReturnType(Aweme::class.java) ?: listOf()
             if (curFragmentMethods.isNotEmpty()) {
-                aweme = curFragmentMethods.first().call(curFragment!!)
+                aweme = curFragmentMethods.first().invoke(curFragment!!)
             }
         }
         return aweme as Aweme?
@@ -135,7 +125,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
                     if (sideRootView.children.last().contentDescription == "扩展功能") return@launch
 
                     val text = sideRootView.findViewsByType(TextView::class.java).firstOrNull() ?: return@launch
-                    val isLight = KColorUtils.isDarkColor(text.currentTextColor)
+                    val isDark = KColorUtils.isDarkColor(text.currentTextColor)
 
                     val setting = KtXposedHelpers.inflateView<ViewGroup>(v.context, R.layout.side_freedom_setting)
                     setting.contentDescription = "扩展功能"
@@ -145,7 +135,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
                     val iconColorRes: Int
                     val dividerColorRes: Int
                     val textColorRes: Int
-                    if (isLight) {
+                    if (!isDark) {
                         backgroundRes = R.drawable.dialog_background_night
                         iconColorRes = R.drawable.ic_freedom_night
                         dividerColorRes = Color.parseColor("#14FFFFFF")
@@ -161,10 +151,10 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
                     binding.freedomSettingText.setTextColor(textColorRes)
                     binding.freedomSettingDivider.setBackgroundColor(dividerColorRes)
                     binding.freedomSettingIcon.background = KtXposedHelpers.getDrawable(iconColorRes)
-                    binding.freedomSettingTitle.text = "Freedom+"
+                    binding.freedomSettingTitle.text = String.format("%s", "Freedom+")
                     binding.freedomSettingTitle.setTextColor(textColorRes)
-                    binding.freedomSetting.setOnClickListener {
-                        val intent = Intent(it.context, FreedomSettingActivity::class.java)
+                    binding.freedomSetting.setOnClickListener { view ->
+                        val intent = Intent(view.context, FreedomSettingActivity::class.java)
                         intent.putExtra("isDark", view.context.isDarkMode)
                         val options = ActivityOptions.makeCustomAnimation(
                             activity,
@@ -190,41 +180,6 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
                     it.alpha = 0.5f
                 }
             }
-        }
-    }
-
-    //抖音版本(版本是否兼容提示)
-    @Synchronized
-    private fun showSupportDialog(activity: Activity) {
-        val versionName = activity.appVersionName
-        val versionCode = activity.appVersionCode
-
-        //此版本是否继续提示
-        if (!config.isSupportHint
-            && versionCode == config.versionConfig.dyVersionCode
-            && versionName == config.versionConfig.dyVersionName
-        ) {
-            return
-        }
-
-        launch {
-            delay(2000L)
-            showMessageDialog(
-                context = activity,
-                title = "Freedom+",
-                content = Html.fromHtml(
-                    """当前抖音版本为: <span style='color:#F56C6C;'>${versionName}</span><br/>
-                       Freedom+最小兼容以下版本:<br/>
-                       ${supportVersions.joinToString(", ") { s -> if (s == versionName) "<span style='color:#F56C6C;'>$s</span>" else s }}<br/>
-                       适配列表仅作为参考，请自行测试各项功能！
-                       """.trimIndent()
-                ),
-                cancel = "此版本不再提示",
-                confirm = "确定",
-                onCancel = {
-                    saveConfig(activity)
-                }
-            )
         }
     }
 

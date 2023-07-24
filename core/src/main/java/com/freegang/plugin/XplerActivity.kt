@@ -17,7 +17,7 @@ import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.util.TypedValue
 import androidx.activity.ComponentActivity
-import com.freegang.ktutils.reflect.findMethodAndInvoke
+import com.freegang.ktutils.reflect.methodInvokes
 import com.freegang.xpler.core.KtXposedHelpers
 import com.freegang.xpler.loader.hostClassloader
 import com.freegang.xpler.loader.moduleClassloader
@@ -67,7 +67,7 @@ open class XplerActivity : ComponentActivity() {
 
         private val moduleResources by lazy {
             val assetManager = AssetManager::class.java.newInstance()
-            assetManager.findMethodAndInvoke("addAssetPath", KtXposedHelpers.modulePath)
+            assetManager.methodInvokes("addAssetPath", KtXposedHelpers.modulePath)
             Resources(assetManager, resources.displayMetrics, resources.configuration)
         }
 

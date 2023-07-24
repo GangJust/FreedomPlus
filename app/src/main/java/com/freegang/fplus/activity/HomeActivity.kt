@@ -56,6 +56,7 @@ import com.freegang.fplus.R
 import com.freegang.fplus.Themes
 import com.freegang.fplus.resource.StringRes
 import com.freegang.fplus.viewmodel.HomeVM
+import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.appVersionName
 import com.freegang.ui.component.FCard
 import com.freegang.ui.component.FMessageDialog
@@ -262,6 +263,7 @@ class HomeActivity : ComponentActivity() {
                                 modifier = Modifier.align(Alignment.Center),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
+                                val packageInfo = KAppUtils.getPackageInfo(application, HookPackages.douYinPackageName)
                                 val lspatchActive = HookStatus.isLspatchActive(application, HookPackages.douYinPackageName)
                                 if (lspatchActive.isNotEmpty()) {
                                     Text(
@@ -296,6 +298,14 @@ class HomeActivity : ComponentActivity() {
                                     Text(
                                         text = StringRes.moduleHintFailed,
                                         style = Themes.nowTypography.body1,
+                                    )
+                                }
+                                if (packageInfo != null) {
+                                    Spacer(modifier = Modifier.padding(vertical = 2.dp))
+                                    Text(
+                                        text = "抖音: ${packageInfo.versionName}，" +
+                                                model.isSupportVersions(packageInfo.versionName),
+                                        style = Themes.nowTypography.body2,
                                     )
                                 }
                             }

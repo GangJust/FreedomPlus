@@ -42,7 +42,7 @@ class SaveCommentLogic(
 
     private fun getVideoUrlList(aweme: Aweme): List<String> {
         val video = aweme.video ?: return emptyList()
-        return video.h264PlayAddr?.urlList ?: video.playAddrH265?.urlList ?: video.playAddr?.urlList ?: emptyList()
+        return video.playAddrH265?.urlList ?: video.h264PlayAddr?.urlList ?: video.playAddr?.urlList ?: emptyList()
     }
 
     private fun getImagesUrlList(aweme: Aweme): List<String> {
@@ -58,6 +58,7 @@ class SaveCommentLogic(
             val parentPath = ConfigV1.getFreedomDir(context).child("picture").child("comment").need()
 
             //构建保存文件名
+            hook.showToast(context, "保存图片, 请稍后..")
             val file = File(parentPath, "${System.currentTimeMillis() / 1000}.png")
             withContext(Dispatchers.IO) {
                 KHttpUtils.download(urlList.first(), FileOutputStream(file)) { real, total, isInterrupt ->
@@ -81,6 +82,7 @@ class SaveCommentLogic(
             val parentPath = ConfigV1.getFreedomDir(context).child("video").child("comment").need()
 
             //构建保存文件名
+            hook.showToast(context, "保存视频, 请稍后..")
             val file = File(parentPath, "${System.currentTimeMillis() / 1000}.mp4")
             withContext(Dispatchers.IO) {
                 KHttpUtils.download(urlList.first(), FileOutputStream(file)) { real, total, isInterrupt ->

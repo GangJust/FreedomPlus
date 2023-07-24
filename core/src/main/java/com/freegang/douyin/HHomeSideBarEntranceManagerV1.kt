@@ -51,7 +51,7 @@ class HHomeSideBarEntranceManagerV1(lpparam: XC_LoadPackage.LoadPackageParam) : 
                 if (sideRootView.children.last().contentDescription == "扩展功能") return@launch
 
                 val text = sideRootView.findViewsByType(TextView::class.java).firstOrNull() ?: return@launch
-                val isLight = KColorUtils.isDarkColor(text.currentTextColor)
+                val isDark = KColorUtils.isDarkColor(text.currentTextColor)
 
                 val setting = KtXposedHelpers.inflateView<ViewGroup>(v.context, R.layout.side_freedom_setting)
                 setting.contentDescription = "扩展功能"
@@ -61,7 +61,7 @@ class HHomeSideBarEntranceManagerV1(lpparam: XC_LoadPackage.LoadPackageParam) : 
                 val iconColorRes: Int
                 val dividerColorRes: Int
                 val textColorRes: Int
-                if (isLight) {
+                if (!isDark) {
                     backgroundRes = R.drawable.dialog_background_night
                     iconColorRes = R.drawable.ic_freedom_night
                     dividerColorRes = Color.parseColor("#14FFFFFF")
@@ -77,10 +77,10 @@ class HHomeSideBarEntranceManagerV1(lpparam: XC_LoadPackage.LoadPackageParam) : 
                 binding.freedomSettingText.setTextColor(textColorRes)
                 binding.freedomSettingDivider.setBackgroundColor(dividerColorRes)
                 binding.freedomSettingIcon.background = KtXposedHelpers.getDrawable(iconColorRes)
-                binding.freedomSettingTitle.text = "Freedom+"
+                binding.freedomSettingTitle.text = String.format("%s", "Freedom+")
                 binding.freedomSettingTitle.setTextColor(textColorRes)
-                binding.freedomSetting.setOnClickListener {
-                    val intent = Intent(it.context, FreedomSettingActivity::class.java)
+                binding.freedomSetting.setOnClickListener { view ->
+                    val intent = Intent(view.context, FreedomSettingActivity::class.java)
                     intent.putExtra("isDark", view.context.isDarkMode)
                     val options = ActivityOptions.makeCustomAnimation(
                         activity,

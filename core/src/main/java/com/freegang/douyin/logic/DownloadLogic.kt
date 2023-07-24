@@ -80,7 +80,7 @@ class DownloadLogic(
 
     private fun getVideoUrlList(aweme: Aweme): List<String> {
         val video = aweme.video ?: return emptyList()
-        return video.h264PlayAddr?.urlList ?: video.playAddrH265?.urlList ?: emptyList()
+        return video.playAddrH265?.urlList ?: video.h264PlayAddr?.urlList ?: video.playAddr?.urlList ?: emptyList()
     }
 
     private fun getMusicUrlList(aweme: Aweme): List<String> {
@@ -144,7 +144,7 @@ class DownloadLogic(
             return
         }
         //构建视频文件名
-        mPureFileName = mPureFileName.plus(".mp4").secureFilename
+        mPureFileName = mPureFileName.secureFilename(".mp4")
         if (config.isNotification) {
             showDownloadByNotification(videoUrlList, mVideoParent.need(), mPureFileName, isWebDav)
         } else {
@@ -163,7 +163,7 @@ class DownloadLogic(
             return
         }
         //构建视频文件名
-        mPureFileName = mPureFileName.plus(".mp3").secureFilename
+        mPureFileName = mPureFileName.secureFilename(".mp3")
         if (config.isNotification) {
             showDownloadByNotification(musicUrlList, mMusicParent.need(), mPureFileName, isWebDav)
         } else {
@@ -194,7 +194,7 @@ class DownloadLogic(
                         val imageFiles = mutableListOf<File>()
                         var downloadCount = 0 //下载计数器
                         structList.forEachIndexed { index, urlStruct ->
-                            val downloadFile = File(mImageParent.need(), "${mPureFileName}_${index + 1}.jpg".secureFilename)
+                            val downloadFile = File(mImageParent.need(), "$mPureFileName".secureFilename("_${index + 1}.jpg"))
                             val finished =
                                 download(urlStruct.urlList.first(), downloadFile, it, "$index/${aweme.images.size} %s%%")
                             if (finished) {
@@ -256,7 +256,7 @@ class DownloadLogic(
                     hook.launch {
                         var downloadCount = 0 //下载计数器
                         structList.forEachIndexed { index, urlStruct ->
-                            val downloadFile = File(mImageParent.need(), "${mPureFileName}_${index + 1}.jpg".secureFilename)
+                            val downloadFile = File(mImageParent.need(), "$mPureFileName".secureFilename("_${index + 1}.jpg"))
                             val finished =
                                 download(urlStruct.urlList.first(), downloadFile, notify, "$index/${aweme.images.size} %s%%")
                             if (finished) {

@@ -78,9 +78,8 @@ object HookStatus {
                 packageName = packageName,
                 flags = PackageManager.GET_META_DATA,
             )
-            val appInfo = packageInfo.applicationInfo
-            val config = appInfo.metaData?.getString("lspatch") ?: ""
-            if (config.isEmpty()) return emptyArray()
+            val appInfo = packageInfo?.applicationInfo
+            val config = appInfo?.metaData?.getString("lspatch") ?: return emptyArray()
 
             val json = Base64.decode(config, Base64.DEFAULT).toString(Charsets.UTF_8)
             val patchConfig = KJSONUtils.parse(json)
@@ -91,7 +90,6 @@ object HookStatus {
             return arrayOf(if (useManager) "本地模式" else "集成模式", versionName, versionCode)
         } catch (e: Exception) {
             e.printStackTrace()
-            //KLogCat.e(e.stackTraceToString())
         }
         return emptyArray()
     }

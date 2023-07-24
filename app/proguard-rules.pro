@@ -72,6 +72,7 @@
 # 抖音
 -dontwarn com.ss.android.ugc.aweme.**
 -dontwarn com.ss.ugc.aweme.**
+-dontwarn dmt.**
 -dontwarn org.bouncycastle.jsse.BCSSLParameters
 -dontwarn org.bouncycastle.jsse.BCSSLSocket
 -dontwarn org.bouncycastle.jsse.provider.BouncyCastleJsseProvider

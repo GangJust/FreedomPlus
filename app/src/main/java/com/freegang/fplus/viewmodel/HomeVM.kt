@@ -64,4 +64,16 @@ class HomeVM(application: Application) : AndroidViewModel(application) {
             app.appVersionCode
         )
     }
+
+    fun isSupportVersions(versionName: String): String {
+        val list = listOf(
+            "23.5.0", "23.6.0", "23.7.0", "23.8.0", "23.9.0",
+            "24.0.0", "24.1.0", "24.2.0", "24.3.0", "24.4.0",
+            "24.5.0", "24.6.0", "24.7.0", "24.8.0", "24.9.0",
+            "25.0.0", "25.1.0", "25.2.0", "25.3.0", "25.4.0",
+            "25.5.0", "25.6.0", "25.7.0", "25.8.0", "25.9.0",
+            "26.0.0", "26.1.0", "26.2.0"
+        )
+        return if (list.contains(versionName)) "版本功能正常" else "自行测试功能"
+    }
 }

@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.app.Instrumentation
 import android.content.ComponentName
-import com.freegang.ktutils.reflect.findField
+import com.freegang.ktutils.reflect.fields
 
 object PluginBridge {
     fun init(application: Application, stubActivity: Class<*>) {
@@ -88,7 +88,7 @@ object PluginBridge {
         try {
             // 获取到 ActivityThread 中的静态字段 sPackageManager 一个静态的 IPackageManager
             val atClazz = Class.forName("android.app.ActivityThread")
-            val sPackageManagerField = atClazz.findField("sPackageManager")
+            val sPackageManagerField = atClazz.fields("sPackageManager").first()
             val sPackageManager = sPackageManagerField.get(null)
 
             //动态代理 IPackageManager

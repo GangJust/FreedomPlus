@@ -12,30 +12,26 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 
-//保存表情逻辑
-class SaveEmojiLogic(
+class SaveAudioLogic(
     private val hook: BaseHook<*>,
     private val context: Context,
-    private val urlList: List<String>,
+    private val url: String,
+    private val filename: String,
 ) {
     companion object {
         private val config get() = ConfigV1.get()
     }
 
     init {
-        onSaveEmoji(urlList)
-    }
-
-    private fun onSaveEmoji(urlList: List<String>) {
         hook.launch {
-            //默认保存路径: `/外置存储器/DCIM/Freedom/emoji`
-            val parentPath = ConfigV1.getFreedomDir(context).child("emoji").need()
+            //默认保存路径: `/外置存储器/DCIM/Freedom/audio`
+            val parentPath = ConfigV1.getFreedomDir(context).child("audio").need()
 
             //构建保存文件名
-            hook.showToast(context, "保存表情, 请稍后..")
-            val file = File(parentPath, "${System.currentTimeMillis() / 1000}.gif")
+            hook.showToast(context, "保存语音, 请稍后..")
+            val file = File(parentPath, "${filename}.mp3")
             withContext(Dispatchers.IO) {
-                KHttpUtils.download(urlList.first(), FileOutputStream(file)) { real, total, isInterrupt ->
+                KHttpUtils.download(url, FileOutputStream(file)) { real, total, isInterrupt ->
                     if (real >= total) {
                         hook.showToast(context, "保存成功!")
                         KMediaUtils.notifyGallery(context, file.absolutePath)

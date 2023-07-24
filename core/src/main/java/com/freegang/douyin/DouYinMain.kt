@@ -52,6 +52,7 @@ class DouYinMain(private val app: Application) {
             HFlippableViewPager(lpparam)
             HVerticalViewPager(lpparam)
             HDetailPageFragment(lpparam)
+            HCommentAudioView(lpparam)
             HGifEmojiDetailActivity(lpparam)
             HEmojiDetailDialog(lpparam)
             HEmojiDetailDialogNew(lpparam)
