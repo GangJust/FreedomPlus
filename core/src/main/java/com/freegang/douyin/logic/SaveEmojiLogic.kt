@@ -23,7 +23,15 @@ class SaveEmojiLogic(
     }
 
     init {
-        onSaveEmoji(urlList)
+        runCatching {
+            if (urlList.isEmpty()) {
+                hook.showToast(context, "未获取到表情内容")
+                return@runCatching
+            }
+            onSaveEmoji(urlList)
+        }.onFailure {
+            hook.showToast(context, "未获取到表情内容")
+        }
     }
 
     private fun onSaveEmoji(urlList: List<String>) {

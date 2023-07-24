@@ -25,30 +25,34 @@ class SaveCommentLogic(
     }
 
     init {
-        if (aweme != null) {
-            val imageUrl = getImagesUrlList(aweme)
-            val videoUrl = getVideoUrlList(aweme)
-            if (imageUrl.isNotEmpty()) {
-                onSaveCommentImage(imageUrl)
-            } else if (videoUrl.isNotEmpty()) {
-                onSaveCommentVideo(videoUrl)
+        runCatching {
+            if (aweme != null) {
+                val imageUrl = getImagesUrlList(aweme)
+                val videoUrl = getVideoUrlList(aweme)
+                if (imageUrl.isNotEmpty()) {
+                    onSaveCommentImage(imageUrl)
+                } else if (videoUrl.isNotEmpty()) {
+                    onSaveCommentVideo(videoUrl)
+                } else {
+                    hook.showToast(context, "未获取到基本信息")
+                }
             } else {
                 hook.showToast(context, "未获取到基本信息")
             }
-        } else {
+        }.onFailure {
             hook.showToast(context, "未获取到基本信息")
         }
     }
 
     private fun getVideoUrlList(aweme: Aweme): List<String> {
         val video = aweme.video ?: return emptyList()
-        return video.playAddrH265?.urlList ?: video.h264PlayAddr?.urlList ?: video.playAddr?.urlList ?: emptyList()
+        return video.playAddrH265?.urlList ?: video.h264PlayAddr?.urlList ?: emptyList()
     }
 
     private fun getImagesUrlList(aweme: Aweme): List<String> {
         val image = aweme.images ?: return emptyList()
         if (image.isEmpty()) return emptyList()
-        return image.first()?.urlList ?: return emptyList()
+        return image.firstOrNull()?.urlList ?: return emptyList()
     }
 
     // 保存评论区图片

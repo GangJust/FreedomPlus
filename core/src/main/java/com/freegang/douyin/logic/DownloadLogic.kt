@@ -44,43 +44,48 @@ class DownloadLogic(
     private lateinit var mPureFileName: String
 
     init {
-        if (aweme != null) {
-            //整理内容
-            //如果uniqueId为空, shortId为账号
-            mShortId = if (aweme.author.uniqueId.isNullOrEmpty()) {
-                aweme.author.shortId
+        runCatching {
+            if (aweme != null) {
+                //整理内容
+                //如果uniqueId为空, shortId为账号
+                mShortId = if (aweme.author.uniqueId.isNullOrEmpty()) {
+                    aweme.author.shortId
+                } else {
+                    aweme.author.uniqueId
+                }
+                mPureNickname = aweme.author.nickname.pureFileName
+
+                //mOwnerDir: 如果需要按视频创作者单独创建文件夹: `/外置存储器/DCIM/Freedom/${video|music|picture}/昵称(账号)`
+                mOwnerDir = if (config.isOwnerDir) "${mPureNickname}(${mShortId})" else ""
+
+                //默认下载路径: `/外置存储器/DCIM/Freedom/video`
+                mVideoParent = ConfigV1.getFreedomDir(context).child("video")
+
+                //默认下载路径: `/外置存储器/DCIM/Freedom/music`
+                mMusicParent = ConfigV1.getFreedomDir(context).child("music")
+
+                //默认下载路径: `/外置存储器/DCIM/Freedom/picture`
+                mImageParent = ConfigV1.getFreedomDir(context).child("picture")
+
+                //构建文件名
+                mPureFileName = if (aweme.desc.isNullOrBlank()) {
+                    "${mPureNickname}_${mShortId}_${System.currentTimeMillis() / 1000}"
+                } else {
+                    "${mPureNickname}_${mShortId}_${aweme.desc.pureFileName}"
+                }
+                showChoiceDialog(aweme)
             } else {
-                aweme.author.uniqueId
+                hook.showToast(context, "未获取到基本信息")
             }
-            mPureNickname = aweme.author.nickname.pureFileName
-
-            //mOwnerDir: 如果需要按视频创作者单独创建文件夹: `/外置存储器/DCIM/Freedom/${video|music|picture}/昵称(账号)`
-            mOwnerDir = if (config.isOwnerDir) "${mPureNickname}(${mShortId})" else ""
-
-            //默认下载路径: `/外置存储器/DCIM/Freedom/video`
-            mVideoParent = ConfigV1.getFreedomDir(context).child("video")
-
-            //默认下载路径: `/外置存储器/DCIM/Freedom/music`
-            mMusicParent = ConfigV1.getFreedomDir(context).child("music")
-
-            //默认下载路径: `/外置存储器/DCIM/Freedom/picture`
-            mImageParent = ConfigV1.getFreedomDir(context).child("picture")
-
-            //构建文件名
-            mPureFileName = if (aweme.desc.isNullOrBlank()) {
-                "${mPureNickname}_${mShortId}_${System.currentTimeMillis() / 1000}"
-            } else {
-                "${mPureNickname}_${mShortId}_${aweme.desc.pureFileName}"
-            }
-            showChoiceDialog(aweme)
-        } else {
+        }.onFailure {
             hook.showToast(context, "未获取到基本信息")
         }
     }
 
     private fun getVideoUrlList(aweme: Aweme): List<String> {
         val video = aweme.video ?: return emptyList()
-        return video.playAddrH265?.urlList ?: video.h264PlayAddr?.urlList ?: video.playAddr?.urlList ?: emptyList()
+
+        return video.playAddrH265?.urlList ?: video.h264PlayAddr?.urlList ?: emptyList()
     }
 
     private fun getMusicUrlList(aweme: Aweme): List<String> {
@@ -194,7 +199,7 @@ class DownloadLogic(
                         val imageFiles = mutableListOf<File>()
                         var downloadCount = 0 //下载计数器
                         structList.forEachIndexed { index, urlStruct ->
-                            val downloadFile = File(mImageParent.need(), "$mPureFileName".secureFilename("_${index + 1}.jpg"))
+                            val downloadFile = File(mImageParent.need(), mPureFileName.secureFilename("_${index + 1}.jpg"))
                             val finished =
                                 download(urlStruct.urlList.first(), downloadFile, it, "$index/${aweme.images.size} %s%%")
                             if (finished) {
@@ -206,7 +211,7 @@ class DownloadLogic(
 
                         hook.refresh {
                             if (downloadCount == aweme.images.size) {
-                                val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
+                                val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功, 共${downloadCount}个文件!"
                                 it.setFinishedText(message)
                                 hook.showToast(context, message)
                             } else {
@@ -256,7 +261,7 @@ class DownloadLogic(
                     hook.launch {
                         var downloadCount = 0 //下载计数器
                         structList.forEachIndexed { index, urlStruct ->
-                            val downloadFile = File(mImageParent.need(), "$mPureFileName".secureFilename("_${index + 1}.jpg"))
+                            val downloadFile = File(mImageParent.need(), mPureFileName.secureFilename("_${index + 1}.jpg"))
                             val finished =
                                 download(urlStruct.urlList.first(), downloadFile, notify, "$index/${aweme.images.size} %s%%")
                             if (finished) {
@@ -268,7 +273,7 @@ class DownloadLogic(
                         hook.refresh {
                             dialog.dismiss()
                             if (downloadCount == aweme.images.size) {
-                                val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
+                                val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功, 共${downloadCount}个文件!"
                                 notify.setFinishedText(message)
                                 hook.showToast(context, message)
                             } else {
