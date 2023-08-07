@@ -1,14 +1,16 @@
 package com.freegang.webdav
 
+import android.util.Log
 import com.thegrizzlylabs.sardineandroid.DavResource
 import com.thegrizzlylabs.sardineandroid.impl.OkHttpSardine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.io.File
 
 
 class WebDav(
-    private val config: Config
+    private val config: Config,
 ) {
     constructor(
         host: String = "",
@@ -22,13 +24,7 @@ class WebDav(
         )
     )
 
-    data class Config(
-        val host: String = "",
-        val username: String = "",
-        val password: String = "",
-    )
-
-    private val mSardine = OkHttpSardine()
+    private val mSardine by lazy { OkHttpSardine() }
 
     init {
         mSardine.setCredentials(config.username, config.password)
@@ -43,11 +39,9 @@ class WebDav(
     suspend fun exists(name: String, path: String = "/", isDirectory: Boolean = false): Boolean {
         return withContext(Dispatchers.IO) {
             return@withContext try {
-                if (isDirectory) {
-                    mSardine.exists(config.host.plus("/$path/$name/".format()))
-                } else {
-                    mSardine.exists(config.host.plus("/$path/$name".removeSuffix("/").format()))
-                }
+                val url = "${config.host}/$path/$name/".formatUrl(isDirectory)
+                //Log.d(TAG, "校验: $url")
+                mSardine.exists(url)
             } catch (e: Exception) {
                 false //不存在会抛出异常
             }
@@ -63,15 +57,19 @@ class WebDav(
         withContext(Dispatchers.IO) {
             if (!mkdirs) {
                 if (exists(parentPath, directoryName, true)) return@withContext
-                mSardine.createDirectory(config.host.plus("/$parentPath/$directoryName/".format()))
+                val url = "${config.host}/$parentPath/$directoryName/".formatUrl(true)
+                Log.d(TAG, "创建: $url")
+                mSardine.createDirectory(url)
                 return@withContext
             }
-            val dirs = directoryName.format().split("/")
+            val dirs = directoryName.formatUrl(true).split("/")
             var name = ""
             for (dir in dirs) {
                 name = name.plus("/$dir")
                 if (exists(name, parentPath, true)) continue
-                mSardine.createDirectory(config.host.plus("/$parentPath/$name/".format()))
+                val url = "${config.host}/$parentPath/$name/".formatUrl(true)
+                Log.d(TAG, "创建: $url")
+                mSardine.createDirectory(url)
             }
         }
     }
@@ -83,7 +81,9 @@ class WebDav(
     suspend fun delete(name: String, path: String = "/") {
         withContext(Dispatchers.IO) {
             if (!exists(name, path)) return@withContext
-            mSardine.delete(config.host.plus("/$path/$name".format()))
+            val url = "${config.host}/$path/$name".formatUrl(false)
+            Log.d(TAG, "删除: $url")
+            mSardine.delete(url)
         }
     }
 
@@ -94,7 +94,9 @@ class WebDav(
      */
     suspend fun put(file: File, path: String = "/") {
         withContext(Dispatchers.IO) {
-            mSardine.put(config.host.plus("/$path/${file.name}".format()), file, null, true)
+            val url = "${config.host}/$path/${file.name}".formatUrl(false)
+            Log.d(TAG, "上传: $url")
+            mSardine.put(url, file, null, true)
         }
     }
 
@@ -106,7 +108,9 @@ class WebDav(
      */
     suspend fun put(name: String, path: String = "/", bytes: ByteArray) {
         withContext(Dispatchers.IO) {
-            mSardine.put(config.host.plus("/$path/${name}".format()), bytes)
+            val url = "${config.host}/$path/$name".formatUrl(false)
+            Log.d(TAG, "上传: $url")
+            mSardine.put(url, bytes)
         }
     }
 
@@ -118,7 +122,11 @@ class WebDav(
      */
     suspend fun move(fromFilename: String, toFilename: String, overwrite: Boolean) {
         withContext(Dispatchers.IO) {
-            mSardine.move(config.host.plus("/$fromFilename".format()), config.host.plus("/$toFilename".format()), overwrite)
+            val formUrl = "${config.host}/$fromFilename".formatUrl(false)
+            val toUrl = "${config.host}/$toFilename".formatUrl(false)
+            Log.d(TAG, "移动从: $formUrl")
+            Log.d(TAG, "移动至: $toUrl")
+            mSardine.move(formUrl, toUrl, overwrite)
         }
     }
 
@@ -130,7 +138,11 @@ class WebDav(
      */
     suspend fun copy(fromFilename: String, toFilename: String, overwrite: Boolean) {
         withContext(Dispatchers.IO) {
-            mSardine.copy(config.host.plus("/$fromFilename".format()), config.host.plus("/$toFilename".format()), overwrite)
+            val formUrl = "${config.host}/$fromFilename".formatUrl(false)
+            val toUrl = "${config.host}/$toFilename".formatUrl(false)
+            Log.d(TAG, "复制从: $formUrl")
+            Log.d(TAG, "复制至: $toUrl")
+            mSardine.copy(formUrl, toUrl, overwrite)
         }
     }
 
@@ -141,17 +153,15 @@ class WebDav(
      */
     suspend fun getFile(filename: String, path: String = "/"): DavResource? {
         return withContext(Dispatchers.IO) {
-            val list = mSardine.list(config.host.plus("/$path/$filename".format()))
+            val url = "${config.host}/$path/$filename".formatUrl(false)
+            Log.d(TAG, "获取: $url")
+            val list = mSardine.list(url)
             if (list.isEmpty()) return@withContext null
             return@withContext list.first()
         }
     }
 
-    private fun String.strictPath(): String {
-        return this.replace("/{2,}".toRegex(), "/")
-    }
-
-    private fun String.urlString(): String {
+    private fun String.urlEncoding(): String {
         return this.replace("+", "%2B")
             .replace(" ", "%20")
             //.replace("/","%2F")
@@ -162,7 +172,37 @@ class WebDav(
             .replace("=", "%3D")
     }
 
-    private fun String.format(): String {
-        return this.urlString().strictPath()
+    private fun String.formatUrl(isDirectory: Boolean): String {
+        val urlEncoding = this.urlEncoding().replace(Regex("/{2,}"), "/").replace(":/", "://")
+        val finalUrl = if (isDirectory) {
+            urlEncoding.removeSuffix("/").plus("/")
+        } else {
+            urlEncoding.removeSuffix("/")
+        }
+        return finalUrl
+    }
+
+    companion object {
+        const val TAG = "WebDav"
+    }
+
+
+    data class Config(
+        val host: String = "",
+        val username: String = "",
+        val password: String = "",
+    ) {
+        fun toJson(): String {
+            return try {
+                JSONObject().apply {
+                    put("host", host)
+                    put("username", username)
+                    put("password", password)
+                }.toString()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                ""
+            }
+        }
     }
 }

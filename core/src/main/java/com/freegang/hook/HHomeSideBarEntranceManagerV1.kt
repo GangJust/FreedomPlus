@@ -1,4 +1,4 @@
-package com.freegang.douyin
+package com.freegang.hook
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -11,7 +11,7 @@ import android.widget.TextView
 import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import com.freegang.base.BaseHook
-import com.freegang.douyin.activity.FreedomSettingActivity
+import com.freegang.ui.activity.FreedomSettingActivity
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.color.KColorUtils

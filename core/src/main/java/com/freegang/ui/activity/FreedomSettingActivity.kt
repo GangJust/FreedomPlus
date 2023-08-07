@@ -1,4 +1,4 @@
-package com.freegang.douyin.activity
+package com.freegang.ui.activity
 
 import android.content.Intent
 import android.net.Uri
@@ -18,12 +18,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ExposedDropdownMenuBox
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.RadioButton
@@ -48,14 +52,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.freegang.base.BaseActivity
-import com.freegang.douyin.viewmodel.SettingVM
 import com.freegang.ktutils.app.KAppUtils
+import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.app.appVersionName
 import com.freegang.ui.asDp
 import com.freegang.ui.component.FCard
 import com.freegang.ui.component.FCardBorder
 import com.freegang.ui.component.FMessageDialog
+import com.freegang.ui.viewmodel.FreedomSettingVM
 import com.freegang.webdav.WebDav
+import com.freegang.xpler.HookPackages
 import com.freegang.xpler.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -63,7 +69,7 @@ import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
 class FreedomSettingActivity : BaseActivity() {
-    private val model by viewModels<SettingVM>()
+    private val model by viewModels<FreedomSettingVM>()
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
@@ -88,11 +94,13 @@ class FreedomSettingActivity : BaseActivity() {
                         modifier = Modifier,
                         content = {
                             item {
-                                Text(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    text = updateLog,
-                                    style = MaterialTheme.typography.body1,
-                                )
+                                SelectionContainer {
+                                    Text(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        text = updateLog,
+                                        style = MaterialTheme.typography.body1,
+                                    )
+                                }
                             }
                         },
                     )
@@ -133,6 +141,8 @@ class FreedomSettingActivity : BaseActivity() {
                     )
                 }
                 Icon(
+                    painter = painterResource(id = R.drawable.ic_motion),
+                    contentDescription = "更新日志",
                     modifier = Modifier
                         .size(20.dp)
                         .rotate(rotateAnimate)
@@ -155,8 +165,6 @@ class FreedomSettingActivity : BaseActivity() {
                                 rotate = if (rotate == 0f) 360f else 0f
                             },
                         ),
-                    painter = painterResource(id = R.drawable.ic_motion),
-                    contentDescription = "更新日志"
                 )
                 /*Spacer(modifier = Modifier.padding(horizontal = 12.dp))
                 Icon(
@@ -174,6 +182,7 @@ class FreedomSettingActivity : BaseActivity() {
         }
     }
 
+    @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
     @Composable
     private fun HomeView() {
         //版本更新弹窗
@@ -218,25 +227,27 @@ class FreedomSettingActivity : BaseActivity() {
         //重启抖音提示
         var showRestartAppDialog by remember { mutableStateOf(false) }
         if (showRestartAppDialog) {
-            FMessageDialog(
-                title = "提示",
-                cancel = "取消",
-                confirm = "重启",
-                onCancel = {
-                    showRestartAppDialog = false
-                },
-                onConfirm = {
-                    showRestartAppDialog = false
-                    model.setVersionConfig(mResources.moduleAssets)
-                    KAppUtils.restartApplication(application)
-                },
-                content = {
-                    Text(
-                        text = "需要重启应用生效, 若未重启请手动重启",
-                        style = MaterialTheme.typography.body1,
-                    )
-                },
-            )
+            if (application.packageName != HookPackages.modulePackageName) {
+                FMessageDialog(
+                    title = "提示",
+                    cancel = "取消",
+                    confirm = "重启",
+                    onCancel = {
+                        showRestartAppDialog = false
+                    },
+                    onConfirm = {
+                        showRestartAppDialog = false
+                        model.setVersionConfig(mResources.moduleAssets)
+                        KAppUtils.restartApplication(application)
+                    },
+                    content = {
+                        Text(
+                            text = "需要重启应用生效, 若未重启请手动重启",
+                            style = MaterialTheme.typography.body1,
+                        )
+                    },
+                )
+            }
         }
 
         //清爽模式响应模式
@@ -284,12 +295,86 @@ class FreedomSettingActivity : BaseActivity() {
         //WebDav配置编辑
         var showWebDavConfigEditorDialog by remember { mutableStateOf(false) }
         if (showWebDavConfigEditorDialog) {
+            val webDavHistory = model.webDavHistory.observeAsState(initial = emptySet())
+            var showWebDavHistoryMenu by remember { mutableStateOf(false) }
             var host by remember { mutableStateOf(model.webDavHost.value ?: "") }
             var username by remember { mutableStateOf(model.webDavUsername.value ?: "") }
             var password by remember { mutableStateOf(model.webDavPassword.value ?: "") }
             var isWaiting by remember { mutableStateOf(false) }
             FMessageDialog(
-                title = "配置WebDav",
+                title = {
+                    ExposedDropdownMenuBox(
+                        expanded = showWebDavHistoryMenu,
+                        onExpandedChange = { /*expanded = !expanded*/ },
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp, vertical = 16.dp)
+                        ) {
+                            Text(
+                                text = "配置WebDav",
+                                style = MaterialTheme.typography.body1,
+                                modifier = Modifier
+                                    .weight(1f),
+                            )
+
+                            BoxWithConstraints {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_history),
+                                    contentDescription = "WebDav列表",
+                                    modifier = Modifier
+                                        .size(16.dp)
+                                        .combinedClickable(
+                                            indication = null,
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            onClick = {
+                                                if (webDavHistory.value.isEmpty()) {
+                                                    KToastUtils.show(application, "没有WebDav历史")
+                                                }
+                                                showWebDavHistoryMenu = webDavHistory.value.isNotEmpty()
+                                            },
+                                        ),
+                                )
+
+                                ExposedDropdownMenu(
+                                    expanded = showWebDavHistoryMenu,
+                                    onDismissRequest = { showWebDavHistoryMenu = false },
+                                    modifier = Modifier.heightIn(max = 200.dp)
+                                ) {
+                                    webDavHistory.value.forEach {
+                                        Text(
+                                            text = it.host,
+                                            style = MaterialTheme.typography.body1,
+                                            modifier = Modifier
+                                                .combinedClickable(
+                                                    onClick = {
+                                                        showWebDavHistoryMenu = false
+                                                        host = it.host
+                                                        username = it.username
+                                                        password = it.password
+                                                    },
+                                                    onLongClick = {
+                                                        model.removeWebDavConfig(
+                                                            WebDav.Config(
+                                                                it.host,
+                                                                it.username,
+                                                                it.password,
+                                                            )
+                                                        )
+                                                        showWebDavHistoryMenu = webDavHistory.value.isNotEmpty()
+                                                        KToastUtils.show(application, "删除成功")
+                                                    }
+                                                )
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
                 cancel = "取消",
                 confirm = "确定",
                 isWaiting = isWaiting,
@@ -297,18 +382,19 @@ class FreedomSettingActivity : BaseActivity() {
                     showWebDavConfigEditorDialog = false
                 },
                 onConfirm = {
+                    val webDavConfig = WebDav.Config(host, username, password)
                     isWaiting = true
-                    model.setWebDavConfig(WebDav.Config(host, username, password))
-                    model.initWebDav { test ->
+                    model.setWebDavConfig(webDavConfig)
+                    model.initWebDav { test, msg ->
+                        KToastUtils.show(applicationContext, msg)
                         isWaiting = false
                         if (test) {
                             showWebDavConfigEditorDialog = false
                             model.changeIsWebDav(true)
-                            Toast.makeText(applicationContext, "测试成功!", Toast.LENGTH_SHORT).show()
+                            model.addWebDavConfig(webDavConfig)
                             return@initWebDav
                         }
                         model.changeIsWebDav(false)
-                        Toast.makeText(applicationContext, "测试失败, 请检查配置!", Toast.LENGTH_SHORT).show()
                     }
                 },
                 content = {
@@ -325,7 +411,7 @@ class FreedomSettingActivity : BaseActivity() {
                                     singleLine = true,
                                     textStyle = MaterialTheme.typography.body1,
                                     decorationBox = { innerTextField ->
-                                        if (host.isEmpty()) Text(text = "http://服务器地址:端口")
+                                        if (host.isEmpty()) Text(text = "http://服务器地址:端口/初始化路径")
                                         innerTextField.invoke() //必须调用这行哦
                                     },
                                     onValueChange = {
@@ -532,19 +618,13 @@ class FreedomSettingActivity : BaseActivity() {
                                     }
                                     if (it) {
                                         isWebDavWaiting = true
-                                        model.initWebDav { test ->
+                                        model.initWebDav { test, msg ->
+                                            KToastUtils.show(applicationContext, msg)
                                             isWebDavWaiting = false
                                             if (test) {
                                                 model.changeIsWebDav(true)
-                                                Toast.makeText(applicationContext, "WebDav连接成功!", Toast.LENGTH_SHORT)
-                                                    .show()
                                                 return@initWebDav
                                             }
-                                            Toast.makeText(
-                                                applicationContext,
-                                                "WebDav连接失败, 请检查配置!",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
                                             model.changeIsWebDav(false)
                                         }
                                     }

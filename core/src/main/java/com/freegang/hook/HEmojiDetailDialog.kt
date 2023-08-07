@@ -1,10 +1,10 @@
-package com.freegang.douyin
+package com.freegang.hook
 
 import android.os.Bundle
 import android.widget.TextView
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
-import com.freegang.douyin.logic.SaveEmojiLogic
+import com.freegang.hook.logic.SaveEmojiLogic
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.view.KViewUtils
 import com.freegang.xpler.core.findFieldByType

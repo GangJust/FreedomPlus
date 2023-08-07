@@ -1,4 +1,4 @@
-package com.freegang.douyin
+package com.freegang.hook
 
 import android.os.Bundle
 import android.view.View

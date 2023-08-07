@@ -4,6 +4,8 @@ import android.content.Context
 import android.os.Environment
 import com.freegang.ktutils.io.child
 import com.freegang.ktutils.io.storageRootFile
+import com.freegang.ktutils.json.getStringOrDefault
+import com.freegang.ktutils.json.parseJSON
 import com.freegang.webdav.WebDav
 import com.tencent.mmkv.MMKV
 import java.io.File
@@ -186,6 +188,34 @@ class ConfigV1 private constructor() {
             mmkv.putString("webDavUsername", field.username)
             mmkv.putString("webDavPassword", field.password)
         }
+
+    /// WebDav 历史
+    val webDavConfigList: List<WebDav.Config>
+        get() {
+            val set = mmkv.getStringSet("webDavHistory", emptySet())!!
+            return set.map {
+                val json = it.parseJSON()
+                WebDav.Config(
+                    host = json.getStringOrDefault("host"),
+                    username = json.getStringOrDefault("username"),
+                    password = json.getStringOrDefault("password"),
+                )
+            }
+        }
+
+    ///
+    fun addWebDavConfig(config: WebDav.Config) {
+        val set = mmkv.getStringSet("webDavHistory", mutableSetOf())!!
+        set.add(config.toJson())
+        mmkv.putStringSet("webDavHistory", set)
+    }
+
+    ///
+    fun removeWebDavConfig(config: WebDav.Config) {
+        val set = mmkv.getStringSet("webDavHistory", mutableSetOf())!!
+        set.remove(config.toJson())
+        mmkv.putStringSet("webDavHistory", set)
+    }
 
     /// 是否开启隐藏顶部tab
     var isHideTab: Boolean = false

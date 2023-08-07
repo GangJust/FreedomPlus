@@ -26,6 +26,15 @@
 
 
 
+## 模块下载
+
+前往以下任意地址进行下载
+
+- [FreedomPlus Release](https://github.com/GangJust/FreedomPlus/releases/latest)
+- [Xposed Modules Repository Release](https://github.com/Xposed-Modules-Repo/com.freegang.fplus/releases/latest)
+
+
+
 ## 重要说明
 
 - 本项目作为一个工具，代码开源，供开发者学习参考使用；

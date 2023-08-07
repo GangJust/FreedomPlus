@@ -1,12 +1,14 @@
-package com.freegang.douyin
+package com.freegang.hook
 
 import android.app.Application
 import android.widget.Toast
 import com.freegang.config.ConfigV1
 import com.freegang.ktutils.app.KAppCrashUtils
+import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.io.hasOperationStorage
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.plugin.PluginBridge
+import com.freegang.ui.activity.FreedomErrorActivity
 import com.freegang.xpler.core.lpparam
 import com.freegang.xpler.core.toClass
 import com.freegang.xpler.loader.hostClassloader
@@ -27,7 +29,7 @@ class DouYinMain(private val app: Application) {
             //KLogCat.openStorage()
 
             //全局异常捕获工具
-            KAppCrashUtils.instance.init(app, "抖音异常退出!")
+            KAppCrashUtils.instance.init(app, FreedomErrorActivity::class.java, "抖音异常退出!")
 
             //文件读写权限检查
             if (!app.hasOperationStorage) {
@@ -58,6 +60,8 @@ class DouYinMain(private val app: Application) {
             HEmojiDetailDialogNew(lpparam)
             HHomeSideBarEntranceManagerV1(lpparam)
             HDouYinSettingNewVersionActivity(lpparam)
+        }.onFailure {
+            KToastUtils.show(app, "Freedom+ Error: ${it.message}")
         }
     }
 

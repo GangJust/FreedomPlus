@@ -1,9 +1,9 @@
-package com.freegang.douyin
+package com.freegang.hook
 
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
-import com.freegang.douyin.logic.ClipboardLogic
-import com.freegang.douyin.logic.DownloadLogic
+import com.freegang.hook.logic.ClipboardLogic
+import com.freegang.hook.logic.DownloadLogic
 import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.OnBefore
 import com.freegang.xpler.core.call

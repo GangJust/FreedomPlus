@@ -1,9 +1,9 @@
-package com.freegang.douyin.logic
+package com.freegang.hook.logic
 
 import android.content.Context
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
-import com.freegang.ktutils.app.KMediaUtils
+import com.freegang.ktutils.media.KMediaUtils
 import com.freegang.ktutils.io.child
 import com.freegang.ktutils.io.need
 import com.freegang.ktutils.net.KHttpUtils

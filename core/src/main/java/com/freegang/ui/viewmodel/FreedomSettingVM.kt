@@ -1,4 +1,4 @@
-package com.freegang.douyin.viewmodel
+package com.freegang.ui.viewmodel
 
 import android.app.Application
 import android.content.res.AssetManager
@@ -15,13 +15,14 @@ import com.freegang.ktutils.app.appVersionName
 import com.freegang.ktutils.app.readAssetsAsText
 import com.freegang.ktutils.io.child
 import com.freegang.ktutils.io.storageRootFile
+import com.freegang.ktutils.net.KUrlUtils
 import com.freegang.webdav.WebDav
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
 
-class SettingVM(application: Application) : AndroidViewModel(application) {
+class FreedomSettingVM(application: Application) : AndroidViewModel(application) {
     val app: Application get() = getApplication()
 
     private var _versionConfig = MutableLiveData<VersionConfig>()
@@ -69,6 +70,9 @@ class SettingVM(application: Application) : AndroidViewModel(application) {
     private var _webDavPassword = MutableLiveData("")
     var webDavPassword: LiveData<String> = _webDavPassword
 
+    private var _webDavHistory = MutableLiveData(emptyList<WebDav.Config>())
+    var webDavHistory: LiveData<List<WebDav.Config>> = _webDavHistory
+
     private var _isHideTab = MutableLiveData(false)
     var isHideTab: LiveData<Boolean> = _isHideTab
 
@@ -110,6 +114,7 @@ class SettingVM(application: Application) : AndroidViewModel(application) {
             changeLongPressMode(config.longPressMode)
             changeIsNotification(config.isNotification)
             changeIsWebDav(config.isWebDav)
+            loadWebHistory()
             setWebDavConfig(config.webDavConfig)
             changeIsHideTab(config.isHideTab)
             setHideTabKeywords(config.hideTabKeywords)
@@ -177,9 +182,15 @@ class SettingVM(application: Application) : AndroidViewModel(application) {
     }
 
     // 初始化WebDav
-    fun initWebDav(block: (Boolean) -> Unit) {
-        if (!hasWebDavConfig()) return
-
+    fun initWebDav(block: (Boolean, String) -> Unit) {
+        if (!hasWebDavConfig()) {
+            block.invoke(false, "请填写WebDav配置!")
+            return
+        }
+        if (!KUrlUtils.isValidUrl(webDavHost.value!!)) {
+            block.invoke(false, "WebDav地址格式有误!")
+            return
+        }
         viewModelScope.launch {
             try {
                 val webDav = WebDav(webDavHost.value!!, webDavUsername.value!!, webDavPassword.value!!)
@@ -189,10 +200,10 @@ class SettingVM(application: Application) : AndroidViewModel(application) {
                 if (!webDav.exists("数据目录，谨慎删除.txt", "Freedom")) {
                     webDav.put("数据目录，谨慎删除.txt", "Freedom", bytes = "该目录为Freedom数据目录，请谨慎删除!!!".toByteArray())
                 }
-                block.invoke(true)
+                block.invoke(true, "WebDav连接成功!")
             } catch (e: IOException) {
                 e.printStackTrace()
-                block.invoke(false)
+                block.invoke(false, "WebDav连接失败!")
             }
         }
     }
@@ -202,8 +213,12 @@ class SettingVM(application: Application) : AndroidViewModel(application) {
         val host = webDavHost.value ?: return false
         val username = webDavUsername.value ?: return false
         val password = webDavPassword.value ?: return false
-
         return !(host.isBlank() or username.isBlank() or password.isBlank())
+    }
+
+    // 读取WebDav历史
+    private fun loadWebHistory() {
+        _webDavHistory.value = config.webDavConfigList
     }
 
     // 保存WebDav配置
@@ -212,6 +227,18 @@ class SettingVM(application: Application) : AndroidViewModel(application) {
         _webDavUsername.value = webDavConfig.username
         _webDavPassword.value = webDavConfig.password
         config.webDavConfig = webDavConfig
+    }
+
+    // 增加WebDav历史
+    fun addWebDavConfig(webDavConfig: WebDav.Config) {
+        config.addWebDavConfig(webDavConfig)
+        loadWebHistory()
+    }
+
+    // 移除WebDav历史
+    fun removeWebDavConfig(webDavConfig: WebDav.Config) {
+        config.removeWebDavConfig(webDavConfig)
+        loadWebHistory()
     }
 
     // 隐藏顶部tab

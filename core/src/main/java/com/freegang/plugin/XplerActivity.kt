@@ -66,9 +66,13 @@ open class XplerActivity : ComponentActivity() {
         Resources(resources.assets, resources.displayMetrics, resources.configuration) {
 
         private val moduleResources by lazy {
-            val assetManager = AssetManager::class.java.newInstance()
-            assetManager.methodInvokes("addAssetPath", KtXposedHelpers.modulePath)
-            Resources(assetManager, resources.displayMetrics, resources.configuration)
+            try {
+                val assetManager = AssetManager::class.java.newInstance()
+                assetManager.methodInvokes("addAssetPath", KtXposedHelpers.modulePath)
+                Resources(assetManager, resources.displayMetrics, resources.configuration)
+            } catch (e: Exception) {
+                this
+            }
         }
 
         val moduleAssets: AssetManager get() = moduleResources.assets

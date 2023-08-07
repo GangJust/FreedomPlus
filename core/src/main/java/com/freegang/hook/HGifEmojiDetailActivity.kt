@@ -1,11 +1,11 @@
-package com.freegang.douyin
+package com.freegang.hook
 
 import android.os.Bundle
 import android.widget.TextView
 import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
-import com.freegang.douyin.logic.SaveEmojiLogic
+import com.freegang.hook.logic.SaveEmojiLogic
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.view.findViewsByExact
 import com.freegang.ktutils.view.idName

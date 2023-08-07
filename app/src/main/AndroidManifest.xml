@@ -49,28 +49,28 @@
             android:exported="true" />
 
         <activity
+            android:name=".activity.StubActivity"
+            android:exported="true" />
+
+        <activity
             android:name=".activity.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Freedom">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="de.robv.android.xposed.category.MODULE_SETTINGS" />
             </intent-filter>
         </activity>
 
-        <meta-data
-            android:name="xposedmodule"
-            android:value="true" />
-        <meta-data
-            android:name="xposedscope"
-            android:resource="@array/xposed_scope" />
-        <meta-data
-            android:name="xposeddescription"
-            android:value="@string/app_module_des" />
-        <meta-data
-            android:name="xposedminversion"
-            android:value="82" />
+        <activity-alias
+            android:name=".activity.MainActivityAlias"
+            android:exported="true"
+            android:targetActivity=".activity.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
     </application>
 
 </manifest>

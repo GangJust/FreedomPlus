@@ -9,6 +9,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.IBinder
 import androidx.annotation.Keep
+import com.freegang.ktutils.log.KLogCat
+import com.freegang.ktutils.reflect.classLoader
 import com.freegang.xpler.loader.moduleClassloader
 import java.lang.reflect.Method
 
@@ -23,6 +25,10 @@ class PluginInstrumentation(
     @Keep
     override fun newApplication(cl: ClassLoader?, className: String?, context: Context?): Application {
         return mBase.newApplication(cl, className, context)
+    }
+
+    override fun callApplicationOnCreate(app: Application?) {
+        mBase.callApplicationOnCreate(app)
     }
 
     @Keep
@@ -40,14 +46,14 @@ class PluginInstrumentation(
             var newIntent = intent
             if (intent?.component != null) {
                 try {
-                    val pluginClazz = moduleClassloader?.loadClass(intent.component?.className)
+                    val pluginClazz = pluginClassloader?.loadClass(intent.component?.className)
                     if (pluginClazz != null && XplerActivity::class.java.isAssignableFrom(pluginClazz)) {
                         newIntent = Intent(who, stubActivity)
                         intent.extras?.let { newIntent.putExtras(it) }
                         newIntent.putExtra(PLUGIN_PROXY_ACTIVITY, pluginClazz.name)
                     }
                 } catch (e: Exception) {
-                    //KLogCat.e(e.stackTraceToString())
+                    KLogCat.e(e)
                 }
             }
 
@@ -73,16 +79,19 @@ class PluginInstrumentation(
                 options,
             ) as ActivityResult?
         } catch (e: Exception) {
-            //KLogCat.e(e.stackTraceToString())
+            //KLogCat.e(e)
+            throw e
         }
-        return null
     }
 
     override fun newActivity(cl: ClassLoader?, className: String?, intent: Intent?): Activity {
         val xplerPlugin = intent?.getStringExtra(PLUGIN_PROXY_ACTIVITY) ?: ""
-        if (xplerPlugin.isNotEmpty() && moduleClassloader != null) {
-            return moduleClassloader!!.loadClass(xplerPlugin).newInstance() as Activity
+        if (xplerPlugin.isNotEmpty() && pluginClassloader != null) {
+            return pluginClassloader!!.loadClass(xplerPlugin).newInstance() as Activity
         }
         return mBase.newActivity(cl, className, intent)
     }
+
+    private val pluginClassloader: ClassLoader?
+        get() = moduleClassloader ?: PluginInstrumentation.classLoader
 }

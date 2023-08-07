@@ -1,58 +1,70 @@
 package com.freegang.view
 
-
 import android.content.Context
 import android.graphics.PixelFormat
 import android.util.AttributeSet
 import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.RelativeLayout
+import android.widget.LinearLayout
+import androidx.annotation.LayoutRes
 
-class OverlayView(
-    context: Context,
-    attrs: AttributeSet?,
-    defStyleAttr: Int,
-    defStyleRes: Int,
-) : RelativeLayout(context, attrs, defStyleAttr, defStyleRes) {
-    private val mScreenWidth = context.resources.displayMetrics.widthPixels
-    private val mScreenHeight = context.resources.displayMetrics.heightPixels
+class OverlayView : LinearLayout {
+    constructor(context: Context?) : this(context, null)
+
+    constructor(context: Context?, attrs: AttributeSet?) : this(context, attrs, 0)
+
+    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : this(context, attrs, defStyleAttr, 0)
+
+    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) : super(
+        context,
+        attrs,
+        defStyleAttr,
+        defStyleRes
+    )
+
     private val mWindowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    private val mParams = createLayoutParams()
 
-    private var mLayoutParams: WindowManager.LayoutParams? = null
-
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : this(context, attrs, defStyleAttr, 0)
-
-    constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
-
-    constructor(context: Context) : this(context, null)
+    private fun createLayoutParams(): WindowManager.LayoutParams {
+        val params = WindowManager.LayoutParams()
+        params.height = WindowManager.LayoutParams.WRAP_CONTENT
+        params.width = WindowManager.LayoutParams.WRAP_CONTENT
+        params.format = PixelFormat.TRANSLUCENT
+        params.flags = (WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+        return params
+    }
 
     override fun setLayoutParams(params: ViewGroup.LayoutParams) {
+        mParams.width = params.width
+        mParams.height = params.height
         super.setLayoutParams(params)
-        mLayoutParams = WindowManager.LayoutParams(
-            params.width,
-            params.height,
-            WindowManager.LayoutParams.FIRST_SUB_WINDOW,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-            PixelFormat.RGBA_8888,
-        )
     }
 
     fun setContentView(view: View) {
+        removeAllViews()
         addView(view)
     }
 
-    fun show() {
-        show(Gravity.CENTER, 0, 0)
+    fun setContentView(@LayoutRes rsId: Int) {
+        val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val view = inflater.inflate(rsId, null)
+        setContentView(view)
     }
 
-    fun show(gravity: Int, x: Int, y: Int) {
-        mLayoutParams?.runCatching {
-            this.gravity = gravity
-            this.x = x
-            this.y = y
-            mWindowManager.addView(this@OverlayView, this)
-        }
+    @JvmOverloads
+    fun show(
+        gravity: Int = Gravity.CENTER,
+        offsetX: Int = 0,
+        offsetY: Int = 0,
+    ) {
+        mParams.gravity = gravity
+        mParams.x = offsetX
+        mParams.y = offsetY
+        mWindowManager.addView(this@OverlayView, mParams)
     }
 }

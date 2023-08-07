@@ -5,6 +5,7 @@ import com.freegang.xpler.core.KtXposedHelpers
 import com.freegang.xpler.core.getStaticObjectField
 import com.freegang.xpler.core.hookClass
 import com.freegang.xpler.core.thisApplication
+import com.freegang.xpler.loader.injectClassLoader
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.IXposedHookZygoteInit
 import de.robv.android.xposed.XposedBridge
@@ -31,6 +32,7 @@ class HookInit : IXposedHookLoadPackage, IXposedHookZygoteInit {
         lpparam.hookClass(Application::class.java)
             .method("onCreate") {
                 onBefore {
+                    injectClassLoader(thisApplication.classLoader)
                     hookMain.handleLoadPackage(lpparam)
                     hookMain.handleLoadPackage(lpparam, thisApplication)
                 }

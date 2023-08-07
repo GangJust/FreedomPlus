@@ -1,4 +1,4 @@
-package com.freegang.douyin
+package com.freegang.hook
 
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1

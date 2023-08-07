@@ -159,12 +159,18 @@ class KtXposedHelpers {
         /**
          * 返回模块路径, 需要首先 [initModule] 调用
          */
-        val modulePath: String get() = mModulePath!!
+        val modulePath: String
+            get() {
+                return mModulePath!!
+            }
 
         /**
          * 返回模块资源, 需要首先 [initModule] 调用
          */
-        val moduleRes: XModuleResources get() = mModuleRes!!
+        val moduleRes: XModuleResources
+            get() {
+                return mModuleRes!!
+            }
 
         /**
          * 存储 XC_LoadPackage.LoadPackageParam 实例

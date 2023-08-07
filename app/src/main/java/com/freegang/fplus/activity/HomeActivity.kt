@@ -2,9 +2,12 @@ package com.freegang.fplus.activity
 
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
@@ -47,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -57,7 +61,9 @@ import com.freegang.fplus.Themes
 import com.freegang.fplus.resource.StringRes
 import com.freegang.fplus.viewmodel.HomeVM
 import com.freegang.ktutils.app.KAppUtils
+import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.app.appVersionName
+import com.freegang.ui.activity.FreedomSettingActivity
 import com.freegang.ui.component.FCard
 import com.freegang.ui.component.FMessageDialog
 import com.freegang.xpler.HookPackages
@@ -68,6 +74,7 @@ import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
 class HomeActivity : ComponentActivity() {
+    private val aliasActivityName = "com.freegang.fplus.activity.MainActivityAlias"
     private val model by viewModels<HomeVM>()
 
     @OptIn(ExperimentalFoundationApi::class)
@@ -117,6 +124,8 @@ class HomeActivity : ComponentActivity() {
             elevation = 0.dp,
             backgroundColor = Themes.nowColors.colors.background,
         ) {
+            val context = LocalContext.current
+            var visible by remember { mutableStateOf(isLauncherIconVisible(context)) }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -129,6 +138,26 @@ class HomeActivity : ComponentActivity() {
                         style = Themes.nowTypography.subtitle2,
                     )
                 }
+                Icon(
+                    painter = painterResource(id = if (visible) R.drawable.ic_visibility else R.drawable.ic_visibility_off),
+                    contentDescription = "显示/隐藏图标",
+                    tint = Themes.nowColors.icon,
+                    modifier = Modifier
+                        .size(20.dp)
+                        .combinedClickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() },
+                            onClick = {
+                                visible = !visible
+                                setLauncherIconVisible(context, visible)
+                                KToastUtils.show(context, if (visible) "显示图标" else "隐藏图标")
+                            },
+                            onLongClick = {
+
+                            }
+                        )
+                )
+                Spacer(modifier = Modifier.padding(horizontal = 12.dp))
                 Icon(
                     painter = painterResource(id = R.drawable.ic_motion),
                     contentDescription = "检查更新/日志",
@@ -322,7 +351,12 @@ class HomeActivity : ComponentActivity() {
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() },
                         onClick = {
-
+                            startActivity(
+                                Intent(
+                                    application,
+                                    FreedomSettingActivity::class.java,
+                                )
+                            )
                         }
                     ),
             ) {
@@ -637,5 +671,26 @@ class HomeActivity : ComponentActivity() {
         Toast
             .makeText(applicationContext, text, Toast.LENGTH_SHORT)
             .show()
+    }
+
+    private fun isLauncherIconVisible(context: Context): Boolean {
+        val component = ComponentName(context, aliasActivityName)
+        val intent = Intent().setComponent(component)
+        val manager = context.packageManager
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            manager.queryIntentActivities(intent, PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_DEFAULT_ONLY.toLong()))
+        } else {
+            manager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
+        }.isNotEmpty()
+    }
+
+    private fun setLauncherIconVisible(context: Context, visible: Boolean) {
+        val component = ComponentName(context, aliasActivityName)
+        val manager = context.packageManager
+        manager.setComponentEnabledSetting(
+            component,
+            if (visible) PackageManager.COMPONENT_ENABLED_STATE_ENABLED else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+            PackageManager.DONT_KILL_APP,
+        )
     }
 }

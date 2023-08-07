@@ -1,4 +1,4 @@
-package com.freegang.douyin
+package com.freegang.hook
 
 import android.os.Bundle
 import android.view.View
@@ -8,7 +8,7 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
-import com.freegang.douyin.logic.SaveCommentLogic
+import com.freegang.hook.logic.SaveCommentLogic
 import com.freegang.ktutils.display.KDisplayUtils
 import com.freegang.ktutils.view.KViewUtils
 import com.freegang.ktutils.view.findViewsByExact

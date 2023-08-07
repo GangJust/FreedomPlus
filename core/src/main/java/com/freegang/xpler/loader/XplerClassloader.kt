@@ -8,41 +8,12 @@ class XplerClassloader(
     private val parent: ClassLoader,
 ) : ClassLoader() {
 
-    /**
-     * 需要跳过加载的类放这里
-     * @param name 类名
-     */
-    private fun needSkipLoader(name: String?): Boolean {
-        val skipPrefix = mutableListOf(
-            "kotlin.",
-            "kotlinx.",
-            "android.",
-            "androidx.",
-        )
-        return skipPrefix.any { name?.startsWith(it) ?: false }
-    }
-
-    /**
-     * 需要模块加载的类放这里
-     * @param name 类名
-     */
-    private fun moduleLoader(name: String?): Boolean {
-        val modulePrefix = mutableListOf(
-            "com.freegang.",
-        )
-        return modulePrefix.any { name?.startsWith(it) ?: false }
-    }
-
     @Throws(ClassNotFoundException::class)
     override fun loadClass(name: String?, resolve: Boolean): Class<*> {
-        //if (needSkipLoader(name)) throw ClassNotFoundException(name)  //适配太极需要注释该行
-
-        if (moduleLoader(name)) {
-            try {
-                return parent.loadClass(name)
-            } catch (e: ClassNotFoundException) {
-                //e.printStackTrace()
-            }
+        try {
+            return parent.loadClass(name)
+        } catch (e: ClassNotFoundException) {
+            //e.printStackTrace()
         }
 
         try {

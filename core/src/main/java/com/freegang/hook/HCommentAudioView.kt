@@ -1,4 +1,4 @@
-package com.freegang.douyin
+package com.freegang.hook
 
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -6,7 +6,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.core.view.children
 import com.freegang.base.BaseHook
-import com.freegang.douyin.logic.SaveAudioLogic
+import com.freegang.hook.logic.SaveAudioLogic
 import com.freegang.ktutils.display.dip2px
 import com.freegang.ktutils.json.firstJsonObject
 import com.freegang.ktutils.json.getJSONArrayOrDefault
@@ -63,23 +63,21 @@ class HCommentAudioView(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Any
                         val frameLayout = thisView as FrameLayout
                         val linearLayout = frameLayout.children.first { it is LinearLayout } as LinearLayout
 
-
                         val find = linearLayout.children.find { "${it.contentDescription}" == "FAudioSave" }
-                        if (find == null) {
-                            ImageView(thisView.context).apply {
-                                setImageDrawable(KtXposedHelpers.getDrawable(R.mipmap.ic_bubbles))
-                                contentDescription = "FAudioSave"
-                                layoutParams = ViewGroup.LayoutParams(context.dip2px(12f), context.dip2px(12f))
-                                setOnClickListener {
-                                    SaveAudioLogic(
-                                        hook = this@HCommentAudioView,
-                                        context = it.context,
-                                        url = mainUrl,
-                                        filename = KTextUtils.get(comment.text, "${System.currentTimeMillis() / 1000}"),
-                                    )
-                                }
-                                linearLayout.addView(this)
+                        if (find != null) linearLayout.removeView(find)
+                        ImageView(thisView.context).apply {
+                            setImageDrawable(KtXposedHelpers.getDrawable(R.mipmap.ic_bubbles))
+                            contentDescription = "FAudioSave"
+                            layoutParams = ViewGroup.LayoutParams(context.dip2px(16f), context.dip2px(12f))
+                            setOnClickListener {
+                                SaveAudioLogic(
+                                    hook = this@HCommentAudioView,
+                                    context = it.context,
+                                    url = mainUrl,
+                                    filename = KTextUtils.get(comment.text, "${System.currentTimeMillis() / 1000}"),
+                                )
                             }
+                            linearLayout.addView(this)
                         }
                     }
                     if (result.isFailure) {

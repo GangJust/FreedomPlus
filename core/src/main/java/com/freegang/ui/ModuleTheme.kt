@@ -60,8 +60,8 @@ fun LightTheme(
             primaryVariant = Color(0xFFF2C18C),
             secondary = Color(0xFFE89F5B),
             secondaryVariant = Color(0xFFCA9D7C),
-            background = Color(0xFFFDFAF8),
-            surface = Color(0xFFFDFAF8),
+            background = Color(0xFFF8FAFB),
+            surface = Color(0xFFF8FAFB),
             error = Color(0xFF790000),
             onPrimary = Color(0xFFFFFFFF),
             onSecondary = Color(0xFFFFFFFF),
@@ -73,13 +73,13 @@ fun LightTheme(
     ) {
         rememberSystemUiController().run {
             setSystemBarsColor(
-                color = Color(0xFFFDFAF8),
+                color = Color(0xFFF8FAFB),
                 darkIcons = true,
             )
             Surface(
                 modifier = Modifier,
-                color = Color(0xFFFDFAF8),
-                contentColor = Color(0xFFFDFAF8),
+                color = Color(0xFFF8FAFB),
+                contentColor = Color(0xFFF8FAFB),
             ) {
                 content()
             }

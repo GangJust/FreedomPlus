@@ -1,18 +1,20 @@
-package com.freegang.douyin.logic
+package com.freegang.hook.logic
 
 import android.content.Context
 import android.widget.Toast
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
 import com.freegang.ktutils.app.IProgressNotification
-import com.freegang.ktutils.app.KMediaUtils
 import com.freegang.ktutils.app.KNotifiUtils
 import com.freegang.ktutils.io.child
 import com.freegang.ktutils.io.need
 import com.freegang.ktutils.io.pureFileName
 import com.freegang.ktutils.io.pureName
 import com.freegang.ktutils.io.secureFilename
+import com.freegang.ktutils.log.KLogCat
+import com.freegang.ktutils.media.KMediaUtils
 import com.freegang.ktutils.net.KHttpUtils
+import com.freegang.ktutils.net.KOkHttpUtils
 import com.freegang.webdav.WebDav
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +32,7 @@ class DownloadLogic(
 
     companion object {
         private val config get() = ConfigV1.get()
-        private val webdav: WebDav by lazy { WebDav(config.webDavConfig) }
+        private val webdav: WebDav get() = WebDav(config.webDavConfig)
         private var downloadNotifyId = 1
     }
 
@@ -428,6 +430,7 @@ class DownloadLogic(
             webdav.put(file = file, "Freedom".plus(directoryName))
             true
         } catch (e: Exception) {
+            KLogCat.e(e)
             e.printStackTrace()
             false
         }

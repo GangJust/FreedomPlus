@@ -1,14 +1,14 @@
-package com.freegang.douyin
+package com.freegang.hook
 
 import android.app.ActivityOptions
 import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
 import com.freegang.base.BaseHook
-import com.freegang.douyin.activity.FreedomSettingActivity
+import com.freegang.ui.activity.FreedomSettingActivity
+import com.freegang.ktutils.app.activeActivity
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.app.isDarkMode
-import com.freegang.ktutils.app.topActivity
 import com.freegang.ktutils.view.traverse
 import com.freegang.xpler.core.EmptyHook
 import com.freegang.xpler.core.OnAfter
@@ -36,7 +36,7 @@ class HDouYinSettingNewVersionActivity(lpparam: XC_LoadPackage.LoadPackageParam)
                                         val intent = Intent(view.context, FreedomSettingActivity::class.java)
                                         intent.putExtra("isDark", view.context.isDarkMode)
                                         val options = ActivityOptions.makeCustomAnimation(
-                                            topActivity,
+                                            activeActivity,
                                             android.R.anim.slide_in_left,
                                             android.R.anim.slide_out_right
                                         )

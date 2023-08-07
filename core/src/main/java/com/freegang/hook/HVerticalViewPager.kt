@@ -1,4 +1,4 @@
-package com.freegang.douyin
+package com.freegang.hook
 
 import android.app.ActivityOptions
 import android.content.Intent
@@ -10,9 +10,9 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
-import com.freegang.douyin.activity.FreedomSettingActivity
+import com.freegang.ui.activity.FreedomSettingActivity
 import com.freegang.ktutils.app.isDarkMode
-import com.freegang.ktutils.app.topActivity
+import com.freegang.ktutils.app.activeActivity
 import com.freegang.ktutils.display.KDisplayUtils
 import com.freegang.ktutils.other.KAutomationUtils
 import com.freegang.ktutils.view.KFastClickUtils
@@ -194,7 +194,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                         val intent = Intent(it.context, FreedomSettingActivity::class.java)
                         intent.putExtra("isDark", view.context.isDarkMode)
                         val options = ActivityOptions.makeCustomAnimation(
-                            topActivity,
+                            activeActivity,
                             android.R.anim.slide_in_left,
                             android.R.anim.slide_out_right
                         )

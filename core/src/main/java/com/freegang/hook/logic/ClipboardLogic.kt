@@ -1,4 +1,4 @@
-package com.freegang.douyin.logic
+package com.freegang.hook.logic
 
 import android.content.ClipData
 import android.content.ClipboardManager

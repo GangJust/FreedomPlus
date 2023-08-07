@@ -14,26 +14,6 @@ object PluginBridge {
 
     /**
      * 动态代理 Instrumentation
-     */
-    /*@SuppressLint("PrivateApi")
-    private fun hookInstrumentation(
-        application: Application,
-        subActivityClass: Class<*>,
-    ) {
-        // 获取到 ActivityThread 中的静态字段 sCurrentActivityThread 即是它自身的实例对象
-        val atClazz = Class.forName("android.app.ActivityThread")
-        val sCurrentActivityThreadFiled = atClazz.findField("sCurrentActivityThread")
-        val sCurrentActivityThread = sCurrentActivityThreadFiled.get(null) ?: return
-
-        val mInstrumentationFiled = atClazz.findField("mInstrumentation")
-        val mInstrumentation = sCurrentActivityThread.findFieldAndGet("mInstrumentation") as Instrumentation
-
-        //替换
-        mInstrumentationFiled.set(sCurrentActivityThread, PluginInstrumentation(mInstrumentation, subActivityClass))
-    }*/
-
-    /**
-     * 动态代理 Instrumentation
      * @url https://github.com/androidmalin/AndroidComponentPlugin/blob/develop_kotlin/pluingImpl/src/main/java/com/malin/plugin/impl/HookInstrumentation.kt#L32
      */
     @SuppressLint("DiscouragedPrivateApi", "PrivateApi")
