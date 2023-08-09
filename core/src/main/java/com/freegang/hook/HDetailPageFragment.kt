@@ -26,11 +26,9 @@ import kotlinx.coroutines.delay
 
 class HDetailPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Any>(lpparam) {
     companion object {
+        @get:Synchronized
+        @set:Synchronized
         var isComment = false
-            @Synchronized
-            set
-            @Synchronized
-            get
     }
 
     override fun setTargetClass(): Class<*> = DouYinMain.detailPageFragmentClazz ?: NoneHook::class.java

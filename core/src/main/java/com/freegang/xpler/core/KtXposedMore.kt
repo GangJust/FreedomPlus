@@ -206,7 +206,7 @@ val Any.lpparam: XC_LoadPackage.LoadPackageParam get() = KtXposedHelpers.lpparam
  * @throws ClassNotFoundError
  * @return 被找到的类
  */
-fun String.toClass(classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER): Class<*>? {
+fun String.findClass(classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER): Class<*>? {
     return XposedHelpers.findClass(this, classLoader)
 }
 
@@ -220,33 +220,6 @@ fun String.toClass(classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER): Cla
 fun String.hookClass(classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER): KtXposedHelpers {
     val clazz = XposedHelpers.findClass(this, classLoader)
     return KtXposedHelpers.hookClass(clazz)
-}
-
-/**
- * 将某个字符串转换为Class同时Hook，如果该类/方法不存在抛出异常
- *
- * 例: "com.xxx.MainActivity#onCreate".hookMethod(Bundle::class.java){ ... }
- *
- * @param classLoader 类加载器, 默认为[XposedBridge.BOOTCLASSLOADER]
- * @throws ClassNotFoundError|NoSuchMethodException
- * @return KtXposedHelpers
- */
-fun String.hookMethod(
-    classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER,
-    vararg argsTypes: Any,
-    block: MethodHook.() -> Unit
-): KtXposedHelpers {
-    if (!this.contains("#")) throw NoSuchMethodException("please refer to: \"com.xxx.ClassName#MethodName\".hookMethod(...)")
-    val indexOf = this.indexOf("#")
-    val className = this.substring(0, indexOf)
-    val methodName = this.substring(indexOf + 1)
-
-    val clazz = XposedHelpers.findClass(className, classLoader)
-    return KtXposedHelpers
-        .hookClass(clazz)
-        .method(methodName, *argsTypes) {
-            block.invoke(this)
-        }
 }
 
 
@@ -357,16 +330,6 @@ fun ClassLoader.hookClass(className: String): KtXposedHelpers {
     return KtXposedHelpers.hookClass(className, this)
 }
 
-/**
- * 查找某个类
- *
- * @param className 类名
- * @return 找到的某个类
- */
-fun ClassLoader.findClassByXposed(className: String): Class<*>? {
-    return XposedHelpers.findClass(className, this)
-}
-
 
 //Context
 /**
@@ -409,7 +372,7 @@ fun Context.getModuleColor(@ColorRes id: Int): Int {
  * @param id id
  * @return Animation XmlResourceParser
  */
-fun Context.getAnimation(@AnimatorRes @AnimRes id: Int): XmlResourceParser {
+fun Context.getModuleAnimation(@AnimatorRes @AnimRes id: Int): XmlResourceParser {
     return KtXposedHelpers.getAnimation(id)
 }
 
@@ -419,7 +382,7 @@ fun Context.getAnimation(@AnimatorRes @AnimRes id: Int): XmlResourceParser {
  * @param id id
  * @return String
  */
-fun Context.getString(@StringRes id: Int): String {
+fun Context.getModuleString(@StringRes id: Int): String {
     return KtXposedHelpers.moduleRes.getString(id)
 }
 

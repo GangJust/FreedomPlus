@@ -47,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -55,6 +56,8 @@ import com.freegang.base.BaseActivity
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.app.appVersionName
+import com.freegang.ktutils.json.getIntOrDefault
+import com.freegang.ktutils.json.parseJSONArray
 import com.freegang.ui.asDp
 import com.freegang.ui.component.FCard
 import com.freegang.ui.component.FCardBorder
@@ -184,7 +187,7 @@ class FreedomSettingActivity : BaseActivity() {
 
     @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
     @Composable
-    private fun HomeView() {
+    private fun BodyView() {
         //版本更新弹窗
         var showNewVersionDialog by remember { mutableStateOf(true) }
         val version by model.versionConfig.observeAsState()
@@ -411,7 +414,10 @@ class FreedomSettingActivity : BaseActivity() {
                                     singleLine = true,
                                     textStyle = MaterialTheme.typography.body1,
                                     decorationBox = { innerTextField ->
-                                        if (host.isEmpty()) Text(text = "http://服务器地址:端口/初始化路径")
+                                        if (host.isEmpty()) Text(
+                                            text = "http://服务器地址:端口/初始化路径",
+                                            style = MaterialTheme.typography.body1.copy(color = Color(0xFF999999)),
+                                        )
                                         innerTextField.invoke() //必须调用这行哦
                                     },
                                     onValueChange = {
@@ -433,7 +439,10 @@ class FreedomSettingActivity : BaseActivity() {
                                     singleLine = true,
                                     textStyle = MaterialTheme.typography.body1,
                                     decorationBox = { innerTextField ->
-                                        if (username.isEmpty()) Text(text = "用户名")
+                                        if (username.isEmpty()) Text(
+                                            text = "用户名",
+                                            style = MaterialTheme.typography.body1.copy(color = Color(0xFF999999)),
+                                        )
                                         innerTextField.invoke() //必须调用这行哦
                                     },
                                     onValueChange = {
@@ -454,7 +463,10 @@ class FreedomSettingActivity : BaseActivity() {
                                     singleLine = true,
                                     textStyle = MaterialTheme.typography.body1,
                                     decorationBox = { innerTextField ->
-                                        if (password.isEmpty()) Text(text = "密码")
+                                        if (password.isEmpty()) Text(
+                                            text = "密码",
+                                            style = MaterialTheme.typography.body1.copy(color = Color(0xFF999999)),
+                                        )
                                         innerTextField.invoke() //必须调用这行哦
                                     },
                                     onValueChange = {
@@ -528,6 +540,111 @@ class FreedomSettingActivity : BaseActivity() {
             )
         }
 
+        //定时退出
+        var showTimedExitSettingDialog by remember { mutableStateOf(false) }
+        if (showTimedExitSettingDialog) {
+            val times = model.timedExitValue.value?.parseJSONArray()
+            var timedExit by remember { mutableStateOf("${times?.getIntOrDefault(0, 10) ?: 10}") }
+            var freeExit by remember { mutableStateOf("${times?.getIntOrDefault(1, 3) ?: 3}") }
+
+            KToastUtils.show(this, "建议在3分钟以上~")
+            FMessageDialog(
+                title = "定时退出时间设置",
+                cancel = "取消",
+                confirm = "确定",
+                onCancel = {
+                    showTimedExitSettingDialog = false
+                },
+                onConfirm = {
+                    showTimedExitSettingDialog = false
+                    val intTimedExit = timedExit.toIntOrNull()
+                    val intFreeExit = freeExit.toIntOrNull()
+                    if (intTimedExit == null || intFreeExit == null) {
+                        KToastUtils.show(this, "请输入正确的分钟数")
+                        return@FMessageDialog
+                    }
+                    if (intTimedExit < 0 || intFreeExit < 0) {
+                        KToastUtils.show(this, "请输入正确的分钟数")
+                        return@FMessageDialog
+                    }
+                    KToastUtils.show(this, "设置成功, 下次启动生效")
+                    model.setTimedExitValue("[$timedExit, $freeExit]")
+                }
+            ) {
+                Column {
+                    FCard(
+                        border = FCardBorder(borderWidth = 1.0.dp),
+                        content = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    modifier = Modifier.padding(horizontal = 12.dp),
+                                    text = "运行退出",
+                                )
+                                BasicTextField(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(vertical = 12.dp),
+                                    value = timedExit,
+                                    maxLines = 1,
+                                    singleLine = true,
+                                    textStyle = MaterialTheme.typography.body1,
+                                    decorationBox = { innerTextField ->
+                                        if (timedExit.isEmpty()) Text(
+                                            text = "运行超过指定时间",
+                                            style = MaterialTheme.typography.body1.copy(color = Color(0xFF999999)),
+                                        )
+                                        innerTextField.invoke() //必须调用这行哦
+                                    },
+                                    onValueChange = {
+                                        timedExit = it
+                                    },
+                                )
+                                Text(
+                                    modifier = Modifier.padding(horizontal = 12.dp),
+                                    text = "分钟",
+                                )
+                            }
+                        },
+                    )
+                    Spacer(modifier = Modifier.padding(vertical = 4.dp))
+                    FCard(
+                        border = FCardBorder(borderWidth = 1.0.dp),
+                        content = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    modifier = Modifier.padding(horizontal = 12.dp),
+                                    text = "空闲退出",
+                                )
+                                BasicTextField(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(vertical = 12.dp),
+                                    value = freeExit,
+                                    maxLines = 1,
+                                    singleLine = true,
+                                    textStyle = MaterialTheme.typography.body1,
+                                    decorationBox = { innerTextField ->
+                                        if (freeExit.isEmpty()) Text(
+                                            text = "空闲超过指定时间",
+                                            style = MaterialTheme.typography.body1.copy(color = Color(0xFF999999)),
+                                        )
+                                        innerTextField.invoke() //必须调用这行哦
+                                    },
+                                    onValueChange = {
+                                        freeExit = it
+                                    },
+                                )
+                                Text(
+                                    modifier = Modifier.padding(horizontal = 12.dp),
+                                    text = "分钟",
+                                )
+                            }
+                        },
+                    )
+                }
+            }
+        }
+
         Scaffold(
             modifier = Modifier.padding(horizontal = 24.dp),
             topBar = { TopBarView() }
@@ -552,7 +669,7 @@ class FreedomSettingActivity : BaseActivity() {
                                 }
                             )
                             SwitchItem(
-                                text = "表情包保存",
+                                text = "保存表情包/评论视频、图片",
                                 checked = model.isEmoji.observeAsState(false),
                                 onCheckedChange = {
                                     model.changeIsEmoji(it)
@@ -645,6 +762,17 @@ class FreedomSettingActivity : BaseActivity() {
                                     model.changeIsHideTab(it)
                                 },
                             )
+                            SwitchItem(
+                                text = "定时退出",
+                                subtext = "点击设置退出时间",
+                                checked = model.isTimedExit.observeAsState(false),
+                                onClick = {
+                                    showTimedExitSettingDialog = true
+                                },
+                                onCheckedChange = {
+                                    model.changeIsTimeExit(it)
+                                },
+                            )
                         }
                     },
                 )
@@ -727,7 +855,7 @@ class FreedomSettingActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             AutoTheme {
-                HomeView()
+                BodyView()
             }
         }
     }

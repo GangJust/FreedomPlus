@@ -2,7 +2,6 @@ package com.freegang.ui.viewmodel
 
 import android.app.Application
 import android.content.res.AssetManager
-import android.os.Environment
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -10,11 +9,10 @@ import androidx.lifecycle.viewModelScope
 import com.freegang.config.ConfigV1
 import com.freegang.config.Version
 import com.freegang.config.VersionConfig
+import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.appVersionCode
 import com.freegang.ktutils.app.appVersionName
 import com.freegang.ktutils.app.readAssetsAsText
-import com.freegang.ktutils.io.child
-import com.freegang.ktutils.io.storageRootFile
 import com.freegang.ktutils.net.KUrlUtils
 import com.freegang.webdav.WebDav
 import kotlinx.coroutines.Dispatchers
@@ -79,26 +77,22 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     private var _hideTabKeywords = MutableLiveData("")
     var hideTabKeywords: LiveData<String> = _hideTabKeywords
 
+    private var _isTimedExit = MutableLiveData(false)
+    var isTimedExit: LiveData<Boolean> = _isTimedExit
+
+    private var _timedExitValue = MutableLiveData("")
+    var timedExitValue: LiveData<String> = _timedExitValue
+
 
     // 检查版本更新
     fun checkVersion() {
+        if (KAppUtils.isAppInDebug(app)) return //测试包不检查更新
+        if (app.appVersionName.contains(Regex("beta|alpha"))) return //非release包不检查更新
         viewModelScope.launch {
             val version = withContext(Dispatchers.IO) { Version.getRemoteReleasesLatest() }
             if (version != null) _versionConfig.value = version
         }
     }
-
-    // Freedom -> 外置存储器/Download/Freedom/
-    val freedomData
-        get() = getApplication<Application>().storageRootFile
-            .child(Environment.DIRECTORY_DOWNLOADS)
-            .child("Freedom")
-
-    // FreedomPlus -> 外置存储器/DCIM/Freedom/
-    val freedomPlusData
-        get() = getApplication<Application>().storageRootFile
-            .child(Environment.DIRECTORY_DCIM)
-            .child("Freedom")
 
     // 读取模块配置
     fun loadConfig() {
@@ -118,6 +112,8 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
             setWebDavConfig(config.webDavConfig)
             changeIsHideTab(config.isHideTab)
             setHideTabKeywords(config.hideTabKeywords)
+            changeIsTimeExit(config.isTimedExit)
+            setTimedExitValue(config.timedExitValue)
         }
     }
 
@@ -251,6 +247,18 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     fun setHideTabKeywords(hideTabKeywords: String) {
         _hideTabKeywords.value = hideTabKeywords
         config.hideTabKeywords = hideTabKeywords
+    }
+
+    // 定时退出
+    fun changeIsTimeExit(value: Boolean) {
+        _isTimedExit.value = value
+        config.isTimedExit = value
+    }
+
+    // 运行分钟数, 空闲分钟数
+    fun setTimedExitValue(value: String) {
+        _timedExitValue.value = value
+        config.timedExitValue = value
     }
 
     // 保存版本信息

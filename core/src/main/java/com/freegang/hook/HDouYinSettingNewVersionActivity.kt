@@ -5,11 +5,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
 import com.freegang.base.BaseHook
-import com.freegang.ui.activity.FreedomSettingActivity
 import com.freegang.ktutils.app.activeActivity
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.view.traverse
+import com.freegang.ui.activity.FreedomSettingActivity
 import com.freegang.xpler.core.EmptyHook
 import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.thisActivity
@@ -19,7 +19,9 @@ import kotlinx.coroutines.delay
 import xyz.junerver.ssktx.buildSpannableString
 
 class HDouYinSettingNewVersionActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHook>(lpparam) {
-    override fun setTargetClass(): Class<*> = findClass("com.ss.android.ugc.aweme.setting.ui.DouYinSettingNewVersionActivity")
+    override fun setTargetClass(): Class<*> {
+        return findClass("com.ss.android.ugc.aweme.setting.ui.DouYinSettingNewVersionActivity")
+    }
 
     @OnAfter("onCreate")
     fun onCreate(it: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {

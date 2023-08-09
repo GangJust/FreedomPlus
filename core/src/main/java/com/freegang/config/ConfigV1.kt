@@ -239,6 +239,28 @@ class ConfigV1 private constructor() {
             field = value
         }
 
+    ///
+    var isTimedExit: Boolean = false
+        get() {
+            field = mmkv.getBoolean("isTimedExit", false)!!
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("isTimedExit", value)
+            field = value
+        }
+
+    ///
+    var timedExitValue: String = "[10, 3]"
+        get() {
+            field = mmkv.getString("timedExitValue", "[10, 3]")!!
+            return field
+        }
+        set(value) {
+            mmkv.putString("timedExitValue", value)
+            field = value
+        }
+
     /// 版本信息
     var versionConfig: ConfigV1.Version = ConfigV1.Version()
         get() {

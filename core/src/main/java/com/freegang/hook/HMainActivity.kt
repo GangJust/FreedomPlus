@@ -50,6 +50,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
     @OnAfter("onCreate")
     fun onCreate(it: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {
         hookBlock(it) {
+            DouYinMain.timedExitCountDown?.restart()
             showToast(thisContext, "Freedom+ Attach!")
         }
     }

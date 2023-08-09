@@ -61,7 +61,7 @@ class KtXposedHelpers {
          * 需要注意的是, 模块中的xml不能直接引入模块自身的资源文件,
          * 如: @color/module_blank, @drawable/ic_logo 等
          *
-         * 如需加载资源文件见[getDrawable]、[getColor]、[getDrawable]、[getAnimation]
+         * 如需加载资源文件见[getDrawable]、[getColor]、[getDrawable]、[getModuleAnimation]
          *
          * @param context context
          * @param id id

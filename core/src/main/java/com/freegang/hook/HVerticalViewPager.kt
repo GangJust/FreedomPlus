@@ -10,13 +10,13 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
-import com.freegang.ui.activity.FreedomSettingActivity
-import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.app.activeActivity
+import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.display.KDisplayUtils
 import com.freegang.ktutils.other.KAutomationUtils
 import com.freegang.ktutils.view.KFastClickUtils
 import com.freegang.ktutils.view.traverse
+import com.freegang.ui.activity.FreedomSettingActivity
 import com.freegang.xpler.core.hookClass
 import com.freegang.xpler.core.thisView
 import com.freegang.xpler.core.thisViewGroup
@@ -66,6 +66,11 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                         event.y,
                         event.metaState
                     )
+
+                    if (config.isTimedExit) {
+                        DouYinMain.freeExitCountDown?.cancel()
+                        DouYinMain.freeExitCountDown?.start()
+                    }
 
                     //避免快速下发 ACTION_DOWN
                     if (KFastClickUtils.isFastDoubleClick(50L) && event.action == MotionEvent.ACTION_DOWN) {

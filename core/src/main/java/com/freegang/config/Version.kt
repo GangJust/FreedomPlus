@@ -1,5 +1,6 @@
 package com.freegang.config
 
+import android.util.Base64
 import com.freegang.ktutils.json.firstJsonObject
 import com.freegang.ktutils.json.getLongOrDefault
 import com.freegang.ktutils.json.getStringOrDefault
@@ -13,8 +14,6 @@ object Version {
 
     // 获取Github最后一次 releases
     fun getRemoteReleasesLatest(): VersionConfig? {
-        //if (null == null) return null //一般用作逻辑阻断
-
         val get = KHttpUtils.get(githubReleasesApi)
         if (get.isEmpty()) return null
         if (!get.contains("browser_download_url")) return null
@@ -34,6 +33,14 @@ object Version {
             updatedAt = json.getJSONArray("assets").firstJsonObject().getStringOrDefault("updated_at"),
             browserDownloadUrl = json.getJSONArray("assets").firstJsonObject().getStringOrDefault("browser_download_url"),
         )
+    }
+
+    // 获取适配版本列表
+    fun getVersions(): String {
+        //if (null == null) return "null" //一般用作逻辑阻断
+        //return KHttpUtils.get("https://raw.githubusercontent.com/GangJust/FreedomPlus/master/versions.json")
+        val body = KHttpUtils.get("https://api.github.com/repos/GangJust/FreedomPlus/contents/versions.json?ref=master")
+        return Base64.decode(body.parseJSON().getStringOrDefault("content"), Base64.DEFAULT).toString(Charsets.UTF_8)
     }
 }
 

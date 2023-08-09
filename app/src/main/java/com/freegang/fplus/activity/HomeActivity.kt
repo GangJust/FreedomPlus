@@ -330,10 +330,14 @@ class HomeActivity : ComponentActivity() {
                                     )
                                 }
                                 if (packageInfo != null) {
+                                    var hint by remember { mutableStateOf("自行测试功能") }
+                                    LaunchedEffect("Versions") {
+                                        hint = model.isSupportVersions(packageInfo.versionName)
+                                    }
+
                                     Spacer(modifier = Modifier.padding(vertical = 2.dp))
                                     Text(
-                                        text = "抖音: ${packageInfo.versionName}，" +
-                                                model.isSupportVersions(packageInfo.versionName),
+                                        text = "抖音: ${packageInfo.versionName}，$hint",
                                         style = Themes.nowTypography.body2,
                                     )
                                 }
@@ -596,6 +600,7 @@ class HomeActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         model.checkVersion()
+        model.updateVersions()
     }
 
     override fun onPause() {
@@ -618,7 +623,7 @@ class HomeActivity : ComponentActivity() {
 
         val manager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         manager.setPrimaryClip(ClipData.newPlainText("github link", "https://github.com/GangJust/FreedomPlus"))
-        showToast("未安装浏览器，链接已复制！")
+        KToastUtils.show(applicationContext, "未安装浏览器，链接已复制！")
     }
 
     private fun toEmail() {
@@ -650,7 +655,7 @@ class HomeActivity : ComponentActivity() {
 
         val manager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         manager.setPrimaryClip(ClipData.newPlainText("telegram link", "https://t.me/FreedomPlugin"))
-        showToast("未安装telegram，链接已复制！")
+        KToastUtils.show(applicationContext, "未安装telegram，链接已复制！")
     }
 
     private fun rewardByAlipay() {
@@ -664,13 +669,7 @@ class HomeActivity : ComponentActivity() {
             return
         } catch (_: Exception) {
         }
-        showToast("谢谢，你没有安装支付宝客户端")
-    }
-
-    private fun showToast(text: String) {
-        Toast
-            .makeText(applicationContext, text, Toast.LENGTH_SHORT)
-            .show()
+        KToastUtils.show(applicationContext, "谢谢，你没有安装支付宝客户端")
     }
 
     private fun isLauncherIconVisible(context: Context): Boolean {
