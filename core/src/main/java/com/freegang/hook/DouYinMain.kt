@@ -1,6 +1,7 @@
 package com.freegang.hook
 
 import android.app.Application
+import android.content.Intent
 import android.os.CountDownTimer
 import android.os.Process
 import android.widget.Toast
@@ -13,7 +14,7 @@ import com.freegang.ktutils.json.getIntOrDefault
 import com.freegang.ktutils.json.parseJSONArray
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.plugin.PluginBridge
-import com.freegang.ui.activity.FreedomErrorActivity
+import com.freegang.xpler.HookPackages
 import com.freegang.xpler.core.findClass
 import com.freegang.xpler.core.lpparam
 import com.freegang.xpler.loader.hostClassloader
@@ -25,6 +26,7 @@ class DouYinMain(private val app: Application) {
     companion object {
         val awemeHostApplication get() = "com.ss.android.ugc.aweme.app.host.AwemeHostApplication".findClass(lpparam.classLoader)!!
         var detailPageFragmentClazz: Class<*>? = null
+        var videoPinchClazz: Class<*>? = null
         var emojiMethods: List<Method> = emptyList()
 
         var timedExitCountDown: CountDownTimer? = null
@@ -33,25 +35,29 @@ class DouYinMain(private val app: Application) {
 
     init {
         runCatching {
-            //日志工具
-            KLogCat.init(app)
-            //KLogCat.openStorage()
-
-            //全局异常捕获工具
-            KAppCrashUtils.instance.init(app, FreedomErrorActivity::class.java, "抖音异常退出!")
-
             //文件读写权限检查
             if (!app.hasOperationStorage) {
                 Toast.makeText(app, "抖音没有文件读写权限!", Toast.LENGTH_LONG).show()
                 return@runCatching
             }
 
-            //插件化注入
-            val subClazz = hostClassloader!!.loadClass("com.ss.android.ugc.aweme.bullet.ui.BulletContainerActivity")
-            PluginBridge.init(app, subClazz)
-
             //加载配置
             ConfigV1.initialize(app)
+
+            //日志工具
+            KLogCat.init(app)
+            //KLogCat.openStorage()
+
+            //插件化注入
+            if (!ConfigV1.get().isDisablePlugin) {
+                val subClazz = hostClassloader!!.loadClass("com.ss.android.ugc.aweme.bullet.ui.BulletContainerActivity")
+                PluginBridge.init(app, subClazz)
+            }
+
+            //全局异常捕获工具
+            val intent = Intent()
+            intent.setClassName(HookPackages.modulePackageName, "${HookPackages.modulePackageName}.activity.ErrorActivity")
+            KAppCrashUtils.instance.init(app, intent, "抖音异常退出!")
 
             //初始化DexKit
             initDexKit()
@@ -93,6 +99,22 @@ class DouYinMain(private val app: Application) {
                     )
                 }
                 detailPageFragmentClazz = findMaps["DetailPageFragment"]?.firstOrNull()?.getClassInstance(lpparam.classLoader)
+            }
+
+            if (videoPinchClazz == null) {
+                val findMaps = bridge.batchFindClassesUsingStrings {
+                    addQuery(
+                        "VideoPinch",
+                        setOf(
+                            "android/view/PixelCopy",
+                            "request",
+                            "videoPinchParams",
+                            "pinchUtil",
+                            "exitMethod",
+                        ),
+                    )
+                }
+                videoPinchClazz = findMaps["VideoPinch"]?.firstOrNull()?.getClassInstance(lpparam.classLoader)
             }
 
             if (emojiMethods.isEmpty()) {

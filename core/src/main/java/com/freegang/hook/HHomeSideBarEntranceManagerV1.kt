@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import com.freegang.base.BaseHook
+import com.freegang.config.ConfigV1
 import com.freegang.ui.activity.FreedomSettingActivity
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.app.isDarkMode
@@ -33,9 +34,12 @@ class HHomeSideBarEntranceManagerV1(lpparam: XC_LoadPackage.LoadPackageParam) : 
         var isAdded = false
     }
 
+    private val config get() = ConfigV1.get()
+
     @SuppressLint("ResourceAsColor")
     @OnAfter("onClick")
     fun onClick(param: XC_MethodHook.MethodHookParam, view: View) {
+        if (config.isDisablePlugin) return //去插件化
         if (isAdded) return
         isAdded = true
         hookBlock(param) {

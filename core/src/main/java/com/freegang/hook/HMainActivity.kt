@@ -105,6 +105,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
 
     //Freedom设置
     private fun setFreedomSetting(activity: Activity) {
+        if (config.isDisablePlugin) return //去插件化
         launch {
             delay(500L)
             val clazz = findClass("com.ss.android.ugc.aweme.homepage.ui.TopLeftFrameLayout") as Class<ViewGroup>

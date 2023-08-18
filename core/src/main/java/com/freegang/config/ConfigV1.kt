@@ -239,7 +239,7 @@ class ConfigV1 private constructor() {
             field = value
         }
 
-    ///
+    /// 定时退出
     var isTimedExit: Boolean = false
         get() {
             field = mmkv.getBoolean("isTimedExit", false)!!
@@ -250,7 +250,7 @@ class ConfigV1 private constructor() {
             field = value
         }
 
-    ///
+    /// 定时退出[运行时间, 空闲时间]
     var timedExitValue: String = "[10, 3]"
         get() {
             field = mmkv.getString("timedExitValue", "[10, 3]")!!
@@ -258,6 +258,17 @@ class ConfigV1 private constructor() {
         }
         set(value) {
             mmkv.putString("timedExitValue", value)
+            field = value
+        }
+
+    /// 去插件化
+    var isDisablePlugin: Boolean = false
+        get() {
+            field = mmkv.getBoolean("isDisablePlugin", false)!!
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("isDisablePlugin", value)
             field = value
         }
 

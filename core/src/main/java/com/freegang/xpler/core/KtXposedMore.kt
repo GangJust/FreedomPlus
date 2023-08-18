@@ -489,6 +489,7 @@ val XC_MethodHook.MethodHookParam.thisActivity: Activity
  */
 val XC_MethodHook.MethodHookParam.thisContext: Context
     get() {
+        if (thisObject is View) return thisView.context
         if (thisObject !is Context) throw Exception("$thisObject unable to cast to Context!")
         return thisObject as Context
     }

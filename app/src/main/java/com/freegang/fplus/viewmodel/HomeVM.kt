@@ -43,11 +43,9 @@ class HomeVM(application: Application) : AndroidViewModel(application) {
     fun updateVersions() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                runCatching {
-                    val versions = Version.getVersions()
-                    val file = ConfigV1.getConfigDir(app).child("versions.json")
-                    file.writeText(versions)
-                }
+                val versions = Version.getVersions() ?: return@withContext
+                val file = ConfigV1.getConfigDir(app).child("versions.json")
+                file.writeText(versions)
             }
         }
     }
@@ -63,6 +61,9 @@ class HomeVM(application: Application) : AndroidViewModel(application) {
         get() = getApplication<Application>().storageRootFile
             .child(Environment.DIRECTORY_DCIM)
             .child("Freedom")
+
+    // 是否开启去插件化
+    val isDisablePlugin get() = config.isDisablePlugin
 
     // 是否显示兼容提示
     fun isSupportHint(value: Boolean) {

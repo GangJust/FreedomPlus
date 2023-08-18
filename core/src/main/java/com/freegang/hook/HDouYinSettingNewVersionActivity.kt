@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
 import com.freegang.base.BaseHook
+import com.freegang.config.ConfigV1
 import com.freegang.ktutils.app.activeActivity
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.app.isDarkMode
@@ -19,12 +20,15 @@ import kotlinx.coroutines.delay
 import xyz.junerver.ssktx.buildSpannableString
 
 class HDouYinSettingNewVersionActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHook>(lpparam) {
+    private val config get() = ConfigV1.get()
+
     override fun setTargetClass(): Class<*> {
         return findClass("com.ss.android.ugc.aweme.setting.ui.DouYinSettingNewVersionActivity")
     }
 
     @OnAfter("onCreate")
     fun onCreate(it: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {
+        if (config.isDisablePlugin) return //去插件化
         hookBlock(it) {
             launch {
                 delay(200L)

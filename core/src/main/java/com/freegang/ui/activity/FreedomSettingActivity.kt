@@ -134,8 +134,8 @@ class FreedomSettingActivity : BaseActivity() {
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Freedom+",
-                        style = MaterialTheme.typography.h6.copy(color = MaterialTheme.colors.onSurface),
+                        text = "Freedom+ Setting",
+                        style = MaterialTheme.typography.subtitle1.copy(color = MaterialTheme.colors.onSurface),
                     )
                     Spacer(modifier = Modifier.padding(vertical = 2.dp))
                     Text(
@@ -771,6 +771,19 @@ class FreedomSettingActivity : BaseActivity() {
                                 },
                                 onCheckedChange = {
                                     model.changeIsTimeExit(it)
+                                    showRestartAppDialog = true
+                                },
+                            )
+                            SwitchItem(
+                                text = "去插件化",
+                                subtext = "去掉抖音内部设置，可避免大部分闪退，提高稳定性",
+                                checked = model.isDisablePlugin.observeAsState(false),
+                                onClick = {
+
+                                },
+                                onCheckedChange = {
+                                    model.changeIsDisablePlugin(it)
+                                    showRestartAppDialog = true
                                 },
                             )
                         }

@@ -39,7 +39,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Email
-import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -371,19 +371,19 @@ class HomeActivity : ComponentActivity() {
                     verticalAlignment = Alignment.CenterVertically,
                     content = {
                         Icon(
-                            imageVector = Icons.Rounded.Info,
-                            contentDescription = "提示",
+                            imageVector = Icons.Rounded.Settings,
+                            contentDescription = "设置",
                             tint = Themes.nowColors.icon,
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.padding(horizontal = 8.dp))
                         Column {
                             Text(
-                                text = "模块设置已迁移",
+                                text = "模块设置",
                                 style = Themes.nowTypography.body1,
                             )
                             Text(
-                                text = "模块设置已迁移至抖音内部，抖音左上角侧滑栏/设置页，滑动至底部唤起模块设置",
+                                text = if (model.isDisablePlugin) "点击跳转模块设置" else "抖音内部左上角侧滑栏/设置页，滑动至底部唤起模块设置",
                                 style = Themes.nowTypography.overline,
                             )
                         }

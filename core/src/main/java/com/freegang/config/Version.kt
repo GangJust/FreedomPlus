@@ -12,6 +12,9 @@ object Version {
     // Api
     private const val githubReleasesApi = "https://api.github.com/repos/GangJust/FreedomPlus/releases/latest"
 
+    //private const val githubVersionApi = "https://raw.githubusercontent.com/GangJust/FreedomPlus/master/versions.json"
+    private const val githubVersionApi = "https://api.github.com/repos/GangJust/FreedomPlus/contents/versions.json?ref=master"
+
     // 获取Github最后一次 releases
     fun getRemoteReleasesLatest(): VersionConfig? {
         val get = KHttpUtils.get(githubReleasesApi)
@@ -36,11 +39,16 @@ object Version {
     }
 
     // 获取适配版本列表
-    fun getVersions(): String {
-        //if (null == null) return "null" //一般用作逻辑阻断
-        //return KHttpUtils.get("https://raw.githubusercontent.com/GangJust/FreedomPlus/master/versions.json")
-        val body = KHttpUtils.get("https://api.github.com/repos/GangJust/FreedomPlus/contents/versions.json?ref=master")
-        return Base64.decode(body.parseJSON().getStringOrDefault("content"), Base64.DEFAULT).toString(Charsets.UTF_8)
+    fun getVersions(): String? {
+        return try {
+            //if (null == null) return null //一般用作逻辑阻断
+            throw RuntimeException("test")
+            val body = KHttpUtils.get(githubVersionApi)
+            val content = body.parseJSON().getString("content")
+            Base64.decode(content, Base64.DEFAULT).toString(Charsets.UTF_8)
+        } catch (e: Exception) {
+            null
+        }
     }
 }
 

@@ -83,6 +83,9 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     private var _timedExitValue = MutableLiveData("")
     var timedExitValue: LiveData<String> = _timedExitValue
 
+    private var _isDisablePlugin = MutableLiveData(false)
+    val isDisablePlugin: LiveData<Boolean> = _isDisablePlugin
+
 
     // 检查版本更新
     fun checkVersion() {
@@ -114,6 +117,7 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
             setHideTabKeywords(config.hideTabKeywords)
             changeIsTimeExit(config.isTimedExit)
             setTimedExitValue(config.timedExitValue)
+            changeIsDisablePlugin(config.isDisablePlugin)
         }
     }
 
@@ -259,6 +263,12 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     fun setTimedExitValue(value: String) {
         _timedExitValue.value = value
         config.timedExitValue = value
+    }
+
+    // 去插件化
+    fun changeIsDisablePlugin(value: Boolean) {
+        _isDisablePlugin.value = value
+        config.isDisablePlugin = value
     }
 
     // 保存版本信息
