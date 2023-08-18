@@ -84,11 +84,6 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                             result = true
                             return@onBefore
                         }
-
-                        //清爽模式
-                        if (!config.isNeatMode) {
-                            return@onBefore
-                        }
                     }
 
                     //长按
@@ -119,11 +114,10 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
             if (it is PenetrateTouchRelativeLayout) {
                 if (config.isTranslucent) it.alpha = 0.5f
                 if (config.isNeatMode) {
-                    it.isVisible = !config.neatModeState
-                    it.isVisible = if (isLongPressFast) false else !config.neatModeState
-                    it.isVisible = if (isVideoPinch) false else if (isLongPressFast) false else !config.neatModeState
+                    it.isVisible = !config.neatModeState && !isLongPressFast
+                    it.isVisible = !config.neatModeState && !isLongPressFast && !isVideoPinch
                 } else {
-                    it.isVisible = !isVideoPinch
+                    it.isVisible = !isLongPressFast && !isVideoPinch
                 }
 
                 if (HDetailPageFragment.isComment) {
@@ -135,11 +129,10 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                 it.isVisible = !isVideoPinch
                 if (config.isTranslucent) it.alpha = 0.5f
                 if (config.isNeatMode) {
-                    it.isVisible = !config.neatModeState
-                    it.isVisible = if (isLongPressFast) false else !config.neatModeState
-                    it.isVisible = if (isVideoPinch) false else if (isLongPressFast) false else !config.neatModeState
+                    it.isVisible = !config.neatModeState && !isLongPressFast
+                    it.isVisible = !config.neatModeState && !isLongPressFast && !isVideoPinch
                 } else {
-                    it.isVisible = !isVideoPinch
+                    it.isVisible = !isLongPressFast && !isVideoPinch
                 }
                 if (HDetailPageFragment.isComment) {
                     it.isVisible = false
@@ -162,6 +155,11 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                 if (event.x < screenSize.width / 8 || event.x > screenSize.width - screenSize.width / 8) {
                     longPressFastRunnable = Runnable { isLongPressFast = true }
                     handler.postDelayed(longPressFastRunnable!!, 200L)
+                    return
+                }
+
+                //非清爽模式
+                if (!config.isNeatMode) {
                     return
                 }
 

@@ -238,7 +238,6 @@ class HomeActivity : ComponentActivity() {
         var showNewVersionDialog by remember { mutableStateOf(true) }
         val version by model.versionConfig.observeAsState()
         if (version != null) {
-            model.isSupportHint(true)
             val version = version!!
             if (version.name.compareTo("v${application.appVersionName}") >= 1 && showNewVersionDialog) {
                 FMessageDialog(
@@ -605,7 +604,6 @@ class HomeActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
-        model.setVersionConfig(assets)
     }
 
     private fun toBrowse() {

@@ -41,17 +41,6 @@ class ConfigV1 private constructor() {
         fun get() = config
     }
 
-    /// 是否显示兼容提示
-    var isSupportHint: Boolean = true
-        get() {
-            field = mmkv.getBoolean("isSupportHint", true)
-            return field
-        }
-        set(value) {
-            mmkv.putBoolean("isSupportHint", value)
-            field = value
-        }
-
     /// 是否按视频创作者单独创建文件夹
     var isOwnerDir: Boolean = false
         get() {

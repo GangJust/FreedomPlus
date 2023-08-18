@@ -274,7 +274,6 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     // 保存版本信息
     fun setVersionConfig(asset: AssetManager) {
         val version = asset.readAssetsAsText("version").split("-")
-        config.isSupportHint = version[1].toLong() != config.versionConfig.versionCode
         config.versionConfig = ConfigV1.Version(
             version[0],
             version[1].toLong(),

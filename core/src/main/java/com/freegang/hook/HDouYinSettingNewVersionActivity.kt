@@ -20,11 +20,11 @@ import kotlinx.coroutines.delay
 import xyz.junerver.ssktx.buildSpannableString
 
 class HDouYinSettingNewVersionActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHook>(lpparam) {
-    private val config get() = ConfigV1.get()
-
     override fun setTargetClass(): Class<*> {
         return findClass("com.ss.android.ugc.aweme.setting.ui.DouYinSettingNewVersionActivity")
     }
+
+    private val config get() = ConfigV1.get()
 
     @OnAfter("onCreate")
     fun onCreate(it: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {

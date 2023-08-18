@@ -42,7 +42,6 @@ object Version {
     fun getVersions(): String? {
         return try {
             //if (null == null) return null //一般用作逻辑阻断
-            throw RuntimeException("test")
             val body = KHttpUtils.get(githubVersionApi)
             val content = body.parseJSON().getString("content")
             Base64.decode(content, Base64.DEFAULT).toString(Charsets.UTF_8)

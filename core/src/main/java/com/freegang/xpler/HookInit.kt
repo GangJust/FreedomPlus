@@ -50,9 +50,11 @@ class HookInit : IXposedHookLoadPackage, IXposedHookZygoteInit {
             .method("getModuleState") {
                 onAfter {
                     val bridgeTag = XposedBridge::class.java.getStaticObjectField<String>("TAG") ?: ""
-                    result = if (bridgeTag.contains("LSPosed-Bridge")) {
+                    result = if (bridgeTag.startsWith("LSPosed")) {
                         "LSPosed"
-                    } else if (bridgeTag.contains("Xposed")) {
+                    } else if (bridgeTag.startsWith("EdXposed")) {
+                        "EdXposed"
+                    } else if (bridgeTag.startsWith("Xposed")) {
                         "Xposed"
                     } else {
                         "Unknown"

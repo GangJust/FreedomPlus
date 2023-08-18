@@ -5,14 +5,12 @@ import android.app.ActivityOptions
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.net.Uri
 import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.view.children
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
-import com.freegang.config.Version
 import com.freegang.hook.logic.ClipboardLogic
 import com.freegang.hook.logic.DownloadLogic
 import com.freegang.ktutils.app.appVersionCode
@@ -39,9 +37,7 @@ import com.ss.android.ugc.aweme.main.MainActivity
 import com.ss.android.ugc.aweme.sidebar.SideBarNestedScrollView
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 
 class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainActivity>(lpparam) {
     private val config get() = ConfigV1.get()
@@ -60,7 +56,6 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         hookBlock(it) {
             changeViewAlpha(thisActivity.contentView)
             setFreedomSetting(thisActivity)
-            //checkVersionDialog(thisActivity)
             addClipboardListener(thisActivity)
         }
     }
@@ -182,41 +177,11 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         }
     }
 
-    //检查模块版本
-    @Synchronized
-    private fun checkVersionDialog(activity: Activity) {
-        launch {
-            delay(2000L)
-            val version = withContext(Dispatchers.IO) { Version.getRemoteReleasesLatest() } ?: return@launch
-            if (version.name.compareTo("v${config.versionConfig.versionName}") >= 1) {
-                showMessageDialog(
-                    context = activity,
-                    title = "发现新版本 ${version.name}!",
-                    content = version.body,
-                    cancel = "取消",
-                    confirm = "更新",
-                    needMultiple = false,
-                    onConfirm = {
-                        activity.startActivity(
-                            Intent(
-                                Intent.ACTION_VIEW,
-                                Uri.parse(version.browserDownloadUrl),
-                            )
-                        )
-                    }
-                )
-            }
-        }
-    }
-
     //保存配置信息
     private fun saveConfig(context: Context) {
-        val dyVersionName = context.appVersionName
-        val dyVersionCode = context.appVersionCode
-        config.isSupportHint = false
         config.versionConfig = config.versionConfig.copy(
-            dyVersionName = dyVersionName,
-            dyVersionCode = dyVersionCode
+            dyVersionName = context.appVersionName,
+            dyVersionCode = context.appVersionCode
         )
     }
 }
