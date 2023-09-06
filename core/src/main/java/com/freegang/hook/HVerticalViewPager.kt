@@ -49,7 +49,10 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
         lpparam.hookClass(VideoViewHolderRootView::class.java)
             .constructorsAll {
                 onAfter {
-                    onDragListener?.let { thisView.viewTreeObserver.removeOnDrawListener(it) }
+                    onDragListener?.let {
+                        thisView.viewTreeObserver.removeOnDrawListener(it)
+                        onDragListener = null
+                    }
                     onDragListener = ViewTreeObserver.OnDrawListener { toggleView(thisViewGroup) }
                     thisView.viewTreeObserver.addOnDrawListener(onDragListener)
                 }
@@ -240,7 +243,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                     }
 
                     "模块设置" -> {
-                        val intent = Intent(it.context, FreedomSettingActivity::class.java)
+                        val intent = Intent().setClass(it.context, FreedomSettingActivity::class.java)
                         intent.putExtra("isDark", view.context.isDarkMode)
                         val options = ActivityOptions.makeCustomAnimation(
                             activeActivity,

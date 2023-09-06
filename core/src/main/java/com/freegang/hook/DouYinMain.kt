@@ -28,6 +28,7 @@ class DouYinMain(private val app: Application) {
         var detailPageFragmentClazz: Class<*>? = null
         var videoPinchClazz: Class<*>? = null
         var emojiMethods: List<Method> = emptyList()
+        var ripsChatRoomFragmentClazz: Class<*>? = null
 
         var timedExitCountDown: CountDownTimer? = null
         var freeExitCountDown: CountDownTimer? = null
@@ -79,6 +80,7 @@ class DouYinMain(private val app: Application) {
             HEmojiDetailDialogNew(lpparam)
             HHomeSideBarEntranceManagerV1(lpparam)
             HDouYinSettingNewVersionActivity(lpparam)
+            HChatRoomActivity(lpparam)
         }.onFailure {
             KToastUtils.show(app, "Freedom+ Error: ${it.message}")
         }
@@ -122,6 +124,21 @@ class DouYinMain(private val app: Application) {
                     methodReturnType = "V"
                     methodParamTypes = arrayOf("Lcom/ss/android/ugc/aweme/emoji/model/Emoji;")
                 }.filter { it.isMethod }.map { it.getMethodInstance(lpparam.classLoader) }
+            }
+
+            if (ripsChatRoomFragmentClazz == null) {
+                val findMaps = bridge.batchFindClassesUsingStrings {
+                    addQuery(
+                        "RipsChatRoomFragment",
+                        setOf(
+                            "com/ss/android/ugc/aweme/im/sdk/chat/rips/RipsChatRoomFragment",
+                            "RipsChatRoomFragment",
+                            "a1128.b17614",
+                            "content_source",
+                        ),
+                    )
+                }
+                ripsChatRoomFragmentClazz = findMaps["RipsChatRoomFragment"]?.firstOrNull()?.getClassInstance(lpparam.classLoader)
             }
         }
     }

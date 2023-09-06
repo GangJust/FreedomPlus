@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
-import com.freegang.ktutils.view.findViewsByDesc
 import com.freegang.ktutils.view.traverse
 import com.freegang.xpler.core.FieldGet
 import com.freegang.xpler.core.KtCallMethods
@@ -43,14 +42,19 @@ class HMainFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainFra
     }
 
     private fun changeTabItem(viewGroup: ViewGroup) {
+        val hideTabKeywords = config.hideTabKeywords
+            .removePrefix(",").removePrefix("，")
+            .removeSuffix(",").removeSuffix("，")
+            .replace("\\s".toRegex(), "")
+            .replace("[,，]".toRegex(), "|")
+            .toRegex()
         viewGroup.traverse {
             if (it is MainTabStripScrollView) {
-                val hideTabKeywords = config.hideTabKeywords
-                    .removePrefix(",").removePrefix("，")
-                    .removeSuffix(",").removeSuffix("，")
-                    .replace("\\s".toRegex(), "")
-                    .replace("[,，]".toRegex(), "|")
-                it.findViewsByDesc(View::class.java, hideTabKeywords.toRegex()).forEach { v -> v.isVisible = false }
+                it.traverse { v ->
+                    if ("${v.contentDescription}".contains(hideTabKeywords)) {
+                        v.isVisible = false
+                    }
+                }
             }
         }
     }

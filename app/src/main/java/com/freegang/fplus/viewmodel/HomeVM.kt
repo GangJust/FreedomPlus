@@ -1,7 +1,6 @@
 package com.freegang.fplus.viewmodel
 
 import android.app.Application
-import android.content.res.AssetManager
 import android.os.Environment
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -11,9 +10,7 @@ import com.freegang.config.ConfigV1
 import com.freegang.config.Version
 import com.freegang.config.VersionConfig
 import com.freegang.ktutils.app.KAppUtils
-import com.freegang.ktutils.app.appVersionCode
 import com.freegang.ktutils.app.appVersionName
-import com.freegang.ktutils.app.readAssetsAsText
 import com.freegang.ktutils.io.child
 import com.freegang.ktutils.io.storageRootFile
 import kotlinx.coroutines.Dispatchers
@@ -56,6 +53,8 @@ class HomeVM(application: Application) : AndroidViewModel(application) {
 
     // 获取远程版本适配列表
     fun updateVersions() {
+        if (KAppUtils.isAppInDebug(app)) return //测试包不检查更新
+        if (app.appVersionName.contains(Regex("beta|alpha"))) return //非release包不检查更新
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 val versions = Version.getVersions() ?: return@withContext

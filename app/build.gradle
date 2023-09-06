@@ -5,14 +5,14 @@ plugins {
 
 android {
     namespace 'com.freegang.fplus'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.freegang.fplus"
         minSdk 24
-        targetSdk 33
-        versionCode 50
-        versionName "1.1.8"
+        targetSdk 34
+        versionCode 52
+        versionName "1.1.9"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -53,6 +53,26 @@ android {
     packagingOptions {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+
+    // 更新version的内容
+    tasks.register('updateVersionFile') {
+        def versionName = android.defaultConfig.versionName
+        def versionCode = android.defaultConfig.versionCode
+        def versionContent = "${versionName}-${versionCode}"
+
+        File versionFile = file("src/main/assets/version")
+        versionFile.write(versionContent)
+    }
+
+    //执行task任务
+    applicationVariants.configureEach { variant ->
+        variant.assembleProvider.get().dependsOn updateVersionFile
+
+        variant.outputs.configureEach { output ->
+            def filename = "freedom+_${android.defaultConfig.versionName}.apk"
+            output.outputFileName filename
         }
     }
 }
