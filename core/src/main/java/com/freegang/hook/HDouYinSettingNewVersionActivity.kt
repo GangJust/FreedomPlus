@@ -27,9 +27,9 @@ class HDouYinSettingNewVersionActivity(lpparam: XC_LoadPackage.LoadPackageParam)
     private val config get() = ConfigV1.get()
 
     @OnAfter("onCreate")
-    fun onCreate(it: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {
+    fun onCreate(params: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {
         if (config.isDisablePlugin) return //去插件化
-        hookBlock(it) {
+        hookBlock(params) {
             launch {
                 delay(200L)
                 thisActivity.contentView.traverse { view ->

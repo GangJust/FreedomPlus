@@ -21,8 +21,8 @@ class HChatRoomActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Any
     private var onGlobalLayoutListener: ViewTreeObserver.OnGlobalLayoutListener? = null
 
     @OnAfter("onCreate")
-    fun onCreateAfter(it: XC_MethodHook.MethodHookParam, bundle: Bundle?) {
-        hookBlock(it) {
+    fun onCreateAfter(params: XC_MethodHook.MethodHookParam, bundle: Bundle?) {
+        hookBlock(params) {
             val contentView = thisActivity.contentView
             onGlobalLayoutListener = ViewTreeObserver.OnGlobalLayoutListener {
                 contentView.traverse {
@@ -36,8 +36,8 @@ class HChatRoomActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Any
     }
 
     @OnBefore("onDestroy")
-    fun onDestroyBefore(it: XC_MethodHook.MethodHookParam) {
-        hookBlock(it) {
+    fun onDestroyBefore(params: XC_MethodHook.MethodHookParam) {
+        hookBlock(params) {
             thisActivity.contentView.viewTreeObserver.removeOnGlobalLayoutListener(onGlobalLayoutListener)
             onGlobalLayoutListener = null
         }

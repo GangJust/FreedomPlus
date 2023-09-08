@@ -11,8 +11,14 @@ import java.lang.reflect.ParameterizedType
 
 /// 使用案例, 详见: https://github.com/GangJust/Xpler/blob/main/docs/readme.md
 
+/**
+ * 获取某个Hook目标的成员属性
+ *
+ * @param name 字段名
+ * @param tag 标签 (无任何作用仅做提示标记, 选写)
+ */
 @Target(AnnotationTarget.FIELD)
-annotation class FieldGet(val name: String)
+annotation class FieldGet(val name: String, val tag: String = "")
 
 /**
  * 该注解适用于方法, 将作用于Hook目标的成员方法

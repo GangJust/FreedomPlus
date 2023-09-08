@@ -11,8 +11,8 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 
 class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActivity>(lpparam) {
     @OnAfter("onResume")
-    fun onResume(it: XC_MethodHook.MethodHookParam) {
-        hookBlock(it) {
+    fun onResume(params: XC_MethodHook.MethodHookParam) {
+        hookBlock(params) {
             thisActivity.contentView.viewTreeObserver.apply {
                 addOnGlobalLayoutListener {
                     DouYinMain.freeExitCountDown?.restart()
@@ -25,8 +25,8 @@ class HAbsActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<AbsActiv
     }
 
     @OnBefore("onPause")
-    fun onPause(it: XC_MethodHook.MethodHookParam) {
-        hookBlock(it) {
+    fun onPause(params: XC_MethodHook.MethodHookParam) {
+        hookBlock(params) {
             DouYinMain.freeExitCountDown?.cancel()
         }
     }

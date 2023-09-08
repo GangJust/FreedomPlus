@@ -44,16 +44,16 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
     private val clipboardLogic = ClipboardLogic(this)
 
     @OnAfter("onCreate")
-    fun onCreate(it: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {
-        hookBlock(it) {
+    fun onCreate(params: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {
+        hookBlock(params) {
             DouYinMain.timedExitCountDown?.restart()
             showToast(thisContext, "Freedom+ Attach!")
         }
     }
 
     @OnAfter("onResume")
-    fun onResume(it: XC_MethodHook.MethodHookParam) {
-        hookBlock(it) {
+    fun onResume(params: XC_MethodHook.MethodHookParam) {
+        hookBlock(params) {
             changeViewAlpha(thisActivity.contentView)
             setFreedomSetting(thisActivity)
             addClipboardListener(thisActivity)
@@ -61,15 +61,15 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
     }
 
     @OnBefore("onPause")
-    fun onPause(it: XC_MethodHook.MethodHookParam) {
-        hookBlock(it) {
+    fun onPause(params: XC_MethodHook.MethodHookParam) {
+        hookBlock(params) {
             saveConfig(thisContext)
             clipboardLogic.removeClipboardListener(thisContext)
         }
     }
 
     @OnAfter("onDestroy")
-    fun onDestroy(it: XC_MethodHook.MethodHookParam) {
+    fun onDestroy(params: XC_MethodHook.MethodHookParam) {
 
     }
 

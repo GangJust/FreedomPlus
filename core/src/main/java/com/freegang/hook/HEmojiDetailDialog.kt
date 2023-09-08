@@ -45,8 +45,8 @@ class HEmojiDetailDialog(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Em
             }
     }
 
-    private fun rebuildView(it: XC_MethodHook.MethodHookParam) {
-        hookBlock(it) {
+    private fun rebuildView(params: XC_MethodHook.MethodHookParam) {
+        hookBlock(params) {
             if (!targetClazz.isInstance(thisObject)) return  //非 EmojiDetailDialog, 直接结束
             launch {
                 delay(500L)

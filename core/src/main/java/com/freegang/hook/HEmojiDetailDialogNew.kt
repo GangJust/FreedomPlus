@@ -46,8 +46,8 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook
     }
 
     //重构表情布局
-    private fun rebuildView(it: XC_MethodHook.MethodHookParam) {
-        hookBlock(it) {
+    private fun rebuildView(params: XC_MethodHook.MethodHookParam) {
+        hookBlock(params) {
             if (!targetClazz.isInstance(thisObject)) return  //非 EmojiDetailDialogNew, 直接结束
 
             launch {

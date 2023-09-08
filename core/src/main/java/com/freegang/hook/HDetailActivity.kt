@@ -21,15 +21,15 @@ class HDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Detai
     private val clipboardLogic = ClipboardLogic(this)
 
     @OnAfter("onResume")
-    fun onResume(it: XC_MethodHook.MethodHookParam) {
-        hookBlock(it) {
+    fun onResume(params: XC_MethodHook.MethodHookParam) {
+        hookBlock(params) {
             addClipboardListener(thisActivity as DetailActivity)
         }
     }
 
     @OnBefore("onPause")
-    fun onPause(it: XC_MethodHook.MethodHookParam) {
-        hookBlock(it) {
+    fun onPause(params: XC_MethodHook.MethodHookParam) {
+        hookBlock(params) {
             clipboardLogic.removeClipboardListener(thisContext)
         }
     }

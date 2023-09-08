@@ -12,6 +12,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ProgressBar
@@ -113,6 +114,8 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
                         Color.parseColor("#FF161823")
                     }
                 )
+                //文本对齐
+                textView?.gravity = Gravity.START or Gravity.CENTER_VERTICAL
             }
 
             toast?.setText(message)

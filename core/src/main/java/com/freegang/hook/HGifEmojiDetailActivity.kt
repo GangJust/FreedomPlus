@@ -23,8 +23,8 @@ class HGifEmojiDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHo
     private var urlList: List<String> = emptyList()
 
     @OnBefore("onCreate")
-    fun onCreate(it: XC_MethodHook.MethodHookParam, bundle: Bundle?) {
-        hookBlock(it) {
+    fun onCreate(params: XC_MethodHook.MethodHookParam, bundle: Bundle?) {
+        hookBlock(params) {
             if (!config.isEmoji) return
             val gifEmoji = thisActivity.intent.getSerializableExtra("gif_emoji") as Emoji? ?: return
             val animateUrl = gifEmoji.getObjectField<Any>("animateUrl")
