@@ -208,10 +208,14 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
     private fun showOptionsMenuV1(view: View) {
         if (HDetailPageFragment.isComment) return
 
-        val items = if (config.isNeatMode) {
-            mutableListOf(if (!config.neatModeState) "清爽模式" else "普通模式", "评论", "收藏", "分享")
-        } else {
-            mutableListOf("评论", "收藏", "分享")
+        val items = mutableListOf("评论", "收藏", "分享")
+
+        if (config.isNeatMode) {
+            items.add(0, if (!config.neatModeState) "清爽模式" else "普通模式")
+        }
+
+        if (config.isVideoFilter) {
+            items.add("过滤统计")
         }
 
         if (!config.isDisablePlugin) {
@@ -240,6 +244,24 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
 
                     "分享" -> {
                         onClickViewV1(view, targetView = FrameLayoutHoldTouchListener::class.java)
+                    }
+
+                    "过滤统计" -> {
+                        val builder = StringBuilder("本次过滤统计如下:\n")
+                        if (HVideoPagerAdapter.filterLiveCount >= 0) {
+                            builder.append("直播过滤: ").append(HVideoPagerAdapter.filterLiveCount).append("\n")
+                        }
+                        if (HVideoPagerAdapter.filterImageCount >= 0) {
+                            builder.append("图文过滤: ").append(HVideoPagerAdapter.filterImageCount).append("\n")
+                        }
+                        if (HVideoPagerAdapter.filterAdCount >= 0) {
+                            builder.append("广告过滤: ").append(HVideoPagerAdapter.filterAdCount).append("\n")
+                        }
+                        if (HVideoPagerAdapter.filterLongVideoCount >= 0) {
+                            builder.append("长视频过滤: ").append(HVideoPagerAdapter.filterLongVideoCount).append("\n")
+                        }
+                        builder.append("关键字过滤: ").append(HVideoPagerAdapter.filterOtherCount)
+                        showToast(view.context, builder.toString())
                     }
 
                     "模块设置" -> {

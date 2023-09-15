@@ -8,6 +8,7 @@ import android.widget.Toast
 import com.freegang.config.ConfigV1
 import com.freegang.ktutils.app.KActivityUtils
 import com.freegang.ktutils.app.KAppCrashUtils
+import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.io.hasOperationStorage
 import com.freegang.ktutils.json.getIntOrDefault
@@ -18,8 +19,10 @@ import com.freegang.xpler.HookPackages
 import com.freegang.xpler.core.findClass
 import com.freegang.xpler.core.lpparam
 import com.freegang.xpler.loader.hostClassloader
-import io.luckypray.dexkit.DexKitBridge
-import java.lang.reflect.Method
+import com.freegang.xpler.loader.injectClassLoader
+import org.luckypray.dexkit.DexKitBridge
+import org.luckypray.dexkit.query.enums.StringMatchType
+import java.lang.reflect.Modifier
 import kotlin.system.exitProcess
 
 class DouYinMain(private val app: Application) {
@@ -27,7 +30,9 @@ class DouYinMain(private val app: Application) {
         val awemeHostApplication get() = "com.ss.android.ugc.aweme.app.host.AwemeHostApplication".findClass(lpparam.classLoader)!!
         var detailPageFragmentClazz: Class<*>? = null
         var videoPinchClazz: Class<*>? = null
-        var emojiMethods: List<Method> = emptyList()
+        var videoPagerAdapterClazz: Class<*>? = null
+        var emojiApiProxyClazz: Class<*>? = null
+        var emojiPopupWindowClazz: Class<*>? = null
         var ripsChatRoomFragmentClazz: Class<*>? = null
 
         var timedExitCountDown: CountDownTimer? = null
@@ -36,6 +41,8 @@ class DouYinMain(private val app: Application) {
 
     init {
         runCatching {
+            injectClassLoader(app.classLoader)
+
             //文件读写权限检查
             if (!app.hasOperationStorage) {
                 Toast.makeText(app, "抖音没有文件读写权限!", Toast.LENGTH_LONG).show()
@@ -44,6 +51,9 @@ class DouYinMain(private val app: Application) {
 
             //加载配置
             ConfigV1.initialize(app)
+
+            //全局Application
+            KAppUtils.setApplication(app)
 
             //日志工具
             KLogCat.init(app)
@@ -81,6 +91,7 @@ class DouYinMain(private val app: Application) {
             HHomeSideBarEntranceManagerV1(lpparam)
             HDouYinSettingNewVersionActivity(lpparam)
             HChatRoomActivity(lpparam)
+            HVideoPagerAdapter(lpparam)
         }.onFailure {
             KToastUtils.show(app, "Freedom+ Error: ${it.message}")
         }
@@ -90,57 +101,112 @@ class DouYinMain(private val app: Application) {
         System.loadLibrary("dexkit")
         DexKitBridge.create(lpparam.appInfo.sourceDir)?.use { bridge ->
             if (detailPageFragmentClazz == null) {
-                val findMaps = bridge.batchFindClassesUsingStrings {
-                    addQuery(
-                        "DetailPageFragment",
-                        setOf(
+                val finds = bridge.findClass {
+                    matcher {
+                        usingStrings = listOf(
                             "a1128.b7947",
                             "com/ss/android/ugc/aweme/detail/ui/DetailPageFragment",
                             "DetailActOtherNitaView",
-                        ),
-                    )
+                        )
+                    }
                 }
-                detailPageFragmentClazz = findMaps["DetailPageFragment"]?.firstOrNull()?.getClassInstance(lpparam.classLoader)
+                detailPageFragmentClazz = finds.firstOrNull()?.getInstance(lpparam.classLoader)
             }
 
             if (videoPinchClazz == null) {
-                val findMaps = bridge.batchFindClassesUsingStrings {
-                    addQuery(
-                        "VideoPinch",
-                        setOf(
-                            "android/view/PixelCopy",
-                            "request",
-                            "videoPinchParams",
-                            "pinchUtil",
-                            "exitMethod",
-                        ),
-                    )
+                val finds = bridge.findClass {
+                    matcher {
+                        fields {
+                            add {
+                                type = "com.ss.android.ugc.aweme.feed.ui.seekbar.CustomizedUISeekBar"
+                            }
+                        }
+                        methods {
+                            add {
+                                name = "getMOriginView"
+                                returnType = "android.view.View"
+                            }
+                            add {
+                                name = "handleMsg"
+                                paramTypes = listOf("android.os.Message")
+                            }
+                        }
+                    }
                 }
-                videoPinchClazz = findMaps["VideoPinch"]?.firstOrNull()?.getClassInstance(lpparam.classLoader)
+                videoPinchClazz = finds.firstOrNull()?.getInstance(lpparam.classLoader)
             }
 
-            if (emojiMethods.isEmpty()) {
-                emojiMethods = bridge.findMethod {
-                    methodReturnType = "V"
-                    methodParamTypes = arrayOf("Lcom/ss/android/ugc/aweme/emoji/model/Emoji;")
-                }.filter { it.isMethod }.map { it.getMethodInstance(lpparam.classLoader) }
+            if (videoPagerAdapterClazz == null) {
+                val finds = bridge.findClass {
+                    matcher {
+                        methods {
+                            add {
+                                this.returnType = "java.util.List"
+                            }
+                            add {
+                                paramTypes = listOf("com.ss.android.ugc.aweme.feed.model.Aweme")
+                                returnType = "com.ss.android.ugc.aweme.feed.model.Aweme"
+                            }
+                            add {
+                                returnType = "com.ss.android.ugc.aweme.feed.adapter.FeedImageViewHolder"
+                            }
+                        }
+                    }
+                }
+                videoPagerAdapterClazz = finds.firstOrNull()?.getInstance(lpparam.classLoader)
+            }
+
+            if (emojiApiProxyClazz == null) {
+                val finds = bridge.findClass {
+                    matcher {
+                        addUsingString("https://", StringMatchType.Equals)
+                        addUsingString("/aweme/v1/", StringMatchType.Equals)
+                    }
+                }
+                emojiApiProxyClazz = finds.firstOrNull()?.getInstance(lpparam.classLoader)
+            }
+
+            if (emojiPopupWindowClazz == null) {
+                val finds = bridge.findClass {
+                    matcher {
+                        methods {
+                            add {
+                                modifiers = Modifier.PRIVATE
+                                returnType = "com.ss.android.ugc.aweme.base.ui.RemoteImageView"
+                            }
+                            add {
+                                modifiers = Modifier.PRIVATE
+                                returnType = "com.bytedance.ies.dmt.ui.widget.DmtTextView"
+                            }
+                            add {
+                                modifiers = Modifier.PRIVATE
+                                paramTypes = listOf("com.ss.android.ugc.aweme.emoji.base.BaseEmoji")
+                            }
+                        }
+                    }
+                }
+                emojiPopupWindowClazz = finds.firstOrNull()?.getInstance(lpparam.classLoader)
             }
 
             if (ripsChatRoomFragmentClazz == null) {
-                val findMaps = bridge.batchFindClassesUsingStrings {
-                    addQuery(
-                        "RipsChatRoomFragment",
-                        setOf(
+                val finds = bridge.findClass {
+                    matcher {
+                        usingStrings = listOf(
                             "com/ss/android/ugc/aweme/im/sdk/chat/rips/RipsChatRoomFragment",
                             "RipsChatRoomFragment",
                             "a1128.b17614",
-                            "content_source",
-                        ),
-                    )
+                        )
+                    }
                 }
-                ripsChatRoomFragmentClazz = findMaps["RipsChatRoomFragment"]?.firstOrNull()?.getClassInstance(lpparam.classLoader)
+                ripsChatRoomFragmentClazz = finds.firstOrNull()?.getInstance(lpparam.classLoader)
             }
         }
+        KLogCat.d("detailPageFragmentClazz: $detailPageFragmentClazz")
+        KLogCat.d("videoPinchClazz: $videoPinchClazz")
+        KLogCat.d("videoPagerAdapterClazz: $videoPagerAdapterClazz")
+        KLogCat.d("emojiApiProxyClazz: $emojiApiProxyClazz")
+        KLogCat.d("emojiPopupWindowClazz: $emojiPopupWindowClazz")
+        KLogCat.d("ripsChatRoomFragmentClazz: $ripsChatRoomFragmentClazz")
     }
 
     @Synchronized

@@ -27,6 +27,10 @@ public abstract class Aweme {
 
     public String previewTitle;
 
+    public String extra;
+
+    public String extraInfo;
+
     public Music music;
 
     public Video video;
@@ -95,4 +99,20 @@ public abstract class Aweme {
 
     // this.awemeType != 0 && this.awemeType != 51 && this.awemeType != 52 && this.awemeType != 54 && this.awemeType != 53 && this.awemeType != 61 && this.awemeType != 109 && this.awemeType != 55 && this.awemeType != 56 && this.awemeType != 62 && this.awemeType != 66 && this.awemeType != 67 && !commerceVideoTypeAllowDuetReact() && this.awemeType != 110
     public abstract boolean canStitchVideoType();
+
+    public abstract boolean existsInCollectionFolder();
+
+    public abstract long getCreatedTimeInMillSec();
+
+    public abstract boolean hasCloudGame();
+
+    public abstract boolean isAdNearbyCard();
+
+    public abstract boolean isSupportGameChallenge();
+
+    public abstract boolean needPreloadAdLink();
+
+    public abstract boolean isAd();
+
+    public abstract boolean isTeenVideo();
 }

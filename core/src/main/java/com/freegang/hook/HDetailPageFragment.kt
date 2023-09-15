@@ -78,6 +78,7 @@ class HDetailPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<A
                 SaveCommentLogic(this@HDetailPageFragment, it.context, aweme)
             }
             viewGroup.addView(appbar)
+            HDetailPageFragment.isComment = true
 
             //我也发一张
             val textViews = view.findViewsByExact(TextView::class.java) {
@@ -85,8 +86,6 @@ class HDetailPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<A
             }
             if (textViews.isEmpty()) return@launch
             binding.rightSpace.setPadding(0, 0, KDisplayUtils.dip2px(view.context, 128f), 0)
-
-            HDetailPageFragment.isComment = true
         }
     }
 }

@@ -71,7 +71,7 @@ dependencies {
 
     implementation project(":webdav")
     implementation project(":ktutils")
-    implementation 'org.luckypray:DexKit:1.1.8'
+    implementation 'org.luckypray:dexkit:2.0.0-rc'
     implementation 'com.tencent:mmkv:1.3.0'
     implementation 'xyz.junerver.ssktx:ss-ktx:0.0.1'
     //implementation 'com.squareup.okhttp3:okhttp:4.8.0'

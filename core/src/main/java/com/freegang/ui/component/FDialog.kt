@@ -1,8 +1,10 @@
 package com.freegang.ui.component
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -18,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.freegang.ui.asDp
 
 @Composable
@@ -140,7 +143,7 @@ fun FMessageDialog(
 ) {
     FDialog(
         modifier = Modifier.padding(horizontal = 16.dp),
-        cornerRadius = 12.dp,
+        cornerRadius = cornerRadius,
     ) {
         Column(
             horizontalAlignment = Alignment.Start,
@@ -158,16 +161,24 @@ fun FMessageDialog(
 @Composable
 fun FDialog(
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(horizontal = 24.dp),
     cornerRadius: Dp = 12.dp,
     content: @Composable () -> Unit,
 ) {
     Dialog(
         onDismissRequest = { },
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+        ),
     ) {
-        Card(
-            modifier = modifier,
-            shape = RoundedCornerShape(cornerRadius),
-            content = content,
-        )
+        Box(
+            modifier = Modifier.padding(contentPadding),
+        ) {
+            Card(
+                modifier = modifier,
+                shape = RoundedCornerShape(cornerRadius),
+                content = content,
+            )
+        }
     }
 }

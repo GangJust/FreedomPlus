@@ -29,11 +29,14 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     // module config
     private lateinit var config: ConfigV1
 
+    private var _isDownload = MutableLiveData(false)
+    val isDownload: LiveData<Boolean> = _isDownload
+
     private var _isOwnerDir = MutableLiveData(false)
     val isOwnerDir: LiveData<Boolean> = _isOwnerDir
 
-    private var _isDownload = MutableLiveData(false)
-    val isDownload: LiveData<Boolean> = _isDownload
+    private var _isNotification = MutableLiveData(false)
+    val isNotification: LiveData<Boolean> = _isNotification
 
     private var _isEmoji = MutableLiveData(false)
     val isEmoji: LiveData<Boolean> = _isEmoji
@@ -47,14 +50,25 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     private var _isDisableDoubleLike = MutableLiveData(false)
     val isDisableDoubleLike: LiveData<Boolean> = _isDisableDoubleLike
 
+    val videoFilterTypes get() = config.videoFilterTypes
+
+    private var _isVideoFilter = MutableLiveData(false)
+    val isVideoFilter: LiveData<Boolean> = _isVideoFilter
+
+    private var _videoFilterKeywords = MutableLiveData("")
+    var videoFilterKeywords: LiveData<String> = _videoFilterKeywords
+
     private var _isNeatMode = MutableLiveData(false)
     val isNeatMode: LiveData<Boolean> = _isNeatMode
 
     private var _isLongPressMode = MutableLiveData(false)
     val isLongPressMode: LiveData<Boolean> = _isLongPressMode
 
-    private var _isNotification = MutableLiveData(false)
-    val isNotification: LiveData<Boolean> = _isNotification
+    private var _isHideTab = MutableLiveData(false)
+    var isHideTab: LiveData<Boolean> = _isHideTab
+
+    private var _hideTabKeywords = MutableLiveData("")
+    var hideTabKeywords: LiveData<String> = _hideTabKeywords
 
     private var _isWebDav = MutableLiveData(false)
     var isWebDav: LiveData<Boolean> = _isWebDav
@@ -70,12 +84,6 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
 
     private var _webDavHistory = MutableLiveData(emptyList<WebDav.Config>())
     var webDavHistory: LiveData<List<WebDav.Config>> = _webDavHistory
-
-    private var _isHideTab = MutableLiveData(false)
-    var isHideTab: LiveData<Boolean> = _isHideTab
-
-    private var _hideTabKeywords = MutableLiveData("")
-    var hideTabKeywords: LiveData<String> = _hideTabKeywords
 
     private var _isTimedExit = MutableLiveData(false)
     var isTimedExit: LiveData<Boolean> = _isTimedExit
@@ -101,24 +109,32 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     fun loadConfig() {
         viewModelScope.launch {
             config = withContext(Dispatchers.IO) { ConfigV1.get() }
-            changeIsOwnerDir(config.isOwnerDir)
             changeIsDownload(config.isDownload)
+            changeIsOwnerDir(config.isOwnerDir)
+            changeIsNotification(config.isNotification)
             changeIsEmoji(config.isEmoji)
             changeIsVibrate(config.isVibrate)
             changeIsTranslucent(config.isTranslucent)
             changeIsNeatMode(config.isNeatMode)
             changeIsDisableDoubleLike(config.isDisableDoubleLike)
+            changeIsVideoFilter(config.isVideoFilter)
+            setVideoFilterKeywords(config.videoFilterKeywords)
             changeLongPressMode(config.longPressMode)
-            changeIsNotification(config.isNotification)
+            changeIsHideTab(config.isHideTab)
+            setHideTabKeywords(config.hideTabKeywords)
             changeIsWebDav(config.isWebDav)
             loadWebHistory()
             setWebDavConfig(config.webDavConfig)
-            changeIsHideTab(config.isHideTab)
-            setHideTabKeywords(config.hideTabKeywords)
             changeIsTimeExit(config.isTimedExit)
             setTimedExitValue(config.timedExitValue)
             changeIsDisablePlugin(config.isDisablePlugin)
         }
+    }
+
+    // 视频/图文/音乐下载
+    fun changeIsDownload(value: Boolean) {
+        _isDownload.value = value
+        config.isDownload = value
     }
 
     // 视频创作者单独创建文件夹
@@ -127,10 +143,10 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
         config.isOwnerDir = value
     }
 
-    // 视频/图文/音乐下载
-    fun changeIsDownload(value: Boolean) {
-        _isDownload.value = value
-        config.isDownload = value
+    // 是否通知栏下载
+    fun changeIsNotification(value: Boolean) {
+        _isNotification.value = value
+        config.isNotification = value
     }
 
     // 表情包保存
@@ -157,22 +173,40 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
         config.isDisableDoubleLike = value
     }
 
+    // 视频过滤
+    fun changeIsVideoFilter(value: Boolean) {
+        _isVideoFilter.value = value
+        config.isVideoFilter = value
+    }
+
+    // 视频过滤关键字
+    fun setVideoFilterKeywords(value: String) {
+        _videoFilterKeywords.value = value
+        config.videoFilterKeywords = value
+    }
+
     // 清爽模式
     fun changeIsNeatMode(value: Boolean) {
         _isNeatMode.value = value
         config.isNeatMode = value
     }
 
-    //清爽模式弹窗响应模式
+    // 清爽模式弹窗响应模式
     fun changeLongPressMode(value: Boolean) {
         _isLongPressMode.value = value
         config.longPressMode = value
     }
 
-    // 是否通知栏下载
-    fun changeIsNotification(value: Boolean) {
-        _isNotification.value = value
-        config.isNotification = value
+    // 隐藏顶部tab
+    fun changeIsHideTab(value: Boolean) {
+        _isHideTab.value = value
+        config.isHideTab = value
+    }
+
+    // 隐藏顶部tab包含的关键字, 逗号隔开
+    fun setHideTabKeywords(hideTabKeywords: String) {
+        _hideTabKeywords.value = hideTabKeywords
+        config.hideTabKeywords = hideTabKeywords
     }
 
     // WebDav
@@ -241,18 +275,6 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
         loadWebHistory()
     }
 
-    // 隐藏顶部tab
-    fun changeIsHideTab(value: Boolean) {
-        _isHideTab.value = value
-        config.isHideTab = value
-    }
-
-    // 保存顶部tab隐藏关键字, 逗号隔开
-    fun setHideTabKeywords(hideTabKeywords: String) {
-        _hideTabKeywords.value = hideTabKeywords
-        config.hideTabKeywords = hideTabKeywords
-    }
-
     // 定时退出
     fun changeIsTimeExit(value: Boolean) {
         _isTimedExit.value = value
@@ -273,10 +295,12 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
 
     // 保存版本信息
     fun setVersionConfig(asset: AssetManager) {
-        val version = asset.readAssetsAsText("version").split("-")
+        val version = asset.readAssetsAsText("version")
+        val versionName = version.substringBeforeLast("-")
+        val versionCode = version.substringAfterLast("-")
         config.versionConfig = ConfigV1.Version(
-            version[0],
-            version[1].toLong(),
+            versionName,
+            versionCode.toLong(),
             app.appVersionName,
             app.appVersionCode
         )

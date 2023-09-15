@@ -114,6 +114,7 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
                         Color.parseColor("#FF161823")
                     }
                 )
+
                 //文本对齐
                 textView?.gravity = Gravity.START or Gravity.CENTER_VERTICAL
             }

@@ -107,6 +107,31 @@ class ConfigV1 private constructor() {
             field = value
         }
 
+    /// 是否开启视频过滤
+    var isVideoFilter: Boolean = false
+        get() {
+            field = mmkv.getBoolean("isVideoFilter", false)
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("isVideoFilter", value)
+            field = value
+        }
+
+    /// 视频类型关键字
+    val videoFilterTypes = setOf("直播", "广告", "图文", "长视频")
+
+    /// 视频过滤关键字
+    var videoFilterKeywords: String = "直播, #生日, 广告, 买, 优惠"
+        get() {
+            field = mmkv.getString("videoFilterKeywords", "直播, #生日, 广告, 买, 优惠")!!
+            return field
+        }
+        set(value) {
+            mmkv.putString("videoFilterKeywords", value)
+            field = value
+        }
+
     /// 是否开启清爽模式
     var isNeatMode: Boolean = false
         get() {
@@ -231,7 +256,7 @@ class ConfigV1 private constructor() {
     /// 定时退出
     var isTimedExit: Boolean = false
         get() {
-            field = mmkv.getBoolean("isTimedExit", false)!!
+            field = mmkv.getBoolean("isTimedExit", false)
             return field
         }
         set(value) {
@@ -253,7 +278,7 @@ class ConfigV1 private constructor() {
     /// 去插件化
     var isDisablePlugin: Boolean = false
         get() {
-            field = mmkv.getBoolean("isDisablePlugin", false)!!
+            field = mmkv.getBoolean("isDisablePlugin", false)
             return field
         }
         set(value) {
