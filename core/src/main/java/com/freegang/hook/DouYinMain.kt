@@ -10,16 +10,21 @@ import com.freegang.ktutils.app.KActivityUtils
 import com.freegang.ktutils.app.KAppCrashUtils
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
+import com.freegang.ktutils.app.appVersionCode
+import com.freegang.ktutils.app.appVersionName
 import com.freegang.ktutils.io.hasOperationStorage
 import com.freegang.ktutils.json.getIntOrDefault
+import com.freegang.ktutils.json.getStringOrDefault
 import com.freegang.ktutils.json.parseJSONArray
 import com.freegang.ktutils.log.KLogCat
+import com.freegang.ktutils.text.ifNotEmpty
 import com.freegang.plugin.PluginBridge
 import com.freegang.xpler.HookPackages
 import com.freegang.xpler.core.findClass
 import com.freegang.xpler.core.lpparam
 import com.freegang.xpler.loader.hostClassloader
 import com.freegang.xpler.loader.injectClassLoader
+import org.json.JSONObject
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.query.enums.StringMatchType
 import java.lang.reflect.Modifier
@@ -27,7 +32,10 @@ import kotlin.system.exitProcess
 
 class DouYinMain(private val app: Application) {
     companion object {
-        val awemeHostApplication get() = "com.ss.android.ugc.aweme.app.host.AwemeHostApplication".findClass(lpparam.classLoader)!!
+        val awemeHostApplication
+            get() = "com.ss.android.ugc.aweme.app.host.AwemeHostApplication".findClass(
+                lpparam.classLoader
+            )!!
         var detailPageFragmentClazz: Class<*>? = null
         var videoPinchClazz: Class<*>? = null
         var videoPagerAdapterClazz: Class<*>? = null
@@ -61,13 +69,17 @@ class DouYinMain(private val app: Application) {
 
             //插件化注入
             if (!ConfigV1.get().isDisablePlugin) {
-                val subClazz = hostClassloader!!.loadClass("com.ss.android.ugc.aweme.bullet.ui.BulletContainerActivity")
+                val subClazz =
+                    hostClassloader!!.loadClass("com.ss.android.ugc.aweme.bullet.ui.BulletContainerActivity")
                 PluginBridge.init(app, subClazz)
             }
 
             //全局异常捕获工具
             val intent = Intent()
-            intent.setClassName(HookPackages.modulePackageName, "${HookPackages.modulePackageName}.activity.ErrorActivity")
+            intent.setClassName(
+                HookPackages.modulePackageName,
+                "${HookPackages.modulePackageName}.activity.ErrorActivity"
+            )
             KAppCrashUtils.instance.init(app, intent, "抖音异常退出!")
 
             //初始化DexKit
@@ -97,7 +109,44 @@ class DouYinMain(private val app: Application) {
         }
     }
 
+    private fun readClasses(): Boolean {
+        val classes = ConfigV1.get().classes
+        val targetVersion = classes.getStringOrDefault("targetVersion")
+        val detailPageFragment = classes.getStringOrDefault("detailPageFragment")
+        val videoPinch = classes.getStringOrDefault("videoPinch")
+        val videoPagerAdapter = classes.getStringOrDefault("videoPagerAdapter")
+        val emojiApiProxy = classes.getStringOrDefault("emojiApiProxy")
+        val emojiPopupWindow = classes.getStringOrDefault("emojiPopupWindow")
+        val ripsChatRoomFragment = classes.getStringOrDefault("ripsChatRoomFragment")
+
+        if (targetVersion != "${app.appVersionName}_${app.appVersionCode}") {
+            return false
+        }
+
+        detailPageFragmentClazz = detailPageFragment.ifNotEmpty { it.findClass(lpparam.classLoader) }
+        videoPinchClazz = videoPinch.ifNotEmpty { it.findClass(lpparam.classLoader) }
+        videoPagerAdapterClazz = videoPagerAdapter.ifNotEmpty { it.findClass(lpparam.classLoader) }
+        emojiApiProxyClazz = emojiApiProxy.ifNotEmpty { it.findClass(lpparam.classLoader) }
+        emojiPopupWindowClazz = emojiPopupWindow.ifNotEmpty { it.findClass(lpparam.classLoader) }
+        ripsChatRoomFragmentClazz = ripsChatRoomFragment.ifNotEmpty { it.findClass(lpparam.classLoader) }
+
+        return true
+    }
+
+    private fun saveClasses() {
+        val classJson = JSONObject()
+        classJson.put("targetVersion", "${app.appVersionName}_${app.appVersionCode}")
+        classJson.put("detailPageFragment", "${detailPageFragmentClazz?.name}")
+        classJson.put("videoPinch", "${videoPinchClazz?.name}")
+        classJson.put("videoPagerAdapter", "${videoPagerAdapterClazz?.name}")
+        classJson.put("emojiApiProxy", "${emojiApiProxyClazz?.name}")
+        classJson.put("emojiPopupWindow", "${emojiPopupWindowClazz?.name}")
+        classJson.put("ripsChatRoomFragment", "${ripsChatRoomFragmentClazz?.name}")
+        ConfigV1.get().classes = classJson
+    }
+
     private fun initDexKit() {
+        if (readClasses()) return
         System.loadLibrary("dexkit")
         DexKitBridge.create(lpparam.appInfo.sourceDir)?.use { bridge ->
             if (detailPageFragmentClazz == null) {
@@ -118,7 +167,8 @@ class DouYinMain(private val app: Application) {
                     matcher {
                         fields {
                             add {
-                                type = "com.ss.android.ugc.aweme.feed.ui.seekbar.CustomizedUISeekBar"
+                                type =
+                                    "com.ss.android.ugc.aweme.feed.ui.seekbar.CustomizedUISeekBar"
                             }
                         }
                         methods {
@@ -148,7 +198,8 @@ class DouYinMain(private val app: Application) {
                                 returnType = "com.ss.android.ugc.aweme.feed.model.Aweme"
                             }
                             add {
-                                returnType = "com.ss.android.ugc.aweme.feed.adapter.FeedImageViewHolder"
+                                returnType =
+                                    "com.ss.android.ugc.aweme.feed.adapter.FeedImageViewHolder"
                             }
                         }
                     }
@@ -201,12 +252,7 @@ class DouYinMain(private val app: Application) {
                 ripsChatRoomFragmentClazz = finds.firstOrNull()?.getInstance(lpparam.classLoader)
             }
         }
-        KLogCat.d("detailPageFragmentClazz: $detailPageFragmentClazz")
-        KLogCat.d("videoPinchClazz: $videoPinchClazz")
-        KLogCat.d("videoPagerAdapterClazz: $videoPagerAdapterClazz")
-        KLogCat.d("emojiApiProxyClazz: $emojiApiProxyClazz")
-        KLogCat.d("emojiPopupWindowClazz: $emojiPopupWindowClazz")
-        KLogCat.d("ripsChatRoomFragmentClazz: $ripsChatRoomFragmentClazz")
+        saveClasses()
     }
 
     @Synchronized
@@ -218,38 +264,43 @@ class DouYinMain(private val app: Application) {
         val timedExit = timedExitValue.getIntOrDefault(0, 0) * 60 * 1000L
         val freeExit = timedExitValue.getIntOrDefault(1, 0) * 60 * 1000L
 
-        timedExitCountDown = object : CountDownTimer(timedExit, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                val second = millisUntilFinished / 1000
-                if (second == 30L) {
-                    KToastUtils.show(app, "抖音将在30秒后定时退出")
+        if (timedExit >= 60 * 1000 * 3) {
+            timedExitCountDown = object : CountDownTimer(timedExit, 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                    val second = millisUntilFinished / 1000
+                    if (second == 30L) {
+                        KToastUtils.show(app, "抖音将在30秒后定时退出")
+                    }
+                    if (second <= 5) {
+                        KToastUtils.show(app, "定时退出倒计时${second}s")
+                    }
                 }
-                if (second <= 5) {
-                    KToastUtils.show(app, "定时退出倒计时${second}s")
-                }
-            }
 
-            override fun onFinish() {
-                KActivityUtils.getActivities().forEach { it.finishAndRemoveTask() }
-                Process.killProcess(Process.myPid())
-                exitProcess(1)
+                override fun onFinish() {
+                    KActivityUtils.getActivities().forEach { it.finishAndRemoveTask() }
+                    Process.killProcess(Process.myPid())
+                    exitProcess(1)
+                }
             }
         }
-        freeExitCountDown = object : CountDownTimer(freeExit, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                val second = millisUntilFinished / 1000
-                if (second == 30L) {
-                    KToastUtils.show(app, "长时间无操作, 抖音将在30秒后空闲退出")
-                }
-                if (second <= 5) {
-                    KToastUtils.show(app, "空闲退出倒计时${second}s")
-                }
-            }
 
-            override fun onFinish() {
-                KActivityUtils.getActivities().forEach { it.finishAndRemoveTask() }
-                Process.killProcess(Process.myPid())
-                exitProcess(1)
+        if (freeExit >= 60 * 1000 * 3) {
+            freeExitCountDown = object : CountDownTimer(freeExit, 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                    val second = millisUntilFinished / 1000
+                    if (second == 30L) {
+                        KToastUtils.show(app, "长时间无操作, 抖音将在30秒后空闲退出")
+                    }
+                    if (second <= 5) {
+                        KToastUtils.show(app, "空闲退出倒计时${second}s")
+                    }
+                }
+
+                override fun onFinish() {
+                    KActivityUtils.getActivities().forEach { it.finishAndRemoveTask() }
+                    Process.killProcess(Process.myPid())
+                    exitProcess(1)
+                }
             }
         }
     }

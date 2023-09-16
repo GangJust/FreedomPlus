@@ -56,6 +56,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import com.freegang.base.BaseActivity
 import com.freegang.helper.HighlightStyleBuilder
@@ -83,40 +84,6 @@ class FreedomSettingActivity : BaseActivity() {
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     private fun TopBarView() {
-        var rotate by remember { mutableStateOf(0f) }
-        val rotateAnimate by animateFloatAsState(
-            targetValue = rotate,
-            animationSpec = tween(durationMillis = Random.nextInt(500, 1500)),
-        )
-
-        //更新日志弹窗
-        var showUpdateLogDialog by remember { mutableStateOf(false) }
-        var updateLog by remember { mutableStateOf("") }
-        if (showUpdateLogDialog) {
-            FMessageDialog(
-                title = "更新日志",
-                onlyConfirm = true,
-                confirm = "确定",
-                onConfirm = { showUpdateLogDialog = false },
-                content = {
-                    LazyColumn(
-                        modifier = Modifier,
-                        content = {
-                            item {
-                                SelectionContainer {
-                                    Text(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        text = updateLog,
-                                        style = MaterialTheme.typography.body1,
-                                    )
-                                }
-                            }
-                        },
-                    )
-                },
-            )
-        }
-
         TopAppBar(
             modifier = Modifier.padding(vertical = 24.dp),
             elevation = 0.dp,
@@ -141,40 +108,132 @@ class FreedomSettingActivity : BaseActivity() {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Freedom+ Setting",
-                        style = MaterialTheme.typography.subtitle1.copy(color = MaterialTheme.colors.onSurface),
+                        style = MaterialTheme.typography.body1.copy(
+                            fontSize = 18.sp,
+                            color = MaterialTheme.colors.onSurface,
+                        ),
                     )
                     Spacer(modifier = Modifier.padding(vertical = 2.dp))
                     Text(
                         text = "No one is always happy.",
-                        style = MaterialTheme.typography.subtitle2.copy(color = MaterialTheme.colors.onSurface.copy(0.5f)),
+                        style = MaterialTheme.typography.body1.copy(
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colors.onSurface.copy(0.5f),
+                        ),
                     )
                 }
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_motion),
-                    contentDescription = "更新日志",
-                    modifier = Modifier
-                        .size(20.dp)
-                        .rotate(rotateAnimate)
-                        .combinedClickable(
-                            indication = null,
-                            interactionSource = remember { MutableInteractionSource() },
-                            onLongClick = {
-                                lifecycleScope.launch {
-                                    updateLog = withContext(Dispatchers.IO) {
-                                        val inputStream = mResources.moduleAssets.open("update.log")
-                                        val bytes = inputStream.readBytes()
-                                        val text = bytes.decodeToString()
-                                        inputStream.close()
-                                        text
+                BoxWithConstraints {
+                    var showLogDialog by remember { mutableStateOf(false) }
+                    if (showLogDialog) {
+                        FMessageDialog(
+                            title = "类日志",
+                            cancel = "取消",
+                            confirm = "清除",
+                            onCancel = {
+                                showLogDialog = false
+                            },
+                            onConfirm = {
+                                showLogDialog = false
+                                model.clearClasses()
+                                KToastUtils.show(application, "类日志清除")
+                            }
+                        ) {
+                            Text(
+                                text = """
+                                    类日志是对混淆类名的本地存储操作, 设计该功能的主要目的是为了减少启动时间。
+                                    清除类日志并不会造成功能丢失，相反来说若某功能无法正常使用, 也可尝试手动清除类日志, 模块在下次启动时会对功能类重新搜索。
+                                """.trimIndent(),
+                            )
+                        }
+                    }
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_manage),
+                        contentDescription = "Log",
+                        modifier = Modifier
+                            .size(24.dp)
+                            .combinedClickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() },
+                                onLongClick = {
+                                    if (!model.hasClasses) {
+                                        KToastUtils.show(application, "没有类日志!")
+                                        return@combinedClickable
                                     }
-                                    showUpdateLogDialog = updateLog.isNotBlank()
-                                }
+                                    showLogDialog = true
+                                },
+                                onClick = {
+                                    if (!model.hasClasses) {
+                                        KToastUtils.show(application, "没有类日志")
+                                        return@combinedClickable
+                                    }
+                                    showLogDialog = true
+                                },
+                            ),
+                    )
+                }
+                Spacer(modifier = Modifier.padding(horizontal = 12.dp))
+                BoxWithConstraints {
+                    var rotate by remember { mutableStateOf(0f) }
+                    val rotateAnimate by animateFloatAsState(
+                        targetValue = rotate,
+                        animationSpec = tween(durationMillis = Random.nextInt(500, 1500)),
+                    )
+
+                    // 更新日志弹窗
+                    var showUpdateLogDialog by remember { mutableStateOf(false) }
+                    var updateLog by remember { mutableStateOf("") }
+                    if (showUpdateLogDialog) {
+                        FMessageDialog(
+                            title = "更新日志",
+                            onlyConfirm = true,
+                            confirm = "确定",
+                            onConfirm = { showUpdateLogDialog = false },
+                            content = {
+                                LazyColumn(
+                                    modifier = Modifier,
+                                    content = {
+                                        item {
+                                            SelectionContainer {
+                                                Text(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    text = updateLog,
+                                                    style = MaterialTheme.typography.body1,
+                                                )
+                                            }
+                                        }
+                                    },
+                                )
                             },
-                            onClick = {
-                                rotate = if (rotate == 0f) 360f else 0f
-                            },
-                        ),
-                )
+                        )
+                    }
+
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_motion),
+                        contentDescription = "更新日志",
+                        modifier = Modifier
+                            .size(20.dp)
+                            .rotate(rotateAnimate)
+                            .combinedClickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() },
+                                onLongClick = {
+                                    lifecycleScope.launch {
+                                        updateLog = withContext(Dispatchers.IO) {
+                                            val inputStream = mResources.moduleAssets.open("update.log")
+                                            val bytes = inputStream.readBytes()
+                                            val text = bytes.decodeToString()
+                                            inputStream.close()
+                                            text
+                                        }
+                                        showUpdateLogDialog = updateLog.isNotBlank()
+                                    }
+                                },
+                                onClick = {
+                                    rotate = if (rotate == 0f) 360f else 0f
+                                },
+                            ),
+                    )
+                }
                 /*Spacer(modifier = Modifier.padding(horizontal = 12.dp))
                 Icon(
                     modifier = Modifier
@@ -194,7 +253,7 @@ class FreedomSettingActivity : BaseActivity() {
     @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
     @Composable
     private fun BodyView() {
-        //版本更新弹窗
+        // 版本更新弹窗
         var showNewVersionDialog by remember { mutableStateOf(true) }
         val version by model.versionConfig.observeAsState()
         if (version != null) {
@@ -233,7 +292,7 @@ class FreedomSettingActivity : BaseActivity() {
             }
         }
 
-        //重启抖音提示
+        // 重启抖音提示
         var showRestartAppDialog by remember { mutableStateOf(false) }
         if (showRestartAppDialog) {
             if (application.packageName != HookPackages.modulePackageName) {
@@ -319,7 +378,7 @@ class FreedomSettingActivity : BaseActivity() {
                                 model.changeIsDisableDoubleLike(it)
                             }
                         )
-                        BoxWithConstraints { //限制重构作用域
+                        BoxWithConstraints { // 限制重构作用域
                             var showVideoFilterDialog by remember { mutableStateOf(false) }
                             var showVideoFilterTips by remember { mutableStateOf(false) }
 
@@ -437,8 +496,8 @@ class FreedomSettingActivity : BaseActivity() {
                                 }
                             )
                         }
-                        BoxWithConstraints { //限制重构作用域
-                            //清爽模式响应模式
+                        BoxWithConstraints { // 限制重构作用域
+                            // 清爽模式响应模式
                             var showLongPressModeDialog by remember { mutableStateOf(false) }
                             if (showLongPressModeDialog) {
                                 var isLongPressMode by remember { mutableStateOf(model.isLongPressMode.value ?: true) }
@@ -491,8 +550,8 @@ class FreedomSettingActivity : BaseActivity() {
                                 }
                             )
                         }
-                        BoxWithConstraints { //限制重构作用域
-                            //隐藏Tab关键字编辑
+                        BoxWithConstraints { // 限制重构作用域
+                            // 隐藏Tab关键字编辑
                             var showHideTabKeywordsEditorDialog by remember { mutableStateOf(false) }
                             if (showHideTabKeywordsEditorDialog) {
                                 var hideTabKeywords by remember { mutableStateOf(model.hideTabKeywords.value ?: "") }
@@ -527,7 +586,7 @@ class FreedomSettingActivity : BaseActivity() {
                                 )
                             }
 
-                            //开启隐藏Tab关键字, 复确认弹窗
+                            // 开启隐藏Tab关键字, 复确认弹窗
                             var showHideTabTipsDialog by remember { mutableStateOf(false) }
                             if (showHideTabTipsDialog) {
                                 FMessageDialog(
@@ -567,8 +626,8 @@ class FreedomSettingActivity : BaseActivity() {
                                 },
                             )
                         }
-                        BoxWithConstraints { //限制重构作用域
-                            //WebDav配置编辑
+                        BoxWithConstraints { // 限制重构作用域
+                            // WebDav配置编辑
                             var showWebDavConfigEditorDialog by remember { mutableStateOf(false) }
                             if (showWebDavConfigEditorDialog) {
                                 val webDavHistory = model.webDavHistory.observeAsState(initial = emptySet())
@@ -693,7 +752,7 @@ class FreedomSettingActivity : BaseActivity() {
                                                                     color = Color(0xFF999999)
                                                                 ),
                                                             )
-                                                            innerTextField.invoke() //必须调用这行哦
+                                                            innerTextField.invoke() // 必须调用这行哦
                                                         },
                                                         onValueChange = {
                                                             host = it
@@ -720,7 +779,7 @@ class FreedomSettingActivity : BaseActivity() {
                                                                     color = Color(0xFF999999)
                                                                 ),
                                                             )
-                                                            innerTextField.invoke() //必须调用这行哦
+                                                            innerTextField.invoke() // 必须调用这行哦
                                                         },
                                                         onValueChange = {
                                                             username = it
@@ -746,7 +805,7 @@ class FreedomSettingActivity : BaseActivity() {
                                                                     color = Color(0xFF999999)
                                                                 ),
                                                             )
-                                                            innerTextField.invoke() //必须调用这行哦
+                                                            innerTextField.invoke() // 必须调用这行哦
                                                         },
                                                         onValueChange = {
                                                             password = it
@@ -791,8 +850,8 @@ class FreedomSettingActivity : BaseActivity() {
                                 },
                             )
                         }
-                        BoxWithConstraints { //限制重构作用域
-                            //定时退出
+                        BoxWithConstraints { // 限制重构作用域
+                            // 定时退出
                             var showTimedExitSettingDialog by remember { mutableStateOf(false) }
                             if (showTimedExitSettingDialog) {
                                 val times = model.timedExitValue.value?.parseJSONArray()
@@ -847,7 +906,7 @@ class FreedomSettingActivity : BaseActivity() {
                                                                     color = Color(0xFF999999)
                                                                 ),
                                                             )
-                                                            innerTextField.invoke() //必须调用这行哦
+                                                            innerTextField.invoke() // 必须调用这行哦
                                                         },
                                                         onValueChange = {
                                                             timedExit = it
@@ -884,7 +943,7 @@ class FreedomSettingActivity : BaseActivity() {
                                                                     color = Color(0xFF999999)
                                                                 ),
                                                             )
-                                                            innerTextField.invoke() //必须调用这行哦
+                                                            innerTextField.invoke() // 必须调用这行哦
                                                         },
                                                         onValueChange = {
                                                             freeExit = it
@@ -913,8 +972,8 @@ class FreedomSettingActivity : BaseActivity() {
                                 },
                             )
                         }
-                        BoxWithConstraints { //限制重构作用域
-                            //去插件化提示
+                        BoxWithConstraints { // 限制重构作用域
+                            // 去插件化提示
                             var showDisablePluginDialog by remember { mutableStateOf(false) }
                             if (showDisablePluginDialog) {
                                 FMessageDialog(
@@ -1005,7 +1064,7 @@ class FreedomSettingActivity : BaseActivity() {
                     BoxWithConstraints(
                         modifier = Modifier
                             .wrapContentSize(Alignment.Center)
-                            .padding(17.dp), //switch: width = 34.dp
+                            .padding(17.dp), // switch: width = 34.dp
                         contentAlignment = Alignment.Center,
                         content = {
                             CircularProgressIndicator(
@@ -1064,7 +1123,7 @@ class FreedomSettingActivity : BaseActivity() {
                 )
             )
         } catch (e: Exception) {
-            //e.printStackTrace()
+            // e.printStackTrace()
             Toast.makeText(applicationContext, "谢谢，你未安装支付宝客户端", Toast.LENGTH_SHORT).show()
         }
     }

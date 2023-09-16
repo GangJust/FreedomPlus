@@ -8,6 +8,7 @@ import com.freegang.ktutils.json.getStringOrDefault
 import com.freegang.ktutils.json.parseJSON
 import com.freegang.webdav.WebDav
 import com.tencent.mmkv.MMKV
+import org.json.JSONObject
 import java.io.File
 
 class ConfigV1 private constructor() {
@@ -302,5 +303,15 @@ class ConfigV1 private constructor() {
             mmkv.putLong("versionCode", value.versionCode)
             mmkv.putString("dyVersionName", value.dyVersionName)
             mmkv.putLong("dyVersionCode", value.dyVersionCode)
+        }
+
+    /// 类名存储
+    var classes: JSONObject = JSONObject()
+        get() {
+            return mmkv.getString("classes", "")!!.parseJSON()
+        }
+        set(value) {
+            field = value
+            mmkv.putString("classes", value.toString())
         }
 }

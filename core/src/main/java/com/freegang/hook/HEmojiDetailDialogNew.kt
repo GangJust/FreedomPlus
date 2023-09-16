@@ -50,7 +50,7 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook
                 }
             }
 
-        //表情弹层
+        // 表情弹层
         if (DouYinMain.emojiPopupWindowClazz != null) {
             lpparam.hookClass(DouYinMain.emojiPopupWindowClazz!!)
                 .methodAll {
@@ -61,9 +61,9 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook
                                 ?: emoji?.detailEmoji?.staticUrl?.urlList ?: emptyList()
                         }
 
-                        if (result !is View && popUrlList.isEmpty()) return@onAfter
+                        if (popUrlList.isEmpty()) return@onAfter
 
-                        val view = result as View
+                        val view = result.asOrNull<View>() ?: return@onAfter
                         if (view is TextView) {
                             if (view.text == "添加到表情") {
                                 view.text = "添加到表情 (长按保存)"
@@ -80,10 +80,10 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook
         }
     }
 
-    //重构表情布局
+    // 重构表情布局
     private fun rebuildView(params: XC_MethodHook.MethodHookParam) {
         hookBlock(params) {
-            if (!targetClazz.isInstance(thisObject)) return  //非 EmojiDetailDialogNew, 直接结束
+            if (!targetClazz.isInstance(thisObject)) return  // 非 EmojiDetailDialogNew, 直接结束
 
             launch {
                 delay(500L)

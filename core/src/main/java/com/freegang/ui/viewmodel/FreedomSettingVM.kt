@@ -13,11 +13,13 @@ import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.appVersionCode
 import com.freegang.ktutils.app.appVersionName
 import com.freegang.ktutils.app.readAssetsAsText
+import com.freegang.ktutils.json.isEmpty
 import com.freegang.ktutils.net.KUrlUtils
 import com.freegang.webdav.WebDav
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.io.IOException
 
 class FreedomSettingVM(application: Application) : AndroidViewModel(application) {
@@ -49,8 +51,6 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
 
     private var _isDisableDoubleLike = MutableLiveData(false)
     val isDisableDoubleLike: LiveData<Boolean> = _isDisableDoubleLike
-
-    val videoFilterTypes get() = config.videoFilterTypes
 
     private var _isVideoFilter = MutableLiveData(false)
     val isVideoFilter: LiveData<Boolean> = _isVideoFilter
@@ -97,8 +97,8 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
 
     // 检查版本更新
     fun checkVersion() {
-        if (KAppUtils.isAppInDebug(app)) return //测试包不检查更新
-        if (app.appVersionName.contains(Regex("beta|alpha"))) return //非release包不检查更新
+        if (KAppUtils.isAppInDebug(app)) return // 测试包不检查更新
+        if (app.appVersionName.contains(Regex("beta|alpha"))) return // 非release包不检查更新
         viewModelScope.launch {
             val version = withContext(Dispatchers.IO) { Version.getRemoteReleasesLatest() }
             if (version != null) _versionConfig.value = version
@@ -172,6 +172,8 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
         _isDisableDoubleLike.value = value
         config.isDisableDoubleLike = value
     }
+
+    val videoFilterTypes get() = config.videoFilterTypes
 
     // 视频过滤
     fun changeIsVideoFilter(value: Boolean) {
@@ -304,5 +306,12 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
             app.appVersionName,
             app.appVersionCode
         )
+    }
+
+    val hasClasses get() = !config.classes.isEmpty
+
+    // 清除类日志
+    fun clearClasses() {
+        config.classes = JSONObject()
     }
 }
