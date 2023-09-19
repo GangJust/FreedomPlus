@@ -12,6 +12,6 @@ public class AmeBaseFragment extends ComponentFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 }

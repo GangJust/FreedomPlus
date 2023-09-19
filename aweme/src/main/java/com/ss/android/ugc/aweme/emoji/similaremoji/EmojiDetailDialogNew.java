@@ -10,16 +10,16 @@ public class EmojiDetailDialogNew extends EmojiBottomSheetDialog {
 
     public EmojiDetailDialogNew(@NonNull Context context) {
         super(context);
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 
     public EmojiDetailDialogNew(@NonNull Context context, int theme) {
         super(context, theme);
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 
     protected EmojiDetailDialogNew(@NonNull Context context, boolean cancelable, OnCancelListener cancelListener) {
         super(context, cancelable, cancelListener);
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 }

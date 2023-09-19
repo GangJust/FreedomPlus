@@ -1,10 +1,10 @@
 package com.freegang.xpler
 
 import android.app.Application
-import android.app.Instrumentation
 import com.freegang.xpler.core.KtXposedHelpers
 import com.freegang.xpler.core.getStaticObjectField
 import com.freegang.xpler.core.hookClass
+import com.freegang.xpler.core.thisApplication
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.IXposedHookZygoteInit
 import de.robv.android.xposed.XposedBridge
@@ -27,12 +27,11 @@ class HookInit : IXposedHookLoadPackage, IXposedHookZygoteInit {
             moduleInit(lpparam)
         }
 
-        lpparam.hookClass(Instrumentation::class.java)
-            .method("callApplicationOnCreate", Application::class.java) {
-                onAfter {
-                    val application = args[0] as Application
+        lpparam.hookClass(Application::class.java)
+            .method("onCreate") {
+                onBefore {
                     hookMain.handleLoadPackage(lpparam)
-                    hookMain.handleLoadPackage(lpparam, application)
+                    hookMain.handleLoadPackage(lpparam, thisApplication)
                 }
             }
     }

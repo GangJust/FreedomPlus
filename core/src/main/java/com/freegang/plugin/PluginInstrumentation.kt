@@ -14,6 +14,7 @@ import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.classLoader
+import com.freegang.xpler.core.xposedLog
 import com.freegang.xpler.loader.moduleClassloader
 import java.lang.reflect.Method
 
@@ -129,7 +130,7 @@ class PluginInstrumentation(
                         newIntent.putExtra(PLUGIN_PROXY_ACTIVITY, pluginClazz.name)
                     }
                 } catch (e: Exception) {
-                    KLogCat.e(e)
+                    KLogCat.xposedLog(e)
                 }
             }
 
@@ -155,7 +156,7 @@ class PluginInstrumentation(
                 options,
             ) as ActivityResult?
         } catch (e: Exception) {
-            //KLogCat.e(e)
+            //KLogCat.xposedLog(e)
             throw e
         }
     }

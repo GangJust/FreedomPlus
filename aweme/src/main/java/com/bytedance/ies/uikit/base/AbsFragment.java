@@ -10,6 +10,6 @@ import androidx.fragment.app.Fragment;
 public class AbsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 }

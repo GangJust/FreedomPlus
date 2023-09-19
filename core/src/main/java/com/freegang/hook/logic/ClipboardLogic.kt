@@ -14,20 +14,20 @@ class ClipboardLogic(
     fun addClipboardListener(context: Context, notify: (clipData: ClipData) -> Unit) {
         val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         primaryClipChangedListener = ClipboardManager.OnPrimaryClipChangedListener {
-            if (!clipboardManager.hasPrimaryClip() || (clipboardManager.primaryClip?.itemCount ?: 0) <= 0) return@OnPrimaryClipChangedListener
-            val clipData = clipboardManager.primaryClip!!
+            if (!clipboardManager.hasPrimaryClip()) return@OnPrimaryClipChangedListener
+            clipboardManager.primaryClip?.runCatching {
+                //获取剪贴板内容
+                val clipDataItem = getItemAt(0)
+                val shareText = "${clipDataItem.text}"
+                if (!shareText.contains("http")) return@OnPrimaryClipChangedListener
 
-            //获取剪贴板内容
-            val clipDataItem = clipData.getItemAt(0)
-            val shareText = clipDataItem.text.toString()
-            if (!shareText.contains("http")) return@OnPrimaryClipChangedListener
-
-            //跳过直播链接, 按文本检查
-            if (shareText.contains("【抖音】") && shareText.contains("正在直播") && shareText.contains("一起支持")) {
-                hook.showToast(context, "不支持直播!")
-                return@OnPrimaryClipChangedListener
+                //跳过直播链接, 按文本检查
+                if (shareText.contains("【抖音】") && shareText.contains("正在直播") && shareText.contains("一起支持")) {
+                    hook.showToast(context, "不支持直播!")
+                    return@OnPrimaryClipChangedListener
+                }
+                notify.invoke(this)
             }
-            notify.invoke(clipData)
         }
         clipboardManager.addPrimaryClipChangedListener(primaryClipChangedListener)
     }

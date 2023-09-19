@@ -2,9 +2,11 @@
 
 [![](https://img.shields.io/github/v/release/GangJust/FreedomPlus)](https://github.com/GangJust/FreedomPlus/releases) [![](https://img.shields.io/github/downloads/GangJust/FreedomPlus/total?color=g)]() [![](https://img.shields.io/badge/telegram-freedom%2B-2481CC)](https://t.me/FreedomPlugin)
 
-依赖于抖音运行的开源Xposed模块。（Lsposed正常使用，其他框架自测）
+依赖于抖音运行的开源Xposed模块，Lsposed正常使用，其他框架自测。
 
-----
+需要抖音**文件读写权限**读取模块配置，另外如果频繁崩溃，可尝试更换64位抖音。
+
+已知网络上下载的**抖音历史版本**大多数都是32位。
 
 
 
@@ -23,7 +25,6 @@
 
 ## 支持版本
 
-- 需要给定抖音 **文件读写权限** 读取模块配置
 - 理论上支持：23.5.0 ~ 至今
 - 具体版本号列表可参考：[version.json](https://github.com/GangJust/FreedomPlus/blob/master/versions.json)
 

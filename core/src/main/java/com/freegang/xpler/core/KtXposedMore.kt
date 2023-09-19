@@ -455,6 +455,35 @@ fun XC_MethodHook.MethodHookParam.xposedLog(log: Throwable) {
 }
 
 /**
+ * 打印Xposed日志
+ *
+ * 并打印KLogCat日志
+ *
+ * @param log 内容
+ */
+fun KLogCat.Companion.xposedLog(log: String, xposed: Boolean = true) {
+    d(log)
+    if (xposed) {
+        XposedBridge.log(log)
+    }
+}
+
+/**
+ * 打印Xposed日志
+ *
+ * 并打印KLogCat日志
+ *
+ * @param log 内容
+ */
+fun KLogCat.Companion.xposedLog(log: Throwable, xposed: Boolean = true) {
+    e(log)
+    if (xposed) {
+        XposedBridge.log(log)
+    }
+}
+
+
+/**
  * 打印被Hook的某个方法中的堆栈信息
  */
 fun XC_MethodHook.MethodHookParam.dumpStackLog() {

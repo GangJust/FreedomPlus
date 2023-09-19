@@ -38,6 +38,6 @@ public class Emoji {
     public int height;
 
     public Emoji() {
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 }

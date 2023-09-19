@@ -55,6 +55,7 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook
             lpparam.hookClass(DouYinMain.emojiPopupWindowClazz!!)
                 .methodAll {
                     onAfter {
+                        if (!config.isEmoji) return@onAfter
                         if (argsOrEmpty.isNotEmpty()) {
                             val emoji = argsOrEmpty[0].asOrNull<BaseEmoji>()
                             popUrlList = emoji?.detailEmoji?.animateUrl?.urlList

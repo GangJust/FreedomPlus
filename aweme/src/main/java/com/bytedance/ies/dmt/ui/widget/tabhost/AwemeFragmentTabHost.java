@@ -10,6 +10,6 @@ public class AwemeFragmentTabHost extends FragmentTabHost {
 
     public AwemeFragmentTabHost(@NonNull Context context) {
         super(context);
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 }

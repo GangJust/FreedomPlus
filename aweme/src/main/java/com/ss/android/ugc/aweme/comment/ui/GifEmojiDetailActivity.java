@@ -10,6 +10,6 @@ public class GifEmojiDetailActivity extends AbsActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 }

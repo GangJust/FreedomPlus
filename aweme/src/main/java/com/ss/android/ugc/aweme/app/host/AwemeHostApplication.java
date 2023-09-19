@@ -6,6 +6,6 @@ public class AwemeHostApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 }

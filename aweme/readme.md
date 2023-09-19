@@ -1,1 +1,1 @@
-# Sub DouYin
+# Stub DouYin

@@ -22,6 +22,7 @@ import com.freegang.plugin.PluginBridge
 import com.freegang.xpler.HookPackages
 import com.freegang.xpler.core.findClass
 import com.freegang.xpler.core.lpparam
+import com.freegang.xpler.core.xposedLog
 import com.freegang.xpler.loader.hostClassloader
 import com.freegang.xpler.loader.injectClassLoader
 import org.json.JSONObject
@@ -33,9 +34,7 @@ import kotlin.system.exitProcess
 class DouYinMain(private val app: Application) {
     companion object {
         val awemeHostApplication
-            get() = "com.ss.android.ugc.aweme.app.host.AwemeHostApplication".findClass(
-                lpparam.classLoader
-            )!!
+            get() = "com.ss.android.ugc.aweme.app.host.AwemeHostApplication".findClass(lpparam.classLoader)!!
         var detailPageFragmentClazz: Class<*>? = null
         var videoPinchClazz: Class<*>? = null
         var videoPagerAdapterClazz: Class<*>? = null
@@ -69,17 +68,14 @@ class DouYinMain(private val app: Application) {
 
             //插件化注入
             if (!ConfigV1.get().isDisablePlugin) {
-                val subClazz =
-                    hostClassloader!!.loadClass("com.ss.android.ugc.aweme.bullet.ui.BulletContainerActivity")
-                PluginBridge.init(app, subClazz)
+                val stubClazz = hostClassloader!!.loadClass("com.ss.android.ugc.aweme.bullet.ui.BulletContainerActivity")
+                PluginBridge.init(app, stubClazz)
             }
 
             //全局异常捕获工具
             val intent = Intent()
-            intent.setClassName(
-                HookPackages.modulePackageName,
-                "${HookPackages.modulePackageName}.activity.ErrorActivity"
-            )
+            val className = "${HookPackages.modulePackageName}.activity.ErrorActivity"
+            intent.setClassName(HookPackages.modulePackageName, className)
             KAppCrashUtils.instance.init(app, intent, "抖音异常退出!")
 
             //初始化DexKit
@@ -105,6 +101,7 @@ class DouYinMain(private val app: Application) {
             HChatRoomActivity(lpparam)
             HVideoPagerAdapter(lpparam)
         }.onFailure {
+            KLogCat.xposedLog("Freedom+ inject err..\n${it.stackTraceToString()}")
             KToastUtils.show(app, "Freedom+ Error: ${it.message}")
         }
     }
@@ -149,108 +146,87 @@ class DouYinMain(private val app: Application) {
         if (readClasses()) return
         System.loadLibrary("dexkit")
         DexKitBridge.create(lpparam.appInfo.sourceDir)?.use { bridge ->
-            if (detailPageFragmentClazz == null) {
-                val finds = bridge.findClass {
-                    matcher {
-                        usingStrings = listOf(
-                            "a1128.b7947",
-                            "com/ss/android/ugc/aweme/detail/ui/DetailPageFragment",
-                            "DetailActOtherNitaView",
-                        )
-                    }
-                }
-                detailPageFragmentClazz = finds.firstOrNull()?.getInstance(lpparam.classLoader)
-            }
-
-            if (videoPinchClazz == null) {
-                val finds = bridge.findClass {
-                    matcher {
-                        fields {
-                            add {
-                                type =
-                                    "com.ss.android.ugc.aweme.feed.ui.seekbar.CustomizedUISeekBar"
-                            }
+            videoPinchClazz = bridge.findClass {
+                matcher {
+                    fields {
+                        add {
+                            type =
+                                "com.ss.android.ugc.aweme.feed.ui.seekbar.CustomizedUISeekBar"
                         }
-                        methods {
-                            add {
-                                name = "getMOriginView"
-                                returnType = "android.view.View"
-                            }
-                            add {
-                                name = "handleMsg"
-                                paramTypes = listOf("android.os.Message")
-                            }
+                    }
+                    methods {
+                        add {
+                            name = "getMOriginView"
+                            returnType = "android.view.View"
+                        }
+                        add {
+                            name = "handleMsg"
+                            paramTypes = listOf("android.os.Message")
                         }
                     }
                 }
-                videoPinchClazz = finds.firstOrNull()?.getInstance(lpparam.classLoader)
-            }
-
-            if (videoPagerAdapterClazz == null) {
-                val finds = bridge.findClass {
-                    matcher {
-                        methods {
-                            add {
-                                this.returnType = "java.util.List"
-                            }
-                            add {
-                                paramTypes = listOf("com.ss.android.ugc.aweme.feed.model.Aweme")
-                                returnType = "com.ss.android.ugc.aweme.feed.model.Aweme"
-                            }
-                            add {
-                                returnType =
-                                    "com.ss.android.ugc.aweme.feed.adapter.FeedImageViewHolder"
-                            }
+            }.firstOrNull()?.getInstance(lpparam.classLoader)
+            videoPagerAdapterClazz = bridge.findClass {
+                matcher {
+                    methods {
+                        add {
+                            this.returnType = "java.util.List"
+                        }
+                        add {
+                            paramTypes = listOf("com.ss.android.ugc.aweme.feed.model.Aweme")
+                            returnType = "com.ss.android.ugc.aweme.feed.model.Aweme"
+                        }
+                        add {
+                            returnType =
+                                "com.ss.android.ugc.aweme.feed.adapter.FeedImageViewHolder"
                         }
                     }
                 }
-                videoPagerAdapterClazz = finds.firstOrNull()?.getInstance(lpparam.classLoader)
-            }
-
-            if (emojiApiProxyClazz == null) {
-                val finds = bridge.findClass {
-                    matcher {
-                        addUsingString("https://", StringMatchType.Equals)
-                        addUsingString("/aweme/v1/", StringMatchType.Equals)
-                    }
-                }
-                emojiApiProxyClazz = finds.firstOrNull()?.getInstance(lpparam.classLoader)
-            }
-
-            if (emojiPopupWindowClazz == null) {
-                val finds = bridge.findClass {
-                    matcher {
-                        methods {
-                            add {
-                                modifiers = Modifier.PRIVATE
-                                returnType = "com.ss.android.ugc.aweme.base.ui.RemoteImageView"
-                            }
-                            add {
-                                modifiers = Modifier.PRIVATE
-                                returnType = "com.bytedance.ies.dmt.ui.widget.DmtTextView"
-                            }
-                            add {
-                                modifiers = Modifier.PRIVATE
-                                paramTypes = listOf("com.ss.android.ugc.aweme.emoji.base.BaseEmoji")
-                            }
+            }.firstOrNull()?.getInstance(lpparam.classLoader)
+            emojiPopupWindowClazz = bridge.findClass {
+                matcher {
+                    methods {
+                        add {
+                            modifiers = Modifier.PRIVATE
+                            returnType = "com.ss.android.ugc.aweme.base.ui.RemoteImageView"
+                        }
+                        add {
+                            modifiers = Modifier.PRIVATE
+                            returnType = "com.bytedance.ies.dmt.ui.widget.DmtTextView"
+                        }
+                        add {
+                            modifiers = Modifier.PRIVATE
+                            paramTypes = listOf("com.ss.android.ugc.aweme.emoji.base.BaseEmoji")
                         }
                     }
                 }
-                emojiPopupWindowClazz = finds.firstOrNull()?.getInstance(lpparam.classLoader)
-            }
-
-            if (ripsChatRoomFragmentClazz == null) {
-                val finds = bridge.findClass {
-                    matcher {
-                        usingStrings = listOf(
-                            "com/ss/android/ugc/aweme/im/sdk/chat/rips/RipsChatRoomFragment",
-                            "RipsChatRoomFragment",
-                            "a1128.b17614",
-                        )
-                    }
+            }.firstOrNull()?.getInstance(lpparam.classLoader)
+            val findMaps = bridge.batchFindClassUsingStrings {
+                addSearchGroup {
+                    groupName = "detailPageFragment"
+                    usingStrings = listOf(
+                        "a1128.b7947",
+                        "com/ss/android/ugc/aweme/detail/ui/DetailPageFragment",
+                        "DetailActOtherNitaView",
+                    )
                 }
-                ripsChatRoomFragmentClazz = finds.firstOrNull()?.getInstance(lpparam.classLoader)
+                addSearchGroup {
+                    groupName = "emojiApiProxy"
+                    add("https://", StringMatchType.Equals)
+                    add("/aweme/v1/", StringMatchType.Equals)
+                }
+                addSearchGroup {
+                    groupName = "ripsChatRoomFragment"
+                    usingStrings = listOf(
+                        "com/ss/android/ugc/aweme/im/sdk/chat/rips/RipsChatRoomFragment",
+                        "RipsChatRoomFragment",
+                        "a1128.b17614",
+                    )
+                }
             }
+            detailPageFragmentClazz = findMaps["detailPageFragment"]?.firstOrNull()?.getInstance(lpparam.classLoader)
+            emojiApiProxyClazz = findMaps["emojiApiProxy"]?.firstOrNull()?.getInstance(lpparam.classLoader)
+            ripsChatRoomFragmentClazz = findMaps["ripsChatRoomFragment"]?.firstOrNull()?.getInstance(lpparam.classLoader)
         }
         saveClasses()
     }

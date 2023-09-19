@@ -2,7 +2,6 @@ package com.freegang.xpler.core
 
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
-import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import java.lang.reflect.Field
@@ -154,8 +153,8 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     init {
         runCatching {
             mTargetClazz = this.setTargetClass()
-            if (mTargetClazz == NoneHook::class.java) return@runCatching
-            if (mTargetClazz != EmptyHook::class.java) {
+            if (targetClazz == NoneHook::class.java) return@runCatching
+            if (targetClazz != EmptyHook::class.java) {
                 if (targetClazz == Any::class.java) throw ClassFormatError("Please override the `setTargetClass()` to specify the hook target class!")
                 hookHelper = KtXposedHelpers.hookClass(targetClazz)
 
@@ -174,6 +173,8 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
                 defaultHookAllConstructor()
             }
             this.onInit()
+        }.onFailure {
+            //KLogCat.xposedLog(it)
         }
     }
 
@@ -195,7 +196,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
         return try {
             XposedHelpers.findClass(className, classLoader ?: lpparam.classLoader)
         } catch (e: Exception) {
-            XposedBridge.log(e)
+            //KLogCat.xposedLog(e)
             NoneHook::class.java
         }
     }

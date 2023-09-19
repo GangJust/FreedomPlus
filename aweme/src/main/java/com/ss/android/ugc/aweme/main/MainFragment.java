@@ -11,24 +11,24 @@ import com.bytedance.ies.uikit.base.AbsFragment;
 public class MainFragment extends AbsFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 }

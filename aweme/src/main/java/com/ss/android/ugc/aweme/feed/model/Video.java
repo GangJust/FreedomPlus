@@ -31,6 +31,6 @@ public class Video {
     public int width;
 
     private Video() {
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 }

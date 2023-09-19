@@ -24,6 +24,6 @@ public class FragmentTabHost extends TabHost {
 
     //切换
     public void onTabChanged(String s) {
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 }

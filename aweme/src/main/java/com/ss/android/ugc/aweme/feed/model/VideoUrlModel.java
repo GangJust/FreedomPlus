@@ -19,6 +19,6 @@ public class VideoUrlModel extends UrlModel {
     public String sourceId;
 
     public VideoUrlModel() {
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 }

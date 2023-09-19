@@ -38,10 +38,10 @@ public abstract class Aweme {
     public List<ImageUrlStruct> images;
 
     public Aweme() {
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 
-    // sub methods
+    // stub methods
 
     // this.externalType == 1 || this.awemeType == 107
     public abstract boolean isAwemeFromXiGua();

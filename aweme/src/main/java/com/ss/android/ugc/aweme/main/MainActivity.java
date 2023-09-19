@@ -10,12 +10,12 @@ public class MainActivity extends AbsActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 }

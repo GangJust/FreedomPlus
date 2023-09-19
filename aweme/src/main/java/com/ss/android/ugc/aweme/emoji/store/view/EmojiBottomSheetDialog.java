@@ -9,16 +9,16 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 public class EmojiBottomSheetDialog extends BottomSheetDialog {
     public EmojiBottomSheetDialog(@NonNull Context context) {
         super(context);
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 
     public EmojiBottomSheetDialog(@NonNull Context context, int theme) {
         super(context, theme);
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 
     protected EmojiBottomSheetDialog(@NonNull Context context, boolean cancelable, OnCancelListener cancelListener) {
         super(context, cancelable, cancelListener);
-        throw new RuntimeException("sub!");
+        throw new RuntimeException("stub!!");
     }
 }

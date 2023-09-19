@@ -29,6 +29,7 @@ import com.freegang.xpler.R
 import com.freegang.xpler.core.KtOnHook
 import com.freegang.xpler.core.KtXposedHelpers
 import com.freegang.xpler.core.inflateModuleView
+import com.freegang.xpler.core.xposedLog
 import com.freegang.xpler.databinding.DialogChoiceLayoutBinding
 import com.freegang.xpler.databinding.DialogInputChoiceLayoutBinding
 import com.freegang.xpler.databinding.DialogMessageLayoutBinding
@@ -57,7 +58,7 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
                 return@CoroutineExceptionHandler
             }
 
-            KLogCat.d("发生异常: \n${throwable.stackTraceToString()}")
+            KLogCat.xposedLog("错误堆栈: \n${throwable.stackTraceToString()}")
             if (coroutineContext.isActive) {
                 coroutineContext.cancel()
                 coroutineContext.cancelChildren()
@@ -70,7 +71,7 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
                 e.printStackTrace()
             } catch (e: Exception) {
                 e.printStackTrace()
-                KLogCat.d("发生异常: \n${e.stackTraceToString()}")
+                KLogCat.xposedLog("错误堆栈: \n${e.stackTraceToString()}")
             }
         }
         return job
