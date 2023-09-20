@@ -10,8 +10,10 @@ import com.freegang.ktutils.app.KActivityUtils
 import com.freegang.ktutils.app.KAppCrashUtils
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
+import com.freegang.ktutils.app.abiBit
 import com.freegang.ktutils.app.appVersionCode
 import com.freegang.ktutils.app.appVersionName
+import com.freegang.ktutils.app.is64BitDalvik
 import com.freegang.ktutils.io.hasOperationStorage
 import com.freegang.ktutils.json.getIntOrDefault
 import com.freegang.ktutils.json.getStringOrDefault
@@ -66,6 +68,10 @@ class DouYinMain(private val app: Application) {
             KLogCat.init(app)
             //KLogCat.openStorage()
 
+            KLogCat.d("抖音版本: ${app.appVersionName}_${app.appVersionCode}")
+            KLogCat.d("abiBit: ${app.abiBit}")
+            KLogCat.d("Dalvik-64: ${app.is64BitDalvik}")
+
             //插件化注入
             if (!ConfigV1.get().isDisablePlugin) {
                 val stubClazz = hostClassloader!!.loadClass("com.ss.android.ugc.aweme.bullet.ui.BulletContainerActivity")
@@ -79,7 +85,9 @@ class DouYinMain(private val app: Application) {
             KAppCrashUtils.instance.init(app, intent, "抖音异常退出!")
 
             //初始化DexKit
+            KLogCat.d("DexKit开始加载")
             initDexKit()
+            KLogCat.d("DexKit结束加载")
 
             //定时退出
             initTimedExit(app)
@@ -228,6 +236,12 @@ class DouYinMain(private val app: Application) {
             emojiApiProxyClazz = findMaps["emojiApiProxy"]?.firstOrNull()?.getInstance(lpparam.classLoader)
             ripsChatRoomFragmentClazz = findMaps["ripsChatRoomFragment"]?.firstOrNull()?.getInstance(lpparam.classLoader)
         }
+        KLogCat.d(" -[dexkit]- videoPinchClazz: $videoPinchClazz")
+        KLogCat.d(" -[dexkit]- videoPagerAdapterClazz: $videoPagerAdapterClazz")
+        KLogCat.d(" -[dexkit]- emojiPopupWindowClazz: $emojiPopupWindowClazz")
+        KLogCat.d(" -[dexkit]- detailPageFragmentClazz: $detailPageFragmentClazz")
+        KLogCat.d(" -[dexkit]- emojiApiProxyClazz: $emojiApiProxyClazz")
+        KLogCat.d(" -[dexkit]- ripsChatRoomFragmentClazz: $ripsChatRoomFragmentClazz")
         saveClasses()
     }
 

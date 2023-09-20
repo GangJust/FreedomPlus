@@ -34,8 +34,12 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook
                 lpparam.hookClass(emojiApi::class.java)
                     .methodAll {
                         onAfter {
-                            if (method.name.contains("getSimilarEmoji")) {
-                                urlList = mutableListOf(args[7] as String)
+                            runCatching {
+                                if (method.name.contains("getSimilarEmoji")) {
+                                    urlList = mutableListOf(args[7] as String)
+                                }
+                            }.onFailure {
+                                urlList = emptyList()
                             }
                         }
                     }
@@ -58,13 +62,14 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook
                         if (!config.isEmoji) return@onAfter
                         if (argsOrEmpty.isNotEmpty()) {
                             val emoji = argsOrEmpty[0].asOrNull<BaseEmoji>()
-                            popUrlList = emoji?.detailEmoji?.animateUrl?.urlList
-                                ?: emoji?.detailEmoji?.staticUrl?.urlList ?: emptyList()
+                            popUrlList = popUrlList.ifEmpty {
+                                emoji?.detailEmoji?.animateUrl?.urlList
+                                    ?: emoji?.detailEmoji?.staticUrl?.urlList ?: emptyList()
+                            }
                         }
 
                         if (popUrlList.isEmpty()) return@onAfter
-
-                        val view = result.asOrNull<View>() ?: return@onAfter
+                        val view = result?.asOrNull<View>() ?: return@onAfter
                         if (view is TextView) {
                             if (view.text == "添加到表情") {
                                 view.text = "添加到表情 (长按保存)"

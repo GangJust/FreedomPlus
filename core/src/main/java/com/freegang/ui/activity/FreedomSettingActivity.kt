@@ -50,11 +50,13 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
@@ -327,13 +329,39 @@ class FreedomSettingActivity : BaseActivity() {
                 content = {
                     item {
                         // 选项
-                        SwitchItem(
-                            text = "视频/图文/音乐下载",
-                            checked = model.isDownload.observeAsState(false),
-                            onCheckedChange = {
-                                model.changeIsDownload(it)
+                        BoxWithConstraints {
+                            var showTipsDialog by remember { mutableStateOf(false) }
+                            SwitchItem(
+                                text = "视频/图文/音乐下载",
+                                checked = model.isDownload.observeAsState(false),
+                                onCheckedChange = {
+                                    model.changeIsDownload(it)
+                                    if (it) {
+                                        showTipsDialog = true
+                                    }
+                                }
+                            )
+
+                            if (showTipsDialog) {
+                                FMessageDialog(
+                                    title = "提示",
+                                    confirm = "确定",
+                                    onConfirm = {
+                                        showTipsDialog = false
+                                    }
+                                ) {
+                                    Text(
+                                        text = buildAnnotatedString {
+                                            append("开启后在视频页操作")
+                                            withStyle(SpanStyle(Color.Red)){
+                                                append("“分享->复制链接”")
+                                            }
+                                            append("即可弹出下载选项。")
+                                        },
+                                    )
+                                }
                             }
-                        )
+                        }
                         SwitchItem(
                             text = "视频创作者单独创建文件夹",
                             checked = model.isOwnerDir.observeAsState(false),
