@@ -9,23 +9,32 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
+import com.freegang.ktutils.app.KAppUtils
+import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.app.activeActivity
 import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.display.KDisplayUtils
+import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.other.KAutomationUtils
+import com.freegang.ktutils.reflect.fields
+import com.freegang.ktutils.reflect.methodInvokeFirst
 import com.freegang.ktutils.view.KFastClickUtils
 import com.freegang.ktutils.view.traverse
 import com.freegang.ui.activity.FreedomSettingActivity
+import com.freegang.xpler.HookPackages
+import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.argsOrEmpty
 import com.freegang.xpler.core.hookClass
 import com.freegang.xpler.core.thisView
 import com.freegang.xpler.core.thisViewGroup
 import com.ss.android.ugc.aweme.ad.feed.VideoViewHolderRootView
 import com.ss.android.ugc.aweme.common.widget.VerticalViewPager
+import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.feed.quick.presenter.FeedDoctorFrameLayout
 import com.ss.android.ugc.aweme.feed.share.long_click.FrameLayoutHoldTouchListener
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
 import com.ss.android.ugc.aweme.sticker.infoSticker.interact.consume.view.InteractStickerParent
+import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlin.math.abs
 
@@ -33,17 +42,33 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
     private val config get() = ConfigV1.get()
     private val screenSize get() = KDisplayUtils.screenSize()
 
+    private var currentAweme: Aweme? = null
     private var onDragListener: ViewTreeObserver.OnDrawListener? = null
 
-    //long press
+    // long press
     private var downX: Float = 0f
     private var downY: Float = 0f
     private var isLongPressFast = false
     private var longPressFastRunnable: Runnable? = null
     private var longPressRunnable: Runnable? = null
 
-    //video pinch
+    // video pinch
     private var isVideoPinch = false
+
+    fun test(a: List<View>) {
+        KLogCat.d("我被调用了: ${a.joinToString()}")
+    }
+
+    @OnAfter("onInterceptTouchEvent")
+    fun onInterceptTouchEvent(param: XC_MethodHook.MethodHookParam, event: MotionEvent) {
+        hookBlock(param) {
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                val adapter = thisObject.methodInvokeFirst("getAdapter")
+                val currentItem = thisObject.methodInvokeFirst("getCurrentItem")
+                currentAweme = adapter?.methodInvokeFirst(returnType = Aweme::class.java, args = arrayOf(currentItem)) as? Aweme
+            }
+        }
+    }
 
     override fun onInit() {
         lpparam.hookClass(VideoViewHolderRootView::class.java)
@@ -69,19 +94,19 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                         event.metaState
                     )
 
-                    //定时退出
+                    // 定时退出
                     if (config.isTimedExit) {
                         DouYinMain.freeExitCountDown?.cancel()
                         DouYinMain.freeExitCountDown?.start()
                     }
 
                     if (event.action == MotionEvent.ACTION_DOWN) {
-                        //避免快速下发 ACTION_DOWN
+                        // 避免快速下发 ACTION_DOWN
                         if (KFastClickUtils.isFastDoubleClick(50L)) {
                             return@onBefore
                         }
 
-                        //防止双击
+                        // 防止双击
                         if (KFastClickUtils.isFastDoubleClick(300L) && config.isDisableDoubleLike) {
                             thisView.dispatchTouchEvent(cancelEvent)
                             result = true
@@ -89,7 +114,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                         }
                     }
 
-                    //长按
+                    // 长按
                     handleLongPress(thisView, cancelEvent, event)
                 }
             }
@@ -100,11 +125,11 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                     onBefore {
                         if (argsOrEmpty.size == 1) {
                             if (args[0] !is String) return@onBefore
-                            //KLogCat.d("退出专注模式")
+                            // KLogCat.d("退出专注模式")
                             isVideoPinch = false
                         }
                         if (method.name.contains("getMOriginView")) {
-                            //KLogCat.d("进入专注模式")
+                            // KLogCat.d("进入专注模式")
                             isVideoPinch = true
                         }
                     }
@@ -154,19 +179,19 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                 downX = event.x
                 downY = event.y
 
-                //预留出长按快进
+                // 预留出长按快进
                 if (event.x < screenSize.width / 8 || event.x > screenSize.width - screenSize.width / 8) {
                     longPressFastRunnable = Runnable { isLongPressFast = true }
                     handler.postDelayed(longPressFastRunnable!!, 200L)
                     return
                 }
 
-                //非清爽模式
+                // 非清爽模式
                 if (!config.isNeatMode) {
                     return
                 }
 
-                //模块菜单显示逻辑
+                // 模块菜单显示逻辑
                 if (config.longPressMode) {
                     if (event.y < screenSize.height / 2) {
                         longPressRunnable = Runnable {
@@ -187,7 +212,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
             }
 
             MotionEvent.ACTION_MOVE -> {
-                if (abs(downX - event.x) < 10 && abs(downY - event.y) < 10) return //消除误差
+                if (abs(downX - event.x) < 10 && abs(downY - event.y) < 10) return // 消除误差
                 longPressRunnable?.runCatching { handler.removeCallbacks(this) }
             }
 
@@ -220,6 +245,10 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
 
         if (!config.isDisablePlugin) {
             items.add("模块设置")
+        }
+
+        if (KAppUtils.getVersionName(view.context, HookPackages.modulePackageName).contains("dev")) {
+            items.add("视频信息")
         }
 
         showChoiceDialog(
@@ -273,6 +302,21 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                             android.R.anim.slide_out_right
                         )
                         it.context.startActivity(intent, options.toBundle())
+                    }
+
+                    "视频信息" -> {
+                        if(currentAweme == null){
+                            KToastUtils.show(view.context.applicationContext,"未获取到视频信息!")
+                            return@showChoiceDialog
+                        }
+                        KLogCat.clearStorage()
+                        KLogCat.openStorage()
+                        currentAweme?.fields()?.forEach {
+                            val get = it.get(currentAweme)?:return@forEach
+                            KLogCat.i("${it.type.name} ${it.name} = $get")
+                        }
+                        KLogCat.closeStorage()
+                        KToastUtils.show(view.context.applicationContext,"视频信息获取成功!")
                     }
                 }
             }

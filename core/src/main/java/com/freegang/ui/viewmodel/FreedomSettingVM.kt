@@ -52,6 +52,12 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     private var _isDisableDoubleLike = MutableLiveData(false)
     val isDisableDoubleLike: LiveData<Boolean> = _isDisableDoubleLike
 
+    private var _isHidePhotoButton= MutableLiveData(false)
+    val isDHidePhotoButton: LiveData<Boolean> = _isHidePhotoButton
+
+    private var _isDisablePhotoButton= MutableLiveData(false)
+    val isDisablePhotoButton: LiveData<Boolean> = _isDisablePhotoButton
+
     private var _isVideoFilter = MutableLiveData(false)
     val isVideoFilter: LiveData<Boolean> = _isVideoFilter
 
@@ -117,6 +123,8 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
             changeIsTranslucent(config.isTranslucent)
             changeIsNeatMode(config.isNeatMode)
             changeIsDisableDoubleLike(config.isDisableDoubleLike)
+            changeIsHidePhotoButton(config.isHidePhotoButton)
+            changeIsDisablePhotoButton(config.isDisablePhotoButton)
             changeIsVideoFilter(config.isVideoFilter)
             setVideoFilterKeywords(config.videoFilterKeywords)
             changeLongPressMode(config.longPressMode)
@@ -143,7 +151,7 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
         config.isOwnerDir = value
     }
 
-    // 是否通知栏下载
+    // 通知栏下载
     fun changeIsNotification(value: Boolean) {
         _isNotification.value = value
         config.isNotification = value
@@ -167,10 +175,22 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
         config.isTranslucent = value
     }
 
-    // 是否禁用双击点赞
+    // 禁用双击点赞
     fun changeIsDisableDoubleLike(value: Boolean) {
         _isDisableDoubleLike.value = value
         config.isDisableDoubleLike = value
+    }
+
+    // 隐藏底部加号按钮
+    fun changeIsHidePhotoButton(value: Boolean) {
+        _isHidePhotoButton.value = value
+        config.isHidePhotoButton = value
+    }
+
+    // 禁止拍摄
+    fun changeIsDisablePhotoButton(value: Boolean) {
+        _isDisablePhotoButton.value = value
+        config.isDisablePhotoButton = value
     }
 
     val videoFilterTypes get() = config.videoFilterTypes

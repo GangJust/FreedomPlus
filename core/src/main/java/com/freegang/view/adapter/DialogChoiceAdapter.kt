@@ -11,6 +11,7 @@ import com.freegang.xpler.core.KtXposedHelpers
 class DialogChoiceAdapter<T : CharSequence>(
     private val context: Context,
     private val items: Array<T>,
+    private val color: Int,
 ) : BaseAdapter() {
 
     override fun getCount(): Int = items.size
@@ -36,6 +37,7 @@ class DialogChoiceAdapter<T : CharSequence>(
         }
 
         viewHolder.itemTextView?.text = item
+        viewHolder.itemTextView?.setTextColor(color)
         return view
     }
 

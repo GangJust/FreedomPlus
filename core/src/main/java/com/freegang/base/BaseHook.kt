@@ -3,24 +3,23 @@ package com.freegang.base
 import android.content.Context
 import android.content.Context.VIBRATOR_SERVICE
 import android.graphics.Color
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.NinePatchDrawable
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.Vibrator
 import android.os.VibratorManager
-import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.DrawableRes
 import androidx.core.view.isVisible
 import com.freegang.ktutils.app.IProgressNotification
 import com.freegang.ktutils.app.KNotifiUtils
+import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.view.KDialog
@@ -83,45 +82,7 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
 
     fun showToast(context: Context, message: String) {
         refresh {
-            toast = if (toast == null) {
-                Toast.makeText(context.applicationContext, null, Toast.LENGTH_LONG)
-            } else {
-                toast?.cancel()
-                Toast.makeText(context.applicationContext, null, Toast.LENGTH_LONG)
-            }
-
-            runCatching {
-                //val view = toast?.findFieldAndGet("mNextView")
-
-                toast?.view?.isClickable = false
-                toast?.view?.isLongClickable = false
-
-                val modeNight = context.isDarkMode
-
-                //背景色
-                val drawable = toast?.view?.background as NinePatchDrawable?
-                drawable?.colorFilter = if (modeNight) {
-                    PorterDuffColorFilter(Color.parseColor("#FF161823"), PorterDuff.Mode.SRC_IN)
-                } else {
-                    PorterDuffColorFilter(Color.parseColor("#FFFFFFFF"), PorterDuff.Mode.SRC_IN)
-                }
-
-                //文字颜色
-                val textView: TextView? = toast?.view?.findViewById(android.R.id.message)
-                textView?.setTextColor(
-                    if (modeNight) {
-                        Color.parseColor("#FFFFFFFF")
-                    } else {
-                        Color.parseColor("#FF161823")
-                    }
-                )
-
-                //文本对齐
-                textView?.gravity = Gravity.START or Gravity.CENTER_VERTICAL
-            }
-
-            toast?.setText(message)
-            toast?.show()
+            KToastUtils.show(context, message)
         }
     }
 
@@ -136,14 +97,10 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
     }
 
     @Synchronized
-    fun showDialog(
-        view: View,
-        needMultiple: Boolean = false,
-    ) {
+    fun showDialog(view: View) {
         kDialog = if (kDialog == null) KDialog() else kDialog
-        val kDialog = if (needMultiple) KDialog() else kDialog
         kDialog!!.setView(view)
-        kDialog.show()
+        kDialog!!.show()
     }
 
     fun showMessageDialog(
@@ -152,25 +109,44 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
         content: CharSequence,
         cancel: CharSequence = "取消",
         confirm: CharSequence = "确定",
-        singleButton: Boolean = false, //只会响应 onConfirm 方法
-        needMultiple: Boolean = false,
+        singleButton: Boolean = false, // 只会响应 onConfirm 方法
         onConfirm: () -> Unit = {},
         onCancel: () -> Unit = {},
     ) {
+        val isDarkMode = context.isDarkMode
         val dialogView = context.inflateModuleView<FrameLayout>(R.layout.dialog_message_layout)
         val binding = DialogMessageLayoutBinding.bind(dialogView)
 
-        binding.messageDialogContainer.background = KtXposedHelpers.getDrawable(R.drawable.dialog_background)
+        binding.messageDialogContainer.background = getDrawable(
+            isDarkMode,
+            R.drawable.dialog_background_night,
+            R.drawable.dialog_background,
+        )
         if (singleButton) {
             binding.messageDialogCancel.visibility = View.GONE
-            binding.messageDialogConfirm.background = KtXposedHelpers.getDrawable(R.drawable.dialog_single_button_background)
+            binding.messageDialogConfirm.background = getDrawable(
+                isDarkMode,
+                R.drawable.dialog_single_button_background_night,
+                R.drawable.dialog_single_button_background,
+            )
         } else {
-            binding.messageDialogCancel.background = KtXposedHelpers.getDrawable(R.drawable.dialog_cancel_button_background)
-            binding.messageDialogConfirm.background = KtXposedHelpers.getDrawable(R.drawable.dialog_confirm_button_background)
+            binding.messageDialogCancel.background = getDrawable(
+                isDarkMode,
+                R.drawable.dialog_cancel_button_background_night,
+                R.drawable.dialog_cancel_button_background,
+            )
+            binding.messageDialogConfirm.background = getDrawable(
+                isDarkMode,
+                R.drawable.dialog_confirm_button_background_night,
+                R.drawable.dialog_confirm_button_background,
+            )
         }
         binding.messageDialogTitle.text = title
+        binding.messageDialogTitle.setTextColor(getTextColor(isDarkMode))
         binding.messageDialogContent.text = content
+        binding.messageDialogContent.setTextColor(getTextColor(isDarkMode))
         binding.messageDialogCancel.text = cancel
+        binding.messageDialogCancel.setTextColor(getTextColor(isDarkMode))
         binding.messageDialogConfirm.text = confirm
         binding.messageDialogCancel.setOnClickListener {
             kDialog!!.dismiss()
@@ -181,25 +157,31 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
             onConfirm.invoke()
         }
 
-        showDialog(binding.root, needMultiple)
+        showDialog(binding.root)
     }
 
     fun showProgressDialog(
         context: Context,
         title: CharSequence,
-        needMultiple: Boolean = false,
         progress: Int = 0,
         listener: (dialog: KDialog, progress: ProgressDialogNotification) -> Unit,
     ) {
+        val isDarkMode = context.isDarkMode
         val dialogView = KtXposedHelpers.inflateView<FrameLayout>(context, R.layout.dialog_progress_layout)
         val binding = DialogProgressLayoutBinding.bind(dialogView)
 
-        binding.progressDialogContainer.background = KtXposedHelpers.getDrawable(R.drawable.dialog_background)
+        binding.progressDialogContainer.background = getDrawable(
+            isDarkMode,
+            R.drawable.dialog_background_night,
+            R.drawable.dialog_background,
+        )
         binding.progressDialogBar.progress = progress
         binding.progressDialogTitle.text = title
+        binding.progressDialogTitle.setTextColor(getTextColor(isDarkMode))
+        binding.progressDialogText.setTextColor(getTextColor(isDarkMode))
         listener.invoke(kDialog!!, ProgressDialogNotification(binding.progressDialogBar, binding.progressDialogText))
 
-        showDialog(binding.root, needMultiple)
+        showDialog(binding.root)
     }
 
     fun showInputChoiceDialog(
@@ -212,29 +194,51 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
         input2DefaultValue: CharSequence,
         items: Array<String>,
         cancel: CharSequence = "取消",
-        needMultiple: Boolean = false,
         onChoice: (view: View, input1: String, input2: String, item: CharSequence, position: Int) -> Unit,
         onCancel: () -> Unit = {},
     ) {
+        val isDarkMode = context.isDarkMode
         val dialogView = KtXposedHelpers.inflateView<FrameLayout>(context, R.layout.dialog_input_choice_layout)
         val binding = DialogInputChoiceLayoutBinding.bind(dialogView)
 
-        binding.choiceDialogContainer.background = KtXposedHelpers.getDrawable(R.drawable.dialog_background)
-        binding.choiceDialogCancel.background = KtXposedHelpers.getDrawable(R.drawable.dialog_single_button_background)
+        binding.choiceDialogContainer.background = getDrawable(
+            isDarkMode,
+            R.drawable.dialog_background_night,
+            R.drawable.dialog_background,
+        )
+
+        binding.choiceDialogCancel.background = getDrawable(
+            isDarkMode,
+            R.drawable.dialog_single_button_background_night,
+            R.drawable.dialog_single_button_background,
+        )
 
         binding.choiceDialogTitle.text = title
+        binding.choiceDialogTitle.setTextColor(getTextColor(isDarkMode))
 
-        binding.choiceDialogInput1.background = KtXposedHelpers.getDrawable(R.drawable.dialog_input_background)
+        binding.choiceDialogInput1.background = getDrawable(
+            isDarkMode,
+            R.drawable.dialog_input_background_night,
+            R.drawable.dialog_input_background,
+        )
         binding.choiceDialogInput1.hint = input1Hint
+        binding.choiceDialogInput1.setHintTextColor(getHintTextColor(isDarkMode))
         binding.choiceDialogInput1.setText(input1DefaultValue)
+        binding.choiceDialogInput1.setTextColor(getTextColor(isDarkMode))
         if (!showInput1) {
             binding.choiceDialogInput1.setText("")
             binding.choiceDialogInput1.isVisible = false
         }
 
-        binding.choiceDialogInput2.background = KtXposedHelpers.getDrawable(R.drawable.dialog_input_background)
+        binding.choiceDialogInput2.background = getDrawable(
+            isDarkMode,
+            R.drawable.dialog_input_background_night,
+            R.drawable.dialog_input_background,
+        )
         binding.choiceDialogInput2.hint = input2Hint
+        binding.choiceDialogInput2.setHintTextColor(getHintTextColor(isDarkMode))
         binding.choiceDialogInput2.setText(input2DefaultValue)
+        binding.choiceDialogInput2.setTextColor(getTextColor(isDarkMode))
 
         binding.choiceDialogCancel.text = cancel
         binding.choiceDialogCancel.setOnClickListener {
@@ -242,9 +246,13 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
             onCancel.invoke()
         }
 
-        binding.choiceDialogList.adapter = DialogChoiceAdapter(context, items)
+        binding.choiceDialogList.adapter = DialogChoiceAdapter(context, items, getTextColor(isDarkMode))
         binding.choiceDialogList.divider = ColorDrawable(Color.TRANSPARENT)
-        binding.choiceDialogList.selector = KtXposedHelpers.getDrawable(R.drawable.item_selector_background)
+        binding.choiceDialogList.selector = getDrawable(
+            isDarkMode,
+            R.drawable.item_selector_background_night,
+            R.drawable.item_selector_background,
+        )
         binding.choiceDialogList.setOnItemClickListener { _, view, position, _ ->
             kDialog!!.dismiss()
             onChoice.invoke(
@@ -256,7 +264,7 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
             )
         }
 
-        showDialog(binding.root, needMultiple)
+        showDialog(binding.root)
     }
 
     fun showChoiceDialog(
@@ -264,17 +272,28 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
         title: CharSequence,
         items: Array<String>,
         cancel: CharSequence = "取消",
-        needMultiple: Boolean = false,
         onChoice: (view: View, item: CharSequence, position: Int) -> Unit,
         onCancel: () -> Unit = {},
     ) {
         val dialogView = KtXposedHelpers.inflateView<FrameLayout>(context, R.layout.dialog_choice_layout)
         val binding = DialogChoiceLayoutBinding.bind(dialogView)
 
-        binding.choiceDialogContainer.background = KtXposedHelpers.getDrawable(R.drawable.dialog_background)
-        binding.choiceDialogCancel.background = KtXposedHelpers.getDrawable(R.drawable.dialog_single_button_background)
+        val isDarkMode = context.isDarkMode
+
+        binding.choiceDialogContainer.background = getDrawable(
+            isDarkMode,
+            R.drawable.dialog_background_night,
+            R.drawable.dialog_background,
+        )
+
+        binding.choiceDialogCancel.background = getDrawable(
+            isDarkMode,
+            R.drawable.dialog_single_button_background_night,
+            R.drawable.dialog_single_button_background,
+        )
 
         binding.choiceDialogTitle.text = title
+        binding.choiceDialogTitle.setTextColor(getTextColor(isDarkMode))
 
         binding.choiceDialogCancel.text = cancel
         binding.choiceDialogCancel.setOnClickListener {
@@ -282,9 +301,13 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
             onCancel.invoke()
         }
 
-        binding.choiceDialogList.adapter = DialogChoiceAdapter(context, items)
+        binding.choiceDialogList.adapter = DialogChoiceAdapter(context, items, getTextColor(isDarkMode))
         binding.choiceDialogList.divider = ColorDrawable(Color.TRANSPARENT)
-        binding.choiceDialogList.selector = KtXposedHelpers.getDrawable(R.drawable.item_selector_background)
+        binding.choiceDialogList.selector = getDrawable(
+            isDarkMode,
+            R.drawable.item_selector_background_night,
+            R.drawable.item_selector_background,
+        )
         binding.choiceDialogList.setOnItemClickListener { _, view, position, _ ->
             kDialog!!.dismiss()
             onChoice.invoke(
@@ -294,7 +317,32 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
             )
         }
 
-        showDialog(binding.root, needMultiple)
+        showDialog(binding.root)
+    }
+
+
+    fun getHintTextColor(isDarkMode: Boolean): Int {
+        return if (isDarkMode) {
+            Color.parseColor("#FFAAAAAA")
+        } else {
+            Color.parseColor("#FF666666")
+        }
+    }
+
+    fun getTextColor(isDarkMode: Boolean): Int {
+        return if (isDarkMode) {
+            Color.parseColor("#FFFFFFFF")
+        } else {
+            Color.parseColor("#FF2C2F39")
+        }
+    }
+
+    fun getDrawable(isDarkMode: Boolean, @DrawableRes darkId: Int, @DrawableRes lightId: Int): Drawable? {
+        return if (isDarkMode) {
+            KtXposedHelpers.getDrawable(darkId)
+        } else {
+            KtXposedHelpers.getDrawable(lightId)
+        }
     }
 
 

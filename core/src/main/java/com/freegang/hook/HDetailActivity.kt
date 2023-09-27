@@ -4,10 +4,9 @@ import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
 import com.freegang.hook.logic.ClipboardLogic
 import com.freegang.hook.logic.DownloadLogic
+import com.freegang.ktutils.reflect.methodInvokeFirst
 import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.OnBefore
-import com.freegang.xpler.core.call
-import com.freegang.xpler.core.findMethodsByReturnType
 import com.freegang.xpler.core.getObjectField
 import com.freegang.xpler.core.thisActivity
 import com.freegang.xpler.core.thisContext
@@ -35,27 +34,19 @@ class HDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Detai
     }
 
     private fun findVideoAweme(activity: DetailActivity): Aweme? {
-        var aweme: Any? = null
-        //24.2.0 ~ 至今
-        var methods = activity.findMethodsByReturnType(Aweme::class.java)
-        if (methods.isNotEmpty()) {
-            aweme = methods.first().call(activity)
-        }
-
-        //23.5.0 ~ 24.1.0
-        if (aweme == null) {
+        // 24.2.0 ~ 至今
+        var firstAweme = activity.methodInvokeFirst(returnType = Aweme::class.java)
+        // 23.5.0 ~ 24.1.0
+        if (firstAweme == null) {
             val any1 = activity.getObjectField<Any>("LIZJ")
-            methods = any1?.findMethodsByReturnType(Aweme::class.java) ?: listOf()
-            if (methods.isNotEmpty()) {
-                aweme = methods.first().call(any1!!)
-            }
+            firstAweme = any1?.methodInvokeFirst(returnType = Aweme::class.java)
         }
-        return aweme as Aweme?
+        return firstAweme as Aweme?
     }
 
     private fun addClipboardListener(activity: DetailActivity) {
         if (!config.isDownload) return
-        clipboardLogic.addClipboardListener(activity) {
+        clipboardLogic.addClipboardListener(activity) { clipData, firstText ->
             val aweme = findVideoAweme(activity)
             DownloadLogic(this@HDetailActivity, activity, aweme)
         }

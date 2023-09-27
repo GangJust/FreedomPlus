@@ -86,7 +86,6 @@
 # 模块核心
 -keepclassmembers class com.freegang.xpler.core.** { *; }
 -keepclassmembers class * {
-    @com.freegang.xpler.core.FieldGet <fields>;
     @com.freegang.xpler.core.OnBefore <methods>;
     @com.freegang.xpler.core.OnAfter <methods>;
     @com.freegang.xpler.core.OnReplace <methods>;

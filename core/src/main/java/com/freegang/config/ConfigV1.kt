@@ -13,10 +13,10 @@ import java.io.File
 
 class ConfigV1 private constructor() {
     data class Version(
-        var versionName: String = "", //版本名称
-        var versionCode: Long = 0L, //版本代码
-        var dyVersionName: String = "", //抖音版本名称
-        var dyVersionCode: Long = 0L, //抖音版本代码
+        var versionName: String = "", // 版本名称
+        var versionCode: Long = 0L, // 版本代码
+        var dyVersionName: String = "", // 抖音版本名称
+        var dyVersionCode: Long = 0L, // 抖音版本代码
     )
 
     companion object {
@@ -42,7 +42,7 @@ class ConfigV1 private constructor() {
         fun get() = config
     }
 
-    /// 是否按视频创作者单独创建文件夹
+    /// 按视频创作者单独创建文件夹
     var isOwnerDir: Boolean = false
         get() {
             field = mmkv.getBoolean("isOwnerDir", false)
@@ -53,7 +53,7 @@ class ConfigV1 private constructor() {
             field = value
         }
 
-    /// 是否开启视频/图文/音乐下载
+    /// 视频/图文/音乐下载
     var isDownload: Boolean = false
         get() {
             field = mmkv.getBoolean("isDownload", false)
@@ -64,7 +64,7 @@ class ConfigV1 private constructor() {
             field = value
         }
 
-    /// 是否开启表情包保存
+    /// 表情包保存
     var isEmoji: Boolean = false
         get() {
             field = mmkv.getBoolean("isEmoji", false)
@@ -75,7 +75,7 @@ class ConfigV1 private constructor() {
             field = value
         }
 
-    /// 是否开启震动反馈
+    /// 震动反馈
     var isVibrate: Boolean = false
         get() {
             field = mmkv.getBoolean("isVibrate", false)
@@ -86,7 +86,7 @@ class ConfigV1 private constructor() {
             field = value
         }
 
-    /// 是否开启首页控件半透明
+    /// 首页控件半透明
     var isTranslucent: Boolean = false
         get() {
             field = mmkv.getBoolean("isTranslucent", false)
@@ -97,7 +97,7 @@ class ConfigV1 private constructor() {
             field = value
         }
 
-    /// 是否禁用双击点赞
+    /// 禁用双击点赞
     var isDisableDoubleLike: Boolean = false
         get() {
             field = mmkv.getBoolean("isDisableDoubleLike", false)
@@ -108,7 +108,29 @@ class ConfigV1 private constructor() {
             field = value
         }
 
-    /// 是否开启视频过滤
+    /// 隐藏底部加号按钮
+    var isHidePhotoButton: Boolean = false
+        get() {
+            field = mmkv.getBoolean("issHidePhotoButton", false)
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("issHidePhotoButton", value)
+            field = value
+        }
+
+    /// 禁止拍摄
+    var isDisablePhotoButton: Boolean = false
+        get() {
+            field = mmkv.getBoolean("isDisablePhotoButton", false)
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("isDisablePhotoButton", value)
+            field = value
+        }
+
+    /// 视频过滤
     var isVideoFilter: Boolean = false
         get() {
             field = mmkv.getBoolean("isVideoFilter", false)
@@ -133,7 +155,7 @@ class ConfigV1 private constructor() {
             field = value
         }
 
-    /// 是否开启清爽模式
+    /// 清爽模式
     var isNeatMode: Boolean = false
         get() {
             field = mmkv.getBoolean("isNeatMode", false)
@@ -166,7 +188,7 @@ class ConfigV1 private constructor() {
             field = value
         }
 
-    /// 是否通知栏下载
+    /// 通知栏下载
     var isNotification: Boolean = false
         get() {
             field = mmkv.getBoolean("isNotification", false)
@@ -232,7 +254,7 @@ class ConfigV1 private constructor() {
         mmkv.putStringSet("webDavHistory", set)
     }
 
-    /// 是否开启隐藏顶部tab
+    /// 隐藏顶部tab
     var isHideTab: Boolean = false
         get() {
             field = mmkv.getBoolean("isHideTab", false)

@@ -346,6 +346,7 @@ class FreedomSettingActivity : BaseActivity() {
                                 FMessageDialog(
                                     title = "提示",
                                     confirm = "确定",
+                                    onlyConfirm = true,
                                     onConfirm = {
                                         showTipsDialog = false
                                     }
@@ -353,7 +354,7 @@ class FreedomSettingActivity : BaseActivity() {
                                     Text(
                                         text = buildAnnotatedString {
                                             append("开启后在视频页操作")
-                                            withStyle(SpanStyle(Color.Red)){
+                                            withStyle(SpanStyle(Color.Red)) {
                                                 append("“分享->复制链接”")
                                             }
                                             append("即可弹出下载选项。")
@@ -406,6 +407,60 @@ class FreedomSettingActivity : BaseActivity() {
                                 model.changeIsDisableDoubleLike(it)
                             }
                         )
+                        BoxWithConstraints {
+                            // 加号按钮响应状态
+                            var showIsDisablePhotoDialog by remember { mutableStateOf(false) }
+                            if (showIsDisablePhotoDialog) {
+                                var isDisablePhotoButton by remember { mutableStateOf(model.isDisablePhotoButton.value ?: true) }
+                                FMessageDialog(
+                                    title = "请选择拍摄按钮响应模式",
+                                    confirm = "更改",
+                                    onlyConfirm = true,
+                                    onConfirm = { showIsDisablePhotoDialog = false },
+                                    content = {
+                                        Column {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                RadioButton(
+                                                    selected = isDisablePhotoButton,
+                                                    onClick = {
+                                                        isDisablePhotoButton = true
+                                                        model.changeIsDisablePhotoButton(isDisablePhotoButton)
+                                                    },
+                                                )
+                                                Text(
+                                                    text = "禁止拍摄",
+                                                    style = MaterialTheme.typography.body1,
+                                                )
+                                            }
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                RadioButton(
+                                                    selected = !isDisablePhotoButton,
+                                                    onClick = {
+                                                        isDisablePhotoButton = false
+                                                        model.changeIsDisablePhotoButton(isDisablePhotoButton)
+                                                    },
+                                                )
+                                                Text(
+                                                    text = "允许拍摄",
+                                                    style = MaterialTheme.typography.body1,
+                                                )
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+                            SwitchItem(
+                                text = "隐藏底部加号按钮",
+                                subtext = "点击更改加号按钮响应状态",
+                                checked = model.isDHidePhotoButton.observeAsState(false),
+                                onClick = {
+                                    showIsDisablePhotoDialog = true
+                                },
+                                onCheckedChange = {
+                                    model.changeIsHidePhotoButton(it)
+                                }
+                            )
+                        }
                         BoxWithConstraints { // 限制重构作用域
                             var showVideoFilterDialog by remember { mutableStateOf(false) }
                             var showVideoFilterTips by remember { mutableStateOf(false) }
@@ -886,7 +941,7 @@ class FreedomSettingActivity : BaseActivity() {
                                 var timedExit by remember { mutableStateOf("${times?.getIntOrDefault(0, 10) ?: 10}") }
                                 var freeExit by remember { mutableStateOf("${times?.getIntOrDefault(1, 3) ?: 3}") }
 
-                                KToastUtils.show(applicationContext, "建议在3分钟以上~")
+                                KToastUtils.show(applicationContext, "低于3分钟将不执行~")
                                 FMessageDialog(
                                     title = "定时退出时间设置",
                                     cancel = "取消",

@@ -50,12 +50,12 @@ open class XplerActivity : ComponentActivity() {
             try {
                 return moduleClassloader!!.loadClass(name)
             } catch (e: Exception) {
-                //KLogCat.e(e)
+                // KLogCat.e(e)
             }
             try {
                 return hostClassloader!!.loadClass(name)
             } catch (e: Exception) {
-                //KLogCat.e(e)
+                // KLogCat.e(e)
             }
 
             return super.findClass(name)
@@ -68,7 +68,7 @@ open class XplerActivity : ComponentActivity() {
         private val moduleResources by lazy {
             try {
                 val assetManager = AssetManager::class.java.newInstance()
-                assetManager.methodInvokes("addAssetPath", KtXposedHelpers.modulePath)
+                assetManager.methodInvokes("addAssetPath", args = arrayOf(KtXposedHelpers.modulePath))
                 Resources(assetManager, resources.displayMetrics, resources.configuration)
             } catch (e: Exception) {
                 this

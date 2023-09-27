@@ -3,7 +3,7 @@ package com.freegang.hook
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
 import com.freegang.ktutils.text.KTextUtils
-import com.freegang.xpler.core.EmptyHook
+import com.freegang.xpler.core.NoneHook
 import com.freegang.xpler.core.argsOrEmpty
 import com.freegang.xpler.core.hookClass
 import com.ss.android.ugc.aweme.feed.model.Aweme
@@ -18,7 +18,7 @@ class HVideoPagerAdapter(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<An
         var filterOtherCount = 0
     }
 
-    override fun setTargetClass(): Class<*> = DouYinMain.videoPagerAdapterClazz ?: EmptyHook::class.java
+    override fun setTargetClass(): Class<*> = DouYinMain.videoPagerAdapterClazz ?: NoneHook::class.java
 
     val config = ConfigV1.get()
 

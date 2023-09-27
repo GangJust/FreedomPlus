@@ -10,16 +10,10 @@ import com.freegang.ktutils.app.KActivityUtils
 import com.freegang.ktutils.app.KAppCrashUtils
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
-import com.freegang.ktutils.app.abiBit
-import com.freegang.ktutils.app.appVersionCode
-import com.freegang.ktutils.app.appVersionName
-import com.freegang.ktutils.app.is64BitDalvik
 import com.freegang.ktutils.io.hasOperationStorage
 import com.freegang.ktutils.json.getIntOrDefault
-import com.freegang.ktutils.json.getStringOrDefault
 import com.freegang.ktutils.json.parseJSONArray
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.text.ifNotEmpty
 import com.freegang.plugin.PluginBridge
 import com.freegang.xpler.HookPackages
 import com.freegang.xpler.core.findClass
@@ -27,7 +21,6 @@ import com.freegang.xpler.core.lpparam
 import com.freegang.xpler.core.xposedLog
 import com.freegang.xpler.loader.hostClassloader
 import com.freegang.xpler.loader.injectClassLoader
-import org.json.JSONObject
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.query.enums.StringMatchType
 import java.lang.reflect.Modifier
@@ -37,6 +30,8 @@ class DouYinMain(private val app: Application) {
     companion object {
         val awemeHostApplication
             get() = "com.ss.android.ugc.aweme.app.host.AwemeHostApplication".findClass(lpparam.classLoader)!!
+
+        var mainBottomTabItemClazz: Class<*>? = null
         var detailPageFragmentClazz: Class<*>? = null
         var videoPinchClazz: Class<*>? = null
         var videoPagerAdapterClazz: Class<*>? = null
@@ -52,50 +47,45 @@ class DouYinMain(private val app: Application) {
         runCatching {
             injectClassLoader(app.classLoader)
 
-            //文件读写权限检查
+            // 文件读写权限检查
             if (!app.hasOperationStorage) {
                 Toast.makeText(app, "抖音没有文件读写权限!", Toast.LENGTH_LONG).show()
                 return@runCatching
             }
 
-            //加载配置
+            // 加载配置
             ConfigV1.initialize(app)
 
-            //全局Application
+            // 全局Application
             KAppUtils.setApplication(app)
 
-            //日志工具
+            // 日志工具
             KLogCat.init(app)
-            //KLogCat.openStorage()
+            // KLogCat.openStorage()
 
-            KLogCat.d("抖音版本: ${app.appVersionName}_${app.appVersionCode}")
-            KLogCat.d("abiBit: ${app.abiBit}")
-            KLogCat.d("Dalvik-64: ${app.is64BitDalvik}")
-
-            //插件化注入
+            // 插件化注入
             if (!ConfigV1.get().isDisablePlugin) {
                 val stubClazz = hostClassloader!!.loadClass("com.ss.android.ugc.aweme.bullet.ui.BulletContainerActivity")
                 PluginBridge.init(app, stubClazz)
             }
 
-            //全局异常捕获工具
+            // 全局异常捕获工具
             val intent = Intent()
             val className = "${HookPackages.modulePackageName}.activity.ErrorActivity"
             intent.setClassName(HookPackages.modulePackageName, className)
             KAppCrashUtils.instance.init(app, intent, "抖音异常退出!")
 
-            //初始化DexKit
-            KLogCat.d("DexKit开始加载")
+            // 初始化DexKit
             initDexKit()
-            KLogCat.d("DexKit结束加载")
 
-            //定时退出
+            // 定时退出
             initTimedExit(app)
 
-            //Hook
-            HAbsActivity(lpparam)
+            // Hook
+            HActivity(lpparam)
             HMainActivity(lpparam)
             HMainFragment(lpparam)
+            HMainBottomTabItem(lpparam)
             HDetailActivity(lpparam)
             HFlippableViewPager(lpparam)
             HVerticalViewPager(lpparam)
@@ -114,46 +104,25 @@ class DouYinMain(private val app: Application) {
         }
     }
 
-    private fun readClasses(): Boolean {
-        val classes = ConfigV1.get().classes
-        val targetVersion = classes.getStringOrDefault("targetVersion")
-        val detailPageFragment = classes.getStringOrDefault("detailPageFragment")
-        val videoPinch = classes.getStringOrDefault("videoPinch")
-        val videoPagerAdapter = classes.getStringOrDefault("videoPagerAdapter")
-        val emojiApiProxy = classes.getStringOrDefault("emojiApiProxy")
-        val emojiPopupWindow = classes.getStringOrDefault("emojiPopupWindow")
-        val ripsChatRoomFragment = classes.getStringOrDefault("ripsChatRoomFragment")
-
-        if (targetVersion != "${app.appVersionName}_${app.appVersionCode}") {
-            return false
-        }
-
-        detailPageFragmentClazz = detailPageFragment.ifNotEmpty { it.findClass(lpparam.classLoader) }
-        videoPinchClazz = videoPinch.ifNotEmpty { it.findClass(lpparam.classLoader) }
-        videoPagerAdapterClazz = videoPagerAdapter.ifNotEmpty { it.findClass(lpparam.classLoader) }
-        emojiApiProxyClazz = emojiApiProxy.ifNotEmpty { it.findClass(lpparam.classLoader) }
-        emojiPopupWindowClazz = emojiPopupWindow.ifNotEmpty { it.findClass(lpparam.classLoader) }
-        ripsChatRoomFragmentClazz = ripsChatRoomFragment.ifNotEmpty { it.findClass(lpparam.classLoader) }
-
-        return true
-    }
-
-    private fun saveClasses() {
-        val classJson = JSONObject()
-        classJson.put("targetVersion", "${app.appVersionName}_${app.appVersionCode}")
-        classJson.put("detailPageFragment", "${detailPageFragmentClazz?.name}")
-        classJson.put("videoPinch", "${videoPinchClazz?.name}")
-        classJson.put("videoPagerAdapter", "${videoPagerAdapterClazz?.name}")
-        classJson.put("emojiApiProxy", "${emojiApiProxyClazz?.name}")
-        classJson.put("emojiPopupWindow", "${emojiPopupWindowClazz?.name}")
-        classJson.put("ripsChatRoomFragment", "${ripsChatRoomFragmentClazz?.name}")
-        ConfigV1.get().classes = classJson
-    }
-
     private fun initDexKit() {
-        if (readClasses()) return
         System.loadLibrary("dexkit")
         DexKitBridge.create(lpparam.appInfo.sourceDir)?.use { bridge ->
+            mainBottomTabItemClazz = bridge.findClass {
+                matcher {
+                    methods {
+                        add {
+                            name = "getNowImageRes"
+                        }
+                        add {
+                            name = "getOperator"
+                        }
+                        add {
+                            name = "getRefreshTab"
+                            returnType = "android.view.View"
+                        }
+                    }
+                }
+            }.firstOrNull()?.getInstance(lpparam.classLoader)
             videoPinchClazz = bridge.findClass {
                 matcher {
                     fields {
@@ -185,8 +154,7 @@ class DouYinMain(private val app: Application) {
                             returnType = "com.ss.android.ugc.aweme.feed.model.Aweme"
                         }
                         add {
-                            returnType =
-                                "com.ss.android.ugc.aweme.feed.adapter.FeedImageViewHolder"
+                            returnType = "com.ss.android.ugc.aweme.feed.adapter.FeedImageViewHolder"
                         }
                     }
                 }
@@ -210,6 +178,14 @@ class DouYinMain(private val app: Application) {
                 }
             }.firstOrNull()?.getInstance(lpparam.classLoader)
             val findMaps = bridge.batchFindClassUsingStrings {
+                addSearchGroup {
+                    groupName = "mainBottomTabView"
+                    usingStrings = listOf(
+                        "alpha",
+                        "translationY",
+                        "MainBottomTabView",
+                    )
+                }
                 addSearchGroup {
                     groupName = "detailPageFragment"
                     usingStrings = listOf(
@@ -236,13 +212,6 @@ class DouYinMain(private val app: Application) {
             emojiApiProxyClazz = findMaps["emojiApiProxy"]?.firstOrNull()?.getInstance(lpparam.classLoader)
             ripsChatRoomFragmentClazz = findMaps["ripsChatRoomFragment"]?.firstOrNull()?.getInstance(lpparam.classLoader)
         }
-        KLogCat.d(" -[dexkit]- videoPinchClazz: $videoPinchClazz")
-        KLogCat.d(" -[dexkit]- videoPagerAdapterClazz: $videoPagerAdapterClazz")
-        KLogCat.d(" -[dexkit]- emojiPopupWindowClazz: $emojiPopupWindowClazz")
-        KLogCat.d(" -[dexkit]- detailPageFragmentClazz: $detailPageFragmentClazz")
-        KLogCat.d(" -[dexkit]- emojiApiProxyClazz: $emojiApiProxyClazz")
-        KLogCat.d(" -[dexkit]- ripsChatRoomFragmentClazz: $ripsChatRoomFragmentClazz")
-        saveClasses()
     }
 
     @Synchronized
@@ -267,6 +236,7 @@ class DouYinMain(private val app: Application) {
                 }
 
                 override fun onFinish() {
+                    if (!config.isTimedExit) return
                     KActivityUtils.getActivities().forEach { it.finishAndRemoveTask() }
                     Process.killProcess(Process.myPid())
                     exitProcess(1)
@@ -287,6 +257,7 @@ class DouYinMain(private val app: Application) {
                 }
 
                 override fun onFinish() {
+                    if (!config.isTimedExit) return
                     KActivityUtils.getActivities().forEach { it.finishAndRemoveTask() }
                     Process.killProcess(Process.myPid())
                     exitProcess(1)

@@ -15,7 +15,7 @@ import com.freegang.ktutils.json.parseJSON
 import com.freegang.ktutils.reflect.fieldGets
 import com.freegang.ktutils.text.KTextUtils
 import com.freegang.xpler.R
-import com.freegang.xpler.core.KtCallMethods
+import com.freegang.xpler.core.KtOnCallMethods
 import com.freegang.xpler.core.KtXposedHelpers
 import com.freegang.xpler.core.argsOrEmpty
 import com.freegang.xpler.core.thisView
@@ -23,7 +23,7 @@ import com.ss.android.ugc.aweme.comment.model.Comment
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
-class HCommentAudioView(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Any>(lpparam), KtCallMethods {
+class HCommentAudioView(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Any>(lpparam), KtOnCallMethods {
     override fun setTargetClass(): Class<*> {
         return findClass("com.ss.android.ugc.aweme.comment.audiocomment.ui.CommentAudioView")
     }

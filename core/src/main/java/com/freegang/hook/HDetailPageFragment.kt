@@ -10,14 +10,13 @@ import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
 import com.freegang.hook.logic.SaveCommentLogic
 import com.freegang.ktutils.display.KDisplayUtils
+import com.freegang.ktutils.reflect.methodInvokeFirst
 import com.freegang.ktutils.view.KViewUtils
 import com.freegang.ktutils.view.findViewsByExact
 import com.freegang.xpler.R
 import com.freegang.xpler.core.KtXposedHelpers
 import com.freegang.xpler.core.NoneHook
 import com.freegang.xpler.core.OnAfter
-import com.freegang.xpler.core.call
-import com.freegang.xpler.core.findMethodsByReturnType
 import com.freegang.xpler.databinding.HookAppbarLayoutBinding
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import de.robv.android.xposed.XC_MethodHook
@@ -53,8 +52,7 @@ class HDetailPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<A
         launch {
             delay(200L)
 
-            val methods = any.findMethodsByReturnType(Aweme::class.java)
-            val aweme = methods.firstOrNull()?.call<Aweme>(any) ?: return@launch
+            val aweme = any.methodInvokeFirst(returnType = Aweme::class.java) as? Aweme ?: return@launch
 
             // awemeType 【134:评论区图片, 133|136:评论区视频, 0:主页视频详情, 68:主页图文详情, 13:私信视频/图文, 6000:私信图片】 by 25.1.0 至今
             if (aweme.awemeType != 134 && aweme.awemeType != 133 && aweme.awemeType != 136) return@launch
@@ -63,24 +61,24 @@ class HDetailPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<A
             if (imageViews.isEmpty()) return@launch
             val backBtn = imageViews.first()
 
-            //清空旧视图
+            // 清空旧视图
             val viewGroup = backBtn.parent as ViewGroup
             viewGroup.removeAllViews()
 
-            //重新构建视图
+            // 重新构建视图
             val appbar = KtXposedHelpers.inflateView<RelativeLayout>(viewGroup.context, R.layout.hook_appbar_layout)
             val binding = HookAppbarLayoutBinding.bind(appbar)
             binding.backBtn.setOnClickListener {
                 backBtn.performClick()
             }
             binding.saveBtn.setOnClickListener {
-                val aweme = methods.first().call<Aweme>(any) //重新获取
+                val aweme = any.methodInvokeFirst(returnType = Aweme::class.java) as? Aweme // 重新获取
                 SaveCommentLogic(this@HDetailPageFragment, it.context, aweme)
             }
             viewGroup.addView(appbar)
             HDetailPageFragment.isComment = true
 
-            //我也发一张
+            // 我也发一张
             val textViews = view.findViewsByExact(TextView::class.java) {
                 "${it.text}".contains("我也发") || "${it.contentDescription}".contains("我也发")
             }

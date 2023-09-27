@@ -23,10 +23,9 @@ import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.XposedHelpers.ClassNotFoundError
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import java.lang.reflect.Field
 import java.lang.reflect.Method
 
-//Method
+// Method
 /**
  * 对某个方法直接Hook
  *
@@ -45,100 +44,12 @@ fun Method.hook(block: MethodHook.() -> Unit) {
  * @param args 参数列表值
  * @return 该方法被调用之后的返回值, 可能是 null 即没有返回值
  */
-fun <T> Method.call(obj: Any, vararg args: Any?): T? {
+inline fun <reified T> Method.call(obj: Any, vararg args: Any?): T? {
     return XposedBridge.invokeOriginalMethod(this, obj, args) as T?
 }
 
 
-//Object
-/**
- * 从实例对象中直接寻找某些名称相同的所有方法,
- *
- * 不在乎参数类型列表, 返回值类型
- *
- * @param methodName 目标方法名
- * @return 被找到的目标方法列表, 可能是 empty 即没有该方法
- */
-fun Any.findMethodsByName(methodName: String): List<Method> {
-    val result = mutableListOf<Method>()
-    val methods = this::class.java.declaredMethods
-    for (method in methods) {
-        if (method.name == methodName) {
-            method.isAccessible = true
-            result.add(method)
-        }
-    }
-    return result
-}
-
-/**
- * 从实例对象中直接寻找某些返回值类型相同的所有方法,
- *
- * 不在乎方法名, 参数类型列表
- *
- * @param returnType 返回值类型
- * @param isAssignableFrom 该类型是否需要对返回值类型做子类对比
- * @return 被找到的目标方法列表, 可能是 empty 即没有该方法
- */
-fun Any.findMethodsByReturnType(returnType: Class<*>, isAssignableFrom: Boolean = false): List<Method> {
-    val result = mutableListOf<Method>()
-    val methods = this::class.java.declaredMethods
-    if (isAssignableFrom) {
-        for (method in methods) {
-            if (returnType.isAssignableFrom(method.returnType)) {
-                method.isAccessible = true
-                result.add(method)
-                continue
-            }
-        }
-        return result
-    }
-    for (method in methods) {
-        if (method.returnType == returnType) {
-            method.isAccessible = true
-            result.add(method)
-        }
-    }
-    return result
-}
-
-/**
- * 从实例对象中直接寻找某些类型相同的所有字段,
- *
- * 不在乎字段名
- *
- * @param type 返回值类型
- * @param isAssignableFrom 该类型是否需要对返回值类型做子类对比
- * @return 被找到的目标字段列表, 可能是 empty 即没有该字段
- */
-fun Any.findFieldByType(type: Class<*>, isAssignableFrom: Boolean = false, compName: Boolean = true): List<Field> {
-    val result = mutableListOf<Field>()
-    val fields = this::class.java.declaredFields
-    if (isAssignableFrom) {
-        for (field in fields) {
-            if (type.isAssignableFrom(field.type)) {
-                field.isAccessible = true
-                result.add(field)
-            }
-        }
-        return result
-    }
-
-    for (field in fields) {
-        if (field.type == type) {
-            field.isAccessible = true
-            result.add(field)
-            continue
-        }
-
-        if (compName && field.type.name == type.name) {
-            field.isAccessible = true
-            result.add(field)
-        }
-    }
-    return result
-}
-
+// Object
 /**
  * 从实例对象中直接调用某个方法
  *
@@ -146,10 +57,7 @@ fun Any.findFieldByType(type: Class<*>, isAssignableFrom: Boolean = false, compN
  * @param args 参数列表值
  * @return 该方法被调用之后的返回值, 可能是 null 即没有返回值
  */
-fun <T> Any.callMethod(methodName: String, vararg args: Any?): T? {
-    //不知道为什么, 按照太极开发文档所述, 以下方式反而无法调用
-    //val method = XposedHelpers.findMethodBestMatch(this::class.java, methodName, *XposedHelpers.getParameterTypes(*args))
-    //return XposedBridge.invokeOriginalMethod(method, this, args) as T?
+inline fun <reified T> Any.callMethod(methodName: String, vararg args: Any?): T? {
     return XposedHelpers.callMethod(this, methodName, *args) as T?
 }
 
@@ -161,12 +69,8 @@ fun <T> Any.callMethod(methodName: String, vararg args: Any?): T? {
  * @param args 参数列表值 (需要与[argsTypes]类型一一对应)
  * @return 该方法被调用之后的返回值, 可能是 null 即没有返回值
  */
-fun <T> Any.callMethod(methodName: String, argsTypes: Array<Class<*>>, vararg args: Any): T? {
-
-    //不知道为什么, 按照太极开发文档所述, 以下方式反而无法调用
-    //val method = XposedHelpers.findMethodBestMatch(this::class.java, methodName, *argsTypes)
-    //return XposedBridge.invokeOriginalMethod(method, this, args) as T?
-    return XposedHelpers.callMethod(this, methodName, *args) as T?
+inline fun <reified T> Any.callMethod(methodName: String, argsTypes: Array<Class<*>>, vararg args: Any): T? {
+    return XposedHelpers.callMethod(this, methodName, argsTypes, *args) as T?
 }
 
 /**
@@ -175,9 +79,8 @@ fun <T> Any.callMethod(methodName: String, argsTypes: Array<Class<*>>, vararg ar
  * @param fieldName 字段名
  * @return 该字段的值, 可能是 null 即被赋值
  */
-fun <T> Any.getObjectField(fieldName: String): T? {
-    val field = XposedHelpers.findFieldIfExists(this::class.java, fieldName) ?: return null
-    return field.get(this) as T?
+inline fun <reified T> Any.getObjectField(fieldName: String): T? {
+    return XposedHelpers.getObjectField(this, fieldName) as T?
 }
 
 /**
@@ -198,7 +101,7 @@ fun Any.setObjectField(fieldName: String, value: Any) {
 val Any.lpparam: XC_LoadPackage.LoadPackageParam get() = KtXposedHelpers.lpparam
 
 
-//String
+// String
 /**
  * 将某个字符串转换为Class, 如果该类不存在抛出异常
  *
@@ -223,14 +126,14 @@ fun String.hookClass(classLoader: ClassLoader = XposedBridge.BOOTCLASSLOADER): K
 }
 
 
-//Class
+// Class
 /**
  * 从Class中直接获取某个静态字段的值
  *
  * @param fieldName 字段名
  * @return 该字段的值, 可能是 null 即被赋值
  */
-fun <T> Class<*>.getStaticObjectField(fieldName: String): T? {
+inline fun <reified T> Class<*>.getStaticObjectField(fieldName: String): T? {
     val get = XposedHelpers.getStaticObjectField(this, fieldName) ?: null
     return get as T?
 }
@@ -241,7 +144,7 @@ fun <T> Class<*>.getStaticObjectField(fieldName: String): T? {
  * @param methodName 方法名
  * @return 该方法被调用之后的返回值, 可能是 null 即没有返回值
  */
-fun <T> Class<*>.callStaticMethod(methodName: String, vararg args: Any): T? {
+inline fun <reified T> Class<*>.callStaticMethod(methodName: String, vararg args: Any): T? {
     val method = XposedHelpers.findMethodBestMatch(this, methodName, *XposedHelpers.getParameterTypes(*args))
     return XposedBridge.invokeOriginalMethod(method, null, args) as T?
 }
@@ -254,7 +157,7 @@ fun <T> Class<*>.callStaticMethod(methodName: String, vararg args: Any): T? {
  * @param args 参数列表值 (需要与[argsTypes]类型一一对应)
  * @return 该方法被调用之后的返回值, 可能是 null 即没有返回值
  */
-fun <T> Class<*>.callStaticMethod(methodName: String, argsTypes: Array<Class<*>>, vararg args: Any): T? {
+inline fun <reified T> Class<*>.callStaticMethod(methodName: String, argsTypes: Array<Class<*>>, vararg args: Any): T? {
     val method = XposedHelpers.findMethodBestMatch(this, methodName, *argsTypes)
     return XposedBridge.invokeOriginalMethod(method, null, args) as T?
 }
@@ -309,7 +212,7 @@ fun Class<*>.hookMethodAll(block: MethodHook.() -> Unit) {
 }
 
 
-//ClassLoader
+// ClassLoader
 /**
  * Hook某个Class
  *
@@ -331,7 +234,7 @@ fun ClassLoader.hookClass(className: String): KtXposedHelpers {
 }
 
 
-//Context
+// Context
 /**
  * 加载模块中的xml布局文件
  *
@@ -342,7 +245,7 @@ fun ClassLoader.hookClass(className: String): KtXposedHelpers {
  *
  * @param id module layout xml id
  */
-fun <T : View> Context.inflateModuleView(@LayoutRes id: Int): T {
+inline fun <reified T : View> Context.inflateModuleView(@LayoutRes id: Int): T {
     return KtXposedHelpers.inflateView(this, id)
 }
 
@@ -387,7 +290,7 @@ fun Context.getModuleString(@StringRes id: Int): String {
 }
 
 
-//Xposed
+// Xposed
 /**
  * Hook某个Class
  *
@@ -498,37 +401,41 @@ fun XC_MethodHook.MethodHookParam.dumpStackLog() {
 /**
  * 将被Hook的某个方法中的持有实例转为Application, 如果该实例对象不是Application则抛出异常
  */
+@get:Throws(TypeCastException::class)
 val XC_MethodHook.MethodHookParam.thisApplication: Application
     get() {
-        if (thisObject !is Application) throw Exception("$thisObject unable to cast to Application")
+        if (thisObject !is Application) throw TypeCastException("$thisObject unable to cast to Application")
         return thisObject as Application
     }
 
 /**
  * 将被Hook的某个方法中的持有实例转为Activity, 如果该实例对象不是Activity则抛出异常
  */
+@get:Throws(TypeCastException::class)
 val XC_MethodHook.MethodHookParam.thisActivity: Activity
     get() {
-        if (thisObject !is Activity) throw Exception("$thisObject unable to cast to Activity")
+        if (thisObject !is Activity) throw TypeCastException("$thisObject unable to cast to Activity")
         return thisObject as Activity
     }
 
 /**
  * 将被Hook的某个方法中的持有实例转为Context, 如果该实例对象不是Context则抛出异常
  */
+@get:Throws(TypeCastException::class)
 val XC_MethodHook.MethodHookParam.thisContext: Context
     get() {
         if (thisObject is View) return thisView.context
-        if (thisObject !is Context) throw Exception("$thisObject unable to cast to Context!")
+        if (thisObject !is Context) throw TypeCastException("$thisObject unable to cast to Context!")
         return thisObject as Context
     }
 
 /**
  * 将被Hook的某个方法中的持有实例转为View, 如果该实例对象不是View则抛出异常
  */
+@get:Throws(TypeCastException::class)
 val XC_MethodHook.MethodHookParam.thisView: View
     get() {
-        if (thisObject !is View) throw Exception("$thisObject unable to cast to View!")
+        if (thisObject !is View) throw TypeCastException("$thisObject unable to cast to View!")
         return thisObject as View
     }
 
@@ -541,9 +448,10 @@ val XC_MethodHook.MethodHookParam.thisViewOrNull: View?
 /**
  * 将被Hook的某个方法中的持有实例转为ViewGroup, 如果该实例对象不是ViewGroup则抛出异常
  */
+@get:Throws(TypeCastException::class)
 val XC_MethodHook.MethodHookParam.thisViewGroup: ViewGroup
     get() {
-        if (thisObject !is ViewGroup) throw Exception("$thisObject unable to cast to ViewGroup!")
+        if (thisObject !is ViewGroup) throw TypeCastException("$thisObject unable to cast to ViewGroup!")
         return thisObject as ViewGroup
     }
 

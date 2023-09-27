@@ -12,16 +12,16 @@ import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
-import com.freegang.ui.activity.FreedomSettingActivity
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.color.KColorUtils
+import com.freegang.ktutils.reflect.fieldGetFirst
 import com.freegang.ktutils.view.findViewsByType
+import com.freegang.ui.activity.FreedomSettingActivity
 import com.freegang.xpler.R
 import com.freegang.xpler.core.KtXposedHelpers
 import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.callMethod
-import com.freegang.xpler.core.findFieldByType
 import com.freegang.xpler.databinding.SideFreedomSettingBinding
 import com.ss.android.ugc.aweme.sidebar.SideBarNestedScrollView
 import com.ss.android.ugc.aweme.sidebar.entrance.HomeSideBarEntranceManagerV1
@@ -39,14 +39,13 @@ class HHomeSideBarEntranceManagerV1(lpparam: XC_LoadPackage.LoadPackageParam) : 
     @SuppressLint("ResourceAsColor")
     @OnAfter("onClick")
     fun onClick(param: XC_MethodHook.MethodHookParam, view: View) {
-        if (config.isDisablePlugin) return //去插件化
+        if (config.isDisablePlugin) return // 去插件化
         if (isAdded) return
         isAdded = true
         hookBlock(param) {
             launch {
                 delay(200)
-                val fragmentField = thisObject.findFieldByType(Fragment::class.java).firstOrNull() ?: return@launch
-                val fragment = fragmentField.get(thisObject) ?: return@launch
+                val fragment = thisObject.fieldGetFirst(type = Fragment::class.java) ?: return@launch
                 val activity = fragment.callMethod<Activity>("getActivity") ?: return@launch
                 val contentView = activity.contentView
                 val v = contentView.findViewsByType(SideBarNestedScrollView::class.java).firstOrNull() ?: return@launch
@@ -66,12 +65,12 @@ class HHomeSideBarEntranceManagerV1(lpparam: XC_LoadPackage.LoadPackageParam) : 
                 val dividerColorRes: Int
                 val textColorRes: Int
                 if (!isDark) {
-                    backgroundRes = R.drawable.dialog_background_night
+                    backgroundRes = R.drawable.side_item_background_night
                     iconColorRes = R.drawable.ic_freedom_night
                     dividerColorRes = Color.parseColor("#14FFFFFF")
                     textColorRes = Color.parseColor("#E6FFFFFF")
                 } else {
-                    backgroundRes = R.drawable.dialog_background
+                    backgroundRes = R.drawable.side_item_background
                     iconColorRes = R.drawable.ic_freedom
                     dividerColorRes = Color.parseColor("#1F161823")
                     textColorRes = Color.parseColor("#FF161823")

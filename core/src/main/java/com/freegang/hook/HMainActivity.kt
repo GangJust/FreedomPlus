@@ -18,7 +18,7 @@ import com.freegang.ktutils.app.appVersionName
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.color.KColorUtils
-import com.freegang.ktutils.reflect.methodInvokes
+import com.freegang.ktutils.reflect.methodInvokeFirst
 import com.freegang.ktutils.view.KViewUtils
 import com.freegang.ktutils.view.findViewsByType
 import com.freegang.ktutils.view.traverse
@@ -27,8 +27,6 @@ import com.freegang.xpler.R
 import com.freegang.xpler.core.KtXposedHelpers
 import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.OnBefore
-import com.freegang.xpler.core.call
-import com.freegang.xpler.core.findMethodsByReturnType
 import com.freegang.xpler.core.thisActivity
 import com.freegang.xpler.core.thisContext
 import com.freegang.xpler.databinding.SideFreedomSettingBinding
@@ -74,33 +72,25 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
     }
 
     private fun findVideoAweme(activity: Activity): Aweme? {
-        var aweme: Any? = null
-        val methods = activity.findMethodsByReturnType(Aweme::class.java)
-        if (methods.isNotEmpty()) {
-            aweme = methods.first().call(activity)
+        var firstAweme = activity.methodInvokeFirst(returnType = Aweme::class.java)
+        if (firstAweme == null) {
+            val curFragment = activity.methodInvokeFirst("getCurFragment")
+            firstAweme = curFragment?.methodInvokeFirst(returnType = Aweme::class.java)
         }
-
-        if (aweme == null) {
-            val curFragment = activity.methodInvokes("getCurFragment").firstOrNull()
-            val curFragmentMethods = curFragment?.findMethodsByReturnType(Aweme::class.java) ?: listOf()
-            if (curFragmentMethods.isNotEmpty()) {
-                aweme = curFragmentMethods.first().invoke(curFragment!!)
-            }
-        }
-        return aweme as Aweme?
+        return firstAweme as Aweme?
     }
 
     private fun addClipboardListener(activity: Activity) {
         if (!config.isDownload) return
-        clipboardLogic.addClipboardListener(activity) {
+        clipboardLogic.addClipboardListener(activity) { clipData, firstText ->
             val aweme = findVideoAweme(activity)
             DownloadLogic(this@HMainActivity, activity, aweme)
         }
     }
 
-    //Freedom设置
+    // Freedom设置
     private fun setFreedomSetting(activity: Activity) {
-        if (config.isDisablePlugin) return //去插件化
+        if (config.isDisablePlugin) return // 去插件化
         launch {
             delay(500L)
             val clazz = findClass("com.ss.android.ugc.aweme.homepage.ui.TopLeftFrameLayout") as Class<ViewGroup>
@@ -129,7 +119,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
                         val dividerColorRes: Int
                         val textColorRes: Int
                         if (!isDark) {
-                            backgroundRes = R.drawable.dialog_background_night
+                            backgroundRes = R.drawable.side_item_background_night
                             iconColorRes = R.drawable.ic_freedom_night
                             dividerColorRes = Color.parseColor("#14FFFFFF")
                             textColorRes = Color.parseColor("#E6FFFFFF")
@@ -163,13 +153,13 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         }
     }
 
-    //透明度
+    // 透明度
     private fun changeViewAlpha(viewGroup: ViewGroup) {
         if (!config.isTranslucent) return
         launch {
             delay(200L)
             viewGroup.traverse {
-                //底部
+                // 底部
                 if (it::class.java.name.contains("MainBottomTabContainer")) {
                     it.alpha = 0.5f
                 }
@@ -177,7 +167,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
         }
     }
 
-    //保存配置信息
+    // 保存配置信息
     private fun saveConfig(context: Context) {
         config.versionConfig = config.versionConfig.copy(
             dyVersionName = context.appVersionName,
