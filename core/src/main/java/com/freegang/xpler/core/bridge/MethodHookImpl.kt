@@ -1,5 +1,7 @@
 package com.freegang.xpler.core.bridge
 
+import com.freegang.ktutils.log.KLogCat
+import com.freegang.xpler.core.xposedLog
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
@@ -64,23 +66,36 @@ open class MethodHookImpl(private var method: Member) : MethodHook {
         if (replaceBlock != null) {
             val unhook = XposedBridge.hookMethod(method, object : XC_MethodReplacement() {
                 override fun replaceHookedMethod(param: MethodHookParam): Any {
-                    val invoke = replaceBlock!!.invoke(param)
-                    maybeUnhook(param.method)
-                    return invoke
+                    runCatching {
+                        val invoke = replaceBlock!!.invoke(param)
+                        maybeUnhook(param.method)
+                        return invoke
+                    }.onFailure {
+                        KLogCat.xposedLog("报错方法: ${param.method}\n错误堆栈: ${it.stackTraceToString()}")
+                    }
+                    return param.resultOrThrowable
                 }
             })
             unhookMap[method] = unhook
         } else {
             val unhook = XposedBridge.hookMethod(method, object : XC_MethodHook() {
                 override fun beforeHookedMethod(param: MethodHookParam) {
-                    beforeBlock?.invoke(param)
-                    if (afterBlock != null) return
-                    maybeUnhook(param.method)
+                    runCatching {
+                        beforeBlock?.invoke(param)
+                        if (afterBlock != null) return
+                        maybeUnhook(param.method)
+                    }.onFailure {
+                        KLogCat.xposedLog("报错方法: ${param.method}\n错误堆栈: ${it.stackTraceToString()}")
+                    }
                 }
 
                 override fun afterHookedMethod(param: MethodHookParam) {
-                    afterBlock?.invoke(param)
-                    maybeUnhook(param.method)
+                    runCatching {
+                        afterBlock?.invoke(param)
+                        maybeUnhook(param.method)
+                    }.onFailure {
+                        KLogCat.xposedLog("报错方法: ${param.method}\n错误堆栈: ${it.stackTraceToString()}")
+                    }
                 }
             })
             unhookMap[method] = unhook

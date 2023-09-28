@@ -1,6 +1,5 @@
 package com.freegang.xpler.core
 
-import com.freegang.ktutils.log.KLogCat
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedHelpers

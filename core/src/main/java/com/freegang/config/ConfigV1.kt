@@ -327,13 +327,13 @@ class ConfigV1 private constructor() {
             mmkv.putLong("dyVersionCode", value.dyVersionCode)
         }
 
-    /// 类名存储
-    var classes: JSONObject = JSONObject()
+    /// 类缓存
+    var classCache: JSONObject = JSONObject()
         get() {
-            return mmkv.getString("classes", "")!!.parseJSON()
+            return mmkv.getString("classCache", "")!!.parseJSON()
         }
         set(value) {
             field = value
-            mmkv.putString("classes", value.toString())
+            mmkv.putString("classCache", value.toString())
         }
 }

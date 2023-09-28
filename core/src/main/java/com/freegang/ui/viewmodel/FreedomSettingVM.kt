@@ -52,10 +52,10 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     private var _isDisableDoubleLike = MutableLiveData(false)
     val isDisableDoubleLike: LiveData<Boolean> = _isDisableDoubleLike
 
-    private var _isHidePhotoButton= MutableLiveData(false)
+    private var _isHidePhotoButton = MutableLiveData(false)
     val isDHidePhotoButton: LiveData<Boolean> = _isHidePhotoButton
 
-    private var _isDisablePhotoButton= MutableLiveData(false)
+    private var _isDisablePhotoButton = MutableLiveData(false)
     val isDisablePhotoButton: LiveData<Boolean> = _isDisablePhotoButton
 
     private var _isVideoFilter = MutableLiveData(false)
@@ -328,10 +328,10 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
         )
     }
 
-    val hasClasses get() = !config.classes.isEmpty
+    val hasClasses get() = !config.classCache.isEmpty
 
     // 清除类日志
     fun clearClasses() {
-        config.classes = JSONObject()
+        config.classCache = JSONObject()
     }
 }

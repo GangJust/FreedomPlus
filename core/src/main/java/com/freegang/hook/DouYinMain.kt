@@ -10,10 +10,14 @@ import com.freegang.ktutils.app.KActivityUtils
 import com.freegang.ktutils.app.KAppCrashUtils
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
+import com.freegang.ktutils.app.appVersionCode
+import com.freegang.ktutils.app.appVersionName
 import com.freegang.ktutils.io.hasOperationStorage
 import com.freegang.ktutils.json.getIntOrDefault
+import com.freegang.ktutils.json.getStringOrDefault
 import com.freegang.ktutils.json.parseJSONArray
 import com.freegang.ktutils.log.KLogCat
+import com.freegang.ktutils.text.ifNotEmpty
 import com.freegang.plugin.PluginBridge
 import com.freegang.xpler.HookPackages
 import com.freegang.xpler.core.findClass
@@ -21,6 +25,7 @@ import com.freegang.xpler.core.lpparam
 import com.freegang.xpler.core.xposedLog
 import com.freegang.xpler.loader.hostClassloader
 import com.freegang.xpler.loader.injectClassLoader
+import org.json.JSONObject
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.query.enums.StringMatchType
 import java.lang.reflect.Modifier
@@ -31,6 +36,7 @@ class DouYinMain(private val app: Application) {
         val awemeHostApplication
             get() = "com.ss.android.ugc.aweme.app.host.AwemeHostApplication".findClass(lpparam.classLoader)!!
 
+        var classCacheVersion: Int = 2
         var mainBottomTabItemClazz: Class<*>? = null
         var detailPageFragmentClazz: Class<*>? = null
         var videoPinchClazz: Class<*>? = null
@@ -61,6 +67,7 @@ class DouYinMain(private val app: Application) {
 
             // 日志工具
             KLogCat.init(app)
+            KLogCat.clearStorage()
             // KLogCat.openStorage()
 
             // 插件化注入
@@ -105,6 +112,9 @@ class DouYinMain(private val app: Application) {
     }
 
     private fun initDexKit() {
+        if (readClassCache()) return
+
+        KLogCat.d("初始化initDexKit")
         System.loadLibrary("dexkit")
         DexKitBridge.create(lpparam.appInfo.sourceDir)?.use { bridge ->
             mainBottomTabItemClazz = bridge.findClass {
@@ -127,8 +137,7 @@ class DouYinMain(private val app: Application) {
                 matcher {
                     fields {
                         add {
-                            type =
-                                "com.ss.android.ugc.aweme.feed.ui.seekbar.CustomizedUISeekBar"
+                            type = "com.ss.android.ugc.aweme.feed.ui.seekbar.CustomizedUISeekBar"
                         }
                     }
                     methods {
@@ -212,6 +221,51 @@ class DouYinMain(private val app: Application) {
             emojiApiProxyClazz = findMaps["emojiApiProxy"]?.firstOrNull()?.getInstance(lpparam.classLoader)
             ripsChatRoomFragmentClazz = findMaps["ripsChatRoomFragment"]?.firstOrNull()?.getInstance(lpparam.classLoader)
         }
+        //
+        saveClassCache()
+    }
+
+    private fun readClassCache(): Boolean {
+        val cache = ConfigV1.get().classCache
+        val version = cache.getIntOrDefault("version")
+        val appVersion = cache.getStringOrDefault("appVersion")
+        val mainBottomTabItem = cache.getStringOrDefault("mainBottomTabItem")
+        val videoPinch = cache.getStringOrDefault("videoPinch")
+        val videoPagerAdapter = cache.getStringOrDefault("videoPagerAdapter")
+        val emojiPopupWindow = cache.getStringOrDefault("emojiPopupWindow")
+        val detailPageFragment = cache.getStringOrDefault("detailPageFragment")
+        val ripsChatRoomFragment = cache.getStringOrDefault("ripsChatRoomFragment")
+
+        if (appVersion.compareTo("${app.appVersionName}_${app.appVersionCode}") != 0) {
+            return false
+        }
+
+        if (version < classCacheVersion) {
+            return false
+        }
+
+        mainBottomTabItemClazz = mainBottomTabItem.ifNotEmpty { lpparam.findClass(it) }
+        videoPinchClazz = videoPinch.ifNotEmpty { lpparam.findClass(it) }
+        videoPagerAdapterClazz = videoPagerAdapter.ifNotEmpty { lpparam.findClass(it) }
+        emojiPopupWindowClazz = emojiPopupWindow.ifNotEmpty { lpparam.findClass(it) }
+        detailPageFragmentClazz = detailPageFragment.ifNotEmpty { lpparam.findClass(it) }
+        ripsChatRoomFragmentClazz = ripsChatRoomFragment.ifNotEmpty { lpparam.findClass(it) }
+
+        return true
+    }
+
+    private fun saveClassCache() {
+        val json = JSONObject().apply {
+            put("version", "$classCacheVersion")
+            put("appVersion", "${app.appVersionName}_${app.appVersionCode}")
+            put("mainBottomTabItem", mainBottomTabItemClazz?.name)
+            put("videoPinch", videoPinchClazz?.name)
+            put("videoPagerAdapter", videoPagerAdapterClazz?.name)
+            put("emojiPopupWindow", emojiPopupWindowClazz?.name)
+            put("detailPageFragment", detailPageFragmentClazz?.name)
+            put("ripsChatRoomFragment", ripsChatRoomFragmentClazz?.name)
+        }
+        ConfigV1.get().classCache = json
     }
 
     @Synchronized

@@ -13,6 +13,8 @@ public abstract class Aweme {
 
     public Long authorUserId;
 
+    public int anchorType;
+
     public int awemeType;
 
     public boolean canPlay;
@@ -22,6 +24,8 @@ public abstract class Aweme {
     public long createTime;
 
     public String desc;
+
+    public Integer duration;
 
     public String ipAttribution;
 

@@ -44,6 +44,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
 
     private var currentAweme: Aweme? = null
     private var onDragListener: ViewTreeObserver.OnDrawListener? = null
+    private var durationRunnable: Runnable? = null
 
     // long press
     private var downX: Float = 0f
@@ -55,17 +56,44 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
     // video pinch
     private var isVideoPinch = false
 
-    fun test(a: List<View>) {
-        KLogCat.d("我被调用了: ${a.joinToString()}")
-    }
-
     @OnAfter("onInterceptTouchEvent")
     fun onInterceptTouchEvent(param: XC_MethodHook.MethodHookParam, event: MotionEvent) {
         hookBlock(param) {
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                val adapter = thisObject.methodInvokeFirst("getAdapter")
-                val currentItem = thisObject.methodInvokeFirst("getCurrentItem")
-                currentAweme = adapter?.methodInvokeFirst(returnType = Aweme::class.java, args = arrayOf(currentItem)) as? Aweme
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    val adapter = thisObject.methodInvokeFirst("getAdapter") ?: return
+                    val currentItem = thisObject.methodInvokeFirst("getCurrentItem") as? Int ?: return
+                    currentAweme = adapter.methodInvokeFirst(
+                        returnType = Aweme::class.java,
+                        args = arrayOf(currentItem),
+                    ) as? Aweme
+
+                    //
+                    durationRunnable?.run {
+                        handler.removeCallbacks(this)
+                        durationRunnable = null
+                    }
+                    durationRunnable = Runnable {
+                        //
+                        val delayItem = thisObject.methodInvokeFirst("getCurrentItem") as? Int ?: return@Runnable
+                        if (delayItem == currentItem) {
+                            return@Runnable
+                        }
+
+                        //
+                        val delayAweme = adapter.methodInvokeFirst(
+                            returnType = Aweme::class.java,
+                            args = arrayOf(delayItem),
+                        ) as? Aweme
+                        val duration = delayAweme?.duration ?: 0
+                        if (duration >= 1000 * 60 * 3) {
+                            val minute = duration / 1000 / 60
+                            val second = duration / 1000 % 60
+                            KToastUtils.show(thisView.context, "请注意, 本条视频时长${minute}分${second}秒!")
+                        }
+                    }
+                    handler.postDelayed(durationRunnable!!, 1000L)
+                }
             }
         }
     }
@@ -305,18 +333,17 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                     }
 
                     "视频信息" -> {
-                        if(currentAweme == null){
-                            KToastUtils.show(view.context.applicationContext,"未获取到视频信息!")
+                        if (currentAweme == null) {
+                            KToastUtils.show(view.context.applicationContext, "未获取到视频信息!")
                             return@showChoiceDialog
                         }
                         KLogCat.clearStorage()
                         KLogCat.openStorage()
                         currentAweme?.fields()?.forEach {
-                            val get = it.get(currentAweme)?:return@forEach
-                            KLogCat.i("${it.type.name} ${it.name} = $get")
+                            KLogCat.i("${it.type.name} ${it.name} = ${it.get(currentAweme)}")
                         }
                         KLogCat.closeStorage()
-                        KToastUtils.show(view.context.applicationContext,"视频信息获取成功!")
+                        KToastUtils.show(view.context.applicationContext, "视频信息获取成功!")
                     }
                 }
             }
