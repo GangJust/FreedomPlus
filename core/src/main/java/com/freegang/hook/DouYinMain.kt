@@ -36,7 +36,7 @@ class DouYinMain(private val app: Application) {
         val awemeHostApplication
             get() = "com.ss.android.ugc.aweme.app.host.AwemeHostApplication".findClass(lpparam.classLoader)!!
 
-        var classCacheVersion: Int = 2
+        var classCacheVersion: Int = 3
         var mainBottomTabItemClazz: Class<*>? = null
         var detailPageFragmentClazz: Class<*>? = null
         var videoPinchClazz: Class<*>? = null
@@ -227,13 +227,18 @@ class DouYinMain(private val app: Application) {
 
     private fun readClassCache(): Boolean {
         val cache = ConfigV1.get().classCache
+
+        // version
         val version = cache.getIntOrDefault("version")
         val appVersion = cache.getStringOrDefault("appVersion")
+
+        // class
         val mainBottomTabItem = cache.getStringOrDefault("mainBottomTabItem")
         val videoPinch = cache.getStringOrDefault("videoPinch")
         val videoPagerAdapter = cache.getStringOrDefault("videoPagerAdapter")
         val emojiPopupWindow = cache.getStringOrDefault("emojiPopupWindow")
         val detailPageFragment = cache.getStringOrDefault("detailPageFragment")
+        val emojiApiProxy = cache.getStringOrDefault("emojiApiProxy")
         val ripsChatRoomFragment = cache.getStringOrDefault("ripsChatRoomFragment")
 
         if (appVersion.compareTo("${app.appVersionName}_${app.appVersionCode}") != 0) {
@@ -249,6 +254,7 @@ class DouYinMain(private val app: Application) {
         videoPagerAdapterClazz = videoPagerAdapter.ifNotEmpty { lpparam.findClass(it) }
         emojiPopupWindowClazz = emojiPopupWindow.ifNotEmpty { lpparam.findClass(it) }
         detailPageFragmentClazz = detailPageFragment.ifNotEmpty { lpparam.findClass(it) }
+        emojiApiProxyClazz = emojiApiProxy.ifNotEmpty { lpparam.findClass(it) }
         ripsChatRoomFragmentClazz = ripsChatRoomFragment.ifNotEmpty { lpparam.findClass(it) }
 
         return true
@@ -256,13 +262,17 @@ class DouYinMain(private val app: Application) {
 
     private fun saveClassCache() {
         val json = JSONObject().apply {
+            // version
             put("version", "$classCacheVersion")
             put("appVersion", "${app.appVersionName}_${app.appVersionCode}")
+
+            // class
             put("mainBottomTabItem", mainBottomTabItemClazz?.name)
             put("videoPinch", videoPinchClazz?.name)
             put("videoPagerAdapter", videoPagerAdapterClazz?.name)
             put("emojiPopupWindow", emojiPopupWindowClazz?.name)
             put("detailPageFragment", detailPageFragmentClazz?.name)
+            put("emojiApiProxy", emojiApiProxyClazz?.name)
             put("ripsChatRoomFragment", ripsChatRoomFragmentClazz?.name)
         }
         ConfigV1.get().classCache = json

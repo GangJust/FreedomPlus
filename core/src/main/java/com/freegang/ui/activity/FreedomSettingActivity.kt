@@ -71,6 +71,7 @@ import com.freegang.ui.asDp
 import com.freegang.ui.component.FCard
 import com.freegang.ui.component.FCardBorder
 import com.freegang.ui.component.FMessageDialog
+import com.freegang.ui.component.NeverOverScrollMode
 import com.freegang.ui.viewmodel.FreedomSettingVM
 import com.freegang.webdav.WebDav
 import com.freegang.xpler.HookPackages
@@ -254,7 +255,9 @@ class FreedomSettingActivity : BaseActivity() {
 
     @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
     @Composable
-    private fun BodyView() {
+    private fun BodyView(
+        modifier: Modifier,
+    ) {
         // 版本更新弹窗
         var showNewVersionDialog by remember { mutableStateOf(true) }
         val version by model.versionConfig.observeAsState()
@@ -320,12 +323,9 @@ class FreedomSettingActivity : BaseActivity() {
             }
         }
 
-        Scaffold(
-            modifier = Modifier.padding(horizontal = 24.dp),
-            topBar = { TopBarView() }
-        ) {
+        NeverOverScrollMode {
             LazyColumn(
-                modifier = Modifier.padding(it),
+                modifier = modifier,
                 content = {
                     item {
                         // 选项
@@ -405,6 +405,14 @@ class FreedomSettingActivity : BaseActivity() {
                             checked = model.isDisableDoubleLike.observeAsState(false),
                             onCheckedChange = {
                                 model.changeIsDisableDoubleLike(it)
+                            }
+                        )
+                        SwitchItem(
+                            text = "视频时长超过10分钟提示",
+                            subtext = "避免你die在厕所",
+                            checked = model.isLongtimeVideoToast.observeAsState(false),
+                            onCheckedChange = {
+                                model.changeIsLongtimeVideoToast(it)
                             }
                         )
                         BoxWithConstraints {
@@ -1172,7 +1180,14 @@ class FreedomSettingActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             AutoTheme {
-                BodyView()
+                Scaffold(
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    topBar = { TopBarView() }
+                ) {
+                    BodyView(
+                        modifier = Modifier.padding(it),
+                    )
+                }
             }
         }
     }

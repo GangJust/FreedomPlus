@@ -108,6 +108,17 @@ class ConfigV1 private constructor() {
             field = value
         }
 
+    /// 视频时长超过10分钟提示
+    var isLongtimeVideoToast: Boolean = false
+        get() {
+            field = mmkv.getBoolean("isLongtimeVideoToast", false)
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("isLongtimeVideoToast", value)
+            field = value
+        }
+
     /// 隐藏底部加号按钮
     var isHidePhotoButton: Boolean = false
         get() {

@@ -52,6 +52,9 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     private var _isDisableDoubleLike = MutableLiveData(false)
     val isDisableDoubleLike: LiveData<Boolean> = _isDisableDoubleLike
 
+    private var _isLongtimeVideoToast = MutableLiveData(false)
+    val isLongtimeVideoToast: LiveData<Boolean> = _isLongtimeVideoToast
+
     private var _isHidePhotoButton = MutableLiveData(false)
     val isDHidePhotoButton: LiveData<Boolean> = _isHidePhotoButton
 
@@ -123,6 +126,7 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
             changeIsTranslucent(config.isTranslucent)
             changeIsNeatMode(config.isNeatMode)
             changeIsDisableDoubleLike(config.isDisableDoubleLike)
+            changeIsLongtimeVideoToast(config.isLongtimeVideoToast)
             changeIsHidePhotoButton(config.isHidePhotoButton)
             changeIsDisablePhotoButton(config.isDisablePhotoButton)
             changeIsVideoFilter(config.isVideoFilter)
@@ -179,6 +183,12 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     fun changeIsDisableDoubleLike(value: Boolean) {
         _isDisableDoubleLike.value = value
         config.isDisableDoubleLike = value
+    }
+
+    // 视频时长超过5分钟提示
+    fun changeIsLongtimeVideoToast(value: Boolean) {
+        _isLongtimeVideoToast.value = value
+        config.isLongtimeVideoToast = value
     }
 
     // 隐藏底部加号按钮

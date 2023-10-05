@@ -69,30 +69,32 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                     ) as? Aweme
 
                     //
-                    durationRunnable?.run {
-                        handler.removeCallbacks(this)
-                        durationRunnable = null
-                    }
-                    durationRunnable = Runnable {
-                        //
-                        val delayItem = thisObject.methodInvokeFirst("getCurrentItem") as? Int ?: return@Runnable
-                        if (delayItem == currentItem) {
-                            return@Runnable
+                    if (config.isLongtimeVideoToast) {
+                        durationRunnable?.run {
+                            handler.removeCallbacks(this)
+                            durationRunnable = null
                         }
+                        durationRunnable = Runnable {
+                            //
+                            val delayItem = thisObject.methodInvokeFirst("getCurrentItem") as? Int ?: return@Runnable
+                            if (delayItem == currentItem) {
+                                return@Runnable
+                            }
 
-                        //
-                        val delayAweme = adapter.methodInvokeFirst(
-                            returnType = Aweme::class.java,
-                            args = arrayOf(delayItem),
-                        ) as? Aweme
-                        val duration = delayAweme?.duration ?: 0
-                        if (duration >= 1000 * 60 * 3) {
-                            val minute = duration / 1000 / 60
-                            val second = duration / 1000 % 60
-                            KToastUtils.show(thisView.context, "请注意, 本条视频时长${minute}分${second}秒!")
+                            //
+                            val delayAweme = adapter.methodInvokeFirst(
+                                returnType = Aweme::class.java,
+                                args = arrayOf(delayItem),
+                            ) as? Aweme
+                            val duration = delayAweme?.duration ?: 0
+                            if (duration >= 1000 * 60 * 10) {
+                                val minute = duration / 1000 / 60
+                                val second = duration / 1000 % 60
+                                KToastUtils.show(thisView.context, "请注意, 本条视频时长${minute}分${second}秒!")
+                            }
                         }
+                        handler.postDelayed(durationRunnable!!, 3000L)
                     }
-                    handler.postDelayed(durationRunnable!!, 1000L)
                 }
             }
         }
