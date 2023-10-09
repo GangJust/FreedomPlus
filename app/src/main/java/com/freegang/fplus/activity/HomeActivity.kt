@@ -71,6 +71,7 @@ import com.freegang.xpler.HookStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.lang.RuntimeException
 import kotlin.random.Random
 
 class HomeActivity : ComponentActivity() {
@@ -153,7 +154,7 @@ class HomeActivity : ComponentActivity() {
                                 KToastUtils.show(context, if (visible) "显示图标" else "隐藏图标")
                             },
                             onLongClick = {
-
+                                throw RuntimeException("测试!")
                             }
                         )
                 )

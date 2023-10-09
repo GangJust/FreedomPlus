@@ -70,8 +70,9 @@ import com.freegang.ktutils.json.parseJSONArray
 import com.freegang.ui.asDp
 import com.freegang.ui.component.FCard
 import com.freegang.ui.component.FCardBorder
+import com.freegang.ui.component.FCountDownMessageDialog
 import com.freegang.ui.component.FMessageDialog
-import com.freegang.ui.component.NeverOverScrollMode
+import com.freegang.ui.component.FWaitingMessageDialog
 import com.freegang.ui.viewmodel.FreedomSettingVM
 import com.freegang.webdav.WebDav
 import com.freegang.xpler.HookPackages
@@ -128,10 +129,11 @@ class FreedomSettingActivity : BaseActivity() {
                 BoxWithConstraints {
                     var showLogDialog by remember { mutableStateOf(false) }
                     if (showLogDialog) {
-                        FMessageDialog(
+                        FCountDownMessageDialog(
                             title = "类日志",
                             cancel = "取消",
                             confirm = "清除",
+                            waitingText = "请稍后 (%d)",
                             onCancel = {
                                 showLogDialog = false
                             },
@@ -237,18 +239,6 @@ class FreedomSettingActivity : BaseActivity() {
                             ),
                     )
                 }
-                /*Spacer(modifier = Modifier.padding(horizontal = 12.dp))
-                Icon(
-                    modifier = Modifier
-                        .size(20.dp)
-                        .clickable(
-                            indication = null,
-                            interactionSource = remember { MutableInteractionSource() },
-                            onClick = { rewardByAlipay() },
-                        ),
-                    imageVector = Icons.Rounded.FavoriteBorder,
-                    contentDescription = "打赏"
-                )*/
             }
         }
     }
@@ -323,339 +313,507 @@ class FreedomSettingActivity : BaseActivity() {
             }
         }
 
-        NeverOverScrollMode {
-            LazyColumn(
-                modifier = modifier,
-                content = {
-                    item {
-                        // 选项
-                        BoxWithConstraints {
-                            var showTipsDialog by remember { mutableStateOf(false) }
-                            SwitchItem(
-                                text = "视频/图文/音乐下载",
-                                checked = model.isDownload.observeAsState(false),
-                                onCheckedChange = {
-                                    model.changeIsDownload(it)
-                                    if (it) {
-                                        showTipsDialog = true
+        LazyColumn(
+            modifier = modifier,
+            content = {
+                item {
+                    // 选项
+                    BoxWithConstraints {
+                        var showTipsDialog by remember { mutableStateOf(false) }
+                        SwitchItem(
+                            text = "视频/图文/音乐下载",
+                            checked = model.isDownload.observeAsState(false),
+                            onCheckedChange = {
+                                model.changeIsDownload(it)
+                                if (it) {
+                                    showTipsDialog = true
+                                }
+                            }
+                        )
+
+                        if (showTipsDialog) {
+                            FMessageDialog(
+                                title = "提示",
+                                confirm = "确定",
+                                onlyConfirm = true,
+                                onConfirm = {
+                                    showTipsDialog = false
+                                }
+                            ) {
+                                Text(
+                                    text = buildAnnotatedString {
+                                        append("开启后在视频页操作")
+                                        withStyle(SpanStyle(Color.Red)) {
+                                            append("“分享->复制链接”")
+                                        }
+                                        append("即可弹出下载选项。")
+                                    },
+                                )
+                            }
+                        }
+                    }
+                    SwitchItem(
+                        text = "视频创作者单独创建文件夹",
+                        checked = model.isOwnerDir.observeAsState(false),
+                        onCheckedChange = {
+                            model.changeIsOwnerDir(it)
+                        },
+                    )
+                    SwitchItem(
+                        text = "通知栏下载",
+                        subtext = "开启通知栏下载, 否则将显示下载弹窗",
+                        checked = model.isNotification.observeAsState(false),
+                        onCheckedChange = {
+                            model.changeIsNotification(it)
+                        },
+                    )
+                    SwitchItem(
+                        text = "保存表情包/评论视频、图片",
+                        checked = model.isEmoji.observeAsState(false),
+                        onCheckedChange = {
+                            model.changeIsEmoji(it)
+                        }
+                    )
+                    SwitchItem(
+                        text = "震动反馈",
+                        checked = model.isVibrate.observeAsState(false),
+                        onCheckedChange = {
+                            model.changeIsVibrate(it)
+                        }
+                    )
+                    SwitchItem(
+                        text = "首页控件半透明",
+                        checked = model.isTranslucent.observeAsState(false),
+                        onCheckedChange = {
+                            showRestartAppDialog = true
+                            model.changeIsTranslucent(it)
+                        }
+                    )
+                    SwitchItem(
+                        text = "禁用双击点赞",
+                        checked = model.isDisableDoubleLike.observeAsState(false),
+                        onCheckedChange = {
+                            model.changeIsDisableDoubleLike(it)
+                        }
+                    )
+                    SwitchItem(
+                        text = "视频时长超过10分钟提示",
+                        subtext = "避免你die在厕所",
+                        checked = model.isLongtimeVideoToast.observeAsState(false),
+                        onCheckedChange = {
+                            model.changeIsLongtimeVideoToast(it)
+                        }
+                    )
+                    BoxWithConstraints {
+                        // 加号按钮响应状态
+                        var showIsDisablePhotoDialog by remember { mutableStateOf(false) }
+                        if (showIsDisablePhotoDialog) {
+                            var isDisablePhotoButton by remember { mutableStateOf(model.isDisablePhotoButton.value ?: true) }
+                            FMessageDialog(
+                                title = "请选择拍摄按钮响应模式",
+                                confirm = "更改",
+                                onlyConfirm = true,
+                                onConfirm = { showIsDisablePhotoDialog = false },
+                                content = {
+                                    Column {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            RadioButton(
+                                                selected = isDisablePhotoButton,
+                                                onClick = {
+                                                    isDisablePhotoButton = true
+                                                    model.changeIsDisablePhotoButton(isDisablePhotoButton)
+                                                },
+                                            )
+                                            Text(
+                                                text = "禁止拍摄",
+                                                style = MaterialTheme.typography.body1,
+                                            )
+                                        }
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            RadioButton(
+                                                selected = !isDisablePhotoButton,
+                                                onClick = {
+                                                    isDisablePhotoButton = false
+                                                    model.changeIsDisablePhotoButton(isDisablePhotoButton)
+                                                },
+                                            )
+                                            Text(
+                                                text = "允许拍摄",
+                                                style = MaterialTheme.typography.body1,
+                                            )
+                                        }
                                     }
                                 }
                             )
+                        }
+                        SwitchItem(
+                            text = "隐藏底部加号按钮",
+                            subtext = "点击更改加号按钮响应状态",
+                            checked = model.isDHidePhotoButton.observeAsState(false),
+                            onClick = {
+                                showIsDisablePhotoDialog = true
+                            },
+                            onCheckedChange = {
+                                model.changeIsHidePhotoButton(it)
+                            }
+                        )
+                    }
+                    BoxWithConstraints { // 限制重构作用域
+                        var showVideoFilterDialog by remember { mutableStateOf(false) }
+                        var showVideoFilterTips by remember { mutableStateOf(false) }
 
-                            if (showTipsDialog) {
-                                FMessageDialog(
-                                    title = "提示",
-                                    confirm = "确定",
-                                    onlyConfirm = true,
-                                    onConfirm = {
-                                        showTipsDialog = false
+                        if (showVideoFilterDialog) {
+                            var inputValue by remember {
+                                mutableStateOf(
+                                    TextFieldValue(
+                                        buildFilterTypeStyle(model.videoFilterKeywords.value ?: ""),
+                                    )
+                                )
+                            }
+                            FMessageDialog(
+                                title = {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 24.dp, vertical = 16.dp)
+                                    ) {
+                                        Text(
+                                            text = "请输入关键字, 用逗号分开",
+                                            style = MaterialTheme.typography.body1,
+                                            modifier = Modifier.weight(1f),
+                                        )
+                                        Icon(
+                                            imageVector = Icons.Outlined.Info,
+                                            contentDescription = "帮助",
+                                            modifier = Modifier
+                                                .size(16.dp)
+                                                .combinedClickable(
+                                                    indication = null,
+                                                    interactionSource = remember { MutableInteractionSource() },
+                                                    onClick = {
+                                                        showVideoFilterTips = true
+                                                    },
+                                                ),
+                                        )
                                     }
-                                ) {
-                                    Text(
-                                        text = buildAnnotatedString {
-                                            append("开启后在视频页操作")
-                                            withStyle(SpanStyle(Color.Red)) {
-                                                append("“分享->复制链接”")
-                                            }
-                                            append("即可弹出下载选项。")
+                                },
+                                cancel = "取消",
+                                confirm = "确定",
+                                onCancel = {
+                                    showVideoFilterDialog = false
+                                },
+                                onConfirm = {
+                                    showVideoFilterDialog = false
+                                    model.setVideoFilterKeywords(inputValue.text)
+                                },
+                                content = {
+                                    FCard(
+                                        border = FCardBorder(borderWidth = 1.0.dp),
+                                        content = {
+                                            BasicTextField(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(12.dp),
+                                                value = inputValue,
+                                                maxLines = 4,
+                                                textStyle = MaterialTheme.typography.body1,
+                                                decorationBox = { innerTextField ->
+                                                    if (inputValue.text.isEmpty()) {
+                                                        Text(
+                                                            text = "视频类型或文本中出现的关键字",
+                                                            style = MaterialTheme.typography.body1.copy(
+                                                                color = Color(0xFF999999)
+                                                            ),
+                                                        )
+                                                    }
+                                                    innerTextField()
+                                                },
+                                                onValueChange = { value ->
+                                                    inputValue = value
+                                                },
+                                                visualTransformation = { text ->
+                                                    TransformedText(
+                                                        text = buildFilterTypeStyle(text.text),
+                                                        offsetMapping = OffsetMapping.Identity
+                                                    )
+                                                }
+                                            )
                                         },
                                     )
                                 }
-                            }
+                            )
                         }
-                        SwitchItem(
-                            text = "视频创作者单独创建文件夹",
-                            checked = model.isOwnerDir.observeAsState(false),
-                            onCheckedChange = {
-                                model.changeIsOwnerDir(it)
-                            },
-                        )
-                        SwitchItem(
-                            text = "通知栏下载",
-                            subtext = "开启通知栏下载, 否则将显示下载弹窗",
-                            checked = model.isNotification.observeAsState(false),
-                            onCheckedChange = {
-                                model.changeIsNotification(it)
-                            },
-                        )
-                        SwitchItem(
-                            text = "保存表情包/评论视频、图片",
-                            checked = model.isEmoji.observeAsState(false),
-                            onCheckedChange = {
-                                model.changeIsEmoji(it)
-                            }
-                        )
-                        SwitchItem(
-                            text = "震动反馈",
-                            checked = model.isVibrate.observeAsState(false),
-                            onCheckedChange = {
-                                model.changeIsVibrate(it)
-                            }
-                        )
-                        SwitchItem(
-                            text = "首页控件半透明",
-                            checked = model.isTranslucent.observeAsState(false),
-                            onCheckedChange = {
-                                showRestartAppDialog = true
-                                model.changeIsTranslucent(it)
-                            }
-                        )
-                        SwitchItem(
-                            text = "禁用双击点赞",
-                            checked = model.isDisableDoubleLike.observeAsState(false),
-                            onCheckedChange = {
-                                model.changeIsDisableDoubleLike(it)
-                            }
-                        )
-                        SwitchItem(
-                            text = "视频时长超过10分钟提示",
-                            subtext = "避免你die在厕所",
-                            checked = model.isLongtimeVideoToast.observeAsState(false),
-                            onCheckedChange = {
-                                model.changeIsLongtimeVideoToast(it)
-                            }
-                        )
-                        BoxWithConstraints {
-                            // 加号按钮响应状态
-                            var showIsDisablePhotoDialog by remember { mutableStateOf(false) }
-                            if (showIsDisablePhotoDialog) {
-                                var isDisablePhotoButton by remember { mutableStateOf(model.isDisablePhotoButton.value ?: true) }
-                                FMessageDialog(
-                                    title = "请选择拍摄按钮响应模式",
-                                    confirm = "更改",
-                                    onlyConfirm = true,
-                                    onConfirm = { showIsDisablePhotoDialog = false },
-                                    content = {
-                                        Column {
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                RadioButton(
-                                                    selected = isDisablePhotoButton,
-                                                    onClick = {
-                                                        isDisablePhotoButton = true
-                                                        model.changeIsDisablePhotoButton(isDisablePhotoButton)
-                                                    },
-                                                )
-                                                Text(
-                                                    text = "禁止拍摄",
-                                                    style = MaterialTheme.typography.body1,
-                                                )
-                                            }
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                RadioButton(
-                                                    selected = !isDisablePhotoButton,
-                                                    onClick = {
-                                                        isDisablePhotoButton = false
-                                                        model.changeIsDisablePhotoButton(isDisablePhotoButton)
-                                                    },
-                                                )
-                                                Text(
-                                                    text = "允许拍摄",
-                                                    style = MaterialTheme.typography.body1,
-                                                )
-                                            }
-                                        }
-                                    }
+
+                        if (showVideoFilterTips) {
+                            FMessageDialog(
+                                title = "提示",
+                                onlyConfirm = true,
+                                confirm = "确定",
+                                onConfirm = {
+                                    showVideoFilterTips = false
+                                }
+                            ) {
+                                Text(
+                                    text = buildAnnotatedString {
+                                        append("支持过滤的视频类型：")
+                                        append(buildFilterTypeStyle(value = model.videoFilterTypes.joinToString("，")))
+                                        append("\n支持文案关键字过滤视频，如视频文案中出现 “优惠,买,#生日” 等文本字样。")
+                                    },
+                                    style = MaterialTheme.typography.body1,
                                 )
                             }
-                            SwitchItem(
-                                text = "隐藏底部加号按钮",
-                                subtext = "点击更改加号按钮响应状态",
-                                checked = model.isDHidePhotoButton.observeAsState(false),
-                                onClick = {
-                                    showIsDisablePhotoDialog = true
-                                },
-                                onCheckedChange = {
-                                    model.changeIsHidePhotoButton(it)
+                        }
+
+                        SwitchItem(
+                            text = "视频过滤",
+                            subtext = "点击设置视频过滤类型或文本关键字",
+                            checked = model.isVideoFilter.observeAsState(false),
+                            onClick = {
+                                showVideoFilterDialog = true
+                            },
+                            onCheckedChange = {
+                                model.changeIsVideoFilter(it)
+                            }
+                        )
+                    }
+                    BoxWithConstraints { // 限制重构作用域
+                        // 清爽模式响应模式
+                        var showLongPressModeDialog by remember { mutableStateOf(false) }
+                        if (showLongPressModeDialog) {
+                            var isLongPressMode by remember { mutableStateOf(model.isLongPressMode.value ?: true) }
+                            FMessageDialog(
+                                title = "请选择响应模式",
+                                confirm = "更改",
+                                onlyConfirm = true,
+                                onConfirm = { showLongPressModeDialog = false },
+                                content = {
+                                    Column {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            RadioButton(
+                                                selected = isLongPressMode,
+                                                onClick = {
+                                                    isLongPressMode = true
+                                                    model.changeLongPressMode(isLongPressMode)
+                                                },
+                                            )
+                                            Text(
+                                                text = "长按视频上半",
+                                                style = MaterialTheme.typography.body1,
+                                            )
+                                        }
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            RadioButton(
+                                                selected = !isLongPressMode,
+                                                onClick = {
+                                                    isLongPressMode = false
+                                                    model.changeLongPressMode(isLongPressMode)
+                                                },
+                                            )
+                                            Text(
+                                                text = "长按视频下半",
+                                                style = MaterialTheme.typography.body1,
+                                            )
+                                        }
+                                    }
                                 }
                             )
                         }
-                        BoxWithConstraints { // 限制重构作用域
-                            var showVideoFilterDialog by remember { mutableStateOf(false) }
-                            var showVideoFilterTips by remember { mutableStateOf(false) }
-
-                            if (showVideoFilterDialog) {
-                                var inputValue by remember {
-                                    mutableStateOf(
-                                        TextFieldValue(
-                                            buildFilterTypeStyle(model.videoFilterKeywords.value ?: ""),
-                                        )
+                        SwitchItem(
+                            text = "清爽模式",
+                            subtext = "长按视频进入清爽模式, 点击更改响应模式",
+                            checked = model.isNeatMode.observeAsState(false),
+                            onClick = {
+                                showLongPressModeDialog = true
+                            },
+                            onCheckedChange = {
+                                model.changeIsNeatMode(it)
+                            }
+                        )
+                    }
+                    BoxWithConstraints { // 限制重构作用域
+                        // 隐藏Tab关键字编辑
+                        var showHideTabKeywordsEditorDialog by remember { mutableStateOf(false) }
+                        if (showHideTabKeywordsEditorDialog) {
+                            var hideTabKeywords by remember { mutableStateOf(model.hideTabKeywords.value ?: "") }
+                            FMessageDialog(
+                                title = "请输入关键字, 用逗号分开",
+                                cancel = "取消",
+                                confirm = "确定",
+                                onCancel = { showHideTabKeywordsEditorDialog = false },
+                                onConfirm = {
+                                    showHideTabKeywordsEditorDialog = false
+                                    model.setHideTabKeywords(hideTabKeywords)
+                                },
+                                content = {
+                                    FCard(
+                                        border = FCardBorder(borderWidth = 1.0.dp),
+                                        content = {
+                                            BasicTextField(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(vertical = 12.dp, horizontal = 12.dp),
+                                                value = hideTabKeywords,
+                                                maxLines = 1,
+                                                singleLine = true,
+                                                textStyle = MaterialTheme.typography.body1,
+                                                onValueChange = {
+                                                    hideTabKeywords = it
+                                                },
+                                            )
+                                        },
                                     )
+                                },
+                            )
+                        }
+
+                        // 开启隐藏Tab关键字, 复确认弹窗
+                        var showHideTabTipsDialog by remember { mutableStateOf(false) }
+                        if (showHideTabTipsDialog) {
+                            FMessageDialog(
+                                title = "提示",
+                                cancel = "关闭",
+                                confirm = "开启",
+                                onCancel = {
+                                    showHideTabTipsDialog = false
+                                    model.changeIsHideTab(false)
+                                },
+                                onConfirm = {
+                                    showHideTabTipsDialog = false
+                                    showRestartAppDialog = true
+                                    model.changeIsHideTab(true)
+                                },
+                                content = {
+                                    Text(
+                                        text = "一旦开启顶部Tab隐藏, 将禁止左右滑动切换, 具体效果自行查看!",
+                                        style = MaterialTheme.typography.body1,
+                                    )
+                                },
+                            )
+                        }
+                        SwitchItem(
+                            text = "隐藏顶部tab",
+                            subtext = "点击设置关键字",
+                            checked = model.isHideTab.observeAsState(false),
+                            onClick = {
+                                showHideTabKeywordsEditorDialog = true
+                            },
+                            onCheckedChange = {
+                                showRestartAppDialog = true
+                                if (it) {
+                                    showHideTabTipsDialog = true
                                 }
-                                FMessageDialog(
-                                    title = {
+                                model.changeIsHideTab(it)
+                            },
+                        )
+                    }
+                    BoxWithConstraints { // 限制重构作用域
+                        // WebDav配置编辑
+                        var showWebDavConfigEditorDialog by remember { mutableStateOf(false) }
+                        if (showWebDavConfigEditorDialog) {
+                            val webDavHistory = model.webDavHistory.observeAsState(initial = emptySet())
+                            var showWebDavHistoryMenu by remember { mutableStateOf(false) }
+                            var host by remember { mutableStateOf(model.webDavHost.value ?: "") }
+                            var username by remember { mutableStateOf(model.webDavUsername.value ?: "") }
+                            var password by remember { mutableStateOf(model.webDavPassword.value ?: "") }
+                            var isWaiting by remember { mutableStateOf(false) }
+                            FWaitingMessageDialog(
+                                title = {
+                                    ExposedDropdownMenuBox(
+                                        expanded = showWebDavHistoryMenu,
+                                        onExpandedChange = { /*expanded = !expanded*/ },
+                                    ) {
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .padding(horizontal = 24.dp, vertical = 16.dp)
                                         ) {
                                             Text(
-                                                text = "请输入关键字, 用逗号分开",
+                                                text = "配置WebDav",
                                                 style = MaterialTheme.typography.body1,
                                                 modifier = Modifier.weight(1f),
                                             )
-                                            Icon(
-                                                imageVector = Icons.Outlined.Info,
-                                                contentDescription = "帮助",
-                                                modifier = Modifier
-                                                    .size(16.dp)
-                                                    .combinedClickable(
-                                                        indication = null,
-                                                        interactionSource = remember { MutableInteractionSource() },
-                                                        onClick = {
-                                                            showVideoFilterTips = true
-                                                        },
-                                                    ),
-                                            )
-                                        }
-                                    },
-                                    cancel = "取消",
-                                    confirm = "确定",
-                                    onCancel = {
-                                        showVideoFilterDialog = false
-                                    },
-                                    onConfirm = {
-                                        showVideoFilterDialog = false
-                                        model.setVideoFilterKeywords(inputValue.text)
-                                    },
-                                    content = {
-                                        FCard(
-                                            border = FCardBorder(borderWidth = 1.0.dp),
-                                            content = {
-                                                BasicTextField(
+
+                                            BoxWithConstraints {
+                                                Icon(
+                                                    painter = painterResource(id = R.drawable.ic_history),
+                                                    contentDescription = "WebDav列表",
                                                     modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .padding(12.dp),
-                                                    value = inputValue,
-                                                    maxLines = 4,
-                                                    textStyle = MaterialTheme.typography.body1,
-                                                    decorationBox = { innerTextField ->
-                                                        if (inputValue.text.isEmpty()) {
-                                                            Text(
-                                                                text = "视频类型或文本中出现的关键字",
-                                                                style = MaterialTheme.typography.body1.copy(
-                                                                    color = Color(0xFF999999)
-                                                                ),
-                                                            )
-                                                        }
-                                                        innerTextField()
-                                                    },
-                                                    onValueChange = { value ->
-                                                        inputValue = value
-                                                    },
-                                                    visualTransformation = { text ->
-                                                        TransformedText(
-                                                            text = buildFilterTypeStyle(text.text),
-                                                            offsetMapping = OffsetMapping.Identity
+                                                        .size(16.dp)
+                                                        .combinedClickable(
+                                                            indication = null,
+                                                            interactionSource = remember { MutableInteractionSource() },
+                                                            onClick = {
+                                                                if (webDavHistory.value.isEmpty()) {
+                                                                    KToastUtils.show(application, "没有WebDav历史")
+                                                                }
+                                                                showWebDavHistoryMenu = webDavHistory.value.isNotEmpty()
+                                                            },
+                                                        ),
+                                                )
+
+                                                ExposedDropdownMenu(
+                                                    expanded = showWebDavHistoryMenu,
+                                                    onDismissRequest = { showWebDavHistoryMenu = false },
+                                                    modifier = Modifier.heightIn(max = 200.dp)
+                                                ) {
+                                                    webDavHistory.value.forEach {
+                                                        Text(
+                                                            text = it.host,
+                                                            style = MaterialTheme.typography.body1,
+                                                            modifier = Modifier
+                                                                .combinedClickable(
+                                                                    onClick = {
+                                                                        showWebDavHistoryMenu = false
+                                                                        host = it.host
+                                                                        username = it.username
+                                                                        password = it.password
+                                                                    },
+                                                                    onLongClick = {
+                                                                        model.removeWebDavConfig(
+                                                                            WebDav.Config(
+                                                                                it.host,
+                                                                                it.username,
+                                                                                it.password,
+                                                                            )
+                                                                        )
+                                                                        showWebDavHistoryMenu =
+                                                                            webDavHistory.value.isNotEmpty()
+                                                                        KToastUtils.show(application, "删除成功")
+                                                                    }
+                                                                )
+                                                                .fillMaxWidth()
+                                                                .padding(horizontal = 16.dp, vertical = 12.dp)
                                                         )
                                                     }
-                                                )
-                                            },
-                                        )
-                                    }
-                                )
-                            }
-
-                            if (showVideoFilterTips) {
-                                FMessageDialog(
-                                    title = "提示",
-                                    onlyConfirm = true,
-                                    confirm = "确定",
-                                    onConfirm = {
-                                        showVideoFilterTips = false
-                                    }
-                                ) {
-                                    Text(
-                                        text = buildAnnotatedString {
-                                            append("支持过滤的视频类型：")
-                                            append(buildFilterTypeStyle(value = model.videoFilterTypes.joinToString("，")))
-                                            append("\n支持文案关键字过滤视频，如视频文案中出现 “优惠,买,#生日” 等文本字样。")
-                                        },
-                                        style = MaterialTheme.typography.body1,
-                                    )
-                                }
-                            }
-
-                            SwitchItem(
-                                text = "视频过滤",
-                                subtext = "点击设置视频过滤类型或文本关键字",
-                                checked = model.isVideoFilter.observeAsState(false),
-                                onClick = {
-                                    showVideoFilterDialog = true
-                                },
-                                onCheckedChange = {
-                                    model.changeIsVideoFilter(it)
-                                }
-                            )
-                        }
-                        BoxWithConstraints { // 限制重构作用域
-                            // 清爽模式响应模式
-                            var showLongPressModeDialog by remember { mutableStateOf(false) }
-                            if (showLongPressModeDialog) {
-                                var isLongPressMode by remember { mutableStateOf(model.isLongPressMode.value ?: true) }
-                                FMessageDialog(
-                                    title = "请选择响应模式",
-                                    confirm = "更改",
-                                    onlyConfirm = true,
-                                    onConfirm = { showLongPressModeDialog = false },
-                                    content = {
-                                        Column {
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                RadioButton(
-                                                    selected = isLongPressMode,
-                                                    onClick = {
-                                                        isLongPressMode = true
-                                                        model.changeLongPressMode(isLongPressMode)
-                                                    },
-                                                )
-                                                Text(
-                                                    text = "长按视频上半",
-                                                    style = MaterialTheme.typography.body1,
-                                                )
-                                            }
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                RadioButton(
-                                                    selected = !isLongPressMode,
-                                                    onClick = {
-                                                        isLongPressMode = false
-                                                        model.changeLongPressMode(isLongPressMode)
-                                                    },
-                                                )
-                                                Text(
-                                                    text = "长按视频下半",
-                                                    style = MaterialTheme.typography.body1,
-                                                )
+                                                }
                                             }
                                         }
                                     }
-                                )
-                            }
-                            SwitchItem(
-                                text = "清爽模式",
-                                subtext = "长按视频进入清爽模式, 点击更改响应模式",
-                                checked = model.isNeatMode.observeAsState(false),
-                                onClick = {
-                                    showLongPressModeDialog = true
                                 },
-                                onCheckedChange = {
-                                    model.changeIsNeatMode(it)
-                                }
-                            )
-                        }
-                        BoxWithConstraints { // 限制重构作用域
-                            // 隐藏Tab关键字编辑
-                            var showHideTabKeywordsEditorDialog by remember { mutableStateOf(false) }
-                            if (showHideTabKeywordsEditorDialog) {
-                                var hideTabKeywords by remember { mutableStateOf(model.hideTabKeywords.value ?: "") }
-                                FMessageDialog(
-                                    title = "请输入关键字, 用逗号分开",
-                                    cancel = "取消",
-                                    confirm = "确定",
-                                    onCancel = { showHideTabKeywordsEditorDialog = false },
-                                    onConfirm = {
-                                        showHideTabKeywordsEditorDialog = false
-                                        model.setHideTabKeywords(hideTabKeywords)
-                                    },
-                                    content = {
+                                cancel = "取消",
+                                confirm = "确定",
+                                isWaiting = isWaiting,
+                                onCancel = {
+                                    showWebDavConfigEditorDialog = false
+                                },
+                                onConfirm = {
+                                    val webDavConfig = WebDav.Config(host, username, password)
+                                    isWaiting = true
+                                    model.setWebDavConfig(webDavConfig)
+                                    model.initWebDav { test, msg ->
+                                        KToastUtils.show(applicationContext, msg)
+                                        isWaiting = false
+                                        if (test) {
+                                            showWebDavConfigEditorDialog = false
+                                            model.changeIsWebDav(true)
+                                            model.addWebDavConfig(webDavConfig)
+                                            return@initWebDav
+                                        }
+                                        model.changeIsWebDav(false)
+                                    }
+                                },
+                                content = {
+                                    Column {
                                         FCard(
                                             border = FCardBorder(borderWidth = 1.0.dp),
                                             content = {
@@ -663,446 +821,286 @@ class FreedomSettingActivity : BaseActivity() {
                                                     modifier = Modifier
                                                         .fillMaxWidth()
                                                         .padding(vertical = 12.dp, horizontal = 12.dp),
-                                                    value = hideTabKeywords,
+                                                    value = host,
                                                     maxLines = 1,
                                                     singleLine = true,
                                                     textStyle = MaterialTheme.typography.body1,
+                                                    decorationBox = { innerTextField ->
+                                                        if (host.isEmpty()) Text(
+                                                            text = "http://服务器地址:端口/初始化路径",
+                                                            style = MaterialTheme.typography.body1.copy(
+                                                                color = Color(0xFF999999)
+                                                            ),
+                                                        )
+                                                        innerTextField.invoke() // 必须调用这行哦
+                                                    },
                                                     onValueChange = {
-                                                        hideTabKeywords = it
+                                                        host = it
                                                     },
                                                 )
                                             },
                                         )
-                                    },
-                                )
-                            }
-
-                            // 开启隐藏Tab关键字, 复确认弹窗
-                            var showHideTabTipsDialog by remember { mutableStateOf(false) }
-                            if (showHideTabTipsDialog) {
-                                FMessageDialog(
-                                    title = "提示",
-                                    cancel = "关闭",
-                                    confirm = "开启",
-                                    onCancel = {
-                                        showHideTabTipsDialog = false
-                                        model.changeIsHideTab(false)
-                                    },
-                                    onConfirm = {
-                                        showHideTabTipsDialog = false
-                                        showRestartAppDialog = true
-                                        model.changeIsHideTab(true)
-                                    },
-                                    content = {
-                                        Text(
-                                            text = "一旦开启顶部Tab隐藏, 将禁止左右滑动切换, 具体效果自行查看!",
-                                            style = MaterialTheme.typography.body1,
-                                        )
-                                    },
-                                )
-                            }
-                            SwitchItem(
-                                text = "隐藏顶部tab",
-                                subtext = "点击设置关键字",
-                                checked = model.isHideTab.observeAsState(false),
-                                onClick = {
-                                    showHideTabKeywordsEditorDialog = true
-                                },
-                                onCheckedChange = {
-                                    showRestartAppDialog = true
-                                    if (it) {
-                                        showHideTabTipsDialog = true
-                                    }
-                                    model.changeIsHideTab(it)
-                                },
-                            )
-                        }
-                        BoxWithConstraints { // 限制重构作用域
-                            // WebDav配置编辑
-                            var showWebDavConfigEditorDialog by remember { mutableStateOf(false) }
-                            if (showWebDavConfigEditorDialog) {
-                                val webDavHistory = model.webDavHistory.observeAsState(initial = emptySet())
-                                var showWebDavHistoryMenu by remember { mutableStateOf(false) }
-                                var host by remember { mutableStateOf(model.webDavHost.value ?: "") }
-                                var username by remember { mutableStateOf(model.webDavUsername.value ?: "") }
-                                var password by remember { mutableStateOf(model.webDavPassword.value ?: "") }
-                                var isWaiting by remember { mutableStateOf(false) }
-                                FMessageDialog(
-                                    title = {
-                                        ExposedDropdownMenuBox(
-                                            expanded = showWebDavHistoryMenu,
-                                            onExpandedChange = { /*expanded = !expanded*/ },
-                                        ) {
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(horizontal = 24.dp, vertical = 16.dp)
-                                            ) {
-                                                Text(
-                                                    text = "配置WebDav",
-                                                    style = MaterialTheme.typography.body1,
-                                                    modifier = Modifier.weight(1f),
-                                                )
-
-                                                BoxWithConstraints {
-                                                    Icon(
-                                                        painter = painterResource(id = R.drawable.ic_history),
-                                                        contentDescription = "WebDav列表",
-                                                        modifier = Modifier
-                                                            .size(16.dp)
-                                                            .combinedClickable(
-                                                                indication = null,
-                                                                interactionSource = remember { MutableInteractionSource() },
-                                                                onClick = {
-                                                                    if (webDavHistory.value.isEmpty()) {
-                                                                        KToastUtils.show(application, "没有WebDav历史")
-                                                                    }
-                                                                    showWebDavHistoryMenu = webDavHistory.value.isNotEmpty()
-                                                                },
+                                        FCard(
+                                            modifier = Modifier.padding(vertical = 8.dp),
+                                            border = FCardBorder(borderWidth = 1.0.dp),
+                                            content = {
+                                                BasicTextField(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(vertical = 12.dp, horizontal = 12.dp),
+                                                    value = username,
+                                                    maxLines = 1,
+                                                    singleLine = true,
+                                                    textStyle = MaterialTheme.typography.body1,
+                                                    decorationBox = { innerTextField ->
+                                                        if (username.isEmpty()) Text(
+                                                            text = "用户名",
+                                                            style = MaterialTheme.typography.body1.copy(
+                                                                color = Color(0xFF999999)
                                                             ),
-                                                    )
-
-                                                    ExposedDropdownMenu(
-                                                        expanded = showWebDavHistoryMenu,
-                                                        onDismissRequest = { showWebDavHistoryMenu = false },
-                                                        modifier = Modifier.heightIn(max = 200.dp)
-                                                    ) {
-                                                        webDavHistory.value.forEach {
-                                                            Text(
-                                                                text = it.host,
-                                                                style = MaterialTheme.typography.body1,
-                                                                modifier = Modifier
-                                                                    .combinedClickable(
-                                                                        onClick = {
-                                                                            showWebDavHistoryMenu = false
-                                                                            host = it.host
-                                                                            username = it.username
-                                                                            password = it.password
-                                                                        },
-                                                                        onLongClick = {
-                                                                            model.removeWebDavConfig(
-                                                                                WebDav.Config(
-                                                                                    it.host,
-                                                                                    it.username,
-                                                                                    it.password,
-                                                                                )
-                                                                            )
-                                                                            showWebDavHistoryMenu =
-                                                                                webDavHistory.value.isNotEmpty()
-                                                                            KToastUtils.show(application, "删除成功")
-                                                                        }
-                                                                    )
-                                                                    .fillMaxWidth()
-                                                                    .padding(horizontal = 16.dp, vertical = 12.dp)
-                                                            )
-                                                        }
+                                                        )
+                                                        innerTextField.invoke() // 必须调用这行哦
+                                                    },
+                                                    onValueChange = {
+                                                        username = it
+                                                    },
+                                                )
+                                            },
+                                        )
+                                        FCard(
+                                            border = FCardBorder(borderWidth = 1.0.dp),
+                                            content = {
+                                                BasicTextField(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(vertical = 12.dp, horizontal = 12.dp),
+                                                    value = password,
+                                                    maxLines = 1,
+                                                    singleLine = true,
+                                                    textStyle = MaterialTheme.typography.body1,
+                                                    decorationBox = { innerTextField ->
+                                                        if (password.isEmpty()) Text(
+                                                            text = "密码",
+                                                            style = MaterialTheme.typography.body1.copy(
+                                                                color = Color(0xFF999999)
+                                                            ),
+                                                        )
+                                                        innerTextField.invoke() // 必须调用这行哦
+                                                    },
+                                                    onValueChange = {
+                                                        password = it
                                                     }
-                                                }
-                                            }
-                                        }
-                                    },
-                                    cancel = "取消",
-                                    confirm = "确定",
-                                    isWaiting = isWaiting,
-                                    onCancel = {
-                                        showWebDavConfigEditorDialog = false
-                                    },
-                                    onConfirm = {
-                                        val webDavConfig = WebDav.Config(host, username, password)
-                                        isWaiting = true
-                                        model.setWebDavConfig(webDavConfig)
-                                        model.initWebDav { test, msg ->
-                                            KToastUtils.show(applicationContext, msg)
-                                            isWaiting = false
-                                            if (test) {
-                                                showWebDavConfigEditorDialog = false
-                                                model.changeIsWebDav(true)
-                                                model.addWebDavConfig(webDavConfig)
-                                                return@initWebDav
-                                            }
-                                            model.changeIsWebDav(false)
-                                        }
-                                    },
-                                    content = {
-                                        Column {
-                                            FCard(
-                                                border = FCardBorder(borderWidth = 1.0.dp),
-                                                content = {
-                                                    BasicTextField(
-                                                        modifier = Modifier
-                                                            .fillMaxWidth()
-                                                            .padding(vertical = 12.dp, horizontal = 12.dp),
-                                                        value = host,
-                                                        maxLines = 1,
-                                                        singleLine = true,
-                                                        textStyle = MaterialTheme.typography.body1,
-                                                        decorationBox = { innerTextField ->
-                                                            if (host.isEmpty()) Text(
-                                                                text = "http://服务器地址:端口/初始化路径",
-                                                                style = MaterialTheme.typography.body1.copy(
-                                                                    color = Color(0xFF999999)
-                                                                ),
-                                                            )
-                                                            innerTextField.invoke() // 必须调用这行哦
-                                                        },
-                                                        onValueChange = {
-                                                            host = it
-                                                        },
-                                                    )
-                                                },
-                                            )
-                                            FCard(
-                                                modifier = Modifier.padding(vertical = 8.dp),
-                                                border = FCardBorder(borderWidth = 1.0.dp),
-                                                content = {
-                                                    BasicTextField(
-                                                        modifier = Modifier
-                                                            .fillMaxWidth()
-                                                            .padding(vertical = 12.dp, horizontal = 12.dp),
-                                                        value = username,
-                                                        maxLines = 1,
-                                                        singleLine = true,
-                                                        textStyle = MaterialTheme.typography.body1,
-                                                        decorationBox = { innerTextField ->
-                                                            if (username.isEmpty()) Text(
-                                                                text = "用户名",
-                                                                style = MaterialTheme.typography.body1.copy(
-                                                                    color = Color(0xFF999999)
-                                                                ),
-                                                            )
-                                                            innerTextField.invoke() // 必须调用这行哦
-                                                        },
-                                                        onValueChange = {
-                                                            username = it
-                                                        },
-                                                    )
-                                                },
-                                            )
-                                            FCard(
-                                                border = FCardBorder(borderWidth = 1.0.dp),
-                                                content = {
-                                                    BasicTextField(
-                                                        modifier = Modifier
-                                                            .fillMaxWidth()
-                                                            .padding(vertical = 12.dp, horizontal = 12.dp),
-                                                        value = password,
-                                                        maxLines = 1,
-                                                        singleLine = true,
-                                                        textStyle = MaterialTheme.typography.body1,
-                                                        decorationBox = { innerTextField ->
-                                                            if (password.isEmpty()) Text(
-                                                                text = "密码",
-                                                                style = MaterialTheme.typography.body1.copy(
-                                                                    color = Color(0xFF999999)
-                                                                ),
-                                                            )
-                                                            innerTextField.invoke() // 必须调用这行哦
-                                                        },
-                                                        onValueChange = {
-                                                            password = it
-                                                        }
-                                                    )
-                                                },
-                                            )
-                                        }
-                                    },
-                                )
-                            }
-
-                            var isWebDavWaiting by remember { mutableStateOf(false) }
-                            SwitchItem(
-                                text = "WebDav",
-                                subtext = "点击配置WebDav",
-                                isWaiting = isWebDavWaiting,
-                                checked = model.isWebDav.observeAsState(false),
-                                onClick = {
-                                    showWebDavConfigEditorDialog = true
-                                },
-                                onCheckedChange = {
-                                    model.changeIsWebDav(it)
-                                    if (it && !model.hasWebDavConfig()) {
-                                        showWebDavConfigEditorDialog = true
-                                        model.changeIsWebDav(false)
-                                        Toast.makeText(applicationContext, "请先进行WebDav配置!", Toast.LENGTH_SHORT).show()
-                                        return@SwitchItem
-                                    }
-                                    if (it) {
-                                        isWebDavWaiting = true
-                                        model.initWebDav { test, msg ->
-                                            KToastUtils.show(applicationContext, msg)
-                                            isWebDavWaiting = false
-                                            if (test) {
-                                                model.changeIsWebDav(true)
-                                                return@initWebDav
-                                            }
-                                            model.changeIsWebDav(false)
-                                        }
+                                                )
+                                            },
+                                        )
                                     }
                                 },
                             )
                         }
-                        BoxWithConstraints { // 限制重构作用域
-                            // 定时退出
-                            var showTimedExitSettingDialog by remember { mutableStateOf(false) }
-                            if (showTimedExitSettingDialog) {
-                                val times = model.timedExitValue.value?.parseJSONArray()
-                                var timedExit by remember { mutableStateOf("${times?.getIntOrDefault(0, 10) ?: 10}") }
-                                var freeExit by remember { mutableStateOf("${times?.getIntOrDefault(1, 3) ?: 3}") }
 
-                                KToastUtils.show(applicationContext, "低于3分钟将不执行~")
-                                FMessageDialog(
-                                    title = "定时退出时间设置",
-                                    cancel = "取消",
-                                    confirm = "确定",
-                                    onCancel = {
-                                        showTimedExitSettingDialog = false
-                                    },
-                                    onConfirm = {
-                                        showTimedExitSettingDialog = false
-                                        val intTimedExit = timedExit.toIntOrNull()
-                                        val intFreeExit = freeExit.toIntOrNull()
-                                        if (intTimedExit == null || intFreeExit == null) {
-                                            KToastUtils.show(applicationContext, "请输入正确的分钟数")
-                                            return@FMessageDialog
+                        var isWebDavWaiting by remember { mutableStateOf(false) }
+                        SwitchItem(
+                            text = "WebDav",
+                            subtext = "点击配置WebDav",
+                            isWaiting = isWebDavWaiting,
+                            checked = model.isWebDav.observeAsState(false),
+                            onClick = {
+                                showWebDavConfigEditorDialog = true
+                            },
+                            onCheckedChange = {
+                                model.changeIsWebDav(it)
+                                if (it && !model.hasWebDavConfig()) {
+                                    showWebDavConfigEditorDialog = true
+                                    model.changeIsWebDav(false)
+                                    Toast.makeText(applicationContext, "请先进行WebDav配置!", Toast.LENGTH_SHORT).show()
+                                    return@SwitchItem
+                                }
+                                if (it) {
+                                    isWebDavWaiting = true
+                                    model.initWebDav { test, msg ->
+                                        KToastUtils.show(applicationContext, msg)
+                                        isWebDavWaiting = false
+                                        if (test) {
+                                            model.changeIsWebDav(true)
+                                            return@initWebDav
                                         }
-                                        if (intTimedExit < 0 || intFreeExit < 0) {
-                                            KToastUtils.show(applicationContext, "请输入正确的分钟数")
-                                            return@FMessageDialog
-                                        }
-                                        KToastUtils.show(applicationContext, "设置成功, 下次启动生效")
-                                        model.setTimedExitValue("[$timedExit, $freeExit]")
-                                    }
-                                ) {
-                                    Column {
-                                        FCard(
-                                            border = FCardBorder(borderWidth = 1.0.dp),
-                                            content = {
-                                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                                    Text(
-                                                        modifier = Modifier.padding(horizontal = 12.dp),
-                                                        text = "运行退出",
-                                                    )
-                                                    BasicTextField(
-                                                        modifier = Modifier
-                                                            .weight(1f)
-                                                            .padding(vertical = 12.dp),
-                                                        value = timedExit,
-                                                        maxLines = 1,
-                                                        singleLine = true,
-                                                        textStyle = MaterialTheme.typography.body1,
-                                                        decorationBox = { innerTextField ->
-                                                            if (timedExit.isEmpty()) Text(
-                                                                text = "运行超过指定时间",
-                                                                style = MaterialTheme.typography.body1.copy(
-                                                                    color = Color(0xFF999999)
-                                                                ),
-                                                            )
-                                                            innerTextField.invoke() // 必须调用这行哦
-                                                        },
-                                                        onValueChange = {
-                                                            timedExit = it
-                                                        },
-                                                    )
-                                                    Text(
-                                                        modifier = Modifier.padding(horizontal = 12.dp),
-                                                        text = "分钟",
-                                                    )
-                                                }
-                                            },
-                                        )
-                                        Spacer(modifier = Modifier.padding(vertical = 4.dp))
-                                        FCard(
-                                            border = FCardBorder(borderWidth = 1.0.dp),
-                                            content = {
-                                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                                    Text(
-                                                        modifier = Modifier.padding(horizontal = 12.dp),
-                                                        text = "空闲退出",
-                                                    )
-                                                    BasicTextField(
-                                                        modifier = Modifier
-                                                            .weight(1f)
-                                                            .padding(vertical = 12.dp),
-                                                        value = freeExit,
-                                                        maxLines = 1,
-                                                        singleLine = true,
-                                                        textStyle = MaterialTheme.typography.body1,
-                                                        decorationBox = { innerTextField ->
-                                                            if (freeExit.isEmpty()) Text(
-                                                                text = "空闲超过指定时间",
-                                                                style = MaterialTheme.typography.body1.copy(
-                                                                    color = Color(0xFF999999)
-                                                                ),
-                                                            )
-                                                            innerTextField.invoke() // 必须调用这行哦
-                                                        },
-                                                        onValueChange = {
-                                                            freeExit = it
-                                                        },
-                                                    )
-                                                    Text(
-                                                        modifier = Modifier.padding(horizontal = 12.dp),
-                                                        text = "分钟",
-                                                    )
-                                                }
-                                            },
-                                        )
+                                        model.changeIsWebDav(false)
                                     }
                                 }
-                            }
-                            SwitchItem(
-                                text = "定时退出",
-                                subtext = "点击设置退出时间",
-                                checked = model.isTimedExit.observeAsState(false),
-                                onClick = {
-                                    showTimedExitSettingDialog = true
-                                },
-                                onCheckedChange = {
-                                    model.changeIsTimeExit(it)
-                                    showRestartAppDialog = true
-                                },
-                            )
-                        }
-                        BoxWithConstraints { // 限制重构作用域
-                            // 去插件化提示
-                            var showDisablePluginDialog by remember { mutableStateOf(false) }
-                            if (showDisablePluginDialog) {
-                                FMessageDialog(
-                                    title = "提示",
-                                    confirm = "确定",
-                                    onlyConfirm = true,
-                                    onConfirm = {
-                                        showDisablePluginDialog = false
-                                    },
-                                    content = {
-                                        Text(
-                                            text = "开启该项后可避免因模块引起的抖音大部分崩溃问题, 抖音内部关于模块设置页的跳转都将被取消, 只能通过安装模块app进入模块设置",
-                                            style = MaterialTheme.typography.body1,
-                                        )
-                                    },
-                                )
-                            }
-
-                            SwitchItem(
-                                text = "去插件化",
-                                subtext = "去掉抖音内部设置，可避免大部分闪退，提高稳定性",
-                                checked = model.isDisablePlugin.observeAsState(false),
-                                onClick = {
-
-                                },
-                                onCheckedChange = {
-                                    model.changeIsDisablePlugin(it)
-                                    showRestartAppDialog = true
-                                    if (it) {
-                                        showDisablePluginDialog = true
-                                    }
-                                },
-                            )
-                        }
+                            },
+                        )
                     }
-                },
-            )
-        }
+                    BoxWithConstraints { // 限制重构作用域
+                        // 定时退出
+                        var showTimedExitSettingDialog by remember { mutableStateOf(false) }
+                        if (showTimedExitSettingDialog) {
+                            val times = model.timedExitValue.value?.parseJSONArray()
+                            var timedExit by remember { mutableStateOf("${times?.getIntOrDefault(0, 10) ?: 10}") }
+                            var freeExit by remember { mutableStateOf("${times?.getIntOrDefault(1, 3) ?: 3}") }
+
+                            KToastUtils.show(applicationContext, "低于3分钟将不执行~")
+                            FMessageDialog(
+                                title = "定时退出时间设置",
+                                cancel = "取消",
+                                confirm = "确定",
+                                onCancel = {
+                                    showTimedExitSettingDialog = false
+                                },
+                                onConfirm = {
+                                    showTimedExitSettingDialog = false
+                                    val intTimedExit = timedExit.toIntOrNull()
+                                    val intFreeExit = freeExit.toIntOrNull()
+                                    if (intTimedExit == null || intFreeExit == null) {
+                                        KToastUtils.show(applicationContext, "请输入正确的分钟数")
+                                        return@FMessageDialog
+                                    }
+                                    if (intTimedExit < 0 || intFreeExit < 0) {
+                                        KToastUtils.show(applicationContext, "请输入正确的分钟数")
+                                        return@FMessageDialog
+                                    }
+                                    KToastUtils.show(applicationContext, "设置成功, 下次启动生效")
+                                    model.setTimedExitValue("[$timedExit, $freeExit]")
+                                }
+                            ) {
+                                Column {
+                                    FCard(
+                                        border = FCardBorder(borderWidth = 1.0.dp),
+                                        content = {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                    modifier = Modifier.padding(horizontal = 12.dp),
+                                                    text = "运行退出",
+                                                )
+                                                BasicTextField(
+                                                    modifier = Modifier
+                                                        .weight(1f)
+                                                        .padding(vertical = 12.dp),
+                                                    value = timedExit,
+                                                    maxLines = 1,
+                                                    singleLine = true,
+                                                    textStyle = MaterialTheme.typography.body1,
+                                                    decorationBox = { innerTextField ->
+                                                        if (timedExit.isEmpty()) Text(
+                                                            text = "运行超过指定时间",
+                                                            style = MaterialTheme.typography.body1.copy(
+                                                                color = Color(0xFF999999)
+                                                            ),
+                                                        )
+                                                        innerTextField.invoke() // 必须调用这行哦
+                                                    },
+                                                    onValueChange = {
+                                                        timedExit = it
+                                                    },
+                                                )
+                                                Text(
+                                                    modifier = Modifier.padding(horizontal = 12.dp),
+                                                    text = "分钟",
+                                                )
+                                            }
+                                        },
+                                    )
+                                    Spacer(modifier = Modifier.padding(vertical = 4.dp))
+                                    FCard(
+                                        border = FCardBorder(borderWidth = 1.0.dp),
+                                        content = {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                    modifier = Modifier.padding(horizontal = 12.dp),
+                                                    text = "空闲退出",
+                                                )
+                                                BasicTextField(
+                                                    modifier = Modifier
+                                                        .weight(1f)
+                                                        .padding(vertical = 12.dp),
+                                                    value = freeExit,
+                                                    maxLines = 1,
+                                                    singleLine = true,
+                                                    textStyle = MaterialTheme.typography.body1,
+                                                    decorationBox = { innerTextField ->
+                                                        if (freeExit.isEmpty()) Text(
+                                                            text = "空闲超过指定时间",
+                                                            style = MaterialTheme.typography.body1.copy(
+                                                                color = Color(0xFF999999)
+                                                            ),
+                                                        )
+                                                        innerTextField.invoke() // 必须调用这行哦
+                                                    },
+                                                    onValueChange = {
+                                                        freeExit = it
+                                                    },
+                                                )
+                                                Text(
+                                                    modifier = Modifier.padding(horizontal = 12.dp),
+                                                    text = "分钟",
+                                                )
+                                            }
+                                        },
+                                    )
+                                }
+                            }
+                        }
+                        SwitchItem(
+                            text = "定时退出",
+                            subtext = "点击设置退出时间",
+                            checked = model.isTimedExit.observeAsState(false),
+                            onClick = {
+                                showTimedExitSettingDialog = true
+                            },
+                            onCheckedChange = {
+                                model.changeIsTimeExit(it)
+                                showRestartAppDialog = true
+                            },
+                        )
+                    }
+                    BoxWithConstraints { // 限制重构作用域
+                        // 去插件化提示
+                        var showDisablePluginDialog by remember { mutableStateOf(false) }
+                        if (showDisablePluginDialog) {
+                            FCountDownMessageDialog(
+                                title = "提示",
+                                confirm = "确定",
+                                waitingText = "请稍后 (%d)",
+                                onlyConfirm = true,
+                                onConfirm = {
+                                    showDisablePluginDialog = false
+                                },
+                                content = {
+                                    Text(
+                                        text = buildAnnotatedString {
+                                            append("开启该项后可避免因模块引起的抖音大部分崩溃问题, 抖音内部关于模块设置页的跳转都将被取消, 只能通过")
+                                            withStyle(SpanStyle(color = Color.Red)) {
+                                                append("单独安装模块app")
+                                            }
+                                            append("进入模块设置, ")
+                                            withStyle(SpanStyle(color = Color.Red)) {
+                                                append("该操作并非关闭模块, 如需关闭请前往对应框架。")
+                                            }
+                                        },
+                                        style = MaterialTheme.typography.body1,
+                                    )
+                                },
+                            )
+                        }
+
+                        SwitchItem(
+                            text = "去插件化",
+                            subtext = "去掉抖音内部设置，可避免大部分闪退，提高稳定性",
+                            checked = model.isDisablePlugin.observeAsState(false),
+                            onClick = {
+
+                            },
+                            onCheckedChange = {
+                                model.changeIsDisablePlugin(it)
+                                showRestartAppDialog = true
+                                if (it) {
+                                    showDisablePluginDialog = true
+                                }
+                            },
+                        )
+                    }
+                }
+            },
+        )
     }
 
     @OptIn(ExperimentalFoundationApi::class)

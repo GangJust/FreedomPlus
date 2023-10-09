@@ -1,42 +1,48 @@
 package com.freegang.fplus.activity
 
-import android.os.Build
+import android.content.Intent
 import android.os.Bundle
-import android.widget.TextView
+import android.os.Process
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import com.freegang.fplus.FreedomTheme
+import com.freegang.fplus.R
 import com.freegang.fplus.Themes
 import com.freegang.fplus.resource.StringRes
-import com.freegang.ktutils.app.appLabelName
-import com.freegang.ktutils.app.appVersionCode
-import com.freegang.ktutils.app.appVersionName
-import com.freegang.ktutils.log.KLogCat
+import com.freegang.ktutils.app.activeActivity
+import com.freegang.ui.component.ScrollableContainer
+import kotlin.system.exitProcess
 
 class ErrorActivity : ComponentActivity() {
-    private var mMessage: String? = null
-    private var mStackTrace: String? = null
+    private var errMessage: String? = null
 
-
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
-    fun TopBarView() {
+    private fun TopBarView() {
         TopAppBar(
-            modifier = Modifier.padding(vertical = 24.dp),
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp),
             elevation = 0.dp,
             backgroundColor = Themes.nowColors.colors.background,
             content = {
@@ -52,6 +58,23 @@ class ErrorActivity : ComponentActivity() {
                             style = Themes.nowTypography.subtitle2,
                         )
                     }
+                    Icon(
+                        painter = painterResource(R.drawable.ic_acute),
+                        contentDescription = "分享",
+                        tint = Themes.nowColors.icon,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .combinedClickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() },
+                                onClick = {
+                                    shareErrorMessage(errMessage!!)
+                                },
+                                onLongClick = {
+                                    shareErrorMessage(errMessage!!)
+                                }
+                            )
+                    )
                 }
             },
         )
@@ -59,16 +82,7 @@ class ErrorActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        mMessage = intent.getStringExtra("message")
-        mStackTrace = intent.getStringExtra("stack_trace")
-
-        val errorText = "发生错误: ${mMessage}\n" +
-                "出现时间: ${KLogCat.dateTimeFormat.format(System.currentTimeMillis())}\n" +
-                "设备信息: ${Build.MANUFACTURER} ${Build.MODEL}\n" +
-                "系统版本: Android ${Build.VERSION.RELEASE} (${Build.VERSION.SDK_INT})\n" +
-                "应用版本: ${application.appLabelName} ${application.appVersionName} (${application.appVersionCode})\n" +
-                "堆栈信息: \n${mStackTrace}"
+        errMessage = intent.getStringExtra("errMessage") ?: return finish()
 
         setContent {
             FreedomTheme(
@@ -78,28 +92,21 @@ class ErrorActivity : ComponentActivity() {
                 followSystem = false,
                 content = {
                     Scaffold(
-                        modifier = Modifier.padding(horizontal = 24.dp),
                         topBar = { TopBarView() },
                         content = {
                             BoxWithConstraints(
                                 modifier = Modifier.padding(it),
                                 content = {
-                                    LazyColumn(
-                                        content = {
-                                            item {
-                                                AndroidView(
-                                                    modifier = Modifier.fillMaxSize(),
-                                                    factory = { context ->
-                                                        TextView(context).apply {
-                                                            text = errorText
-                                                            textSize = Themes.nowTypography.body2.fontSize.value
-                                                            setTextIsSelectable(true)
-                                                        }
-                                                    },
-                                                )
-                                            }
-                                        },
-                                    )
+                                    ScrollableContainer {
+                                        BasicTextField(
+                                            value = errMessage!!,
+                                            textStyle = Themes.nowTypography.body2,
+                                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                            readOnly = true,
+                                            onValueChange = { /*nothing*/ },
+                                            modifier = Modifier.padding(horizontal = 16.dp)
+                                        )
+                                    }
                                 },
                             )
                         },
@@ -107,5 +114,19 @@ class ErrorActivity : ComponentActivity() {
                 }
             )
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        application!!.activeActivity?.finishAffinity()
+        Process.killProcess(Process.myPid())
+        exitProcess(1)
+    }
+
+    private fun shareErrorMessage(text: String) {
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = "text/plain"
+        intent.putExtra(Intent.EXTRA_TEXT, text)
+        startActivity(Intent.createChooser(intent, "错误信息"))
     }
 }
