@@ -6,20 +6,25 @@ import android.os.Bundle
 import android.widget.TextView
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
-import com.freegang.ktutils.app.activeActivity
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.app.isDarkMode
+import com.freegang.ktutils.log.KLogCat
+import com.freegang.ktutils.view.postRunning
 import com.freegang.ktutils.view.traverse
 import com.freegang.ui.activity.FreedomSettingActivity
 import com.freegang.xpler.core.EmptyHook
 import com.freegang.xpler.core.OnAfter
+import com.freegang.xpler.core.hookBlockRunning
 import com.freegang.xpler.core.thisActivity
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import kotlinx.coroutines.delay
 import xyz.junerver.ssktx.buildSpannableString
 
 class HDouYinSettingNewVersionActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHook>(lpparam) {
+    companion object {
+        const val TAG = "HDouYinSettingNewVersionActivity"
+    }
+
     override fun setTargetClass(): Class<*> {
         return findClass("com.ss.android.ugc.aweme.setting.ui.DouYinSettingNewVersionActivity")
     }
@@ -28,25 +33,25 @@ class HDouYinSettingNewVersionActivity(lpparam: XC_LoadPackage.LoadPackageParam)
 
     @OnAfter("onCreate")
     fun onCreate(params: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {
-        if (config.isDisablePlugin) return //去插件化
-        hookBlock(params) {
-            launch {
-                delay(200L)
-                thisActivity.contentView.traverse { view ->
-                    if (view is TextView) {
-                        if ("${view.text}".contains("抖音 version")) {
-                            view.buildSpannableString {
-                                addText("${view.text}")
+        //去插件化
+        if (config.isDisablePlugin) return
+        hookBlockRunning(params) {
+            thisActivity.contentView.postRunning {
+                traverse {
+                    if (this is TextView) {
+                        if ("$text".contains("抖音 version")) {
+                            buildSpannableString {
+                                addText("$text")
                                 addText(" (Freedom+)") {
-                                    onClick(useUnderLine = false) {
-                                        val intent = Intent(view.context, FreedomSettingActivity::class.java)
-                                        intent.putExtra("isDark", view.context.isDarkMode)
+                                    onClick(useUnderLine = false) { v ->
+                                        val intent = Intent(v.context, FreedomSettingActivity::class.java)
+                                        intent.putExtra("isDark", context.isDarkMode)
                                         val options = ActivityOptions.makeCustomAnimation(
-                                            activeActivity,
+                                            thisActivity,
                                             android.R.anim.slide_in_left,
                                             android.R.anim.slide_out_right
                                         )
-                                        it.context.startActivity(intent, options.toBundle())
+                                        v.context.startActivity(intent, options.toBundle())
                                     }
                                 }
                             }
@@ -54,6 +59,8 @@ class HDouYinSettingNewVersionActivity(lpparam: XC_LoadPackage.LoadPackageParam)
                     }
                 }
             }
+        }.onFailure {
+            KLogCat.e(TAG, it)
         }
     }
 }

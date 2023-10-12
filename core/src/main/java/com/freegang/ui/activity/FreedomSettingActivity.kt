@@ -129,11 +129,10 @@ class FreedomSettingActivity : BaseActivity() {
                 BoxWithConstraints {
                     var showLogDialog by remember { mutableStateOf(false) }
                     if (showLogDialog) {
-                        FCountDownMessageDialog(
+                        FMessageDialog(
                             title = "类日志",
                             cancel = "取消",
                             confirm = "清除",
-                            waitingText = "请稍后 (%d)",
                             onCancel = {
                                 showLogDialog = false
                             },
@@ -408,7 +407,7 @@ class FreedomSettingActivity : BaseActivity() {
                         // 加号按钮响应状态
                         var showIsDisablePhotoDialog by remember { mutableStateOf(false) }
                         if (showIsDisablePhotoDialog) {
-                            var isDisablePhotoButton by remember { mutableStateOf(model.isDisablePhotoButton.value ?: true) }
+                            var radioIndex by remember { mutableStateOf(model.photoButtonType.value ?: 2) }
                             FMessageDialog(
                                 title = "请选择拍摄按钮响应模式",
                                 confirm = "更改",
@@ -418,10 +417,23 @@ class FreedomSettingActivity : BaseActivity() {
                                     Column {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             RadioButton(
-                                                selected = isDisablePhotoButton,
+                                                selected = radioIndex == 0,
                                                 onClick = {
-                                                    isDisablePhotoButton = true
-                                                    model.changeIsDisablePhotoButton(isDisablePhotoButton)
+                                                    radioIndex = 0
+                                                    model.changePhotoButtonType(radioIndex)
+                                                },
+                                            )
+                                            Text(
+                                                text = "允许拍摄",
+                                                style = MaterialTheme.typography.body1,
+                                            )
+                                        }
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            RadioButton(
+                                                selected = radioIndex == 1,
+                                                onClick = {
+                                                    radioIndex = 1
+                                                    model.changePhotoButtonType(radioIndex)
                                                 },
                                             )
                                             Text(
@@ -431,14 +443,14 @@ class FreedomSettingActivity : BaseActivity() {
                                         }
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             RadioButton(
-                                                selected = !isDisablePhotoButton,
+                                                selected = radioIndex == 2,
                                                 onClick = {
-                                                    isDisablePhotoButton = false
-                                                    model.changeIsDisablePhotoButton(isDisablePhotoButton)
+                                                    radioIndex = 2
+                                                    model.changePhotoButtonType(radioIndex)
                                                 },
                                             )
                                             Text(
-                                                text = "允许拍摄",
+                                                text = "移除按钮",
                                                 style = MaterialTheme.typography.body1,
                                             )
                                         }
@@ -455,6 +467,7 @@ class FreedomSettingActivity : BaseActivity() {
                             },
                             onCheckedChange = {
                                 model.changeIsHidePhotoButton(it)
+                                showRestartAppDialog = true
                             }
                         )
                     }
@@ -556,7 +569,13 @@ class FreedomSettingActivity : BaseActivity() {
                                 Text(
                                     text = buildAnnotatedString {
                                         append("支持过滤的视频类型：")
-                                        append(buildFilterTypeStyle(value = model.videoFilterTypes.joinToString("，")))
+                                        append(
+                                            buildFilterTypeStyle(
+                                                value = model.videoFilterTypes.joinToString(
+                                                    "，"
+                                                )
+                                            )
+                                        )
                                         append("\n支持文案关键字过滤视频，如视频文案中出现 “优惠,买,#生日” 等文本字样。")
                                     },
                                     style = MaterialTheme.typography.body1,
@@ -580,7 +599,11 @@ class FreedomSettingActivity : BaseActivity() {
                         // 清爽模式响应模式
                         var showLongPressModeDialog by remember { mutableStateOf(false) }
                         if (showLongPressModeDialog) {
-                            var isLongPressMode by remember { mutableStateOf(model.isLongPressMode.value ?: true) }
+                            var isLongPressMode by remember {
+                                mutableStateOf(
+                                    model.isLongPressMode.value ?: true
+                                )
+                            }
                             FMessageDialog(
                                 title = "请选择响应模式",
                                 confirm = "更改",
@@ -630,11 +653,29 @@ class FreedomSettingActivity : BaseActivity() {
                             }
                         )
                     }
+                    BoxWithConstraints {
+                        SwitchItem(
+                            text = "全屏沉浸",
+                            subtext = "体验全屏沉浸式播放, 但会造成视频剪辑拉伸",
+                            checked = model.isImmersive.observeAsState(false),
+                            onClick = {
+
+                            },
+                            onCheckedChange = {
+                                model.changeIsImmersive(it)
+                                showRestartAppDialog = true
+                            }
+                        )
+                    }
                     BoxWithConstraints { // 限制重构作用域
                         // 隐藏Tab关键字编辑
                         var showHideTabKeywordsEditorDialog by remember { mutableStateOf(false) }
                         if (showHideTabKeywordsEditorDialog) {
-                            var hideTabKeywords by remember { mutableStateOf(model.hideTabKeywords.value ?: "") }
+                            var hideTabKeywords by remember {
+                                mutableStateOf(
+                                    model.hideTabKeywords.value ?: ""
+                                )
+                            }
                             FMessageDialog(
                                 title = "请输入关键字, 用逗号分开",
                                 cancel = "取消",
@@ -744,9 +785,13 @@ class FreedomSettingActivity : BaseActivity() {
                                                             interactionSource = remember { MutableInteractionSource() },
                                                             onClick = {
                                                                 if (webDavHistory.value.isEmpty()) {
-                                                                    KToastUtils.show(application, "没有WebDav历史")
+                                                                    KToastUtils.show(
+                                                                        application,
+                                                                        "没有WebDav历史"
+                                                                    )
                                                                 }
-                                                                showWebDavHistoryMenu = webDavHistory.value.isNotEmpty()
+                                                                showWebDavHistoryMenu =
+                                                                    webDavHistory.value.isNotEmpty()
                                                             },
                                                         ),
                                                 )
@@ -778,7 +823,10 @@ class FreedomSettingActivity : BaseActivity() {
                                                                         )
                                                                         showWebDavHistoryMenu =
                                                                             webDavHistory.value.isNotEmpty()
-                                                                        KToastUtils.show(application, "删除成功")
+                                                                        KToastUtils.show(
+                                                                            application,
+                                                                            "删除成功"
+                                                                        )
                                                                     }
                                                                 )
                                                                 .fillMaxWidth()
@@ -912,7 +960,11 @@ class FreedomSettingActivity : BaseActivity() {
                                 if (it && !model.hasWebDavConfig()) {
                                     showWebDavConfigEditorDialog = true
                                     model.changeIsWebDav(false)
-                                    Toast.makeText(applicationContext, "请先进行WebDav配置!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        applicationContext,
+                                        "请先进行WebDav配置!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                     return@SwitchItem
                                 }
                                 if (it) {
@@ -935,8 +987,26 @@ class FreedomSettingActivity : BaseActivity() {
                         var showTimedExitSettingDialog by remember { mutableStateOf(false) }
                         if (showTimedExitSettingDialog) {
                             val times = model.timedExitValue.value?.parseJSONArray()
-                            var timedExit by remember { mutableStateOf("${times?.getIntOrDefault(0, 10) ?: 10}") }
-                            var freeExit by remember { mutableStateOf("${times?.getIntOrDefault(1, 3) ?: 3}") }
+                            var timedExit by remember {
+                                mutableStateOf(
+                                    "${
+                                        times?.getIntOrDefault(
+                                            0,
+                                            10
+                                        ) ?: 10
+                                    }"
+                                )
+                            }
+                            var freeExit by remember {
+                                mutableStateOf(
+                                    "${
+                                        times?.getIntOrDefault(
+                                            1,
+                                            3
+                                        ) ?: 3
+                                    }"
+                                )
+                            }
 
                             KToastUtils.show(applicationContext, "低于3分钟将不执行~")
                             FMessageDialog(
@@ -1060,6 +1130,7 @@ class FreedomSettingActivity : BaseActivity() {
                                 title = "提示",
                                 confirm = "确定",
                                 waitingText = "请稍后 (%d)",
+                                seconds = 10,
                                 onlyConfirm = true,
                                 onConfirm = {
                                     showDisablePluginDialog = false
@@ -1067,14 +1138,24 @@ class FreedomSettingActivity : BaseActivity() {
                                 content = {
                                     Text(
                                         text = buildAnnotatedString {
-                                            append("开启该项后可避免因模块引起的抖音大部分崩溃问题, 抖音内部关于模块设置页的跳转都将被取消, 只能通过")
+                                            append("开启该项后只能通过")
                                             withStyle(SpanStyle(color = Color.Red)) {
                                                 append("单独安装模块app")
                                             }
-                                            append("进入模块设置, ")
+                                            append("进入模块设置。如果模块生效后")
                                             withStyle(SpanStyle(color = Color.Red)) {
-                                                append("该操作并非关闭模块, 如需关闭请前往对应框架。")
+                                                append("无法打开抖音")
                                             }
+                                            append("或者")
+                                            withStyle(SpanStyle(color = Color.Red)) {
+                                                append("出现黑屏")
+                                            }
+                                            append(", 可以尝试开启该选项。开启后, ")
+                                            withStyle(SpanStyle(color = Color.Red)) {
+                                                append("模块功能不会丢失")
+                                            }
+                                            append(", 区别在于无法在抖音内部直接调整模块设置。")
+                                            append("如需关闭模块, 请前往对应框架或者使用官方版本。")
                                         },
                                         style = MaterialTheme.typography.body1,
                                     )
@@ -1208,19 +1289,5 @@ class FreedomSettingActivity : BaseActivity() {
         return HighlightStyleBuilder(value)
             .append(regex, Color.Red)
             .build()
-    }
-
-    private fun rewardByAlipay() {
-        try {
-            startActivity(
-                Intent(
-                    Intent.ACTION_VIEW,
-                    Uri.parse("alipays://platformapi/startapp?appId=09999988&actionType=toAccount&goBack=NO&amount=3.00&userId=2088022940366251&memo=呐，拿去吃辣条!")
-                )
-            )
-        } catch (e: Exception) {
-            // e.printStackTrace()
-            Toast.makeText(applicationContext, "谢谢，你未安装支付宝客户端", Toast.LENGTH_SHORT).show()
-        }
     }
 }

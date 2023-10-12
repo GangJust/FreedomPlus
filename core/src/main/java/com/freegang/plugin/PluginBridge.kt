@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.app.Instrumentation
 import android.content.ComponentName
-import com.freegang.ktutils.reflect.fields
 
 object PluginBridge {
     fun init(application: Application, stubActivity: Class<*>) {
@@ -60,15 +59,16 @@ object PluginBridge {
      * 在 Android 13 中会有一个[android.app.ApplicationPackageManager#getActivityInfo()]获取到ActivityInfo的操作(低版本不一样, 未作适配),
      * 这里需要再对其进行欺骗
      */
-    @SuppressLint("PrivateApi")
+    @SuppressLint("PrivateApi", "DiscouragedPrivateApi")
     private fun hookPackageManager(
         application: Application,
-        subActivityClass: Class<*>,
+        stubActivityClass: Class<*>,
     ) {
         try {
             // 获取到 ActivityThread 中的静态字段 sPackageManager 一个静态的 IPackageManager
             val atClazz = Class.forName("android.app.ActivityThread")
-            val sPackageManagerField = atClazz.fields("sPackageManager").first()
+            val sPackageManagerField = atClazz.getDeclaredField("sPackageManager")
+                .also { it.isAccessible = true }
             val sPackageManager = sPackageManagerField.get(null)
 
             //动态代理 IPackageManager
@@ -77,7 +77,7 @@ object PluginBridge {
                 if (method.name == "getActivityInfo") {
                     args?.forEachIndexed { index, _ ->
                         if (args[index] is ComponentName) {
-                            args[index] = ComponentName(application.packageName, subActivityClass.name)
+                            args[index] = ComponentName(application.packageName, stubActivityClass.name)
                         }
                     }
                 }

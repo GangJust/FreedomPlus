@@ -7,13 +7,16 @@ import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.TextView
 import androidx.core.view.isVisible
+import androidx.core.view.updatePadding
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
+import com.freegang.helper.DexkitBuilder
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.app.activeActivity
 import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.display.KDisplayUtils
+import com.freegang.ktutils.display.dip2px
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.other.KAutomationUtils
 import com.freegang.ktutils.reflect.fields
@@ -24,6 +27,7 @@ import com.freegang.ui.activity.FreedomSettingActivity
 import com.freegang.xpler.HookPackages
 import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.argsOrEmpty
+import com.freegang.xpler.core.hookBlockRunning
 import com.freegang.xpler.core.hookClass
 import com.freegang.xpler.core.thisView
 import com.freegang.xpler.core.thisViewGroup
@@ -39,6 +43,10 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlin.math.abs
 
 class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<VerticalViewPager>(lpparam) {
+    companion object {
+        const val TAG = "HVerticalViewPager"
+    }
+
     private val config get() = ConfigV1.get()
     private val screenSize get() = KDisplayUtils.screenSize()
 
@@ -58,7 +66,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
 
     @OnAfter("onInterceptTouchEvent")
     fun onInterceptTouchEvent(param: XC_MethodHook.MethodHookParam, event: MotionEvent) {
-        hookBlock(param) {
+        hookBlockRunning(param) {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     val adapter = thisObject.methodInvokeFirst("getAdapter") ?: return
@@ -97,6 +105,8 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                     }
                 }
             }
+        }.onFailure {
+            KLogCat.e(TAG, it)
         }
     }
 
@@ -149,7 +159,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                 }
             }
 
-        DouYinMain.videoPinchClazz?.runCatching {
+        DexkitBuilder.videoPinchClazz?.runCatching {
             lpparam.hookClass(this)
                 .methodAll {
                     onBefore {
@@ -169,31 +179,40 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
 
     private fun toggleView(view: View) {
         view.traverse {
-            if (it is PenetrateTouchRelativeLayout) {
-                if (config.isTranslucent) it.alpha = 0.5f
+            if (this is PenetrateTouchRelativeLayout) {
+                //透明度
+                if (config.isTranslucent) alpha = 0.5f
+
+                //清爽模式
                 if (config.isNeatMode) {
-                    it.isVisible = !config.neatModeState && !isLongPressFast
-                    it.isVisible = !config.neatModeState && !isLongPressFast && !isVideoPinch
+                    isVisible = !config.neatModeState && !isLongPressFast
+                    isVisible = !config.neatModeState && !isLongPressFast && !isVideoPinch
                 } else {
-                    it.isVisible = !isLongPressFast && !isVideoPinch
+                    isVisible = !isLongPressFast && !isVideoPinch
                 }
 
+                //受清爽模式影响的评论区
                 if (HDetailPageFragment.isComment) {
-                    it.isVisible = false
+                    isVisible = false
+                }
+
+                //全屏沉浸式视频信息垫高
+                if (config.isImmersive) {
+                    updatePadding(bottom = view.context.dip2px(58f))
                 }
             }
 
-            if (it is InteractStickerParent) {
-                it.isVisible = !isVideoPinch
-                if (config.isTranslucent) it.alpha = 0.5f
+            if (this is InteractStickerParent) {
+                isVisible = !isVideoPinch
+                if (config.isTranslucent) alpha = 0.5f
                 if (config.isNeatMode) {
-                    it.isVisible = !config.neatModeState && !isLongPressFast
-                    it.isVisible = !config.neatModeState && !isLongPressFast && !isVideoPinch
+                    isVisible = !config.neatModeState && !isLongPressFast
+                    isVisible = !config.neatModeState && !isLongPressFast && !isVideoPinch
                 } else {
-                    it.isVisible = !isLongPressFast && !isVideoPinch
+                    isVisible = !isLongPressFast && !isVideoPinch
                 }
                 if (HDetailPageFragment.isComment) {
-                    it.isVisible = false
+                    isVisible = false
                 }
             }
         }
@@ -361,21 +380,21 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
     ) {
         parent.traverse {
             var needClick = false
-            if (it is TextView) {
-                needClick = "${it.text}".containsNotEmpty(targetText)
-                needClick = needClick || "${it.hint}".containsNotEmpty(targetHint)
+            if (this is TextView) {
+                needClick = "$text".containsNotEmpty(targetText)
+                needClick = needClick || "$hint".containsNotEmpty(targetHint)
             }
-            needClick = needClick || "${it.contentDescription}".containsNotEmpty(targetContent)
-            needClick = needClick || (targetView?.isInstance(it) ?: false)
+            needClick = needClick || "${contentDescription}".containsNotEmpty(targetContent)
+            needClick = needClick || (targetView?.isInstance(this) ?: false)
             if (!needClick) return@traverse
 
             val location = IntArray(2) { 0 }
-            it.getLocationOnScreen(location)
+            getLocationOnScreen(location)
             if (location[1] > 0 && location[1] < screenSize.height) {
-                location[0] = location[0] + it.right / 2
-                location[1] = location[1] + it.bottom / 2
+                location[0] = location[0] + right / 2
+                location[1] = location[1] + bottom / 2
                 if (!KFastClickUtils.isFastDoubleClick(200)) {
-                    KAutomationUtils.simulateClickByView(it, location[0].toFloat(), location[1].toFloat())
+                    KAutomationUtils.simulateClickByView(this, location[0].toFloat(), location[1].toFloat())
                 }
             }
         }

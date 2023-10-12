@@ -32,6 +32,11 @@ object HookStatus {
      * 模块状态直接调用该方法进行判断
      */
     fun isExpModuleActive(context: Context): Boolean {
+        //是否安装太极
+        val installed = KAppUtils.isAppInstalled(context, "me.weishu.exp")
+        if (!installed) return false
+
+        //模块启用检测
         val resolver = context.contentResolver
         val uri = Uri.parse("content://me.weishu.exposed.CP/")
         var result: Bundle? = null

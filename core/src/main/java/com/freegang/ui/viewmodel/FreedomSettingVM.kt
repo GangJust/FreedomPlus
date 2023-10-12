@@ -58,8 +58,8 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     private var _isHidePhotoButton = MutableLiveData(false)
     val isDHidePhotoButton: LiveData<Boolean> = _isHidePhotoButton
 
-    private var _isDisablePhotoButton = MutableLiveData(false)
-    val isDisablePhotoButton: LiveData<Boolean> = _isDisablePhotoButton
+    private var _photoButtonType = MutableLiveData(2)
+    val photoButtonType: LiveData<Int> = _photoButtonType
 
     private var _isVideoFilter = MutableLiveData(false)
     val isVideoFilter: LiveData<Boolean> = _isVideoFilter
@@ -69,6 +69,9 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
 
     private var _isNeatMode = MutableLiveData(false)
     val isNeatMode: LiveData<Boolean> = _isNeatMode
+
+    private var _isImmersive = MutableLiveData(false)
+    val isImmersive: LiveData<Boolean> = _isImmersive
 
     private var _isLongPressMode = MutableLiveData(false)
     val isLongPressMode: LiveData<Boolean> = _isLongPressMode
@@ -124,14 +127,15 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
             changeIsEmoji(config.isEmoji)
             changeIsVibrate(config.isVibrate)
             changeIsTranslucent(config.isTranslucent)
-            changeIsNeatMode(config.isNeatMode)
             changeIsDisableDoubleLike(config.isDisableDoubleLike)
             changeIsLongtimeVideoToast(config.isLongtimeVideoToast)
             changeIsHidePhotoButton(config.isHidePhotoButton)
-            changeIsDisablePhotoButton(config.isDisablePhotoButton)
+            changePhotoButtonType(config.photoButtonType)
             changeIsVideoFilter(config.isVideoFilter)
             setVideoFilterKeywords(config.videoFilterKeywords)
+            changeIsNeatMode(config.isNeatMode)
             changeLongPressMode(config.longPressMode)
+            changeIsImmersive(config.isImmersive)
             changeIsHideTab(config.isHideTab)
             setHideTabKeywords(config.hideTabKeywords)
             changeIsWebDav(config.isWebDav)
@@ -198,9 +202,9 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     }
 
     // 禁止拍摄
-    fun changeIsDisablePhotoButton(value: Boolean) {
-        _isDisablePhotoButton.value = value
-        config.isDisablePhotoButton = value
+    fun changePhotoButtonType(value: Int) {
+        _photoButtonType.value = value
+        config.photoButtonType = value
     }
 
     val videoFilterTypes get() = config.videoFilterTypes
@@ -221,6 +225,12 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     fun changeIsNeatMode(value: Boolean) {
         _isNeatMode.value = value
         config.isNeatMode = value
+    }
+
+    // 全屏沉浸
+    fun changeIsImmersive(value: Boolean) {
+        _isImmersive.value = value
+        config.isImmersive = value
     }
 
     // 清爽模式弹窗响应模式
@@ -264,7 +274,11 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
                     webDav.createDirectory("Freedom")
                 }
                 if (!webDav.exists("数据目录，谨慎删除.txt", "Freedom")) {
-                    webDav.put("数据目录，谨慎删除.txt", "Freedom", bytes = "该目录为Freedom数据目录，请谨慎删除!!!".toByteArray())
+                    webDav.put(
+                        "数据目录，谨慎删除.txt",
+                        "Freedom",
+                        bytes = "该目录为Freedom数据目录，请谨慎删除!!!".toByteArray()
+                    )
                 }
                 block.invoke(true, "WebDav连接成功!")
             } catch (e: IOException) {

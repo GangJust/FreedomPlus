@@ -65,14 +65,17 @@
 -keep public class * extends androidx.**
 -keep public class * extends android.**
 
-# 关闭警告信息
--dontwarn android.content.res.*
+# 关闭警告信息 - Xposed
 -dontwarn de.robv.android.xposed.**
+-dontwarn android.content.res.XModuleResources
+-dontwarn android.content.res.XResources
 
-# 抖音
+# 关闭警告信息 - 抖音
 -dontwarn com.ss.android.ugc.aweme.**
 -dontwarn com.ss.ugc.aweme.**
 -dontwarn dmt.**
+
+# 关闭警告信息 - 其他
 -dontwarn org.bouncycastle.jsse.BCSSLParameters
 -dontwarn org.bouncycastle.jsse.BCSSLSocket
 -dontwarn org.bouncycastle.jsse.provider.BouncyCastleJsseProvider

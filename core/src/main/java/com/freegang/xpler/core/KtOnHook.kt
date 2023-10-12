@@ -1,5 +1,6 @@
 package com.freegang.xpler.core
 
+import com.freegang.ktutils.log.KLogCat
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedHelpers
@@ -183,7 +184,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
         return try {
             XposedHelpers.findClass(className, classLoader ?: lpparam.classLoader)
         } catch (e: Exception) {
-            // KLogCat.xposedLog(e)
+            KLogCat.e(this.javaClass.simpleName, e)
             NoneHook::class.java
         }
     }
@@ -389,61 +390,39 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     }
 
     /**
-     * 默认Hook目标类的所有成员方法调用, 为字段注入值
+     * 勾住所有普通方法
      */
     private fun defaultHookAllMethod() {
-
-        if (this@KtOnHook !is KtOnCallMethods) {
-            return
-        }
-
-        hookHelper?.methodAll {
-            onBefore {
-                callOnBeforeMethods(this)
-            }
-            onAfter {
-                thisObject ?: return@onAfter
-                callOnAfterMethods(this)
+        //所有普通方法
+        if (this@KtOnHook is CallMethods) {
+            hookHelper?.methodAll {
+                onBefore {
+                    callOnBeforeMethods(this)
+                }
+                onAfter {
+                    thisObject ?: return@onAfter
+                    callOnAfterMethods(this)
+                }
             }
         }
     }
 
     /**
-     * 默认Hook目标类的所有构造方法调用, 为字段注入值
+     * 勾住所有构造方法
      */
     private fun defaultHookAllConstructor() {
-
-        if (this@KtOnHook !is KtOnCallMethods) {
-            return
-        }
-
-        hookHelper?.constructorsAll {
-            onBefore {
-                callOnBeforeConstructors(this)
+        //所有构造方法
+        if (this@KtOnHook is CallConstructors) {
+            hookHelper?.constructorsAll {
+                onBefore {
+                    callOnBeforeConstructors(this)
+                }
+                onAfter {
+                    thisObject ?: return@onAfter
+                    callOnAfterConstructors(this)
+                }
             }
-            onAfter {
-                callOnAfterConstructors(this)
-            }
         }
-    }
-
-    /**
-     * 子类便捷生成修改指定hook方法, 模板代码
-     * 该方法被复写不会发生任何hook调用
-     *
-     * @param param XC_MethodHook.MethodHookParam
-     */
-    open fun hookMethod(param: XC_MethodHook.MethodHookParam) {
-
-    }
-
-    /**
-     * 子类便捷使用带param参数的方法
-     * @param param XC_MethodHook.MethodHookParam
-     * @param block XC_MethodHook.MethodHookParam.()
-     */
-    inline fun hookBlock(param: XC_MethodHook.MethodHookParam, block: XC_MethodHook.MethodHookParam.() -> Unit) {
-        block.invoke(param)
     }
 }
 

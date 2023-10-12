@@ -385,6 +385,58 @@ fun KLogCat.Companion.xposedLog(log: Throwable, xposed: Boolean = true) {
     }
 }
 
+/**
+ * 对任意对象, 打印Xposed日志
+ */
+fun Any.xposedLog() {
+    if (this is Map<*, *>) {
+        XposedBridge.log("映射对象: $this -- 内容: ${this.map { "key=${it.key},value=${it.value}" }.joinToString(", ")}")
+    }
+    if (this is Collection<*>) {
+        XposedBridge.log("集合对象: $this -- 内容: ${this.joinToString(", ")}")
+        return
+    }
+    if (this is Array<*>) {
+        XposedBridge.log("数组对象: $this -- 内容: ${this.joinToString(", ")}")
+        return
+    }
+    XposedBridge.log("$this")
+}
+
+/**
+ * 对任意对象, 打印KLogCat日志
+ */
+fun Any.logd(save: Boolean = false) {
+    if (save) {
+        KLogCat.openStorage()
+    } else {
+        KLogCat.closeStorage()
+    }
+
+    if (this is Map<*, *>) {
+        KLogCat.d(
+            "$this",
+            this.map { "key=${it.key},value=${it.value}" }.joinToString(", "),
+        )
+        return
+    }
+    if (this is Collection<*>) {
+        KLogCat.d(
+            "$this",
+            this.joinToString(", "),
+        )
+        return
+    }
+    if (this is Array<*>) {
+        KLogCat.d(
+            "$this",
+            this.joinToString(", ")
+        )
+        return
+    }
+    KLogCat.d("$this")
+    KLogCat.closeStorage()
+}
 
 /**
  * 打印被Hook的某个方法中的堆栈信息
@@ -469,3 +521,17 @@ val XC_MethodHook.MethodHookParam.argsOrEmpty: Array<Any>
     get() {
         return args ?: emptyArray()
     }
+
+/**
+ * DSL特性便捷使用带param参数的方法
+ * @param param XC_MethodHook.MethodHookParam
+ * @param block XC_MethodHook.MethodHookParam.()
+ */
+inline fun <R> hookBlockRunning(
+    param: XC_MethodHook.MethodHookParam,
+    block: XC_MethodHook.MethodHookParam.() -> R,
+): Result<R> {
+    return runCatching {
+        block.invoke(param)
+    }
+}

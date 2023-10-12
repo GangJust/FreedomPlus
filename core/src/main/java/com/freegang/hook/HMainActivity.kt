@@ -18,6 +18,7 @@ import com.freegang.ktutils.app.appVersionName
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.color.KColorUtils
+import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.methodInvokeFirst
 import com.freegang.ktutils.view.KViewUtils
 import com.freegang.ktutils.view.findViewsByType
@@ -27,6 +28,7 @@ import com.freegang.xpler.R
 import com.freegang.xpler.core.KtXposedHelpers
 import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.OnBefore
+import com.freegang.xpler.core.hookBlockRunning
 import com.freegang.xpler.core.thisActivity
 import com.freegang.xpler.core.thisContext
 import com.freegang.xpler.databinding.SideFreedomSettingBinding
@@ -38,31 +40,40 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlinx.coroutines.delay
 
 class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainActivity>(lpparam) {
+    companion object {
+        const val TAG = "HMainActivity"
+    }
+
     private val config get() = ConfigV1.get()
     private val clipboardLogic = ClipboardLogic(this)
 
     @OnAfter("onCreate")
     fun onCreate(params: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {
-        hookBlock(params) {
+        hookBlockRunning(params) {
             DouYinMain.timedExitCountDown?.restart()
             showToast(thisContext, "Freedom+ Attach!")
+        }.onFailure {
+            KLogCat.e(TAG, it)
         }
     }
 
     @OnAfter("onResume")
     fun onResume(params: XC_MethodHook.MethodHookParam) {
-        hookBlock(params) {
-            changeViewAlpha(thisActivity.contentView)
-            setFreedomSetting(thisActivity)
+        hookBlockRunning(params) {
+            //setFreedomSetting(thisActivity)
             addClipboardListener(thisActivity)
+        }.onFailure {
+            KLogCat.e(TAG, it)
         }
     }
 
     @OnBefore("onPause")
     fun onPause(params: XC_MethodHook.MethodHookParam) {
-        hookBlock(params) {
+        hookBlockRunning(params) {
             saveConfig(thisContext)
             clipboardLogic.removeClipboardListener(thisContext)
+        }.onFailure {
+            KLogCat.e(TAG, it)
         }
     }
 
@@ -89,20 +100,22 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
     }
 
     // Freedom设置
+    @Deprecated("淘汰区域，删除倒计时中")
     private fun setFreedomSetting(activity: Activity) {
         if (config.isDisablePlugin) return // 去插件化
         launch {
             delay(500L)
             val clazz = findClass("com.ss.android.ugc.aweme.homepage.ui.TopLeftFrameLayout") as Class<ViewGroup>
             val view = KViewUtils.findViews(activity.contentView, clazz).firstOrNull() ?: return@launch
-            view.traverse { child ->
-                val onClickListener = KViewUtils.getOnClickListener(child) ?: return@traverse
-                child.setOnClickListener {
+            view.traverse { ->
+                val onClickListener = KViewUtils.getOnClickListener(this) ?: return@traverse
+                setOnClickListener {
                     onClickListener.onClick(it)
                     launch {
                         delay(200)
                         val contentView = activity.contentView
-                        val v = contentView.findViewsByType(SideBarNestedScrollView::class.java).firstOrNull() ?: return@launch
+                        val v = contentView.findViewsByType(SideBarNestedScrollView::class.java).firstOrNull()
+                            ?: return@launch
 
                         val sideRootView = v.children.first() as ViewGroup
                         if (sideRootView.children.last().contentDescription == "扩展功能") return@launch
@@ -116,23 +129,19 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
 
                         val backgroundRes: Int
                         val iconColorRes: Int
-                        val dividerColorRes: Int
                         val textColorRes: Int
                         if (!isDark) {
                             backgroundRes = R.drawable.side_item_background_night
                             iconColorRes = R.drawable.ic_freedom_night
-                            dividerColorRes = Color.parseColor("#14FFFFFF")
                             textColorRes = Color.parseColor("#E6FFFFFF")
                         } else {
                             backgroundRes = R.drawable.dialog_background
                             iconColorRes = R.drawable.ic_freedom
-                            dividerColorRes = Color.parseColor("#1F161823")
                             textColorRes = Color.parseColor("#FF161823")
                         }
 
                         binding.freedomSettingContainer.background = KtXposedHelpers.getDrawable(backgroundRes)
                         binding.freedomSettingText.setTextColor(textColorRes)
-                        binding.freedomSettingDivider.setBackgroundColor(dividerColorRes)
                         binding.freedomSettingIcon.background = KtXposedHelpers.getDrawable(iconColorRes)
                         binding.freedomSettingTitle.text = String.format("%s", "Freedom+")
                         binding.freedomSettingTitle.setTextColor(textColorRes)
@@ -148,20 +157,6 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
                         }
                         sideRootView.addView(binding.root)
                     }
-                }
-            }
-        }
-    }
-
-    // 透明度
-    private fun changeViewAlpha(viewGroup: ViewGroup) {
-        if (!config.isTranslucent) return
-        launch {
-            delay(200L)
-            viewGroup.traverse {
-                // 底部
-                if (it::class.java.name.contains("MainBottomTabContainer")) {
-                    it.alpha = 0.5f
                 }
             }
         }

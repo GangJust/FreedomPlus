@@ -5,14 +5,14 @@ plugins {
 
 android {
     namespace "com.freegang.fplus"
-    compileSdk 34
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.freegang.fplus"
         minSdk 24
-        targetSdk 34
-        versionCode 72
-        versionName "1.2.2"
+        targetSdk 33
+        versionCode 73
+        versionName "1.2.3-beta"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -20,7 +20,7 @@ android {
         }
 
         ndk {
-            abiFilters "armeabi", "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+            abiFilters "armeabi-v7a", "arm64-v8a"
         }
     }
 

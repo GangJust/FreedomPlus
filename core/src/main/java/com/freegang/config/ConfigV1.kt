@@ -42,17 +42,6 @@ class ConfigV1 private constructor() {
         fun get() = config
     }
 
-    /// 按视频创作者单独创建文件夹
-    var isOwnerDir: Boolean = false
-        get() {
-            field = mmkv.getBoolean("isOwnerDir", false)
-            return field
-        }
-        set(value) {
-            mmkv.putBoolean("isOwnerDir", value)
-            field = value
-        }
-
     /// 视频/图文/音乐下载
     var isDownload: Boolean = false
         get() {
@@ -64,7 +53,29 @@ class ConfigV1 private constructor() {
             field = value
         }
 
-    /// 表情包保存
+    /// 按视频创作者单独创建文件夹
+    var isOwnerDir: Boolean = false
+        get() {
+            field = mmkv.getBoolean("isOwnerDir", false)
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("isOwnerDir", value)
+            field = value
+        }
+
+    /// 通知栏下载
+    var isNotification: Boolean = false
+        get() {
+            field = mmkv.getBoolean("isNotification", false)
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("isNotification", value)
+            field = value
+        }
+
+    /// 表情包/评论区视频、图片保存
     var isEmoji: Boolean = false
         get() {
             field = mmkv.getBoolean("isEmoji", false)
@@ -130,14 +141,14 @@ class ConfigV1 private constructor() {
             field = value
         }
 
-    /// 禁止拍摄
-    var isDisablePhotoButton: Boolean = false
+    /// 底部加号按钮拍摄按钮状态: 0=显示占位按钮[允许拍摄]; 1=显示占位按钮[不允许拍摄]; 2=隐藏占位按钮[不显示]
+    var photoButtonType: Int = 2
         get() {
-            field = mmkv.getBoolean("isDisablePhotoButton", false)
+            field = mmkv.getInt("photoButtonType", 2)
             return field
         }
         set(value) {
-            mmkv.putBoolean("isDisablePhotoButton", value)
+            mmkv.putInt("photoButtonType", value)
             field = value
         }
 
@@ -199,14 +210,35 @@ class ConfigV1 private constructor() {
             field = value
         }
 
-    /// 通知栏下载
-    var isNotification: Boolean = false
+    /// 全屏沉浸式
+    var isImmersive: Boolean = false
         get() {
-            field = mmkv.getBoolean("isNotification", false)
+            return mmkv.getBoolean("immersive", false)
+        }
+        set(value) {
+            mmkv.putBoolean("immersive", value)
+            field = value
+        }
+
+    /// 隐藏顶部tab
+    var isHideTab: Boolean = false
+        get() {
+            field = mmkv.getBoolean("isHideTab", false)
             return field
         }
         set(value) {
-            mmkv.putBoolean("isNotification", value)
+            mmkv.putBoolean("isHideTab", value)
+            field = value
+        }
+
+    /// 隐藏顶部tab包含的关键字, 逗号隔开
+    var hideTabKeywords: String = "经验, 探索, 商城"
+        get() {
+            field = mmkv.getString("hideTabKeywords", "经验, 探索, 商城")!!
+            return field
+        }
+        set(value) {
+            mmkv.putString("hideTabKeywords", value)
             field = value
         }
 
@@ -264,28 +296,6 @@ class ConfigV1 private constructor() {
         set.remove(config.toJson())
         mmkv.putStringSet("webDavHistory", set)
     }
-
-    /// 隐藏顶部tab
-    var isHideTab: Boolean = false
-        get() {
-            field = mmkv.getBoolean("isHideTab", false)
-            return field
-        }
-        set(value) {
-            mmkv.putBoolean("isHideTab", value)
-            field = value
-        }
-
-    /// 隐藏顶部tab包含的关键字, 逗号隔开
-    var hideTabKeywords: String = "经验, 探索, 商城"
-        get() {
-            field = mmkv.getString("hideTabKeywords", "经验, 探索, 商城")!!
-            return field
-        }
-        set(value) {
-            mmkv.putString("hideTabKeywords", value)
-            field = value
-        }
 
     /// 定时退出
     var isTimedExit: Boolean = false

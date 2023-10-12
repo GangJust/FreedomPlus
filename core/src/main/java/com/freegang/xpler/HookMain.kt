@@ -18,12 +18,10 @@ class HookMain : IXposedHookLoadPackage {
                     DouYinMain(application)
                 }
             }
+        }
 
-            HookPackages.douYinClonePackageName -> {
-                if (DouYinMain.awemeHostApplication.isInstance(application)) {
-                    DouYinMain(application)
-                }
-            }
+        if (lpparam.packageName.contains(HookPackages.douYinAllPackageName)) {
+            DouYinMain(application)
         }
     }
 }

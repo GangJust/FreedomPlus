@@ -5,30 +5,36 @@ import android.view.View
 import android.widget.TextView
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
+import com.freegang.helper.DexkitBuilder
 import com.freegang.hook.logic.SaveEmojiLogic
 import com.freegang.ktutils.app.contentView
+import com.freegang.ktutils.collection.ifNotEmpty
 import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.reflect.fields
-import com.freegang.ktutils.view.KViewUtils
+import com.freegang.ktutils.log.KLogCat
+import com.freegang.ktutils.reflect.fieldFirst
+import com.freegang.ktutils.view.findViewsByExact
+import com.freegang.ktutils.view.postDelayedRunning
 import com.freegang.xpler.core.argsOrEmpty
 import com.freegang.xpler.core.hookClass
 import com.ss.android.ugc.aweme.emoji.base.BaseEmoji
 import com.ss.android.ugc.aweme.emoji.similaremoji.EmojiDetailDialogNew
 import com.ss.android.ugc.aweme.emoji.store.view.EmojiBottomSheetDialog
 import com.ss.android.ugc.aweme.emoji.utils.EmojiApi
-import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import kotlinx.coroutines.delay
 
 class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmojiDetailDialogNew>(lpparam) {
+    companion object {
+        const val TAG = "HEmojiDetailDialogNew"
+    }
+
     private val config get() = ConfigV1.get()
     private var urlList: List<String> = emptyList()
     private var popUrlList: List<String> = emptyList()
 
     override fun onInit() {
         // 该类是 retrofit2 代理类的Hook, 直接通过实例获取class进行hook
-        if (DouYinMain.emojiApiProxyClazz != null) {
-            val emojiApiField = DouYinMain.emojiApiProxyClazz?.fields(type = EmojiApi::class.java)?.firstOrNull()
+        if (DexkitBuilder.emojiApiProxyClazz != null) {
+            val emojiApiField = DexkitBuilder.emojiApiProxyClazz?.fieldFirst(type = EmojiApi::class.java)
             val emojiApi = emojiApiField?.get(null)
             if (emojiApi != null) {
                 lpparam.hookClass(emojiApi::class.java)
@@ -39,6 +45,7 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook
                                     urlList = mutableListOf(args[7] as String)
                                 }
                             }.onFailure {
+                                KLogCat.e(TAG, it)
                                 urlList = emptyList()
                             }
                         }
@@ -50,13 +57,36 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook
             .method("onCreate", Bundle::class.java) {
                 onAfter {
                     if (!config.isEmoji) return@onAfter
-                    rebuildView(this)
+
+                    // 非 EmojiDetailDialogNew, 直接结束
+                    if (!targetClazz.isInstance(thisObject)) {
+                        return@onAfter
+                    }
+
+                    val emojiDialog = thisObject as EmojiDetailDialogNew
+                    emojiDialog.window?.contentView?.postDelayedRunning(500) {
+                        if (urlList.isEmpty()) {
+                            return@postDelayedRunning
+                        }
+                        findViewsByExact(TextView::class.java) {
+                            "$text".contains("添加表情")
+                        }.ifNotEmpty {
+                            first().apply {
+                                text = "添加表情 (长按保存)"
+                                isHapticFeedbackEnabled = false
+                                setOnLongClickListener {
+                                    SaveEmojiLogic(this@HEmojiDetailDialogNew, it.context, urlList)
+                                    true
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
         // 表情弹层
-        if (DouYinMain.emojiPopupWindowClazz != null) {
-            lpparam.hookClass(DouYinMain.emojiPopupWindowClazz!!)
+        DexkitBuilder.emojiPopupWindowClazz?.runCatching {
+            lpparam.hookClass(this)
                 .methodAll {
                     onAfter {
                         if (!config.isEmoji) return@onAfter
@@ -83,32 +113,8 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook
                         }
                     }
                 }
-        }
-    }
-
-    // 重构表情布局
-    private fun rebuildView(params: XC_MethodHook.MethodHookParam) {
-        hookBlock(params) {
-            if (!targetClazz.isInstance(thisObject)) return  // 非 EmojiDetailDialogNew, 直接结束
-
-            launch {
-                delay(500L)
-
-                val emojiDialog = thisObject as EmojiDetailDialogNew
-                if (urlList.isEmpty()) return@launch
-
-                val contentView = emojiDialog.window?.contentView ?: return@launch
-                val views = KViewUtils.findViewsExact(contentView, TextView::class.java) { it.text.contains("添加") }
-                if (views.isEmpty()) return@launch
-                views.first().apply {
-                    text = "添加表情 (长按保存)"
-                    isHapticFeedbackEnabled = false
-                    setOnLongClickListener {
-                        SaveEmojiLogic(this@HEmojiDetailDialogNew, it.context, urlList)
-                        true
-                    }
-                }
-            }
+        }?.onFailure {
+            KLogCat.e(TAG, it)
         }
     }
 }

@@ -6,36 +6,40 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
+import com.freegang.ktutils.extension.asOrNull
+import com.freegang.ktutils.log.KLogCat
+import com.freegang.ktutils.reflect.fieldGetFirst
 import com.freegang.ktutils.view.traverse
-import com.freegang.xpler.core.KtOnCallMethods
 import com.freegang.xpler.core.OnAfter
-import com.freegang.xpler.core.getObjectField
+import com.freegang.xpler.core.hookBlockRunning
 import com.ss.android.ugc.aweme.homepage.ui.view.MainTabStripScrollView
 import com.ss.android.ugc.aweme.main.MainFragment
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
-class HMainFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainFragment>(lpparam), KtOnCallMethods {
-    private val config get() = ConfigV1.get()
-
-    override fun callOnBeforeMethods(param: XC_MethodHook.MethodHookParam) {}
-
-    override fun callOnAfterMethods(param: XC_MethodHook.MethodHookParam) {
-        hookBlock(param) {
-            if (!config.isTranslucent) return
-            thisObject.getObjectField<View>("mCommonTitleBar")?.alpha = 0.5f
-        }
+@Deprecated("淘汰区域，删除倒计时中")
+class HMainFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainFragment>(lpparam) {
+    companion object {
+        const val TAG = "HMainFragment"
     }
 
-    override fun callOnBeforeConstructors(param: XC_MethodHook.MethodHookParam) {}
-
-    override fun callOnAfterConstructors(param: XC_MethodHook.MethodHookParam) {}
+    private val config get() = ConfigV1.get()
 
     @OnAfter("onViewCreated")
     fun onViewCreated(param: XC_MethodHook.MethodHookParam, view: View?, savedInstanceState: Bundle?) {
-        if (!config.isHideTab) return
-        val viewGroup = view as ViewGroup
-        changeTabItem(viewGroup)
+        hookBlockRunning(param) {
+            if (config.isTranslucent) {
+                val mCommonTitleBar = thisObject.fieldGetFirst("mCommonTitleBar")?.asOrNull<View>()
+                mCommonTitleBar?.alpha = 0.5f
+            }
+
+            if (config.isHideTab) {
+                val viewGroup = view as ViewGroup
+                changeTabItem(viewGroup)
+            }
+        }.onFailure {
+            KLogCat.e(TAG, it)
+        }
     }
 
     private fun changeTabItem(viewGroup: ViewGroup) {
@@ -46,10 +50,10 @@ class HMainFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainFra
             .replace("[,，]".toRegex(), "|")
             .toRegex()
         viewGroup.traverse {
-            if (it is MainTabStripScrollView) {
-                it.traverse { v ->
-                    if ("${v.contentDescription}".contains(hideTabKeywords)) {
-                        v.isVisible = false
+            if (this is MainTabStripScrollView) {
+                traverse {
+                    if ("$contentDescription".contains(hideTabKeywords)) {
+                        isVisible = false
                     }
                 }
             }
