@@ -23,6 +23,7 @@ object DexkitBuilder {
     private var classCacheVersion: Int = 0
     private var classCacheJson: JSONObject = JSONObject()
 
+    var cornerExtensionsPopupWindowClazz: Class<*>? = null
     var mainBottomTabViewClazz: Class<*>? = null
     var mainBottomTabItemClazz: Class<*>? = null
     var detailPageFragmentClazz: Class<*>? = null
@@ -42,16 +43,27 @@ object DexkitBuilder {
         this.classCacheVersion = version
 
         //
-        KLogCat.d(TAG, "当前进程: ${lpparam.processName}")
+        KLogCat.tagD(TAG, "当前进程: ${lpparam.processName}")
         if (readClassCache()) {
-            KLogCat.d(TAG, "存在类缓存 - 读取")
+            KLogCat.tagD(TAG, "存在类缓存 - 读取")
             return
         }
 
         //
-        KLogCat.d(TAG, "不存在类缓存 - Dexkit开始搜索")
+        KLogCat.tagD(TAG, "不存在类缓存 - Dexkit开始搜索")
         System.loadLibrary("dexkit")
         DexKitBridge.create(lpparam.appInfo.sourceDir)?.use { bridge ->
+            cornerExtensionsPopupWindowClazz = bridge.findClass {
+                matcher {
+                    superClass = "android.widget.PopupWindow"
+                    methods {
+                        add {
+                            name = "dismiss"
+                        }
+                    }
+                    usingStrings = listOf("mute_notice", "delete_notice")
+                }
+            }.firstClass("coenerExtendsionsPoupWindow")
             mainBottomTabItemClazz = bridge.findClass {
                 matcher {
                     methods {
@@ -195,6 +207,7 @@ object DexkitBuilder {
         val appVersion = cache.getStringOrDefault("appVersion")
 
         // class
+        val cornerExtendsionsPopupWindow = cache.getStringOrDefault("coenerExtendsionsPoupWindow")
         val mainBottomTabView = cache.getStringOrDefault("mainBottomTabView")
         val mainBottomTabItem = cache.getStringOrDefault("mainBottomTabItem")
         val videoPinch = cache.getStringOrDefault("videoPinch")
@@ -212,6 +225,7 @@ object DexkitBuilder {
             return false
         }
 
+        cornerExtensionsPopupWindowClazz = cornerExtendsionsPopupWindow.ifNotEmpty { lpparam.findClass(it) }
         mainBottomTabViewClazz = mainBottomTabView.ifNotEmpty { lpparam.findClass(it) }
         mainBottomTabItemClazz = mainBottomTabItem.ifNotEmpty { lpparam.findClass(it) }
         videoPinchClazz = videoPinch.ifNotEmpty { lpparam.findClass(it) }
@@ -221,7 +235,7 @@ object DexkitBuilder {
         emojiApiProxyClazz = emojiApiProxy.ifNotEmpty { lpparam.findClass(it) }
         ripsChatRoomFragmentClazz = ripsChatRoomFragment.ifNotEmpty { lpparam.findClass(it) }
 
-        KLogCat.d(TAG, cache.toString(4))
+        KLogCat.tagD(TAG, cache.toString(4))
         return true
     }
 
@@ -240,7 +254,7 @@ object DexkitBuilder {
         val clazz = this[key]?.firstOrNull()?.getInstance(lpparam.classLoader)
         classCacheJson.put(key, clazz?.name)
 
-        KLogCat.d(TAG, "found[$key]: $clazz")
+        KLogCat.tagD(TAG, "found[$key]: $clazz")
         return clazz
     }
 
@@ -249,7 +263,7 @@ object DexkitBuilder {
         val clazz = this.firstOrNull()?.getInstance(lpparam.classLoader)
         classCacheJson.put(label, clazz?.name)
 
-        KLogCat.d(TAG, "found[$label]: $clazz")
+        KLogCat.tagD(TAG, "found[$label]: $clazz")
         return clazz
     }
 }

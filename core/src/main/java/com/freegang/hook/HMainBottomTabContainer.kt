@@ -33,7 +33,7 @@ class HMainBottomTabContainer(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHo
         hookBlockRunning(param) {
             if (method.name.contains(Regex("Background|Alpha"))) return
             if (argsOrEmpty.size != 1) return
-            if (argsOrEmpty.firstOrNull()?.javaClass?.isPrimitiveObjectType == false) return
+            if (args.first()?.javaClass?.isPrimitiveObjectType == false) return
             //KLogCat.d(TAG, "更新方法: $method")
 
             // 半透明
@@ -49,7 +49,7 @@ class HMainBottomTabContainer(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHo
                 }
             }
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 }

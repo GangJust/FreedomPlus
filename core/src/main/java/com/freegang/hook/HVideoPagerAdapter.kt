@@ -109,7 +109,7 @@ class HVideoPagerAdapter(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<An
             }
             args[0] = awemes
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 

@@ -46,7 +46,7 @@ class HMainTabStripScrollView(lpparam: XC_LoadPackage.LoadPackageParam) :
                 }
             }
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 
@@ -58,7 +58,7 @@ class HMainTabStripScrollView(lpparam: XC_LoadPackage.LoadPackageParam) :
             if (!config.isTranslucent) return
             thisViewGroup.findParentExact(MainTitleBar::class.java)?.alpha = 0.5f
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 }

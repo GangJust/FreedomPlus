@@ -14,7 +14,6 @@ import com.freegang.ktutils.io.secureFilename
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.media.KMediaUtils
 import com.freegang.ktutils.net.KHttpUtils
-import com.freegang.ktutils.net.KOkHttpUtils
 import com.freegang.webdav.WebDav
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import kotlinx.coroutines.Dispatchers
@@ -201,9 +200,15 @@ class DownloadLogic(
                         val imageFiles = mutableListOf<File>()
                         var downloadCount = 0 //下载计数器
                         structList.forEachIndexed { index, urlStruct ->
-                            val downloadFile = File(mImageParent.need(), mPureFileName.secureFilename("_${index + 1}.jpg"))
+                            val downloadFile =
+                                File(mImageParent.need(), mPureFileName.secureFilename("_${index + 1}.jpg"))
                             val finished =
-                                download(urlStruct.urlList.first(), downloadFile, it, "$index/${aweme.images.size} %s%%")
+                                download(
+                                    urlStruct.urlList.first(),
+                                    downloadFile,
+                                    it,
+                                    "$index/${aweme.images.size} %s%%"
+                                )
                             if (finished) {
                                 downloadCount += 1
                                 imageFiles.add(downloadFile)
@@ -213,7 +218,8 @@ class DownloadLogic(
 
                         hook.refresh {
                             if (downloadCount == aweme.images.size) {
-                                val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功, 共${downloadCount}个文件!"
+                                val message =
+                                    if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功, 共${downloadCount}个文件!"
                                 it.setFinishedText(message)
                                 hook.showToast(context, message)
                             } else {
@@ -246,7 +252,10 @@ class DownloadLogic(
                                     hook.showToast(context, "上传WebDav成功!")
                                 } else {
                                     it.setFinishedText("上传WebDav成功${uploadCount}, 失败${imageFiles.size - uploadCount}!")
-                                    hook.showToast(context, "上传WebDav成功${uploadCount}, 失败${imageFiles.size - uploadCount}!")
+                                    hook.showToast(
+                                        context,
+                                        "上传WebDav成功${uploadCount}, 失败${imageFiles.size - uploadCount}!"
+                                    )
                                 }
                             }
                         }
@@ -263,9 +272,15 @@ class DownloadLogic(
                     hook.launch {
                         var downloadCount = 0 //下载计数器
                         structList.forEachIndexed { index, urlStruct ->
-                            val downloadFile = File(mImageParent.need(), mPureFileName.secureFilename("_${index + 1}.jpg"))
+                            val downloadFile =
+                                File(mImageParent.need(), mPureFileName.secureFilename("_${index + 1}.jpg"))
                             val finished =
-                                download(urlStruct.urlList.first(), downloadFile, notify, "$index/${aweme.images.size} %s%%")
+                                download(
+                                    urlStruct.urlList.first(),
+                                    downloadFile,
+                                    notify,
+                                    "$index/${aweme.images.size} %s%%"
+                                )
                             if (finished) {
                                 downloadCount += 1
                                 KMediaUtils.notifyGallery(context, downloadFile.absolutePath)
@@ -275,7 +290,8 @@ class DownloadLogic(
                         hook.refresh {
                             dialog.dismiss()
                             if (downloadCount == aweme.images.size) {
-                                val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功, 共${downloadCount}个文件!"
+                                val message =
+                                    if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功, 共${downloadCount}个文件!"
                                 notify.setFinishedText(message)
                                 hook.showToast(context, message)
                             } else {
@@ -301,7 +317,10 @@ class DownloadLogic(
                             if (uploadCount == images.size) {
                                 hook.showToast(context, "上传WebDav成功!")
                             } else {
-                                hook.showToast(context, "上传WebDav成功${uploadCount}, 失败${images.size - uploadCount}!")
+                                hook.showToast(
+                                    context,
+                                    "上传WebDav成功${uploadCount}, 失败${images.size - uploadCount}!"
+                                )
                             }
                         }
                     }
@@ -431,7 +450,6 @@ class DownloadLogic(
             true
         } catch (e: Exception) {
             KLogCat.e(e)
-            e.printStackTrace()
             false
         }
     }

@@ -223,7 +223,7 @@ class FreedomSettingActivity : BaseActivity() {
                                 onLongClick = {
                                     lifecycleScope.launch {
                                         updateLog = withContext(Dispatchers.IO) {
-                                            val inputStream = mResources.moduleAssets.open("update.log")
+                                            val inputStream = mResources.pluginAssets.open("update.log")
                                             val bytes = inputStream.readBytes()
                                             val text = bytes.decodeToString()
                                             inputStream.close()
@@ -299,7 +299,7 @@ class FreedomSettingActivity : BaseActivity() {
                     },
                     onConfirm = {
                         showRestartAppDialog = false
-                        model.setVersionConfig(mResources.moduleAssets)
+                        model.setVersionConfig(mResources.pluginAssets)
                         KAppUtils.restartApplication(application)
                     },
                     content = {
@@ -1279,7 +1279,7 @@ class FreedomSettingActivity : BaseActivity() {
 
     override fun onPause() {
         super.onPause()
-        model.setVersionConfig(mResources.moduleAssets)
+        model.setVersionConfig(mResources.pluginAssets)
     }
 
     private fun buildFilterTypeStyle(value: String): AnnotatedString {

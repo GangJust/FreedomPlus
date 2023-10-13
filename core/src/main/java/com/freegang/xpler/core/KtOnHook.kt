@@ -184,7 +184,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
         return try {
             XposedHelpers.findClass(className, classLoader ?: lpparam.classLoader)
         } catch (e: Exception) {
-            KLogCat.e(this.javaClass.simpleName, e)
+            KLogCat.tagE(this.javaClass.simpleName, e)
             NoneHook::class.java
         }
     }

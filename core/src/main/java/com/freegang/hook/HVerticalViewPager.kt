@@ -42,6 +42,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlin.math.abs
 
+@Deprecated("淘汰区域，删除倒计时中")
 class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<VerticalViewPager>(lpparam) {
     companion object {
         const val TAG = "HVerticalViewPager"
@@ -106,7 +107,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                 }
             }
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 

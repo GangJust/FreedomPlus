@@ -28,27 +28,53 @@ class PluginInstrumentation(
 
     @Keep
     override fun newApplication(cl: ClassLoader?, className: String?, context: Context?): Application {
-        return mBase.newApplication(cl, className, context)
+        return try {
+            mBase.newApplication(cl, className, context)
+        } catch (e: Exception) {
+            super.newApplication(cl, className, context)
+        }
     }
 
     override fun callApplicationOnCreate(app: Application?) {
-        mBase.callApplicationOnCreate(app)
+        try {
+            mBase.callApplicationOnCreate(app)
+        } catch (e: Exception) {
+            super.callApplicationOnCreate(app)
+        }
     }
 
     override fun callActivityOnCreate(activity: Activity?, icicle: Bundle?) {
-        mBase.callActivityOnCreate(activity, icicle)
+        try {
+            injectRes(activity)
+            mBase.callActivityOnCreate(activity, icicle)
+        } catch (e: Exception) {
+            super.callActivityOnCreate(activity, icicle)
+        }
     }
 
     override fun callActivityOnCreate(activity: Activity?, icicle: Bundle?, persistentState: PersistableBundle?) {
-        mBase.callActivityOnCreate(activity, icicle, persistentState)
+        try {
+            injectRes(activity)
+            mBase.callActivityOnCreate(activity, icicle, persistentState)
+        } catch (e: Exception) {
+            super.callActivityOnCreate(activity, icicle, persistentState)
+        }
     }
 
     override fun callActivityOnDestroy(activity: Activity?) {
-        mBase.callActivityOnDestroy(activity)
+        try {
+            mBase.callActivityOnDestroy(activity)
+        } catch (e: Exception) {
+            super.callActivityOnDestroy(activity)
+        }
     }
 
     override fun callActivityOnRestoreInstanceState(activity: Activity, savedInstanceState: Bundle) {
-        mBase.callActivityOnRestoreInstanceState(activity, savedInstanceState)
+        try {
+            mBase.callActivityOnRestoreInstanceState(activity, savedInstanceState)
+        } catch (e: Exception) {
+            super.callActivityOnRestoreInstanceState(activity, savedInstanceState)
+        }
     }
 
     override fun callActivityOnRestoreInstanceState(
@@ -56,56 +82,116 @@ class PluginInstrumentation(
         savedInstanceState: Bundle?,
         persistentState: PersistableBundle?
     ) {
-        mBase.callActivityOnRestoreInstanceState(activity, savedInstanceState, persistentState)
+        try {
+            mBase.callActivityOnRestoreInstanceState(activity, savedInstanceState, persistentState)
+        } catch (e: Exception) {
+            super.callActivityOnRestoreInstanceState(activity, savedInstanceState, persistentState)
+        }
     }
 
     override fun callActivityOnPostCreate(activity: Activity, savedInstanceState: Bundle?) {
-        mBase.callActivityOnPostCreate(activity, savedInstanceState)
+        try {
+            mBase.callActivityOnPostCreate(activity, savedInstanceState)
+        } catch (e: Exception) {
+            super.callActivityOnPostCreate(activity, savedInstanceState)
+        }
     }
 
-    override fun callActivityOnPostCreate(activity: Activity, savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
-        mBase.callActivityOnPostCreate(activity, savedInstanceState, persistentState)
+    override fun callActivityOnPostCreate(
+        activity: Activity,
+        savedInstanceState: Bundle?,
+        persistentState: PersistableBundle?
+    ) {
+        try {
+            mBase.callActivityOnPostCreate(activity, savedInstanceState, persistentState)
+        } catch (e: Exception) {
+            super.callActivityOnPostCreate(activity, savedInstanceState, persistentState)
+        }
     }
 
     override fun callActivityOnNewIntent(activity: Activity?, intent: Intent?) {
-        mBase.callActivityOnNewIntent(activity, intent)
+        try {
+            mBase.callActivityOnNewIntent(activity, intent)
+        } catch (e: Exception) {
+            super.callActivityOnNewIntent(activity, intent)
+        }
     }
 
     override fun callActivityOnStart(activity: Activity?) {
-        mBase.callActivityOnStart(activity)
+        try {
+            mBase.callActivityOnStart(activity)
+        } catch (e: Exception) {
+            super.callActivityOnStart(activity)
+        }
     }
 
     override fun callActivityOnRestart(activity: Activity?) {
-        mBase.callActivityOnRestart(activity)
+        try {
+            mBase.callActivityOnRestart(activity)
+        } catch (e: Exception) {
+            super.callActivityOnRestart(activity)
+        }
     }
 
     override fun callActivityOnResume(activity: Activity?) {
-        mBase.callActivityOnResume(activity)
+        try {
+            mBase.callActivityOnResume(activity)
+        } catch (e: Exception) {
+            super.callActivityOnResume(activity)
+        }
     }
 
     override fun callActivityOnStop(activity: Activity?) {
-        mBase.callActivityOnStop(activity)
+        try {
+            mBase.callActivityOnStop(activity)
+        } catch (e: Exception) {
+            super.callActivityOnStop(activity)
+        }
     }
 
     override fun callActivityOnSaveInstanceState(activity: Activity, outState: Bundle) {
-        mBase.callActivityOnSaveInstanceState(activity, outState)
+        try {
+            mBase.callActivityOnSaveInstanceState(activity, outState)
+        } catch (e: Exception) {
+            super.callActivityOnSaveInstanceState(activity, outState)
+        }
     }
 
-    override fun callActivityOnSaveInstanceState(activity: Activity, outState: Bundle, outPersistentState: PersistableBundle) {
-        mBase.callActivityOnSaveInstanceState(activity, outState, outPersistentState)
+    override fun callActivityOnSaveInstanceState(
+        activity: Activity,
+        outState: Bundle,
+        outPersistentState: PersistableBundle
+    ) {
+        try {
+            mBase.callActivityOnSaveInstanceState(activity, outState, outPersistentState)
+        } catch (e: Exception) {
+            super.callActivityOnSaveInstanceState(activity, outState, outPersistentState)
+        }
     }
 
     override fun callActivityOnPause(activity: Activity?) {
-        mBase.callActivityOnPause(activity)
+        try {
+            mBase.callActivityOnPause(activity)
+        } catch (e: Exception) {
+            super.callActivityOnPause(activity)
+        }
     }
 
     override fun callActivityOnUserLeaving(activity: Activity?) {
-        mBase.callActivityOnUserLeaving(activity)
+        try {
+            mBase.callActivityOnUserLeaving(activity)
+        } catch (e: Exception) {
+            super.callActivityOnUserLeaving(activity)
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun callActivityOnPictureInPictureRequested(activity: Activity) {
-        mBase.callActivityOnPictureInPictureRequested(activity)
+        try {
+            mBase.callActivityOnPictureInPictureRequested(activity)
+        } catch (e: Exception) {
+            super.callActivityOnPictureInPictureRequested(activity)
+        }
     }
 
     @Keep
@@ -156,7 +242,6 @@ class PluginInstrumentation(
                 options,
             ) as ActivityResult?
         } catch (e: Exception) {
-            //KLogCat.xposedLog(e)
             throw e
         }
     }

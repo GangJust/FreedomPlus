@@ -19,7 +19,10 @@ class HookInit : IXposedHookLoadPackage, IXposedHookZygoteInit {
     }
 
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
+        // compare package name
         if (!HookPackages.packages.contains(lpparam.packageName)) return
+
+        // set global lpparam
         KtXposedHelpers.setLpparam(lpparam)
 
         // init module status

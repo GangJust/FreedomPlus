@@ -45,7 +45,7 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook
                                     urlList = mutableListOf(args[7] as String)
                                 }
                             }.onFailure {
-                                KLogCat.e(TAG, it)
+                                KLogCat.tagE(TAG, it)
                                 urlList = emptyList()
                             }
                         }
@@ -114,7 +114,7 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook
                     }
                 }
         }?.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 }

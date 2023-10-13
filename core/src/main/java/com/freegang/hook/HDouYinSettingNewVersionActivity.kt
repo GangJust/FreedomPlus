@@ -60,7 +60,7 @@ class HDouYinSettingNewVersionActivity(lpparam: XC_LoadPackage.LoadPackageParam)
                 }
             }
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 }

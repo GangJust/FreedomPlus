@@ -30,7 +30,7 @@ class HDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Detai
         hookBlockRunning(params) {
             addClipboardListener(thisActivity as DetailActivity)
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 
@@ -39,7 +39,7 @@ class HDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Detai
         hookBlockRunning(params) {
             clipboardLogic.removeClipboardListener(thisContext)
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 

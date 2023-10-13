@@ -9,6 +9,7 @@ import androidx.core.view.children
 import com.freegang.base.BaseHook
 import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.color.KColorUtils
+import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.view.findViewsByType
 import com.freegang.ktutils.view.postRunning
 import com.freegang.ui.activity.FreedomSettingActivity
@@ -71,6 +72,8 @@ class HSideBarNestedScrollView(lpparam: XC_LoadPackage.LoadPackageParam) :
                 }
                 onlyChild.addView(binding.root)
             }
+        }.onFailure {
+            KLogCat.tagE(TAG, it)
         }
     }
 }

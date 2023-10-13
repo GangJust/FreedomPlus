@@ -86,7 +86,7 @@ class HCommentAudioView(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Any
                 linearLayout.addView(this)
             }
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 }

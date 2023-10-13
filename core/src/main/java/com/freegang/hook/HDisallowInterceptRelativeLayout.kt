@@ -24,6 +24,10 @@ class HDisallowInterceptRelativeLayout(lpparam: XC_LoadPackage.LoadPackageParam)
     CallConstructors {
     companion object {
         const val TAG = "HDisallowInterceptRelativeLayout"
+
+        @get:Synchronized
+        @set:Synchronized
+        var isImmersive = false
     }
 
     override fun setTargetClass(): Class<*> {
@@ -52,6 +56,8 @@ class HDisallowInterceptRelativeLayout(lpparam: XC_LoadPackage.LoadPackageParam)
 
             thisViewGroup.postRunning {
                 runCatching {
+                    HDisallowInterceptRelativeLayout.isImmersive = false
+
                     traverse {
                         // 移除顶部间隔
                         if (javaClass.name == "android.view.View") {
@@ -69,8 +75,10 @@ class HDisallowInterceptRelativeLayout(lpparam: XC_LoadPackage.LoadPackageParam)
                     WindowCompat.setDecorFitsSystemWindows(window, false)
                     window.navigationBarColor = Color.TRANSPARENT
                     window.statusBarColor = Color.TRANSPARENT
+
+                    HDisallowInterceptRelativeLayout.isImmersive = true
                 }.onFailure {
-                    KLogCat.e(TAG, it)
+                    KLogCat.tagE(TAG, it)
                 }
             }
         }

@@ -82,6 +82,8 @@ class DouYinMain(private val app: Application) {
                     HMainTabStripScrollView(lpparam)
                     HDetailActivity(lpparam)
                     HFlippableViewPager(lpparam)
+                    HPenetrateTouchRelativeLayout(lpparam)
+                    HInteractStickerParent(lpparam)
                     HCommentAudioView(lpparam)
                     HGifEmojiDetailActivity(lpparam)
                     HChatRoomActivity(lpparam)
@@ -90,9 +92,10 @@ class DouYinMain(private val app: Application) {
                     HEmojiDetailDialog(lpparam)
                 },
                 searchAfter = {
+                    HCornerExtensionsPopupWindow(lpparam)
                     HMainBottomTabContainer(lpparam)
                     HMainBottomTabItem(lpparam)
-                    HVerticalViewPager(lpparam)
+                    //HVerticalViewPager(lpparam)
                     HDetailPageFragment(lpparam)
                     HEmojiDetailDialogNew(lpparam)
                     HVideoPagerAdapter(lpparam)

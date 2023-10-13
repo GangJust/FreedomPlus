@@ -38,7 +38,7 @@ class HMainFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainFra
                 changeTabItem(viewGroup)
             }
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 

@@ -390,7 +390,11 @@ fun KLogCat.Companion.xposedLog(log: Throwable, xposed: Boolean = true) {
  */
 fun Any.xposedLog() {
     if (this is Map<*, *>) {
-        XposedBridge.log("映射对象: $this -- 内容: ${this.map { "key=${it.key},value=${it.value}" }.joinToString(", ")}")
+        XposedBridge.log(
+            "映射对象: $this -- 内容: ${
+                this.map { "key=${it.key},value=${it.value}" }.joinToString(", ")
+            }"
+        )
     }
     if (this is Collection<*>) {
         XposedBridge.log("集合对象: $this -- 内容: ${this.joinToString(", ")}")

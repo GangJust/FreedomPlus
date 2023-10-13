@@ -85,7 +85,7 @@ class HDetailPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<A
                 }
             }
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 

@@ -23,7 +23,7 @@ class HFlippableViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<F
             if (!config.isHideTab) return
             result = false // 禁止ViewPager左右滑动
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 }

@@ -39,7 +39,7 @@ class HChatRoomActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Any
             }
             contentView.viewTreeObserver.addOnGlobalLayoutListener(onGlobalLayoutListener)
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 
@@ -49,7 +49,7 @@ class HChatRoomActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Any
             thisActivity.contentView.viewTreeObserver.removeOnGlobalLayoutListener(onGlobalLayoutListener)
             onGlobalLayoutListener = null
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 }

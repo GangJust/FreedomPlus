@@ -8,6 +8,7 @@ import com.freegang.hook.logic.SaveEmojiLogic
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.collection.ifNotEmpty
 import com.freegang.ktutils.extension.asOrNull
+import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.fieldGetFirst
 import com.freegang.ktutils.view.KViewUtils
 import com.freegang.xpler.core.CallMethods
@@ -74,6 +75,8 @@ class HEmojiDetailDialog(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Em
 
             // new
             urlList = urlModel?.fieldGetFirst("urlList")?.asOrNull<List<String>>() ?: listOf()
+        }.onFailure {
+            KLogCat.tagE(TAG, it)
         }
     }
 }

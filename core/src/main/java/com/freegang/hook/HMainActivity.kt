@@ -53,7 +53,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
             DouYinMain.timedExitCountDown?.restart()
             showToast(thisContext, "Freedom+ Attach!")
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 
@@ -63,7 +63,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
             //setFreedomSetting(thisActivity)
             addClipboardListener(thisActivity)
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 
@@ -73,7 +73,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
             saveConfig(thisContext)
             clipboardLogic.removeClipboardListener(thisContext)
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 

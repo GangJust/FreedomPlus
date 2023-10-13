@@ -19,7 +19,7 @@ class HActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Activity>(l
         hookBlockRunning(param) {
             DouYinMain.freeExitCountDown?.restart()
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 
@@ -28,7 +28,7 @@ class HActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Activity>(l
         hookBlockRunning(param) {
             DouYinMain.freeExitCountDown?.restart()
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 }

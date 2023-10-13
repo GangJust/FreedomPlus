@@ -161,7 +161,7 @@ class KtXposedHelpers {
          */
         val modulePath: String
             get() {
-                return mModulePath!!
+                return mModulePath ?: ""
             }
 
         /**
@@ -169,6 +169,7 @@ class KtXposedHelpers {
          */
         val moduleRes: XModuleResources
             get() {
+                if (mModuleRes == null) throw NullPointerException("`moduleRes` is null")
                 return mModuleRes!!
             }
 

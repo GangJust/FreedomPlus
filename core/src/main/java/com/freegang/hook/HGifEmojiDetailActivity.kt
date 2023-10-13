@@ -47,7 +47,7 @@ class HGifEmojiDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHo
 
             rebuildView(thisActivity as GifEmojiDetailActivity)
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 

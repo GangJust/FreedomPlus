@@ -38,7 +38,7 @@ class HMainBottomTabItem(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<An
         hookBlockRunning(param) {
             isHidePhotoButton(thisView)
         }.onFailure {
-            KLogCat.e(TAG, it)
+            KLogCat.tagE(TAG, it)
         }
     }
 
