@@ -26,9 +26,10 @@ object DexkitBuilder {
     var cornerExtensionsPopupWindowClazz: Class<*>? = null
     var mainBottomTabViewClazz: Class<*>? = null
     var mainBottomTabItemClazz: Class<*>? = null
-    var detailPageFragmentClazz: Class<*>? = null
-    var videoPinchClazz: Class<*>? = null
+    var videoPlayerHelperClazz: Class<*>? = null
+    var videoPinchViewClazz: Class<*>? = null
     var videoPagerAdapterClazz: Class<*>? = null
+    var detailPageFragmentClazz: Class<*>? = null
     var emojiApiProxyClazz: Class<*>? = null
     var emojiPopupWindowClazz: Class<*>? = null
     var ripsChatRoomFragmentClazz: Class<*>? = null
@@ -80,7 +81,7 @@ object DexkitBuilder {
                     }
                 }
             }.firstClass("mainBottomTabItem")
-            videoPinchClazz = bridge.findClass {
+            videoPinchViewClazz = bridge.findClass {
                 matcher {
                     fields {
                         add {
@@ -98,7 +99,7 @@ object DexkitBuilder {
                         }
                     }
                 }
-            }.firstClass("videoPinch")
+            }.firstClass("videoPinchView")
             videoPagerAdapterClazz = bridge.findClass {
                 matcher {
                     methods {
@@ -144,6 +145,14 @@ object DexkitBuilder {
                     )
                 }
                 addSearchGroup {
+                    groupName = "videoPlayerHelper"
+                    usingStrings = listOf(
+                        "isDoubleClickResExist >>> channel empty",
+                        "当前无网络，暂不可用",
+                        "暂不支持点赞操作",
+                    )
+                }
+                addSearchGroup {
                     groupName = "detailPageFragment"
                     usingStrings = listOf(
                         "a1128.b7947",
@@ -166,6 +175,7 @@ object DexkitBuilder {
                 }
             }
             mainBottomTabViewClazz = findMaps.firstClass("mainBottomTabView")
+            videoPlayerHelperClazz = findMaps.firstClass("videoPlayerHelper")
             detailPageFragmentClazz = findMaps.firstClass("detailPageFragment")
             emojiApiProxyClazz = findMaps.firstClass("emojiApiProxy")
             ripsChatRoomFragmentClazz = findMaps.firstClass("ripsChatRoomFragment")
@@ -210,7 +220,8 @@ object DexkitBuilder {
         val cornerExtendsionsPopupWindow = cache.getStringOrDefault("coenerExtendsionsPoupWindow")
         val mainBottomTabView = cache.getStringOrDefault("mainBottomTabView")
         val mainBottomTabItem = cache.getStringOrDefault("mainBottomTabItem")
-        val videoPinch = cache.getStringOrDefault("videoPinch")
+        val videoPlayerHelper = cache.getStringOrDefault("videoPlayerHelper")
+        val videoPinchView = cache.getStringOrDefault("videoPinchView")
         val videoPagerAdapter = cache.getStringOrDefault("videoPagerAdapter")
         val emojiPopupWindow = cache.getStringOrDefault("emojiPopupWindow")
         val detailPageFragment = cache.getStringOrDefault("detailPageFragment")
@@ -228,7 +239,8 @@ object DexkitBuilder {
         cornerExtensionsPopupWindowClazz = cornerExtendsionsPopupWindow.ifNotEmpty { lpparam.findClass(it) }
         mainBottomTabViewClazz = mainBottomTabView.ifNotEmpty { lpparam.findClass(it) }
         mainBottomTabItemClazz = mainBottomTabItem.ifNotEmpty { lpparam.findClass(it) }
-        videoPinchClazz = videoPinch.ifNotEmpty { lpparam.findClass(it) }
+        videoPlayerHelperClazz = videoPlayerHelper.ifNotEmpty { lpparam.findClass(it) }
+        videoPinchViewClazz = videoPinchView.ifNotEmpty { lpparam.findClass(it) }
         videoPagerAdapterClazz = videoPagerAdapter.ifNotEmpty { lpparam.findClass(it) }
         emojiPopupWindowClazz = emojiPopupWindow.ifNotEmpty { lpparam.findClass(it) }
         detailPageFragmentClazz = detailPageFragment.ifNotEmpty { lpparam.findClass(it) }

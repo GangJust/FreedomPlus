@@ -6,13 +6,19 @@ import android.graphics.Color
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.view.children
+import androidx.core.view.updatePadding
 import com.freegang.base.BaseHook
+import com.freegang.config.ConfigV1
+import com.freegang.ktutils.app.KAppUtils
+import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.app.isDarkMode
+import com.freegang.ktutils.app.navigationBarHeight
 import com.freegang.ktutils.color.KColorUtils
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.view.findViewsByType
 import com.freegang.ktutils.view.postRunning
 import com.freegang.ui.activity.FreedomSettingActivity
+import com.freegang.xpler.HookPackages
 import com.freegang.xpler.R
 import com.freegang.xpler.core.KtXposedHelpers
 import com.freegang.xpler.core.OnAfter
@@ -29,12 +35,14 @@ class HSideBarNestedScrollView(lpparam: XC_LoadPackage.LoadPackageParam) :
         const val TAG = "HSideBarNestedScrollView"
     }
 
+    private val config get() = ConfigV1.get()
+
     @OnAfter("onAttachedToWindow")
     fun onAttachedToWindowAfter(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
             thisViewGroup.postRunning {
                 val onlyChild = getChildAt(0) as ViewGroup
-                if (onlyChild.children.last().contentDescription == "扩展功能") return@postRunning
+                if (onlyChild.children.lastOrNull()?.contentDescription == "扩展功能") return@postRunning
                 val text = onlyChild.findViewsByType(TextView::class.java).firstOrNull() ?: return@postRunning
                 val isDark = KColorUtils.isDarkColor(text.currentTextColor)
 
@@ -61,7 +69,18 @@ class HSideBarNestedScrollView(lpparam: XC_LoadPackage.LoadPackageParam) :
                 binding.freedomSettingTitle.text = String.format("%s", "Freedom+")
                 binding.freedomSettingTitle.setTextColor(textColorRes)
                 binding.freedomSetting.setOnClickListener { view ->
-                    val intent = Intent(view.context, FreedomSettingActivity::class.java)
+                    val intent = Intent()
+                    if (config.isDisablePlugin) {
+                        if (!KAppUtils.isAppInstalled(view.context, HookPackages.modulePackageName)) {
+                            KToastUtils.show(context, "未安装Freedom+模块!")
+                            return@setOnClickListener
+                        }
+                        intent.setClassName(HookPackages.modulePackageName, "com.freegang.fplus.activity.MainActivity")
+                        KToastUtils.show(context, "若设置未生效请尝试重启抖音!")
+                    } else {
+                        intent.setClass(view.context, FreedomSettingActivity::class.java)
+                    }
+
                     intent.putExtra("isDark", view.context.isDarkMode)
                     val options = ActivityOptions.makeCustomAnimation(
                         view.context,
@@ -71,6 +90,13 @@ class HSideBarNestedScrollView(lpparam: XC_LoadPackage.LoadPackageParam) :
                     view.context.startActivity(intent, options.toBundle())
                 }
                 onlyChild.addView(binding.root)
+
+                if (config.isImmersive) {
+                    // 全面屏手势沉浸式底部垫高 (首页侧滑)，底部导航栏则不处理
+                    if (HDisallowInterceptRelativeLayout.isEdgeToEdgeEnabled) {
+                        onlyChild.updatePadding(bottom = context.navigationBarHeight)
+                    }
+                }
             }
         }.onFailure {
             KLogCat.tagE(TAG, it)

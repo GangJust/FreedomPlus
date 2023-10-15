@@ -148,7 +148,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                         }
 
                         // 防止双击
-                        if (KFastClickUtils.isFastDoubleClick(300L) && config.isDisableDoubleLike) {
+                        if (KFastClickUtils.isFastDoubleClick(300L) && config.isDoubleClickType) {
                             thisView.dispatchTouchEvent(cancelEvent)
                             result = true
                             return@onBefore
@@ -160,7 +160,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Ve
                 }
             }
 
-        DexkitBuilder.videoPinchClazz?.runCatching {
+        DexkitBuilder.videoPinchViewClazz?.runCatching {
             lpparam.hookClass(this)
                 .methodAll {
                     onBefore {

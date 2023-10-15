@@ -108,14 +108,25 @@ class ConfigV1 private constructor() {
             field = value
         }
 
-    /// 禁用双击点赞
-    var isDisableDoubleLike: Boolean = false
+    /// 双击屏幕响应类型
+    var isDoubleClickType: Boolean = false
         get() {
-            field = mmkv.getBoolean("isDisableDoubleLike", false)
+            field = mmkv.getBoolean("isDoubleClickType", false)
             return field
         }
         set(value) {
-            mmkv.putBoolean("isDisableDoubleLike", value)
+            mmkv.putBoolean("isDoubleClickType", value)
+            field = value
+        }
+
+    /// 双击响应类型: 0=暂停视频, 1=打开评论, 2=点赞视频
+    var doubleClickType: Int = 2
+        get() {
+            field = mmkv.getInt("doubleClickType", 2)
+            return field
+        }
+        set(value) {
+            mmkv.putInt("doubleClickType", value)
             field = value
         }
 
@@ -207,6 +218,17 @@ class ConfigV1 private constructor() {
         }
         set(value) {
             mmkv.putBoolean("longPressMode", value)
+            field = value
+        }
+
+    /// 移除悬浮挑战/评论贴纸
+    var isRemoveSticker: Boolean = false
+        get() {
+            field = mmkv.getBoolean("isRemoveSticker", false)
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("isRemoveSticker", value)
             field = value
         }
 

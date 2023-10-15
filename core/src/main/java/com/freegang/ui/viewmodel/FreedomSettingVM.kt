@@ -49,8 +49,14 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     private var _isTranslucent = MutableLiveData(false)
     val isTranslucent: LiveData<Boolean> = _isTranslucent
 
-    private var _isDisableDoubleLike = MutableLiveData(false)
-    val isDisableDoubleLike: LiveData<Boolean> = _isDisableDoubleLike
+    private var _isRemoveSticker = MutableLiveData(false)
+    val isRemoveSticker: LiveData<Boolean> = _isRemoveSticker
+
+    private var _isDoubleClickType = MutableLiveData(false)
+    val isDoubleClickType: LiveData<Boolean> = _isDoubleClickType
+
+    private var _doubleClickType = MutableLiveData(2)
+    val doubleClickType: LiveData<Int> = _doubleClickType
 
     private var _isLongtimeVideoToast = MutableLiveData(false)
     val isLongtimeVideoToast: LiveData<Boolean> = _isLongtimeVideoToast
@@ -127,7 +133,8 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
             changeIsEmoji(config.isEmoji)
             changeIsVibrate(config.isVibrate)
             changeIsTranslucent(config.isTranslucent)
-            changeIsDisableDoubleLike(config.isDisableDoubleLike)
+            changeIsDoubleClickType(config.isDoubleClickType)
+            changeDoubleClickType(config.doubleClickType)
             changeIsLongtimeVideoToast(config.isLongtimeVideoToast)
             changeIsHidePhotoButton(config.isHidePhotoButton)
             changePhotoButtonType(config.photoButtonType)
@@ -135,6 +142,7 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
             setVideoFilterKeywords(config.videoFilterKeywords)
             changeIsNeatMode(config.isNeatMode)
             changeLongPressMode(config.longPressMode)
+            changeIsRemoveSticker(config.isRemoveSticker)
             changeIsImmersive(config.isImmersive)
             changeIsHideTab(config.isHideTab)
             setHideTabKeywords(config.hideTabKeywords)
@@ -183,10 +191,16 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
         config.isTranslucent = value
     }
 
-    // 禁用双击点赞
-    fun changeIsDisableDoubleLike(value: Boolean) {
-        _isDisableDoubleLike.value = value
-        config.isDisableDoubleLike = value
+    // 是否开启更改双击响应类型
+    fun changeIsDoubleClickType(value: Boolean) {
+        _isDoubleClickType.value = value
+        config.isDoubleClickType = value
+    }
+
+    // 双击响应类型
+    fun changeDoubleClickType(value: Int) {
+        _doubleClickType.value = value
+        config.doubleClickType = value
     }
 
     // 视频时长超过5分钟提示
@@ -237,6 +251,12 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     fun changeLongPressMode(value: Boolean) {
         _isLongPressMode.value = value
         config.longPressMode = value
+    }
+
+    // 移除悬浮挑战/评论贴纸
+    fun changeIsRemoveSticker(value: Boolean) {
+        _isRemoveSticker.value = value
+        config.isRemoveSticker = value
     }
 
     // 隐藏顶部tab

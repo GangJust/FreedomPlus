@@ -5,6 +5,7 @@ import android.graphics.Color
 import androidx.core.view.WindowCompat
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
+import com.freegang.ktutils.app.navBarInteractionMode
 import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.view.postRunning
@@ -25,9 +26,10 @@ class HDisallowInterceptRelativeLayout(lpparam: XC_LoadPackage.LoadPackageParam)
     companion object {
         const val TAG = "HDisallowInterceptRelativeLayout"
 
+
         @get:Synchronized
         @set:Synchronized
-        var isImmersive = false
+        var isEdgeToEdgeEnabled = false
     }
 
     override fun setTargetClass(): Class<*> {
@@ -37,7 +39,7 @@ class HDisallowInterceptRelativeLayout(lpparam: XC_LoadPackage.LoadPackageParam)
     private val config get() = ConfigV1.get()
 
     override fun onInit() {
-        //旧版本
+        // 旧版本
         lpparam.findClass("com.ss.android.ugc.aweme.feed.ui.DisallowInterceptRelativeLayout2")
             .hookConstructorsAll {
                 onAfter {
@@ -51,12 +53,12 @@ class HDisallowInterceptRelativeLayout(lpparam: XC_LoadPackage.LoadPackageParam)
 
     override fun callOnAfterConstructors(param: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(param) {
-            //全屏沉浸式
+            // 全屏沉浸式
             if (!config.isImmersive) return
 
             thisViewGroup.postRunning {
                 runCatching {
-                    HDisallowInterceptRelativeLayout.isImmersive = false
+                    HDisallowInterceptRelativeLayout.isEdgeToEdgeEnabled = false
 
                     traverse {
                         // 移除顶部间隔
@@ -72,11 +74,17 @@ class HDisallowInterceptRelativeLayout(lpparam: XC_LoadPackage.LoadPackageParam)
                     // 设置沉浸式
                     val activity = context.asOrNull<Activity>() ?: return@runCatching
                     val window = activity.window
-                    WindowCompat.setDecorFitsSystemWindows(window, false)
-                    window.navigationBarColor = Color.TRANSPARENT
-                    window.statusBarColor = Color.TRANSPARENT
-
-                    HDisallowInterceptRelativeLayout.isImmersive = true
+                    // 隐藏底部导航栏
+                    // WindowCompat.getInsetsController(window, window.decorView).hide(WindowInsetsCompat.Type.navigationBars())
+                    if (context.navBarInteractionMode == 2) {
+                        HDisallowInterceptRelativeLayout.isEdgeToEdgeEnabled = true
+                        WindowCompat.setDecorFitsSystemWindows(window, false)
+                        window.statusBarColor = Color.TRANSPARENT
+                        window.navigationBarColor = Color.TRANSPARENT
+                    } else {
+                        window.statusBarColor = Color.TRANSPARENT
+                        window.navigationBarColor = Color.parseColor("#161616")
+                    }
                 }.onFailure {
                     KLogCat.tagE(TAG, it)
                 }

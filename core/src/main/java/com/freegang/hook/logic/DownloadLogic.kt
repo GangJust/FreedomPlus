@@ -47,8 +47,8 @@ class DownloadLogic(
     init {
         runCatching {
             if (aweme != null) {
-                //整理内容
-                //如果uniqueId为空, shortId为账号
+                // 整理内容
+                // 如果uniqueId为空, shortId为账号
                 mShortId = if (aweme.author.uniqueId.isNullOrEmpty()) {
                     aweme.author.shortId
                 } else {
@@ -56,19 +56,19 @@ class DownloadLogic(
                 }
                 mPureNickname = aweme.author.nickname.pureFileName
 
-                //mOwnerDir: 如果需要按视频创作者单独创建文件夹: `/外置存储器/DCIM/Freedom/${video|music|picture}/昵称(账号)`
+                // mOwnerDir: 如果需要按视频创作者单独创建文件夹: `/外置存储器/DCIM/Freedom/${video|music|picture}/昵称(账号)`
                 mOwnerDir = if (config.isOwnerDir) "${mPureNickname}(${mShortId})" else ""
 
-                //默认下载路径: `/外置存储器/DCIM/Freedom/video`
+                // 默认下载路径: `/外置存储器/DCIM/Freedom/video`
                 mVideoParent = ConfigV1.getFreedomDir(context).child("video")
 
-                //默认下载路径: `/外置存储器/DCIM/Freedom/music`
+                // 默认下载路径: `/外置存储器/DCIM/Freedom/music`
                 mMusicParent = ConfigV1.getFreedomDir(context).child("music")
 
-                //默认下载路径: `/外置存储器/DCIM/Freedom/picture`
+                // 默认下载路径: `/外置存储器/DCIM/Freedom/picture`
                 mImageParent = ConfigV1.getFreedomDir(context).child("picture")
 
-                //构建文件名
+                // 构建文件名
                 mPureFileName = if (aweme.desc.isNullOrBlank()) {
                     "${mPureNickname}_${mShortId}_${System.currentTimeMillis() / 1000}"
                 } else {
@@ -115,7 +115,7 @@ class DownloadLogic(
             input2DefaultValue = mPureFileName,
             items = items.toTypedArray(),
             onChoice = { _, owner, filename, item, _ ->
-                //如果有重命名
+                // 如果有重命名
                 if (owner.isNotBlank()) mOwnerDir = owner
                 mVideoParent = mVideoParent.child(mOwnerDir.pureFileName)
                 mMusicParent = mMusicParent.child(mOwnerDir.pureFileName)
@@ -149,7 +149,7 @@ class DownloadLogic(
             hook.showToast(context, "未获取到视频信息")
             return
         }
-        //构建视频文件名
+        // 构建视频文件名
         mPureFileName = mPureFileName.secureFilename(".mp4")
         if (config.isNotification) {
             showDownloadByNotification(videoUrlList, mVideoParent.need(), mPureFileName, isWebDav)
@@ -168,7 +168,7 @@ class DownloadLogic(
             hook.showToast(context, "未获取到背景音乐")
             return
         }
-        //构建视频文件名
+        // 构建视频文件名
         mPureFileName = mPureFileName.secureFilename(".mp3")
         if (config.isNotification) {
             showDownloadByNotification(musicUrlList, mMusicParent.need(), mPureFileName, isWebDav)
@@ -189,16 +189,16 @@ class DownloadLogic(
         }
 
         if (config.isNotification) {
-            //发送通知
+            // 发送通知
             hook.showDownloadNotification(
                 context = context,
                 notifyId = downloadNotifyId++,
                 title = mPureFileName,
                 listener = {
-                    //下载逻辑
+                    // 下载逻辑
                     hook.launch {
                         val imageFiles = mutableListOf<File>()
-                        var downloadCount = 0 //下载计数器
+                        var downloadCount = 0 // 下载计数器
                         structList.forEachIndexed { index, urlStruct ->
                             val downloadFile =
                                 File(mImageParent.need(), mPureFileName.secureFilename("_${index + 1}.jpg"))
@@ -232,7 +232,7 @@ class DownloadLogic(
                         }
 
 
-                        //上传WebDav
+                        // 上传WebDav
                         if (isWebDav) {
                             if (imageFiles.isEmpty()) {
                                 hook.refresh {
@@ -263,14 +263,14 @@ class DownloadLogic(
                 }
             )
         } else {
-            //进度条Dialog
+            // 进度条Dialog
             hook.showProgressDialog(
                 context = context,
                 title = "Freedom+",
                 listener = { dialog, notify ->
-                    //下载逻辑
+                    // 下载逻辑
                     hook.launch {
-                        var downloadCount = 0 //下载计数器
+                        var downloadCount = 0 // 下载计数器
                         structList.forEachIndexed { index, urlStruct ->
                             val downloadFile =
                                 File(mImageParent.need(), mPureFileName.secureFilename("_${index + 1}.jpg"))
@@ -302,7 +302,7 @@ class DownloadLogic(
                             }
                         }
 
-                        //上传WebDav
+                        // 上传WebDav
                         if (isWebDav) {
                             val images = (mImageParent.listFiles() ?: arrayOf<File>()).filter { it.isFile }
                             if (images.isEmpty()) {
@@ -336,13 +336,13 @@ class DownloadLogic(
         pureFileName: String,
         isWebDav: Boolean = false,
     ) {
-        //发送通知
+        // 发送通知
         hook.showDownloadNotification(
             context = context,
             notifyId = downloadNotifyId++,
             title = pureFileName,
             listener = {
-                //下载逻辑
+                // 下载逻辑
                 hook.launch {
                     val downloadFile = File(parentPath.need(), pureFileName)
                     val finished = download(urlList.first(), downloadFile, it, "下载中 %s%%")
@@ -354,7 +354,7 @@ class DownloadLogic(
                             KMediaUtils.notifyGallery(context, downloadFile.absolutePath)
                         }
 
-                        //上传WebDav
+                        // 上传WebDav
                         if (isWebDav) {
                             val uploadStatus = uploadToWebDav(downloadFile)
                             hook.refresh {
@@ -380,12 +380,12 @@ class DownloadLogic(
         pureFileName: String,
         isWebDav: Boolean = false,
     ) {
-        //进度条Dialog
+        // 进度条Dialog
         hook.showProgressDialog(
             context = context,
             title = "Freedom+",
             listener = { dialog, notify ->
-                //下载逻辑
+                // 下载逻辑
                 hook.launch {
                     val downloadFile = File(parentPath.need(), pureFileName)
                     val finished = download(urlList.first(), downloadFile, notify, "%s%%")
@@ -398,7 +398,7 @@ class DownloadLogic(
                             KMediaUtils.notifyGallery(context, downloadFile.absolutePath)
                         }
 
-                        //上传WebDav
+                        // 上传WebDav
                         if (isWebDav) {
                             val uploadStatus = uploadToWebDav(downloadFile)
                             hook.showToast(context, "上传WebDav${if (uploadStatus) "成功!" else "失败!"}")
@@ -427,7 +427,7 @@ class DownloadLogic(
         return withContext(Dispatchers.IO) {
             var finished = false
             KHttpUtils.download(url, FileOutputStream(downloadFile)) { real, total, isInterrupt ->
-                if (notify is KNotifiUtils.ProgressNotification) { //通知栏在ui线程中刷新会造成ui卡顿, 排查了一下午, 麻了
+                if (notify is KNotifiUtils.ProgressNotification) { // 通知栏在ui线程中刷新会造成ui卡顿, 排查了一下午, 麻了
                     notify.notifyProgress((real * 100 / total).toInt(), progressText)
                 } else {
                     hook.refresh { notify.notifyProgress((real * 100 / total).toInt(), progressText) }

@@ -20,6 +20,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import xyz.junerver.ssktx.buildSpannableString
 
+@Deprecated("淘汰区域，删除倒计时中")
 class HDouYinSettingNewVersionActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<EmptyHook>(lpparam) {
     companion object {
         const val TAG = "HDouYinSettingNewVersionActivity"
@@ -33,7 +34,7 @@ class HDouYinSettingNewVersionActivity(lpparam: XC_LoadPackage.LoadPackageParam)
 
     @OnAfter("onCreate")
     fun onCreate(params: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {
-        //去插件化
+        // 去插件化
         if (config.isDisablePlugin) return
         hookBlockRunning(params) {
             thisActivity.contentView.postRunning {

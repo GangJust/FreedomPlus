@@ -4,10 +4,8 @@ import android.view.MotionEvent
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
 import com.freegang.ktutils.app.KToastUtils
-import com.freegang.ktutils.display.KDisplayUtils
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.methodInvokeFirst
-import com.freegang.ktutils.view.KFastClickUtils
 import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.hookBlockRunning
 import com.freegang.xpler.core.thisView
@@ -16,23 +14,24 @@ import com.ss.android.ugc.aweme.feed.model.Aweme
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
-class HVerticalViewPagerNew(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<VerticalViewPager>(lpparam) {
+class HVerticalViewPagerNew(lpparam: XC_LoadPackage.LoadPackageParam) :
+    BaseHook<VerticalViewPager>(lpparam) {
     companion object {
         const val TAG = "HVerticalViewPager"
+
+        @get:Synchronized
+        @set:Synchronized
+        var currentAweme: Aweme? = null
     }
 
     private val config get() = ConfigV1.get()
 
-    private val screenSize get() = KDisplayUtils.screenSize()
-
     //
-    private var currentAweme: Aweme? = null
     private var durationRunnable: Runnable? = null
 
     @OnAfter("onInterceptTouchEvent")
     fun onInterceptTouchEvent(param: XC_MethodHook.MethodHookParam, event: MotionEvent) {
         longVideoJudge(param, event)
-        longPressChoice(param, event)
     }
 
     private fun longVideoJudge(param: XC_MethodHook.MethodHookParam, event: MotionEvent) {
@@ -73,35 +72,6 @@ class HVerticalViewPagerNew(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook
                         }
                         handler.postDelayed(durationRunnable!!, 3000L)
                     }
-                }
-            }
-        }.onFailure {
-            KLogCat.tagE(TAG, it)
-        }
-    }
-
-    private fun longPressChoice(param: XC_MethodHook.MethodHookParam, event: MotionEvent) {
-        hookBlockRunning(param) {
-            val cancelEvent = MotionEvent.obtain(
-                event.downTime,
-                event.eventTime,
-                MotionEvent.ACTION_CANCEL,
-                event.x,
-                event.y,
-                event.metaState
-            )
-
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                // 避免快速下发 ACTION_DOWN
-                if (KFastClickUtils.isFastDoubleClick(50L)) {
-                    return
-                }
-
-                // 防止双击
-                if (KFastClickUtils.isFastDoubleClick(300L) && config.isDisableDoubleLike) {
-                    thisView.dispatchTouchEvent(cancelEvent)
-                    result = true
-                    return
                 }
             }
         }.onFailure {

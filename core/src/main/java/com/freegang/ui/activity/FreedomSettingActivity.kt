@@ -389,12 +389,79 @@ class FreedomSettingActivity : BaseActivity() {
                         }
                     )
                     SwitchItem(
-                        text = "禁用双击点赞",
-                        checked = model.isDisableDoubleLike.observeAsState(false),
+                        text = "移除悬浮挑战/评论贴纸",
+                        checked = model.isRemoveSticker.observeAsState(false),
                         onCheckedChange = {
-                            model.changeIsDisableDoubleLike(it)
+                            model.changeIsRemoveSticker(it)
                         }
                     )
+                    BoxWithConstraints {
+                        var showDoubleClickModelDialog by remember { mutableStateOf(false) }
+                        if (showDoubleClickModelDialog) {
+                            var radioIndex by remember { mutableStateOf(model.doubleClickType.value ?: 2) }
+                            FMessageDialog(
+                                title = "请选择双击响应模式",
+                                confirm = "更改",
+                                onlyConfirm = true,
+                                onConfirm = { showDoubleClickModelDialog = false },
+                                content = {
+                                    Column {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            RadioButton(
+                                                selected = radioIndex == 0,
+                                                onClick = {
+                                                    radioIndex = 0
+                                                    model.changeDoubleClickType(radioIndex)
+                                                },
+                                            )
+                                            Text(
+                                                text = "暂停视频",
+                                                style = MaterialTheme.typography.body1,
+                                            )
+                                        }
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            RadioButton(
+                                                selected = radioIndex == 1,
+                                                onClick = {
+                                                    radioIndex = 1
+                                                    model.changeDoubleClickType(radioIndex)
+                                                },
+                                            )
+                                            Text(
+                                                text = "打开评论",
+                                                style = MaterialTheme.typography.body1,
+                                            )
+                                        }
+
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            RadioButton(
+                                                selected = radioIndex == 2,
+                                                onClick = {
+                                                    radioIndex = 2
+                                                    model.changeDoubleClickType(radioIndex)
+                                                },
+                                            )
+                                            Text(
+                                                text = "点赞视频",
+                                                style = MaterialTheme.typography.body1,
+                                            )
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                        SwitchItem(
+                            text = "双击视频响应类型",
+                            subtext = "点击调整双击视频响应方式",
+                            checked = model.isDoubleClickType.observeAsState(false),
+                            onClick = {
+                                showDoubleClickModelDialog = true
+                            },
+                            onCheckedChange = {
+                                model.changeIsDoubleClickType(it)
+                            }
+                        )
+                    }
                     SwitchItem(
                         text = "视频时长超过10分钟提示",
                         subtext = "避免你die在厕所",

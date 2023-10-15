@@ -72,30 +72,36 @@ class DouYinMain(private val app: Application) {
             // search and hook
             DexkitBuilder.running(
                 app = app,
-                version = 4,
+                version = 5,
                 searchBefore = {
                     HActivity(lpparam)
                     HMainActivity(lpparam)
                     HSideBarNestedScrollView(lpparam)
                     HDisallowInterceptRelativeLayout(lpparam)
-                    //HMainFragment(lpparam)
+                    // HMainFragment(lpparam)
                     HMainTabStripScrollView(lpparam)
+                    HCustomizedUISeekBar(lpparam)
                     HDetailActivity(lpparam)
                     HFlippableViewPager(lpparam)
+                    HVideoViewHolderRootView(lpparam)
                     HPenetrateTouchRelativeLayout(lpparam)
+                    // HFeedRightScaleView(lpparam)
                     HInteractStickerParent(lpparam)
                     HCommentAudioView(lpparam)
                     HGifEmojiDetailActivity(lpparam)
                     HChatRoomActivity(lpparam)
-                    HDouYinSettingNewVersionActivity(lpparam)
-                    //HHomeSideBarEntranceManagerV1(lpparam)
+                    // HDouYinSettingNewVersionActivity(lpparam)
+                    // HHomeSideBarEntranceManagerV1(lpparam)
                     HEmojiDetailDialog(lpparam)
                 },
                 searchAfter = {
                     HCornerExtensionsPopupWindow(lpparam)
-                    HMainBottomTabContainer(lpparam)
+                    HMainBottomTabView(lpparam)
                     HMainBottomTabItem(lpparam)
-                    //HVerticalViewPager(lpparam)
+                    // HVerticalViewPager(lpparam)
+                    HVideoPlayerHelper(lpparam)
+                    HVerticalViewPagerNew(lpparam)
+                    HVideoPinchView(lpparam)
                     HDetailPageFragment(lpparam)
                     HEmojiDetailDialogNew(lpparam)
                     HVideoPagerAdapter(lpparam)

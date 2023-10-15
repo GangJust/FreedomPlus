@@ -8,6 +8,7 @@ import com.freegang.config.ConfigV1
 import com.freegang.helper.DexkitBuilder
 import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.log.KLogCat
+import com.freegang.ktutils.view.getViewTree
 import com.freegang.ktutils.view.toViewTreeString
 import com.freegang.ktutils.view.traverse
 import com.freegang.xpler.core.CallMethods
@@ -71,7 +72,6 @@ class HMainBottomTabItem(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<An
                 }
                 view.setOnLongClickListener {
                     KToastUtils.show(it.context, "已禁止拍摄")
-                    it.rootView.toViewTreeString().logd(true)
                     true
                 }
             }
