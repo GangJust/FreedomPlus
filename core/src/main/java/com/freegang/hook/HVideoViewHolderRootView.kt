@@ -190,7 +190,7 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
     }
 
     private fun interdictEvent(param: XC_MethodHook.MethodHookParam, event: MotionEvent): Boolean {
-        hookBlockRunning(param) {
+        hookBlockRunning(param){
             val cancelEvent = MotionEvent.obtain(
                 event.downTime,
                 event.eventTime,
@@ -211,13 +211,15 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
                     thisView.parentView?.dispatchTouchEvent(cancelEvent)
                     // 打开评论区
                     if (config.doubleClickType == 1) {
-                        onClickViewV2(thisView, targetContent = Regex("评论\\d+"))
+                        onClickViewV2(thisView, targetContent = Regex("评论(.*?)，按钮"))
                     } else if (config.doubleClickType == 0) {
                         result = true
                     }
                     return true
                 }
             }
+        }.onFailure {
+            KLogCat.tagE(TAG, it)
         }
         return false
     }
@@ -256,15 +258,15 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
                     }
 
                     "评论" -> {
-                        onClickViewV2(view, targetContent = Regex("评论\\d+"))
+                        onClickViewV2(view, targetContent = Regex("评论(.*?)，按钮"))
                     }
 
                     "收藏" -> {
-                        onClickViewV2(view, targetContent = Regex("收藏\\d+"))
+                        onClickViewV2(view, targetContent = Regex("收藏(.*?)，按钮"))
                     }
 
                     "分享" -> {
-                        onClickViewV2(view, targetContent = Regex("分享\\d+"))
+                        onClickViewV2(view, targetContent = Regex("分享(.*?)，按钮"))
                     }
 
                     "下载" -> {

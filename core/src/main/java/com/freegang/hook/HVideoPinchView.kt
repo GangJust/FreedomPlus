@@ -2,6 +2,7 @@ package com.freegang.hook
 
 import com.freegang.base.BaseHook
 import com.freegang.helper.DexkitBuilder
+import com.freegang.ktutils.log.KLogCat
 import com.freegang.xpler.core.CallMethods
 import com.freegang.xpler.core.NoneHook
 import com.freegang.xpler.core.argsOrEmpty
@@ -34,6 +35,8 @@ class HVideoPinchView(lpparam: XC_LoadPackage.LoadPackageParam) :
                 // KLogCat.d("进入专注模式")
                 isVideoPinchView = true
             }
+        }.onFailure {
+            KLogCat.tagE(TAG, it)
         }
     }
 

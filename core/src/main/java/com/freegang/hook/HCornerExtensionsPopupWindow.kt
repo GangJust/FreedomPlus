@@ -15,6 +15,7 @@ import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.extension.isPrimitiveObjectType
+import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.view.postRunning
 import com.freegang.ui.activity.FreedomSettingActivity
 import com.freegang.xpler.HookPackages
@@ -86,6 +87,8 @@ class HCornerExtensionsPopupWindow(lpparam: XC_LoadPackage.LoadPackageParam) :
 
                 last.addView(binding.root)
             }
+        }.onFailure {
+            KLogCat.tagE(TAG, it)
         }
     }
 }
