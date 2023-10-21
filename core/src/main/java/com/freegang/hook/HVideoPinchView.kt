@@ -1,6 +1,7 @@
 package com.freegang.hook
 
 import com.freegang.base.BaseHook
+import com.freegang.config.ConfigV1
 import com.freegang.helper.DexkitBuilder
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.xpler.core.CallMethods
@@ -19,6 +20,8 @@ class HVideoPinchView(lpparam: XC_LoadPackage.LoadPackageParam) :
         @set:Synchronized
         var isVideoPinchView = false
     }
+
+    val config = ConfigV1.get()
 
     override fun setTargetClass(): Class<*> {
         return DexkitBuilder.videoPinchViewClazz ?: NoneHook::class.java

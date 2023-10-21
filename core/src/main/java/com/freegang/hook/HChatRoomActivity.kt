@@ -20,11 +20,11 @@ class HChatRoomActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Any
         const val TAG = "HChatRoomActivity"
     }
 
+    private var onGlobalLayoutListener: ViewTreeObserver.OnGlobalLayoutListener? = null
+
     override fun setTargetClass(): Class<*> {
         return findClass("com.ss.android.ugc.aweme.im.sdk.chat.ChatRoomActivity")
     }
-
-    private var onGlobalLayoutListener: ViewTreeObserver.OnGlobalLayoutListener? = null
 
     @OnAfter("onCreate")
     fun onCreateAfter(params: XC_MethodHook.MethodHookParam, bundle: Bundle?) {

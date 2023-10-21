@@ -71,7 +71,6 @@ import com.freegang.xpler.HookStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.lang.RuntimeException
 import kotlin.random.Random
 
 class HomeActivity : ComponentActivity() {
@@ -87,7 +86,7 @@ class HomeActivity : ComponentActivity() {
             animationSpec = tween(durationMillis = Random.nextInt(500, 1500)),
         )
 
-        //更新日志弹窗
+        // 更新日志弹窗
         var showUpdateLogDialog by remember { mutableStateOf(false) }
         var updateLog by remember { mutableStateOf("") }
         if (showUpdateLogDialog) {
@@ -119,7 +118,7 @@ class HomeActivity : ComponentActivity() {
         }
 
 
-        //view
+        // view
         TopAppBar(
             modifier = Modifier.padding(vertical = 24.dp),
             elevation = 0.dp,
@@ -192,7 +191,7 @@ class HomeActivity : ComponentActivity() {
 
     @Composable
     fun BodyView() {
-        //旧数据迁移弹窗
+        // 旧数据迁移弹窗
         var showNeedMigrateOldDataDialog by remember { mutableStateOf(model.freedomData.exists()) }
         if (showNeedMigrateOldDataDialog) {
             var showMigrateToContent by remember { mutableStateOf("存在[Freedom]下载数据, 正在迁移至[Freedom+]下载目录!") }
@@ -214,7 +213,7 @@ class HomeActivity : ComponentActivity() {
                 )
             }
 
-            //数据迁移
+            // 数据迁移
             LaunchedEffect(key1 = "migrateData") {
                 val result = withContext(Dispatchers.IO) {
                     model.freedomData.copyRecursively(
@@ -235,7 +234,7 @@ class HomeActivity : ComponentActivity() {
             }
         }
 
-        //版本更新弹窗
+        // 版本更新弹窗
         var showNewVersionDialog by remember { mutableStateOf(true) }
         val version by model.versionConfig.observeAsState()
         if (version != null) {
@@ -273,7 +272,7 @@ class HomeActivity : ComponentActivity() {
             }
         }
 
-        //view
+        // view
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -347,7 +346,7 @@ class HomeActivity : ComponentActivity() {
                 }
             )
 
-            //模块设置
+            // 模块设置
             FCard(
                 modifier = Modifier
                     .padding(vertical = 4.dp)
@@ -383,7 +382,7 @@ class HomeActivity : ComponentActivity() {
                                 style = Themes.nowTypography.body1,
                             )
                             Text(
-                                text = if (model.isDisablePlugin) "点击跳转模块设置" else "抖音内部左上角侧滑栏/设置页，滑动至底部唤起模块设置",
+                                text = if (model.isDisablePlugin) "点击跳转模块设置" else "抖音内部左上角侧滑栏/加号按钮唤起模块设置",
                                 style = Themes.nowTypography.overline,
                             )
                         }
@@ -391,7 +390,7 @@ class HomeActivity : ComponentActivity() {
                 )
             }
 
-            //数据目录
+            // 数据目录
             FCard(
                 modifier = Modifier
                     .padding(top = 24.dp, bottom = 4.dp)
@@ -424,7 +423,7 @@ class HomeActivity : ComponentActivity() {
                 )
             }
 
-            //源码地址
+            // 源码地址
             FCard(
                 modifier = Modifier
                     .padding(vertical = 4.dp)
@@ -461,7 +460,7 @@ class HomeActivity : ComponentActivity() {
                 )
             }
 
-            //开源说明
+            // 开源说明
             FCard(
                 modifier = Modifier
                     .padding(vertical = 4.dp)
@@ -498,7 +497,7 @@ class HomeActivity : ComponentActivity() {
                 )
             }
 
-            //tg频道
+            // tg频道
             FCard(
                 modifier = Modifier
                     .padding(vertical = 4.dp)
@@ -535,8 +534,8 @@ class HomeActivity : ComponentActivity() {
                 )
             }
 
-            //打赏
-            /*FCard(
+            // 打赏
+            FCard(
                 modifier = Modifier
                     .padding(vertical = 4.dp)
                     .clickable(
@@ -570,7 +569,7 @@ class HomeActivity : ComponentActivity() {
                         }
                     },
                 )
-            }*/
+            }
         }
     }
 
@@ -662,7 +661,7 @@ class HomeActivity : ComponentActivity() {
             startActivity(
                 Intent(
                     Intent.ACTION_VIEW,
-                    Uri.parse("alipays://platformapi/startapp?appId=09999988&actionType=toAccount&goBack=NO&amount=3.00&userId=2088022940366251&memo=呐，拿去吃辣条!")
+                    Uri.parse("alipayqr://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=https%3A%2F%2Fqr.alipay.com%2Ffkx16432yv9pgvtqup8tv28")
                 )
             )
             return

@@ -28,7 +28,7 @@ class HMainTabStripScrollView(lpparam: XC_LoadPackage.LoadPackageParam) :
 
     override fun callOnAfterConstructors(param: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(param) {
-            //关键字隐藏
+            // 关键字隐藏
             if (!config.isHideTab) return
 
             thisViewGroup.postRunning {
@@ -41,7 +41,7 @@ class HMainTabStripScrollView(lpparam: XC_LoadPackage.LoadPackageParam) :
                 traverse {
                     if ("$contentDescription".contains(hideTabKeywords)) {
                         isVisible = false
-                        //child.removeInParent()
+                        // child.removeInParent()
                     }
                 }
             }
@@ -54,9 +54,9 @@ class HMainTabStripScrollView(lpparam: XC_LoadPackage.LoadPackageParam) :
 
     override fun callOnAfterMethods(param: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(param) {
-            //透明度
+            // 透明度
             if (!config.isTranslucent) return
-            thisViewGroup.findParentExact(MainTitleBar::class.java)?.alpha = 0.5f
+            thisViewGroup.findParentExact(MainTitleBar::class.java)?.alpha = config.translucentValue[0] / 100f
         }.onFailure {
             KLogCat.tagE(TAG, it)
         }

@@ -28,6 +28,7 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook
     }
 
     private val config get() = ConfigV1.get()
+
     private var urlList: List<String> = emptyList()
     private var popUrlList: List<String> = emptyList()
 

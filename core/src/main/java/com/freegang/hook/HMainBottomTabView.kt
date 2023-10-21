@@ -55,7 +55,7 @@ class HMainBottomTabView(lpparam: XC_LoadPackage.LoadPackageParam) :
 
             // 半透明
             if (config.isTranslucent) {
-                thisViewGroup.parentView?.alpha = 0.5f
+                thisViewGroup.parentView?.alpha = config.translucentValue[2] / 100f
             }
 
             // 全屏沉浸式

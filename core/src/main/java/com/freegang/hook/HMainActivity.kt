@@ -45,6 +45,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<MainAct
     }
 
     private val config get() = ConfigV1.get()
+
     private val clipboardLogic = ClipboardLogic(this)
 
     @OnAfter("onCreate")

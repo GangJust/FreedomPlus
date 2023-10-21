@@ -97,7 +97,7 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
 
                 // 半透明
                 if (config.isTranslucent) {
-                    it.alpha = 0.5f
+                    it.alpha = config.translucentValue[1] / 100f
                 }
 
                 // 专注模式
@@ -190,7 +190,7 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
     }
 
     private fun interdictEvent(param: XC_MethodHook.MethodHookParam, event: MotionEvent): Boolean {
-        hookBlockRunning(param){
+        hookBlockRunning(param) {
             val cancelEvent = MotionEvent.obtain(
                 event.downTime,
                 event.eventTime,
@@ -274,21 +274,28 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
                     }
 
                     "过滤统计" -> {
-                        val builder = StringBuilder("本次过滤统计如下:\n")
-                        if (HVideoPagerAdapter.filterLiveCount >= 0) {
+                        val builder = StringBuilder()
+                        if (HVideoPagerAdapter.filterLiveCount > 0) {
                             builder.append("直播过滤: ").append(HVideoPagerAdapter.filterLiveCount).append("\n")
                         }
-                        if (HVideoPagerAdapter.filterImageCount >= 0) {
+                        if (HVideoPagerAdapter.filterImageCount > 0) {
                             builder.append("图文过滤: ").append(HVideoPagerAdapter.filterImageCount).append("\n")
                         }
-                        if (HVideoPagerAdapter.filterAdCount >= 0) {
+                        if (HVideoPagerAdapter.filterAdCount > 0) {
                             builder.append("广告过滤: ").append(HVideoPagerAdapter.filterAdCount).append("\n")
                         }
-                        if (HVideoPagerAdapter.filterLongVideoCount >= 0) {
+                        if (HVideoPagerAdapter.filterLongVideoCount > 0) {
                             builder.append("长视频过滤: ").append(HVideoPagerAdapter.filterLongVideoCount).append("\n")
                         }
-                        builder.append("关键字过滤: ").append(HVideoPagerAdapter.filterOtherCount)
-                        showToast(view.context, builder.toString())
+                        if (HVideoPagerAdapter.filterOtherCount > 0) {
+                            builder.append("关键字过滤: ").append(HVideoPagerAdapter.filterOtherCount)
+                        }
+                        val msg = builder.toString().trim()
+                        if (msg.isEmpty()) {
+                            showToast(view.context, "未过滤视频")
+                        } else {
+                            showToast(view.context, msg)
+                        }
                     }
 
                     "模块设置" -> {

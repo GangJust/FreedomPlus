@@ -27,6 +27,7 @@ class HEmojiDetailDialog(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Em
     }
 
     private val config get() = ConfigV1.get()
+
     private var urlList: List<String> = emptyList()
 
     override fun onInit() {

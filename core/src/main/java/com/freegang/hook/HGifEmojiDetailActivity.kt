@@ -28,6 +28,7 @@ class HGifEmojiDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHo
     }
 
     private val config get() = ConfigV1.get()
+
     private var urlList: List<String> = emptyList()
 
     @OnBefore("onCreate")

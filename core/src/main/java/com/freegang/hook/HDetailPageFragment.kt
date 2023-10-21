@@ -37,9 +37,9 @@ class HDetailPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<A
         var isComment = false
     }
 
-    override fun setTargetClass(): Class<*> = DexkitBuilder.detailPageFragmentClazz ?: NoneHook::class.java
-
     private val config get() = ConfigV1.get()
+
+    override fun setTargetClass(): Class<*> = DexkitBuilder.detailPageFragmentClazz ?: NoneHook::class.java
 
     @OnAfter("onViewCreated")
     fun onViewCreatedAfter(param: XC_MethodHook.MethodHookParam, view: View, bundle: Bundle?) {

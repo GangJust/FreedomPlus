@@ -49,6 +49,9 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     private var _isTranslucent = MutableLiveData(false)
     val isTranslucent: LiveData<Boolean> = _isTranslucent
 
+    private var _translucentValue = MutableLiveData(listOf(50, 50, 50))
+    val translucentValue: LiveData<List<Int>> = _translucentValue
+
     private var _isRemoveSticker = MutableLiveData(false)
     val isRemoveSticker: LiveData<Boolean> = _isRemoveSticker
 
@@ -133,6 +136,7 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
             changeIsEmoji(config.isEmoji)
             changeIsVibrate(config.isVibrate)
             changeIsTranslucent(config.isTranslucent)
+            changeTranslucentValue(config.translucentValue)
             changeIsDoubleClickType(config.isDoubleClickType)
             changeDoubleClickType(config.doubleClickType)
             changeIsLongtimeVideoToast(config.isLongtimeVideoToast)
@@ -189,6 +193,18 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     fun changeIsTranslucent(value: Boolean) {
         _isTranslucent.value = value
         config.isTranslucent = value
+    }
+
+    /// 首页控件透明度
+    fun changeTranslucentValue(value: List<Int>) {
+        _translucentValue.value = value
+        config.translucentValue = value
+    }
+
+    // 移除悬浮挑战/评论贴纸
+    fun changeIsRemoveSticker(value: Boolean) {
+        _isRemoveSticker.value = value
+        config.isRemoveSticker = value
     }
 
     // 是否开启更改双击响应类型
@@ -251,12 +267,6 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     fun changeLongPressMode(value: Boolean) {
         _isLongPressMode.value = value
         config.longPressMode = value
-    }
-
-    // 移除悬浮挑战/评论贴纸
-    fun changeIsRemoveSticker(value: Boolean) {
-        _isRemoveSticker.value = value
-        config.isRemoveSticker = value
     }
 
     // 隐藏顶部tab

@@ -23,6 +23,7 @@ class HDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Detai
     }
 
     private val config get() = ConfigV1.get()
+
     private val clipboardLogic = ClipboardLogic(this)
 
     @OnAfter("onResume")

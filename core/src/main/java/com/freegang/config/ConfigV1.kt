@@ -108,6 +108,17 @@ class ConfigV1 private constructor() {
             field = value
         }
 
+    /// 首页控件透明度
+    var translucentValue: List<Int> = listOf(50, 50, 50)
+        get() {
+            field = mmkv.getString("translucentValue", "50, 50, 50")!!.split(",").map { it.trim().toInt() }
+            return field
+        }
+        set(value) {
+            mmkv.putString("translucentValue", value.joinToString(","))
+            field = value
+        }
+
     /// 双击屏幕响应类型
     var isDoubleClickType: Boolean = false
         get() {
@@ -175,7 +186,7 @@ class ConfigV1 private constructor() {
         }
 
     /// 视频类型关键字
-    val videoFilterTypes = setOf("直播", "广告", "图文", "长视频")
+    val videoFilterTypes = setOf("直播", "广告", "图文", "长视频", "热门特效")
 
     /// 视频过滤关键字
     var videoFilterKeywords: String = "直播, #生日, 广告, 买, 优惠"

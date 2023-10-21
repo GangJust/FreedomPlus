@@ -32,11 +32,11 @@ class HDisallowInterceptRelativeLayout(lpparam: XC_LoadPackage.LoadPackageParam)
         var isEdgeToEdgeEnabled = false
     }
 
+    private val config get() = ConfigV1.get()
+
     override fun setTargetClass(): Class<*> {
         return findClass("com.ss.android.ugc.aweme.feed.ui.DisallowInterceptRelativeLayout")
     }
-
-    private val config get() = ConfigV1.get()
 
     override fun onInit() {
         // 旧版本

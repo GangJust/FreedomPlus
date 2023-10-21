@@ -35,11 +35,11 @@ class HCornerExtensionsPopupWindow(lpparam: XC_LoadPackage.LoadPackageParam) :
         const val TAG = "HCornerExtendsionsPopupWindow"
     }
 
+    private val config get() = ConfigV1.get()
+
     override fun setTargetClass(): Class<*> {
         return DexkitBuilder.cornerExtensionsPopupWindowClazz ?: NoneHook::class.java
     }
-
-    private val config get() = ConfigV1.get()
 
     override fun callOnBeforeMethods(param: XC_MethodHook.MethodHookParam) {
 

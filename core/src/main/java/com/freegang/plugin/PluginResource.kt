@@ -23,29 +23,27 @@ import com.freegang.xpler.core.KtXposedHelpers
 import java.io.InputStream
 
 class PluginResource(
-    resources: Resources,
+    private val originResources: Resources,
 ) : Resources(
-    resources.assets,
-    resources.displayMetrics,
-    resources.configuration,
+    originResources.assets,
+    originResources.displayMetrics,
+    originResources.configuration,
 ) {
 
     private val pluginResources by lazy {
-        try {
-            if (KtXposedHelpers.modulePath.isEmpty()) return@lazy this
-            val assetManager = AssetManager::class.java.newInstance()
-            assetManager.methodInvokes("addAssetPath", args = arrayOf(KtXposedHelpers.modulePath))
-            Resources(assetManager, resources.displayMetrics, resources.configuration)
-        } catch (e: Exception) {
-            this
+        if (KtXposedHelpers.modulePath.isEmpty()) {
+            return@lazy originResources
         }
+        val assetManager = AssetManager::class.java.newInstance()
+        assetManager.methodInvokes("addAssetPath", args = arrayOf(KtXposedHelpers.modulePath))
+        Resources(assetManager, originResources.displayMetrics, originResources.configuration)
     }
 
     val pluginAssets: AssetManager get() = pluginResources.assets
 
     override fun getText(id: Int): CharSequence {
         return try {
-            super.getText(id)
+            originResources.getText(id)
         } catch (e: Exception) {
             pluginResources.getText(id)
         }
@@ -53,7 +51,7 @@ class PluginResource(
 
     override fun getText(id: Int, def: CharSequence?): CharSequence {
         return try {
-            super.getText(id, def)
+            originResources.getText(id, def)
         } catch (e: Exception) {
             pluginResources.getText(id, def)
         }
@@ -62,7 +60,7 @@ class PluginResource(
     @SuppressLint("NewApi")
     override fun getFont(id: Int): Typeface {
         return try {
-            super.getFont(id)
+            originResources.getFont(id)
         } catch (e: Exception) {
             pluginResources.getFont(id)
         }
@@ -70,7 +68,7 @@ class PluginResource(
 
     override fun getQuantityText(id: Int, quantity: Int): CharSequence {
         return try {
-            super.getQuantityText(id, quantity)
+            originResources.getQuantityText(id, quantity)
         } catch (e: Exception) {
             pluginResources.getQuantityText(id, quantity)
         }
@@ -78,7 +76,7 @@ class PluginResource(
 
     override fun getString(id: Int): String {
         return try {
-            super.getString(id)
+            originResources.getString(id)
         } catch (e: Exception) {
             pluginResources.getString(id)
         }
@@ -86,7 +84,7 @@ class PluginResource(
 
     override fun getString(id: Int, vararg formatArgs: Any?): String {
         return try {
-            super.getString(id, *formatArgs)
+            originResources.getString(id, *formatArgs)
         } catch (e: Exception) {
             pluginResources.getString(id, *formatArgs)
         }
@@ -94,7 +92,7 @@ class PluginResource(
 
     override fun getQuantityString(id: Int, quantity: Int, vararg formatArgs: Any?): String {
         return try {
-            super.getQuantityString(id, quantity, *formatArgs)
+            originResources.getQuantityString(id, quantity, *formatArgs)
         } catch (e: Exception) {
             pluginResources.getQuantityString(id, quantity, *formatArgs)
         }
@@ -102,7 +100,7 @@ class PluginResource(
 
     override fun getQuantityString(id: Int, quantity: Int): String {
         return try {
-            super.getQuantityString(id, quantity)
+            originResources.getQuantityString(id, quantity)
         } catch (e: Exception) {
             pluginResources.getQuantityString(id, quantity)
         }
@@ -110,7 +108,7 @@ class PluginResource(
 
     override fun getTextArray(id: Int): Array<CharSequence> {
         return try {
-            super.getTextArray(id)
+            originResources.getTextArray(id)
         } catch (e: Exception) {
             pluginResources.getTextArray(id)
         }
@@ -118,7 +116,7 @@ class PluginResource(
 
     override fun getStringArray(id: Int): Array<String> {
         return try {
-            super.getStringArray(id)
+            originResources.getStringArray(id)
         } catch (e: Exception) {
             pluginResources.getStringArray(id)
         }
@@ -126,7 +124,7 @@ class PluginResource(
 
     override fun getIntArray(id: Int): IntArray {
         return try {
-            super.getIntArray(id)
+            originResources.getIntArray(id)
         } catch (e: Exception) {
             pluginResources.getIntArray(id)
         }
@@ -134,7 +132,7 @@ class PluginResource(
 
     override fun obtainTypedArray(id: Int): TypedArray {
         return try {
-            super.obtainTypedArray(id)
+            originResources.obtainTypedArray(id)
         } catch (e: Exception) {
             pluginResources.obtainTypedArray(id)
         }
@@ -142,7 +140,7 @@ class PluginResource(
 
     override fun getDimension(id: Int): Float {
         return try {
-            super.getDimension(id)
+            originResources.getDimension(id)
         } catch (e: Exception) {
             pluginResources.getDimension(id)
         }
@@ -150,7 +148,7 @@ class PluginResource(
 
     override fun getDimensionPixelOffset(id: Int): Int {
         return try {
-            super.getDimensionPixelOffset(id)
+            originResources.getDimensionPixelOffset(id)
         } catch (e: Exception) {
             pluginResources.getDimensionPixelOffset(id)
         }
@@ -158,7 +156,7 @@ class PluginResource(
 
     override fun getDimensionPixelSize(id: Int): Int {
         return try {
-            super.getDimensionPixelSize(id)
+            originResources.getDimensionPixelSize(id)
         } catch (e: Exception) {
             pluginResources.getDimensionPixelSize(id)
         }
@@ -166,7 +164,7 @@ class PluginResource(
 
     override fun getFraction(id: Int, base: Int, pbase: Int): Float {
         return try {
-            super.getFraction(id, base, pbase)
+            originResources.getFraction(id, base, pbase)
         } catch (e: Exception) {
             pluginResources.getFraction(id, base, pbase)
         }
@@ -174,7 +172,7 @@ class PluginResource(
 
     override fun getDrawable(id: Int): Drawable {
         return try {
-            super.getDrawable(id)
+            originResources.getDrawable(id)
         } catch (e: Exception) {
             pluginResources.getDrawable(id)
         }
@@ -182,7 +180,7 @@ class PluginResource(
 
     override fun getDrawable(id: Int, theme: Theme?): Drawable {
         return try {
-            super.getDrawable(id, theme)
+            originResources.getDrawable(id, theme)
         } catch (e: Exception) {
             pluginResources.getDrawable(id, theme)
         }
@@ -190,7 +188,7 @@ class PluginResource(
 
     override fun getDrawableForDensity(id: Int, density: Int): Drawable? {
         return try {
-            super.getDrawableForDensity(id, density)
+            originResources.getDrawableForDensity(id, density)
         } catch (e: Exception) {
             pluginResources.getDrawableForDensity(id, density)
         }
@@ -198,7 +196,7 @@ class PluginResource(
 
     override fun getDrawableForDensity(id: Int, density: Int, theme: Theme?): Drawable? {
         return try {
-            super.getDrawableForDensity(id, density, theme)
+            originResources.getDrawableForDensity(id, density, theme)
         } catch (e: Exception) {
             pluginResources.getDrawableForDensity(id, density, theme)
         }
@@ -206,7 +204,7 @@ class PluginResource(
 
     override fun getMovie(id: Int): Movie {
         return try {
-            super.getMovie(id)
+            originResources.getMovie(id)
         } catch (e: Exception) {
             pluginResources.getMovie(id)
         }
@@ -214,7 +212,7 @@ class PluginResource(
 
     override fun getColor(id: Int): Int {
         return try {
-            super.getColor(id)
+            originResources.getColor(id)
         } catch (e: Exception) {
             pluginResources.getColor(id)
         }
@@ -222,7 +220,7 @@ class PluginResource(
 
     override fun getColor(id: Int, theme: Theme?): Int {
         return try {
-            super.getColor(id, theme)
+            originResources.getColor(id, theme)
         } catch (e: Exception) {
             pluginResources.getColor(id, theme)
         }
@@ -230,7 +228,7 @@ class PluginResource(
 
     override fun getColorStateList(id: Int): ColorStateList {
         return try {
-            super.getColorStateList(id)
+            originResources.getColorStateList(id)
         } catch (e: Exception) {
             pluginResources.getColorStateList(id)
         }
@@ -238,7 +236,7 @@ class PluginResource(
 
     override fun getColorStateList(id: Int, theme: Theme?): ColorStateList {
         return try {
-            super.getColorStateList(id, theme)
+            originResources.getColorStateList(id, theme)
         } catch (e: Exception) {
             pluginResources.getColorStateList(id, theme)
         }
@@ -246,7 +244,7 @@ class PluginResource(
 
     override fun getBoolean(id: Int): Boolean {
         return try {
-            super.getBoolean(id)
+            originResources.getBoolean(id)
         } catch (e: Exception) {
             pluginResources.getBoolean(id)
         }
@@ -254,7 +252,7 @@ class PluginResource(
 
     override fun getInteger(id: Int): Int {
         return try {
-            super.getInteger(id)
+            originResources.getInteger(id)
         } catch (e: Exception) {
             pluginResources.getInteger(id)
         }
@@ -263,7 +261,7 @@ class PluginResource(
     @SuppressLint("NewApi")
     override fun getFloat(id: Int): Float {
         return try {
-            super.getFloat(id)
+            originResources.getFloat(id)
         } catch (e: Exception) {
             pluginResources.getFloat(id)
         }
@@ -271,7 +269,7 @@ class PluginResource(
 
     override fun getLayout(id: Int): XmlResourceParser {
         return try {
-            super.getLayout(id)
+            originResources.getLayout(id)
         } catch (e: Exception) {
             pluginResources.getLayout(id)
         }
@@ -279,7 +277,7 @@ class PluginResource(
 
     override fun getAnimation(id: Int): XmlResourceParser {
         return try {
-            super.getAnimation(id)
+            originResources.getAnimation(id)
         } catch (e: Exception) {
             pluginResources.getAnimation(id)
         }
@@ -287,7 +285,7 @@ class PluginResource(
 
     override fun getXml(id: Int): XmlResourceParser {
         return try {
-            super.getXml(id)
+            originResources.getXml(id)
         } catch (e: Exception) {
             pluginResources.getXml(id)
         }
@@ -295,7 +293,7 @@ class PluginResource(
 
     override fun openRawResource(id: Int): InputStream {
         return try {
-            super.openRawResource(id)
+            originResources.openRawResource(id)
         } catch (e: Exception) {
             pluginResources.openRawResource(id)
         }
@@ -303,7 +301,7 @@ class PluginResource(
 
     override fun openRawResource(id: Int, value: TypedValue?): InputStream {
         return try {
-            super.openRawResource(id, value)
+            originResources.openRawResource(id, value)
         } catch (e: Exception) {
             pluginResources.openRawResource(id, value)
         }
@@ -311,7 +309,7 @@ class PluginResource(
 
     override fun openRawResourceFd(id: Int): AssetFileDescriptor {
         return try {
-            super.openRawResourceFd(id)
+            originResources.openRawResourceFd(id)
         } catch (e: Exception) {
             pluginResources.openRawResourceFd(id)
         }
@@ -319,7 +317,7 @@ class PluginResource(
 
     override fun getValue(id: Int, outValue: TypedValue?, resolveRefs: Boolean) {
         try {
-            super.getValue(id, outValue, resolveRefs)
+            originResources.getValue(id, outValue, resolveRefs)
         } catch (e: Exception) {
             pluginResources.getValue(id, outValue, resolveRefs)
         }
@@ -327,7 +325,7 @@ class PluginResource(
 
     override fun getValue(name: String?, outValue: TypedValue?, resolveRefs: Boolean) {
         try {
-            super.getValue(name, outValue, resolveRefs)
+            originResources.getValue(name, outValue, resolveRefs)
         } catch (e: Exception) {
             pluginResources.getValue(name, outValue, resolveRefs)
         }
@@ -335,7 +333,7 @@ class PluginResource(
 
     override fun getValueForDensity(id: Int, density: Int, outValue: TypedValue?, resolveRefs: Boolean) {
         try {
-            super.getValueForDensity(id, density, outValue, resolveRefs)
+            originResources.getValueForDensity(id, density, outValue, resolveRefs)
         } catch (e: Exception) {
             pluginResources.getValueForDensity(id, density, outValue, resolveRefs)
         }
@@ -343,7 +341,7 @@ class PluginResource(
 
     override fun obtainAttributes(set: AttributeSet?, attrs: IntArray?): TypedArray {
         return try {
-            super.obtainAttributes(set, attrs)
+            originResources.obtainAttributes(set, attrs)
         } catch (e: Exception) {
             pluginResources.obtainAttributes(set, attrs)
         }
@@ -351,7 +349,7 @@ class PluginResource(
 
     override fun updateConfiguration(config: Configuration?, metrics: DisplayMetrics?) {
         try {
-            super.updateConfiguration(config, metrics)
+            originResources.updateConfiguration(config, metrics)
         } catch (e: Exception) {
             pluginResources.updateConfiguration(config, metrics)
         }
@@ -359,7 +357,7 @@ class PluginResource(
 
     override fun getDisplayMetrics(): DisplayMetrics {
         return try {
-            super.getDisplayMetrics()
+            originResources.getDisplayMetrics()
         } catch (e: Exception) {
             pluginResources.getDisplayMetrics()
         }
@@ -367,7 +365,7 @@ class PluginResource(
 
     override fun getConfiguration(): Configuration {
         return try {
-            super.getConfiguration()
+            originResources.getConfiguration()
         } catch (e: Exception) {
             pluginResources.getConfiguration()
         }
@@ -375,7 +373,7 @@ class PluginResource(
 
     override fun getIdentifier(name: String?, defType: String?, defPackage: String?): Int {
         return try {
-            super.getIdentifier(name, defType, defPackage)
+            originResources.getIdentifier(name, defType, defPackage)
         } catch (e: Exception) {
             pluginResources.getIdentifier(name, defType, defPackage)
         }
@@ -383,7 +381,7 @@ class PluginResource(
 
     override fun getResourceName(resid: Int): String {
         return return try {
-            super.getResourceName(resid)
+            originResources.getResourceName(resid)
         } catch (e: Exception) {
             pluginResources.getResourceName(resid)
         }
@@ -391,7 +389,7 @@ class PluginResource(
 
     override fun getResourcePackageName(resid: Int): String {
         return try {
-            super.getResourcePackageName(resid)
+            originResources.getResourcePackageName(resid)
         } catch (e: Exception) {
             pluginResources.getResourcePackageName(resid)
         }
@@ -399,7 +397,7 @@ class PluginResource(
 
     override fun getResourceTypeName(resid: Int): String {
         return try {
-            super.getResourceTypeName(resid)
+            originResources.getResourceTypeName(resid)
         } catch (e: Exception) {
             pluginResources.getResourceTypeName(resid)
         }
@@ -407,7 +405,7 @@ class PluginResource(
 
     override fun getResourceEntryName(resid: Int): String {
         return try {
-            super.getResourceEntryName(resid)
+            originResources.getResourceEntryName(resid)
         } catch (e: Exception) {
             pluginResources.getResourceEntryName(resid)
         }
@@ -415,7 +413,7 @@ class PluginResource(
 
     override fun parseBundleExtras(parser: XmlResourceParser?, outBundle: Bundle?) {
         try {
-            super.parseBundleExtras(parser, outBundle)
+            originResources.parseBundleExtras(parser, outBundle)
         } catch (e: Exception) {
             pluginResources.parseBundleExtras(parser, outBundle)
         }
@@ -423,7 +421,7 @@ class PluginResource(
 
     override fun parseBundleExtra(tagName: String?, attrs: AttributeSet?, outBundle: Bundle?) {
         try {
-            super.parseBundleExtra(tagName, attrs, outBundle)
+            originResources.parseBundleExtra(tagName, attrs, outBundle)
         } catch (e: Exception) {
             pluginResources.parseBundleExtra(tagName, attrs, outBundle)
         }
@@ -432,7 +430,7 @@ class PluginResource(
     @SuppressLint("NewApi")
     override fun addLoaders(vararg loaders: ResourcesLoader?) {
         try {
-            super.addLoaders(*loaders)
+            originResources.addLoaders(*loaders)
         } catch (e: Exception) {
             pluginResources.addLoaders(*loaders)
         }
@@ -441,7 +439,7 @@ class PluginResource(
     @SuppressLint("NewApi")
     override fun removeLoaders(vararg loaders: ResourcesLoader?) {
         try {
-            super.removeLoaders(*loaders)
+            originResources.removeLoaders(*loaders)
         } catch (e: Exception) {
             pluginResources.removeLoaders(*loaders)
         }
@@ -450,6 +448,6 @@ class PluginResource(
 
 fun injectRes(activity: Activity?) {
     activity?.runCatching {
-        this.fieldSetFirst("mResources", PluginResource(resources))
+        this.fieldSetFirst("mResources", PluginResource(activity.resources))
     }
 }

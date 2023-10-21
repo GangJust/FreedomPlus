@@ -25,11 +25,11 @@ class HMainBottomTabItem(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<An
         const val TAG = "HMainBottomTabItem"
     }
 
+    val config get() = ConfigV1.get()
+
     override fun setTargetClass(): Class<*> {
         return DexkitBuilder.mainBottomTabItemClazz ?: NoneHook::class.java
     }
-
-    val config get() = ConfigV1.get()
 
     override fun callOnBeforeMethods(param: XC_MethodHook.MethodHookParam) {
 

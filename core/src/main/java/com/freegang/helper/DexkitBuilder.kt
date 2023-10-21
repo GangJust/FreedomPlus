@@ -29,6 +29,8 @@ object DexkitBuilder {
     var videoPlayerHelperClazz: Class<*>? = null
     var videoPinchViewClazz: Class<*>? = null
     var videoPagerAdapterClazz: Class<*>? = null
+    var recommendFeedFetchPresenterClazz: Class<*>? = null
+    var fullFeedFollowFetchPresenterClazz: Class<*>? = null
     var detailPageFragmentClazz: Class<*>? = null
     var emojiApiProxyClazz: Class<*>? = null
     var emojiPopupWindowClazz: Class<*>? = null
@@ -116,6 +118,30 @@ object DexkitBuilder {
                     }
                 }
             }.firstClass("videoPagerAdapter")
+            recommendFeedFetchPresenterClazz = bridge.findClass {
+                matcher {
+                    methods {
+                        add {
+                            name = "onSuccess"
+                        }
+                    }
+                    addUsingString("com.ss.android.ugc.aweme.feed.presenter.RecommendFeedFetchPresenter")
+                    addUsingString("enter_from")
+                    addUsingString("homepage_hot")
+                }
+            }.firstClass("recommendFeedFetchPresenter")
+            fullFeedFollowFetchPresenterClazz = bridge.findClass {
+                matcher {
+                    methods {
+                        add {
+                            name = "onSuccess"
+                        }
+                    }
+                    addUsingString("com.ss.android.ugc.aweme.feed.presenter.FullFeedFollowFetchPresenter")
+                    addUsingString("enter_from")
+                    addUsingString("homepage_follow")
+                }
+            }.firstClass("fullFeedFollowFetchPresenter")
             emojiPopupWindowClazz = bridge.findClass {
                 matcher {
                     methods {
@@ -223,6 +249,8 @@ object DexkitBuilder {
         val videoPlayerHelper = cache.getStringOrDefault("videoPlayerHelper")
         val videoPinchView = cache.getStringOrDefault("videoPinchView")
         val videoPagerAdapter = cache.getStringOrDefault("videoPagerAdapter")
+        val recommendFeedFetchPresenter = cache.getStringOrDefault("recommendFeedFetchPresenter")
+        val fullFeedFollowFetchPresenter = cache.getStringOrDefault("fullFeedFollowFetchPresenter")
         val emojiPopupWindow = cache.getStringOrDefault("emojiPopupWindow")
         val detailPageFragment = cache.getStringOrDefault("detailPageFragment")
         val emojiApiProxy = cache.getStringOrDefault("emojiApiProxy")
@@ -242,6 +270,8 @@ object DexkitBuilder {
         videoPlayerHelperClazz = videoPlayerHelper.ifNotEmpty { lpparam.findClass(it) }
         videoPinchViewClazz = videoPinchView.ifNotEmpty { lpparam.findClass(it) }
         videoPagerAdapterClazz = videoPagerAdapter.ifNotEmpty { lpparam.findClass(it) }
+        recommendFeedFetchPresenterClazz = recommendFeedFetchPresenter.ifNotEmpty { lpparam.findClass(it) }
+        fullFeedFollowFetchPresenterClazz = fullFeedFollowFetchPresenter.ifNotEmpty { lpparam.findClass(it) }
         emojiPopupWindowClazz = emojiPopupWindow.ifNotEmpty { lpparam.findClass(it) }
         detailPageFragmentClazz = detailPageFragment.ifNotEmpty { lpparam.findClass(it) }
         emojiApiProxyClazz = emojiApiProxy.ifNotEmpty { lpparam.findClass(it) }
