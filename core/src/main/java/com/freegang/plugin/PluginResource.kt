@@ -170,6 +170,8 @@ class PluginResource(
         }
     }
 
+    @Deprecated("Deprecated in Java")
+    @SuppressLint("UseCompatLoadingForDrawables")
     override fun getDrawable(id: Int): Drawable {
         return try {
             originResources.getDrawable(id)
@@ -178,6 +180,7 @@ class PluginResource(
         }
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     override fun getDrawable(id: Int, theme: Theme?): Drawable {
         return try {
             originResources.getDrawable(id, theme)
@@ -186,6 +189,7 @@ class PluginResource(
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun getDrawableForDensity(id: Int, density: Int): Drawable? {
         return try {
             originResources.getDrawableForDensity(id, density)
@@ -202,6 +206,7 @@ class PluginResource(
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun getMovie(id: Int): Movie {
         return try {
             originResources.getMovie(id)
@@ -210,6 +215,7 @@ class PluginResource(
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun getColor(id: Int): Int {
         return try {
             originResources.getColor(id)
@@ -226,6 +232,9 @@ class PluginResource(
         }
     }
 
+
+    @SuppressLint("UseCompatLoadingForColorStateLists")
+    @Deprecated("Deprecated in Java")
     override fun getColorStateList(id: Int): ColorStateList {
         return try {
             originResources.getColorStateList(id)
@@ -323,6 +332,7 @@ class PluginResource(
         }
     }
 
+    @SuppressLint("DiscouragedApi")
     override fun getValue(name: String?, outValue: TypedValue?, resolveRefs: Boolean) {
         try {
             originResources.getValue(name, outValue, resolveRefs)
@@ -347,6 +357,7 @@ class PluginResource(
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun updateConfiguration(config: Configuration?, metrics: DisplayMetrics?) {
         try {
             originResources.updateConfiguration(config, metrics)
@@ -357,9 +368,9 @@ class PluginResource(
 
     override fun getDisplayMetrics(): DisplayMetrics {
         return try {
-            originResources.getDisplayMetrics()
+            originResources.displayMetrics
         } catch (e: Exception) {
-            pluginResources.getDisplayMetrics()
+            pluginResources.displayMetrics
         }
     }
 
@@ -371,6 +382,7 @@ class PluginResource(
         }
     }
 
+    @SuppressLint("DiscouragedApi")
     override fun getIdentifier(name: String?, defType: String?, defPackage: String?): Int {
         return try {
             originResources.getIdentifier(name, defType, defPackage)

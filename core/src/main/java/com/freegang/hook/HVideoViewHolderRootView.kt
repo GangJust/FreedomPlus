@@ -56,7 +56,6 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
     private var longPressRunnable: Runnable? = null
 
     //
-    private var penetrateTouchRelativeLayoutId = View.NO_ID
     private var onDragListener: ViewTreeObserver.OnDrawListener? = null
 
     override fun callOnBeforeConstructors(param: XC_MethodHook.MethodHookParam) {
@@ -93,22 +92,30 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
 
         monitorScrollFrameLayout?.children?.forEach {
             if (it is PenetrateTouchRelativeLayout) {
-                penetrateTouchRelativeLayoutId = it.id
 
                 // 半透明
                 if (config.isTranslucent) {
                     it.alpha = config.translucentValue[1] / 100f
+                    if (it.alpha <= 0) {  // 全透明
+                        it.isVisible = false
+                        return@forEach
+                    }
                 }
 
                 // 专注模式
                 if (HVideoPinchView.isVideoPinchView) {
                     it.isVisible = false
-                    return
+                    return@forEach
                 }
 
                 // 清爽模式
                 if (config.isNeatMode) {
                     it.isVisible = !config.neatModeState
+                }
+
+                // 长按快进
+                if (isLongPressFast) {
+                    it.isVisible = !isLongPressFast
                 }
             }
         }
@@ -275,20 +282,23 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
 
                     "过滤统计" -> {
                         val builder = StringBuilder()
-                        if (HVideoPagerAdapter.filterLiveCount > 0) {
-                            builder.append("直播过滤: ").append(HVideoPagerAdapter.filterLiveCount).append("\n")
+                        if (HVerticalViewPagerNew.filterLiveCount > 0) {
+                            builder.append("直播过滤: ").append(HVerticalViewPagerNew.filterLiveCount).append("\n")
                         }
-                        if (HVideoPagerAdapter.filterImageCount > 0) {
-                            builder.append("图文过滤: ").append(HVideoPagerAdapter.filterImageCount).append("\n")
+                        if (HVerticalViewPagerNew.filterImageCount > 0) {
+                            builder.append("图文过滤: ").append(HVerticalViewPagerNew.filterImageCount).append("\n")
                         }
-                        if (HVideoPagerAdapter.filterAdCount > 0) {
-                            builder.append("广告过滤: ").append(HVideoPagerAdapter.filterAdCount).append("\n")
+                        if (HVerticalViewPagerNew.filterAdCount > 0) {
+                            builder.append("广告过滤: ").append(HVerticalViewPagerNew.filterAdCount).append("\n")
                         }
-                        if (HVideoPagerAdapter.filterLongVideoCount > 0) {
-                            builder.append("长视频过滤: ").append(HVideoPagerAdapter.filterLongVideoCount).append("\n")
+                        if (HVerticalViewPagerNew.filterLongVideoCount > 0) {
+                            builder.append("长视频过滤: ").append(HVerticalViewPagerNew.filterLongVideoCount).append("\n")
                         }
-                        if (HVideoPagerAdapter.filterOtherCount > 0) {
-                            builder.append("关键字过滤: ").append(HVideoPagerAdapter.filterOtherCount)
+                        if (HVerticalViewPagerNew.filterPopularEffectCount > 0) {
+                            builder.append("特效过滤: ").append(HVerticalViewPagerNew.filterPopularEffectCount).append("\n")
+                        }
+                        if (HVerticalViewPagerNew.filterOtherCount > 0) {
+                            builder.append("关键字过滤: ").append(HVerticalViewPagerNew.filterOtherCount)
                         }
                         val msg = builder.toString().trim()
                         if (msg.isEmpty()) {
@@ -313,8 +323,8 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
                         KLogCat.clearStorage()
                         KLogCat.openStorage()
                         KLogCat.d(
-                            view.rootView.toViewTreeString {
-                                "${it.view?.javaClass?.name}, ${it.view?.contentDescription}"
+                            view.rootView.toViewTreeString(indent = 2) {
+                                "${it.view?.javaClass?.name}, id=${it.view?.id}, desc=${it.view?.contentDescription}"
                             }
                         )
                         KLogCat.closeStorage()

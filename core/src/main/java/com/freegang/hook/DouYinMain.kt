@@ -72,39 +72,35 @@ class DouYinMain(private val app: Application) {
             // search and hook
             DexkitBuilder.running(
                 app = app,
-                version = 6,
+                version = 8,
                 searchBefore = {
                     HActivity(lpparam)
                     HMainActivity(lpparam)
+                    HDetailActivity(lpparam)
                     HSideBarNestedScrollView(lpparam)
                     HDisallowInterceptRelativeLayout(lpparam)
-                    // HMainFragment(lpparam)
                     HMainTabStripScrollView(lpparam)
-                    HCustomizedUISeekBar(lpparam)
-                    HDetailActivity(lpparam)
                     HFlippableViewPager(lpparam)
+                    HCustomizedUISeekBar(lpparam)
+                    // HVideoViewHolder(lpparam)
                     HVideoViewHolderRootView(lpparam)
                     HPenetrateTouchRelativeLayout(lpparam)
-                    // HFeedRightScaleView(lpparam)
                     HInteractStickerParent(lpparam)
                     HCommentAudioView(lpparam)
                     HGifEmojiDetailActivity(lpparam)
-                    HChatRoomActivity(lpparam)
-                    // HDouYinSettingNewVersionActivity(lpparam)
-                    // HHomeSideBarEntranceManagerV1(lpparam)
                     HEmojiDetailDialog(lpparam)
                 },
                 searchAfter = {
                     HCornerExtensionsPopupWindow(lpparam)
                     HMainBottomTabView(lpparam)
                     HMainBottomTabItem(lpparam)
-                    // HVerticalViewPager(lpparam)
+                    HSeekBarSpeedModeBottomMask(lpparam)
                     HVideoPlayerHelper(lpparam)
                     HVerticalViewPagerNew(lpparam)
                     HVideoPinchView(lpparam)
                     HDetailPageFragment(lpparam)
                     HEmojiDetailDialogNew(lpparam)
-                    HVideoPagerAdapter(lpparam)
+                    // HVideoPagerAdapter(lpparam)
                 }
             )
         }.onFailure {

@@ -82,6 +82,9 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     private var _isImmersive = MutableLiveData(false)
     val isImmersive: LiveData<Boolean> = _isImmersive
 
+    private var _systemControllerValue = MutableLiveData(listOf(false, false))
+    val systemControllerValue: LiveData<List<Boolean>> = _systemControllerValue
+
     private var _isLongPressMode = MutableLiveData(false)
     val isLongPressMode: LiveData<Boolean> = _isLongPressMode
 
@@ -148,6 +151,7 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
             changeLongPressMode(config.longPressMode)
             changeIsRemoveSticker(config.isRemoveSticker)
             changeIsImmersive(config.isImmersive)
+            changeSystemControllerValue(config.systemControllerValue)
             changeIsHideTab(config.isHideTab)
             setHideTabKeywords(config.hideTabKeywords)
             changeIsWebDav(config.isWebDav)
@@ -261,6 +265,12 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     fun changeIsImmersive(value: Boolean) {
         _isImmersive.value = value
         config.isImmersive = value
+    }
+
+    // 系统隐藏项(状态栏、导航栏)
+    fun changeSystemControllerValue(value: List<Boolean>) {
+        _systemControllerValue.value = value
+        config.systemControllerValue = value
     }
 
     // 清爽模式弹窗响应模式

@@ -3,7 +3,6 @@ package com.freegang.hook
 import androidx.core.view.updatePadding
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
-import com.freegang.ktutils.app.navigationBarHeight
 import com.freegang.ktutils.display.dip2px
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.xpler.core.CallMethods
@@ -29,11 +28,7 @@ class HPenetrateTouchRelativeLayout(lpparam: XC_LoadPackage.LoadPackageParam) :
         hookBlockRunning(param) {
             if (config.isImmersive) {
                 thisViewGroup.apply {
-                    var bottomPadding = context.dip2px(58f) // BottomTabBarHeight
-                    // 全面屏手势沉浸式底部垫高 (主屏幕控件)，底部导航栏则不处理
-                    if (HDisallowInterceptRelativeLayout.isEdgeToEdgeEnabled) {
-                        bottomPadding += context.navigationBarHeight
-                    }
+                    val bottomPadding = context.dip2px(58f) // BottomTabBarHeight
                     updatePadding(bottom = bottomPadding)
                 }
             }

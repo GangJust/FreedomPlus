@@ -253,6 +253,16 @@ class ConfigV1 private constructor() {
             field = value
         }
 
+    // 系统隐藏项(状态栏、导航栏)
+    var systemControllerValue: List<Boolean> = listOf(false, false)
+        get() {
+            return mmkv.getString("systemControllerValue", "false, false")!!.split(",").map { it.trim().toBoolean() }
+        }
+        set(value) {
+            mmkv.putString("systemControllerValue", value.joinToString(","))
+            field = value
+        }
+
     /// 隐藏顶部tab
     var isHideTab: Boolean = false
         get() {

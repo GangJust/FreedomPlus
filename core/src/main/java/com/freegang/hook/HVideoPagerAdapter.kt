@@ -16,6 +16,7 @@ import com.ss.android.ugc.aweme.follow.presenter.FollowFeed
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
+@Deprecated("淘汰区, 删除倒计时中..")
 class HVideoPagerAdapter(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Any>(lpparam), CallMethods {
     companion object {
         const val TAG = "HVideoPagerAdapter"
@@ -58,14 +59,16 @@ class HVideoPagerAdapter(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<An
             lpparam.hookClass(this)
                 .method("onSuccess") {
                     onBefore {
+                        if (!config.isVideoFilter) return@onBefore
+
                         val mModel = thisObject.fieldGetFirst("mModel")
                         val mData = mModel?.fieldGetFirst("mData")
                         if (mData?.javaClass?.name?.contains("FeedItemList") == true) {
                             val items = mData.fieldGetFirst("items")?.asOrNull<List<Aweme>>() ?: emptyList()
-                            mData.fieldSetFirst("items", filterAwemes(items))
+                            mData.fieldSetFirst("items", filterAwemeList(items))
                             val array = items.map { it.sortString() }.toTypedArray()
-                            KLogCat.d("推荐视频列表")
-                            KLogCat.d(*array)
+                            KLogCat.tagD(TAG, "推荐视频列表")
+                            KLogCat.tagD(TAG, array.joinToString("\n"))
                         }
                     }
                 }
@@ -77,14 +80,16 @@ class HVideoPagerAdapter(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<An
             lpparam.hookClass(this)
                 .method("onSuccess") {
                     onBefore {
+                        if (!config.isVideoFilter) return@onBefore
+
                         val mModel = thisObject.fieldGetFirst("mModel")
                         val mData = mModel?.fieldGetFirst("mData")
                         if (mData?.javaClass?.name?.contains("FollowFeedList") == true) {
                             val mItems = mData.fieldGetFirst("mItems")?.asOrNull<List<FollowFeed>>() ?: emptyList()
-                            mData.fieldSetFirst("mItems", filterFollowFeed(mItems))
+                            mData.fieldSetFirst("mItems", filterFollowFeedList(mItems))
                             val array = mItems.map { it.aweme.sortString() }.toTypedArray()
-                            KLogCat.d("关注页视频列表")
-                            KLogCat.d(*array)
+                            KLogCat.tagD(TAG, "关注页视频列表")
+                            KLogCat.tagD(TAG, array.joinToString("\n"))
                         }
                     }
                 }
@@ -108,10 +113,10 @@ class HVideoPagerAdapter(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<An
     }
 
     private fun Aweme.sortString(): String {
-        return "awemeType=${awemeType}, desc=${desc}"
+        return "awemeType=${awemeType}, desc=${desc.replace(Regex("\\s"), "")}"
     }
 
-    private fun filterAwemes(items: List<Aweme>): List<Aweme> {
+    private fun filterAwemeList(items: List<Aweme>): List<Aweme> {
         resetFilterCount()
         val awemes = mutableListOf<Aweme>()
         for (item in items) {
@@ -121,7 +126,7 @@ class HVideoPagerAdapter(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<An
         return awemes
     }
 
-    private fun filterFollowFeed(items: List<FollowFeed>): List<FollowFeed> {
+    private fun filterFollowFeedList(items: List<FollowFeed>): List<FollowFeed> {
         resetFilterCount()
         val followFeeds = mutableListOf<FollowFeed>()
         for (item in items) {

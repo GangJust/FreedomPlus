@@ -93,7 +93,7 @@ class HSideBarNestedScrollView(lpparam: XC_LoadPackage.LoadPackageParam) :
 
                 if (config.isImmersive) {
                     // 全面屏手势沉浸式底部垫高 (首页侧滑)，底部导航栏则不处理
-                    if (HDisallowInterceptRelativeLayout.isEdgeToEdgeEnabled) {
+                    if (HMainActivity.isEdgeToEdgeEnabled) {
                         onlyChild.updatePadding(bottom = context.navigationBarHeight)
                     }
                 }

@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.Checkbox
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExposedDropdownMenuBox
@@ -391,6 +392,8 @@ class FreedomSettingActivity : BaseActivity() {
                 item {
                     // 调整透明度
                     var showTransparentDialog by remember { mutableStateOf(false) }
+                    var showTransparentTips by remember { mutableStateOf(false) }
+
                     if (showTransparentDialog) {
                         val translucentValue = model.translucentValue.value ?: listOf(50, 50, 50)
                         var topBarTransparent by remember { mutableStateOf(translucentValue[0]) }
@@ -421,7 +424,7 @@ class FreedomSettingActivity : BaseActivity() {
                                     )
                                     Slider(
                                         value = topBarTransparent.toFloat(),
-                                        valueRange = 10f..100f,
+                                        valueRange = 0f..100f,
                                         onValueChange = {
                                             topBarTransparent = it.toInt()
                                         },
@@ -433,7 +436,7 @@ class FreedomSettingActivity : BaseActivity() {
                                     )
                                     Slider(
                                         value = videoAssemblyTransparent.toFloat(),
-                                        valueRange = 10f..100f,
+                                        valueRange = 0f..100f,
                                         onValueChange = {
                                             videoAssemblyTransparent = it.toInt()
                                         },
@@ -445,7 +448,7 @@ class FreedomSettingActivity : BaseActivity() {
                                     )
                                     Slider(
                                         value = bottomBarTransparent.toFloat(),
-                                        valueRange = 10f..100f,
+                                        valueRange = 0f..100f,
                                         onValueChange = {
                                             bottomBarTransparent = it.toInt()
                                         },
@@ -496,6 +499,7 @@ class FreedomSettingActivity : BaseActivity() {
                                                 model.changeDoubleClickType(radioIndex)
                                             },
                                         )
+                                        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
                                         Text(
                                             text = "暂停视频",
                                             style = MaterialTheme.typography.body1,
@@ -509,6 +513,7 @@ class FreedomSettingActivity : BaseActivity() {
                                                 model.changeDoubleClickType(radioIndex)
                                             },
                                         )
+                                        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
                                         Text(
                                             text = "打开评论",
                                             style = MaterialTheme.typography.body1,
@@ -523,6 +528,7 @@ class FreedomSettingActivity : BaseActivity() {
                                                 model.changeDoubleClickType(radioIndex)
                                             },
                                         )
+                                        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
                                         Text(
                                             text = "点赞视频",
                                             style = MaterialTheme.typography.body1,
@@ -574,6 +580,7 @@ class FreedomSettingActivity : BaseActivity() {
                                                 model.changePhotoButtonType(radioIndex)
                                             },
                                         )
+                                        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
                                         Text(
                                             text = "允许拍摄",
                                             style = MaterialTheme.typography.body1,
@@ -587,6 +594,7 @@ class FreedomSettingActivity : BaseActivity() {
                                                 model.changePhotoButtonType(radioIndex)
                                             },
                                         )
+                                        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
                                         Text(
                                             text = "禁止拍摄",
                                             style = MaterialTheme.typography.body1,
@@ -600,6 +608,7 @@ class FreedomSettingActivity : BaseActivity() {
                                                 model.changePhotoButtonType(radioIndex)
                                             },
                                         )
+                                        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
                                         Text(
                                             text = "移除按钮",
                                             style = MaterialTheme.typography.body1,
@@ -771,6 +780,7 @@ class FreedomSettingActivity : BaseActivity() {
                                                 model.changeLongPressMode(isLongPressMode)
                                             },
                                         )
+                                        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
                                         Text(
                                             text = "长按视频上半",
                                             style = MaterialTheme.typography.body1,
@@ -784,6 +794,7 @@ class FreedomSettingActivity : BaseActivity() {
                                                 model.changeLongPressMode(isLongPressMode)
                                             },
                                         )
+                                        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
                                         Text(
                                             text = "长按视频下半",
                                             style = MaterialTheme.typography.body1,
@@ -806,12 +817,59 @@ class FreedomSettingActivity : BaseActivity() {
                     )
                 }
                 item {
+                    // 状态栏，导航栏隐藏
+                    var showSettingDialog by remember { mutableStateOf(false) }
+                    if (showSettingDialog) {
+                        val systemControllerValue = model.systemControllerValue.value ?: listOf(false, false)
+                        var isHideStatusBar by remember { mutableStateOf(systemControllerValue[0]) }
+                        var isHideNavigateBar by remember { mutableStateOf(systemControllerValue[1]) }
+                        FMessageDialog(
+                            title = "请选择系统隐藏项",
+                            confirm = "更改",
+                            onlyConfirm = true,
+                            onConfirm = {
+                                showSettingDialog = false
+                                model.changeSystemControllerValue(listOf(isHideStatusBar, isHideNavigateBar))
+                            },
+                            content = {
+                                Column {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Checkbox(
+                                            checked = isHideStatusBar,
+                                            onCheckedChange = {
+                                                isHideStatusBar = it
+                                            }
+                                        )
+                                        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                                        Text(
+                                            text = "隐藏状态栏",
+                                            style = MaterialTheme.typography.body1,
+                                        )
+                                    }
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Checkbox(
+                                            checked = isHideNavigateBar,
+                                            onCheckedChange = {
+                                                isHideNavigateBar = it
+                                            },
+                                        )
+                                        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                                        Text(
+                                            text = "隐藏导航栏",
+                                            style = MaterialTheme.typography.body1,
+                                        )
+                                    }
+                                }
+                            }
+                        )
+                    }
+
                     SwitchItem(
                         text = "全屏沉浸",
-                        subtext = "体验全屏沉浸式播放, 但会造成视频剪辑拉伸",
+                        subtext = "全屏沉浸式播放, 会造成视频剪辑拉伸, 点击调整设置",
                         checked = model.isImmersive.observeAsState(false),
                         onClick = {
-
+                            showSettingDialog = true
                         },
                         onCheckedChange = {
                             model.changeIsImmersive(it)
@@ -877,14 +935,14 @@ class FreedomSettingActivity : BaseActivity() {
                             },
                             content = {
                                 Text(
-                                    text = "一旦开启顶部Tab隐藏, 将禁止左右滑动切换, 具体效果自行查看!",
+                                    text = "一旦开启顶部选项隐藏, 将禁止左右滑动切换, 具体效果自行查看!",
                                     style = MaterialTheme.typography.body1,
                                 )
                             },
                         )
                     }
                     SwitchItem(
-                        text = "隐藏顶部tab",
+                        text = "隐藏顶部选项",
                         subtext = "点击设置关键字",
                         checked = model.isHideTab.observeAsState(false),
                         onClick = {

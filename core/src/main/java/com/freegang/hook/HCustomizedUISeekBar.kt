@@ -26,7 +26,7 @@ class HCustomizedUISeekBar(lpparam: XC_LoadPackage.LoadPackageParam) :
 
     @OnAfter("setVisibility")
     fun setVisibilityAfter(params: XC_MethodHook.MethodHookParam, visibility: Int) {
-        hookBlockRunning(params) {
+        /*hookBlockRunning(params) {
             if (config.isImmersive) {
                 // 全面屏手势沉浸式底部垫高 (进度条)，底部导航栏则不处理
                 if (HDisallowInterceptRelativeLayout.isEdgeToEdgeEnabled) {
@@ -39,6 +39,6 @@ class HCustomizedUISeekBar(lpparam: XC_LoadPackage.LoadPackageParam) :
             }
         }.onFailure {
             KLogCat.tagE(TAG, it)
-        }
+        }*/
     }
 }

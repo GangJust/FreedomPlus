@@ -1,9 +1,7 @@
 package com.freegang.hook
 
 import android.app.ActivityOptions
-import android.content.Context
 import android.content.Intent
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupWindow
@@ -84,8 +82,11 @@ class HCornerExtensionsPopupWindow(lpparam: XC_LoadPackage.LoadPackageParam) :
                 val viewGroup = this as ViewGroup
                 val last = viewGroup.children.last { it is ViewGroup } as ViewGroup  // RoundedLinearLayout
                 binding.freedomSettingContainer.background = last.children.first().background
+                binding.root.contentDescription = "扩展功能"
 
-                last.addView(binding.root)
+                if (last.children.last().contentDescription != "扩展功能") {
+                    last.addView(binding.root)
+                }
             }
         }.onFailure {
             KLogCat.tagE(TAG, it)

@@ -26,6 +26,7 @@ object DexkitBuilder {
     var cornerExtensionsPopupWindowClazz: Class<*>? = null
     var mainBottomTabViewClazz: Class<*>? = null
     var mainBottomTabItemClazz: Class<*>? = null
+    var seekBarSpeedModeBottomContainerClazz: Class<*>? = null
     var videoPlayerHelperClazz: Class<*>? = null
     var videoPinchViewClazz: Class<*>? = null
     var videoPagerAdapterClazz: Class<*>? = null
@@ -35,6 +36,7 @@ object DexkitBuilder {
     var emojiApiProxyClazz: Class<*>? = null
     var emojiPopupWindowClazz: Class<*>? = null
     var ripsChatRoomFragmentClazz: Class<*>? = null
+
 
     /**
      * Dexkit开始搜索
@@ -154,12 +156,42 @@ object DexkitBuilder {
                             returnType = "com.bytedance.ies.dmt.ui.widget.DmtTextView"
                         }
                         add {
+                            modifiers = Modifier.PUBLIC
+                            paramTypes = listOf("android.content.Context")
+                        }
+                        add {
                             modifiers = Modifier.PRIVATE
                             paramTypes = listOf("com.ss.android.ugc.aweme.emoji.base.BaseEmoji")
+                        }
+                        add {
+                            modifiers = Modifier.PRIVATE
+                            paramTypes = listOf(
+                                "com.ss.android.ugc.aweme.emoji.base.BaseEmoji",
+                                "com.ss.android.ugc.aweme.base.ui.RemoteImageView",
+                            )
                         }
                     }
                 }
             }.firstClass("emojiPopupWindow")
+            seekBarSpeedModeBottomContainerClazz = bridge.findClass {
+                // findFirst = true
+                matcher {
+                    methods {
+                        add {
+                            name = "getMSpeedText"
+                            returnType = "android.widget.TextView"
+                        }
+                        add {
+                            name = "getMBottomLayout"
+                            returnType = "android.view.View"
+                        }
+                        add {
+                            name = "getLoadingProgressBar"
+                            returnType = "com.ss.android.ugc.aweme.feed.widget.LineProgressBar"
+                        }
+                    }
+                }
+            }.firstClass("seekBarSpeedModeBottomContainer")
 
             val findMaps = bridge.batchFindClassUsingStrings {
                 addSearchGroup {
@@ -246,6 +278,7 @@ object DexkitBuilder {
         val cornerExtendsionsPopupWindow = cache.getStringOrDefault("coenerExtendsionsPoupWindow")
         val mainBottomTabView = cache.getStringOrDefault("mainBottomTabView")
         val mainBottomTabItem = cache.getStringOrDefault("mainBottomTabItem")
+        val seekBarSpeedModeBottomContainer = cache.getStringOrDefault("seekBarSpeedModeBottomContainer")
         val videoPlayerHelper = cache.getStringOrDefault("videoPlayerHelper")
         val videoPinchView = cache.getStringOrDefault("videoPinchView")
         val videoPagerAdapter = cache.getStringOrDefault("videoPagerAdapter")
@@ -267,6 +300,7 @@ object DexkitBuilder {
         cornerExtensionsPopupWindowClazz = cornerExtendsionsPopupWindow.ifNotEmpty { lpparam.findClass(it) }
         mainBottomTabViewClazz = mainBottomTabView.ifNotEmpty { lpparam.findClass(it) }
         mainBottomTabItemClazz = mainBottomTabItem.ifNotEmpty { lpparam.findClass(it) }
+        seekBarSpeedModeBottomContainerClazz = seekBarSpeedModeBottomContainer.ifNotEmpty { lpparam.findClass(it) }
         videoPlayerHelperClazz = videoPlayerHelper.ifNotEmpty { lpparam.findClass(it) }
         videoPinchViewClazz = videoPinchView.ifNotEmpty { lpparam.findClass(it) }
         videoPagerAdapterClazz = videoPagerAdapter.ifNotEmpty { lpparam.findClass(it) }
