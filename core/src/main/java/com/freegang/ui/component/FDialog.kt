@@ -397,6 +397,7 @@ fun FDialog(
         onDismissRequest = { },
         properties = DialogProperties(
             usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false,
         ),
     ) {
         Box(

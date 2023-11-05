@@ -61,14 +61,31 @@ object DexkitBuilder {
             cornerExtensionsPopupWindowClazz = bridge.findClass {
                 matcher {
                     superClass = "android.widget.PopupWindow"
+                    fields {
+                        add {
+                            type = "android.view.LayoutInflater"
+                        }
+                        add {
+                            type = "android.app.Dialog"
+                        }
+                    }
                     methods {
+                        add {
+                            paramTypes = listOf("android.widget.PopupWindow")
+                        }
+                        add {
+                            paramTypes = listOf("boolean")
+                        }
+                        add {
+                            returnType = "android.view.View"
+                        }
                         add {
                             name = "dismiss"
                         }
                     }
-                    usingStrings = listOf("mute_notice", "delete_notice")
                 }
             }.firstClass("coenerExtendsionsPoupWindow")
+
             mainBottomTabItemClazz = bridge.findClass {
                 matcher {
                     methods {
@@ -85,6 +102,7 @@ object DexkitBuilder {
                     }
                 }
             }.firstClass("mainBottomTabItem")
+
             videoPinchViewClazz = bridge.findClass {
                 matcher {
                     fields {
@@ -104,6 +122,7 @@ object DexkitBuilder {
                     }
                 }
             }.firstClass("videoPinchView")
+
             videoPagerAdapterClazz = bridge.findClass {
                 matcher {
                     methods {
@@ -120,6 +139,7 @@ object DexkitBuilder {
                     }
                 }
             }.firstClass("videoPagerAdapter")
+
             recommendFeedFetchPresenterClazz = bridge.findClass {
                 matcher {
                     methods {
@@ -132,6 +152,7 @@ object DexkitBuilder {
                     addUsingString("homepage_hot")
                 }
             }.firstClass("recommendFeedFetchPresenter")
+
             fullFeedFollowFetchPresenterClazz = bridge.findClass {
                 matcher {
                     methods {
@@ -144,6 +165,7 @@ object DexkitBuilder {
                     addUsingString("homepage_follow")
                 }
             }.firstClass("fullFeedFollowFetchPresenter")
+
             emojiPopupWindowClazz = bridge.findClass {
                 matcher {
                     methods {
@@ -173,6 +195,7 @@ object DexkitBuilder {
                     }
                 }
             }.firstClass("emojiPopupWindow")
+
             seekBarSpeedModeBottomContainerClazz = bridge.findClass {
                 // findFirst = true
                 matcher {

@@ -1,4 +1,4 @@
-package com.freegang.plugin
+package com.freegang.plugin.v1
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -12,12 +12,12 @@ import android.os.IBinder
 import android.os.PersistableBundle
 import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.classLoader
-import com.freegang.xpler.core.xposedLog
+import com.freegang.plugin.base.BaseXplerActivity
 import com.freegang.xpler.loader.moduleClassloader
 import java.lang.reflect.Method
 
+@Keep
 class PluginInstrumentation(
     private val mBase: Instrumentation,
     private val stubActivity: Class<*>,
@@ -26,55 +26,32 @@ class PluginInstrumentation(
         const val PLUGIN_PROXY_ACTIVITY = "xpler_plugin"
     }
 
-    @Keep
     override fun newApplication(cl: ClassLoader?, className: String?, context: Context?): Application {
-        return try {
-            mBase.newApplication(cl, className, context)
-        } catch (e: Exception) {
-            super.newApplication(cl, className, context)
-        }
+        return mBase.newApplication(cl, className, context)
     }
 
     override fun callApplicationOnCreate(app: Application?) {
-        try {
-            mBase.callApplicationOnCreate(app)
-        } catch (e: Exception) {
-            super.callApplicationOnCreate(app)
-        }
+        mBase.callApplicationOnCreate(app)
     }
 
     override fun callActivityOnCreate(activity: Activity?, icicle: Bundle?) {
-        try {
-            injectRes(activity)
-            mBase.callActivityOnCreate(activity, icicle)
-        } catch (e: Exception) {
-            super.callActivityOnCreate(activity, icicle)
-        }
+        // injectRes(activity?.resources)
+        // proxyRes(activity)
+        mBase.callActivityOnCreate(activity, icicle)
     }
 
     override fun callActivityOnCreate(activity: Activity?, icicle: Bundle?, persistentState: PersistableBundle?) {
-        try {
-            injectRes(activity)
-            mBase.callActivityOnCreate(activity, icicle, persistentState)
-        } catch (e: Exception) {
-            super.callActivityOnCreate(activity, icicle, persistentState)
-        }
+        // injectRes(activity?.resources)
+        // proxyRes(activity)
+        mBase.callActivityOnCreate(activity, icicle, persistentState)
     }
 
     override fun callActivityOnDestroy(activity: Activity?) {
-        try {
-            mBase.callActivityOnDestroy(activity)
-        } catch (e: Exception) {
-            super.callActivityOnDestroy(activity)
-        }
+        mBase.callActivityOnDestroy(activity)
     }
 
     override fun callActivityOnRestoreInstanceState(activity: Activity, savedInstanceState: Bundle) {
-        try {
-            mBase.callActivityOnRestoreInstanceState(activity, savedInstanceState)
-        } catch (e: Exception) {
-            super.callActivityOnRestoreInstanceState(activity, savedInstanceState)
-        }
+        mBase.callActivityOnRestoreInstanceState(activity, savedInstanceState)
     }
 
     override fun callActivityOnRestoreInstanceState(
@@ -82,19 +59,11 @@ class PluginInstrumentation(
         savedInstanceState: Bundle?,
         persistentState: PersistableBundle?
     ) {
-        try {
-            mBase.callActivityOnRestoreInstanceState(activity, savedInstanceState, persistentState)
-        } catch (e: Exception) {
-            super.callActivityOnRestoreInstanceState(activity, savedInstanceState, persistentState)
-        }
+        mBase.callActivityOnRestoreInstanceState(activity, savedInstanceState, persistentState)
     }
 
     override fun callActivityOnPostCreate(activity: Activity, savedInstanceState: Bundle?) {
-        try {
-            mBase.callActivityOnPostCreate(activity, savedInstanceState)
-        } catch (e: Exception) {
-            super.callActivityOnPostCreate(activity, savedInstanceState)
-        }
+        mBase.callActivityOnPostCreate(activity, savedInstanceState)
     }
 
     override fun callActivityOnPostCreate(
@@ -102,59 +71,31 @@ class PluginInstrumentation(
         savedInstanceState: Bundle?,
         persistentState: PersistableBundle?
     ) {
-        try {
-            mBase.callActivityOnPostCreate(activity, savedInstanceState, persistentState)
-        } catch (e: Exception) {
-            super.callActivityOnPostCreate(activity, savedInstanceState, persistentState)
-        }
+        mBase.callActivityOnPostCreate(activity, savedInstanceState, persistentState)
     }
 
     override fun callActivityOnNewIntent(activity: Activity?, intent: Intent?) {
-        try {
-            mBase.callActivityOnNewIntent(activity, intent)
-        } catch (e: Exception) {
-            super.callActivityOnNewIntent(activity, intent)
-        }
+        mBase.callActivityOnNewIntent(activity, intent)
     }
 
     override fun callActivityOnStart(activity: Activity?) {
-        try {
-            mBase.callActivityOnStart(activity)
-        } catch (e: Exception) {
-            super.callActivityOnStart(activity)
-        }
+        mBase.callActivityOnStart(activity)
     }
 
     override fun callActivityOnRestart(activity: Activity?) {
-        try {
-            mBase.callActivityOnRestart(activity)
-        } catch (e: Exception) {
-            super.callActivityOnRestart(activity)
-        }
+        mBase.callActivityOnRestart(activity)
     }
 
     override fun callActivityOnResume(activity: Activity?) {
-        try {
-            mBase.callActivityOnResume(activity)
-        } catch (e: Exception) {
-            super.callActivityOnResume(activity)
-        }
+        mBase.callActivityOnResume(activity)
     }
 
     override fun callActivityOnStop(activity: Activity?) {
-        try {
-            mBase.callActivityOnStop(activity)
-        } catch (e: Exception) {
-            super.callActivityOnStop(activity)
-        }
+        mBase.callActivityOnStop(activity)
     }
 
     override fun callActivityOnSaveInstanceState(activity: Activity, outState: Bundle) {
-        try {
-            mBase.callActivityOnSaveInstanceState(activity, outState)
-        } catch (e: Exception) {
-            super.callActivityOnSaveInstanceState(activity, outState)
-        }
+        mBase.callActivityOnSaveInstanceState(activity, outState)
     }
 
     override fun callActivityOnSaveInstanceState(
@@ -162,36 +103,20 @@ class PluginInstrumentation(
         outState: Bundle,
         outPersistentState: PersistableBundle
     ) {
-        try {
-            mBase.callActivityOnSaveInstanceState(activity, outState, outPersistentState)
-        } catch (e: Exception) {
-            super.callActivityOnSaveInstanceState(activity, outState, outPersistentState)
-        }
+        mBase.callActivityOnSaveInstanceState(activity, outState, outPersistentState)
     }
 
     override fun callActivityOnPause(activity: Activity?) {
-        try {
-            mBase.callActivityOnPause(activity)
-        } catch (e: Exception) {
-            super.callActivityOnPause(activity)
-        }
+        mBase.callActivityOnPause(activity)
     }
 
     override fun callActivityOnUserLeaving(activity: Activity?) {
-        try {
-            mBase.callActivityOnUserLeaving(activity)
-        } catch (e: Exception) {
-            super.callActivityOnUserLeaving(activity)
-        }
+        mBase.callActivityOnUserLeaving(activity)
     }
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun callActivityOnPictureInPictureRequested(activity: Activity) {
-        try {
-            mBase.callActivityOnPictureInPictureRequested(activity)
-        } catch (e: Exception) {
-            super.callActivityOnPictureInPictureRequested(activity)
-        }
+        mBase.callActivityOnPictureInPictureRequested(activity)
     }
 
     @Keep
@@ -210,13 +135,13 @@ class PluginInstrumentation(
             if (intent?.component != null) {
                 try {
                     val pluginClazz = pluginClassloader?.loadClass(intent.component?.className)
-                    if (pluginClazz != null && XplerActivity::class.java.isAssignableFrom(pluginClazz)) {
+                    if (pluginClazz != null && BaseXplerActivity::class.java.isAssignableFrom(pluginClazz)) {
                         newIntent = Intent(who, stubActivity)
                         intent.extras?.let { newIntent.putExtras(it) }
                         newIntent.putExtra(PLUGIN_PROXY_ACTIVITY, pluginClazz.name)
                     }
                 } catch (e: Exception) {
-                    KLogCat.xposedLog(e)
+                    // KLogCat.e(e)
                 }
             }
 
@@ -248,8 +173,9 @@ class PluginInstrumentation(
 
     override fun newActivity(cl: ClassLoader?, className: String?, intent: Intent?): Activity {
         val xplerPlugin = intent?.getStringExtra(PLUGIN_PROXY_ACTIVITY) ?: ""
-        if (xplerPlugin.isNotEmpty() && pluginClassloader != null) {
-            return pluginClassloader!!.loadClass(xplerPlugin).newInstance() as Activity
+        if (xplerPlugin.isNotEmpty()) {
+            val activity = pluginClassloader!!.loadClass(xplerPlugin).newInstance() as Activity
+            return activity
         }
         return mBase.newActivity(cl, className, intent)
     }

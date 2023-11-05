@@ -2,6 +2,7 @@ package com.freegang.hook
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.ActivityOptions
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -17,6 +18,7 @@ import com.freegang.hook.logic.DownloadLogic
 import com.freegang.ktutils.app.appVersionCode
 import com.freegang.ktutils.app.appVersionName
 import com.freegang.ktutils.app.contentView
+import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.methodInvokeFirst
 import com.freegang.ktutils.view.findViewsByExact
@@ -25,6 +27,7 @@ import com.freegang.ktutils.view.parentView
 import com.freegang.ktutils.view.postRunning
 import com.freegang.ktutils.view.removeInParent
 import com.freegang.ktutils.view.traverse
+import com.freegang.ui.activity.FreedomSettingActivity
 import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.OnBefore
 import com.freegang.xpler.core.hookBlockRunning
@@ -57,6 +60,28 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
     private val clipboardLogic = ClipboardLogic(this)
 
     private var disallowInterceptRelativeLayout: View? = null
+
+    @OnBefore("onCreate")
+    fun onCreateBefore(params: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {
+        hookBlockRunning(params) {
+            thisActivity.runCatching {
+                val startModuleSetting = intent?.getBooleanExtra("startModuleSetting", false) ?: false
+                if (startModuleSetting) {
+                    intent.setClass(this, FreedomSettingActivity::class.java)
+                    intent.putExtra("isDark", isDarkMode)
+                    val options = ActivityOptions.makeCustomAnimation(
+                        this,
+                        android.R.anim.slide_in_left,
+                        android.R.anim.slide_out_right
+                    )
+                    startActivity(intent, options.toBundle())
+                    finish()
+                }
+            }.onFailure {
+                KLogCat.e(it)
+            }
+        }
+    }
 
     @OnAfter("onCreate")
     fun onCreateAfter(params: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {

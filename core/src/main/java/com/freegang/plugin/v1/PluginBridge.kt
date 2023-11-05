@@ -1,9 +1,10 @@
-package com.freegang.plugin
+package com.freegang.plugin.v1
 
 import android.annotation.SuppressLint
 import android.app.Application
 import android.app.Instrumentation
 import android.content.ComponentName
+import com.freegang.plugin.proxySingle
 
 object PluginBridge {
     fun init(application: Application, stubActivity: Class<*>) {

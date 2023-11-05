@@ -26,16 +26,16 @@ class HomeVM(application: Application) : AndroidViewModel(application) {
     // module config
     private val config: ConfigV1 get() = ConfigV1.get()
 
-    // Freedom -> 外置存储器/Download/Freedom/
-    val freedomData
-        get() = getApplication<Application>().storageRootFile
-            .child(Environment.DIRECTORY_DOWNLOADS)
-            .child("Freedom")
-
-    // FreedomPlus -> 外置存储器/DCIM/Freedom/
+    // FreedomPlus -> 外置存储器/Download/Freedom/
     val freedomPlusData
         get() = getApplication<Application>().storageRootFile
             .child(Environment.DIRECTORY_DCIM)
+            .child("Freedom")
+
+    // FreedomPlusNew -> 外置存储器/Download/Freedom/
+    val freedomPlusNewData
+        get() = getApplication<Application>().storageRootFile
+            .child(Environment.DIRECTORY_DOWNLOADS)
             .child("Freedom")
 
     // 是否开启去插件化

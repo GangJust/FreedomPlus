@@ -56,16 +56,16 @@ class DownloadLogic(
                 }
                 mPureNickname = aweme.author.nickname.pureFileName
 
-                // mOwnerDir: 如果需要按视频创作者单独创建文件夹: `/外置存储器/DCIM/Freedom/${video|music|picture}/昵称(账号)`
+                // mOwnerDir: 如果需要按视频创作者单独创建文件夹: `/外置存储器/Download/Freedom/${video|music|picture}/昵称(账号)`
                 mOwnerDir = if (config.isOwnerDir) "${mPureNickname}(${mShortId})" else ""
 
-                // 默认下载路径: `/外置存储器/DCIM/Freedom/video`
+                // 默认下载路径: `/外置存储器/Download/Freedom/video`
                 mVideoParent = ConfigV1.getFreedomDir(context).child("video")
 
-                // 默认下载路径: `/外置存储器/DCIM/Freedom/music`
+                // 默认下载路径: `/外置存储器/Download/Freedom/music`
                 mMusicParent = ConfigV1.getFreedomDir(context).child("music")
 
-                // 默认下载路径: `/外置存储器/DCIM/Freedom/picture`
+                // 默认下载路径: `/外置存储器/Download/Freedom/picture`
                 mImageParent = ConfigV1.getFreedomDir(context).child("picture")
 
                 // 构建文件名
@@ -212,7 +212,7 @@ class DownloadLogic(
                             if (finished) {
                                 downloadCount += 1
                                 imageFiles.add(downloadFile)
-                                KMediaUtils.notifyGallery(context, downloadFile.absolutePath)
+                                KMediaUtils.notifyMediaUpdate(context, downloadFile.absolutePath)
                             }
                         }
 
@@ -283,7 +283,7 @@ class DownloadLogic(
                                 )
                             if (finished) {
                                 downloadCount += 1
-                                KMediaUtils.notifyGallery(context, downloadFile.absolutePath)
+                                KMediaUtils.notifyMediaUpdate(context, downloadFile.absolutePath)
                             }
                         }
 
@@ -351,7 +351,7 @@ class DownloadLogic(
                             val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
                             it.setFinishedText(message)
                             hook.showToast(context, message)
-                            KMediaUtils.notifyGallery(context, downloadFile.absolutePath)
+                            KMediaUtils.notifyMediaUpdate(context, downloadFile.absolutePath)
                         }
 
                         // 上传WebDav
@@ -395,7 +395,7 @@ class DownloadLogic(
                             val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
                             notify.setFinishedText(message)
                             hook.showToast(context, message)
-                            KMediaUtils.notifyGallery(context, downloadFile.absolutePath)
+                            KMediaUtils.notifyMediaUpdate(context, downloadFile.absolutePath)
                         }
 
                         // 上传WebDav

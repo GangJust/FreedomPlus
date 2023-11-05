@@ -443,13 +443,12 @@ fun Any.logd(save: Boolean = false) {
 }
 
 /**
- * 打印被Hook的某个方法中的堆栈信息
+ * 打印方法中的堆栈信息
  */
-fun XC_MethodHook.MethodHookParam.dumpStackLog() {
+fun Any.dumpStackLog() {
     try {
         throw Exception("Stack trace")
     } catch (e: Exception) {
-        XposedBridge.log(e)
         KLogCat.d(e.stackTraceToString())
     }
 }

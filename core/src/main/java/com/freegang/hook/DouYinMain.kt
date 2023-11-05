@@ -2,6 +2,7 @@ package com.freegang.hook
 
 import android.app.Application
 import android.content.Intent
+import android.os.Build
 import android.os.CountDownTimer
 import android.os.Process
 import android.widget.Toast
@@ -15,7 +16,8 @@ import com.freegang.ktutils.io.hasOperationStorage
 import com.freegang.ktutils.json.getIntOrDefault
 import com.freegang.ktutils.json.parseJSONArray
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.plugin.PluginBridge
+import com.freegang.ktutils.media.hasMediaPermission
+import com.freegang.plugin.v2.PluginBridgeV2
 import com.freegang.xpler.HookPackages
 import com.freegang.xpler.core.findClass
 import com.freegang.xpler.core.lpparam
@@ -37,10 +39,21 @@ class DouYinMain(private val app: Application) {
         runCatching {
             injectClassLoader(app.classLoader)
 
-            // 文件读写权限检查
-            if (!app.hasOperationStorage) {
-                Toast.makeText(app, "抖音没有文件读写权限!", Toast.LENGTH_LONG).show()
-                return@runCatching
+            // 插件化注入
+            val stubClazz = hostClassloader!!.loadClass("com.ss.android.ugc.aweme.setting.ui.AboutActivity")
+            PluginBridgeV2.init(app, stubClazz)
+
+            // 权限检查
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (!app.hasMediaPermission()) {
+                    Toast.makeText(app, "抖音没有媒体操作权限!", Toast.LENGTH_LONG).show()
+                    return@runCatching
+                }
+            } else {
+                if (!app.hasOperationStorage()) {
+                    Toast.makeText(app, "抖音没有文件读写权限!", Toast.LENGTH_LONG).show()
+                    return@runCatching
+                }
             }
 
             // 加载配置
@@ -52,13 +65,6 @@ class DouYinMain(private val app: Application) {
             // 日志工具
             KLogCat.init(app)
             KLogCat.clearStorage()
-
-            // 插件化注入
-            if (!ConfigV1.get().isDisablePlugin) {
-                val stubClazz =
-                    hostClassloader!!.loadClass("com.ss.android.ugc.aweme.bullet.ui.BulletContainerActivity")
-                PluginBridge.init(app, stubClazz)
-            }
 
             // 全局异常捕获工具
             val intent = Intent()
@@ -72,7 +78,7 @@ class DouYinMain(private val app: Application) {
             // search and hook
             DexkitBuilder.running(
                 app = app,
-                version = 8,
+                version = 11,
                 searchBefore = {
                     HActivity(lpparam)
                     HMainActivity(lpparam)

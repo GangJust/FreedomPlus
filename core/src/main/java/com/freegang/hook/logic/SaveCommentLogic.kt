@@ -58,7 +58,7 @@ class SaveCommentLogic(
     // 保存评论区图片
     private fun onSaveCommentImage(urlList: List<String>) {
         hook.launch {
-            //默认保存路径: `/外置存储器/DCIM/Freedom/picture/comment`
+            //默认保存路径: `/外置存储器/Download/Freedom/picture/comment`
             val parentPath = ConfigV1.getFreedomDir(context).child("picture").child("comment").need()
 
             //构建保存文件名
@@ -68,7 +68,7 @@ class SaveCommentLogic(
                 KHttpUtils.download(urlList.first(), FileOutputStream(file)) { real, total, isInterrupt ->
                     if (real >= total) {
                         hook.showToast(context, "保存成功!")
-                        KMediaUtils.notifyGallery(context, file.absolutePath)
+                        KMediaUtils.notifyMediaUpdate(context, file.absolutePath)
                         if (config.isVibrate) hook.vibrate(context, 5L)
                     }
                     if (isInterrupt) {
@@ -82,7 +82,7 @@ class SaveCommentLogic(
     // 保存评论区视频
     private fun onSaveCommentVideo(urlList: List<String>) {
         hook.launch {
-            //默认保存路径: `/外置存储器/DCIM/Freedom/video/comment`
+            //默认保存路径: `/外置存储器/Download/Freedom/video/comment`
             val parentPath = ConfigV1.getFreedomDir(context).child("video").child("comment").need()
 
             //构建保存文件名
@@ -92,7 +92,7 @@ class SaveCommentLogic(
                 KHttpUtils.download(urlList.first(), FileOutputStream(file)) { real, total, isInterrupt ->
                     if (real >= total) {
                         hook.showToast(context, "保存成功!")
-                        KMediaUtils.notifyGallery(context, file.absolutePath)
+                        KMediaUtils.notifyMediaUpdate(context, file.absolutePath)
                         if (config.isVibrate) hook.vibrate(context, 5L)
                     }
                     if (isInterrupt) {

@@ -1,5 +1,7 @@
 package com.freegang.hook
 
+import android.app.Activity
+import android.graphics.Color
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
 import com.freegang.ktutils.log.KLogCat

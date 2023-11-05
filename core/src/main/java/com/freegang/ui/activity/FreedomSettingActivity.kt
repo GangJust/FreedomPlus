@@ -1,11 +1,8 @@
 package com.freegang.ui.activity
 
-import android.content.Intent
-import android.net.Uri
+import android.content.res.Resources
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -50,29 +47,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.freegang.base.BaseActivity
 import com.freegang.helper.HighlightStyleBuilder
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
-import com.freegang.ktutils.app.appVersionName
 import com.freegang.ktutils.json.getIntOrDefault
 import com.freegang.ktutils.json.parseJSONArray
+import com.freegang.plugin.PluginResource
+import com.freegang.plugin.v2.XplerActivityV2
+import com.freegang.ui.ModuleTheme
 import com.freegang.ui.asDp
 import com.freegang.ui.component.FCard
 import com.freegang.ui.component.FCardBorder
-import com.freegang.ui.component.FCountDownMessageDialog
 import com.freegang.ui.component.FMessageDialog
 import com.freegang.ui.component.FWaitingMessageDialog
 import com.freegang.ui.viewmodel.FreedomSettingVM
@@ -84,8 +82,19 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
-class FreedomSettingActivity : BaseActivity() {
-    private val model by viewModels<FreedomSettingVM>()
+class FreedomSettingActivity : XplerActivityV2() {
+    private val model by lazy {
+        ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory(application))
+            .get(FreedomSettingVM::class.java)
+    }
+
+    private val mResources by lazy {
+        PluginResource(super.getResources())
+    }
+
+    override fun getResources(): Resources {
+        return mResources
+    }
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
@@ -224,12 +233,16 @@ class FreedomSettingActivity : BaseActivity() {
                                 interactionSource = remember { MutableInteractionSource() },
                                 onLongClick = {
                                     lifecycleScope.launch {
-                                        updateLog = withContext(Dispatchers.IO) {
-                                            val inputStream = mResources.pluginAssets.open("update.log")
-                                            val bytes = inputStream.readBytes()
-                                            val text = bytes.decodeToString()
-                                            inputStream.close()
-                                            text
+                                        withContext(Dispatchers.IO) {
+                                            runCatching {
+                                                mResources.pluginAssets
+                                                    .open("update.log")
+                                                    .use {
+                                                        updateLog = it
+                                                            .readBytes()
+                                                            .decodeToString()
+                                                    }
+                                            }
                                         }
                                         showUpdateLogDialog = updateLog.isNotBlank()
                                     }
@@ -249,45 +262,6 @@ class FreedomSettingActivity : BaseActivity() {
     private fun BodyView(
         modifier: Modifier,
     ) {
-        // 版本更新弹窗
-        var showNewVersionDialog by remember { mutableStateOf(true) }
-        val version by model.versionConfig.observeAsState()
-        if (version != null) {
-            val version = version!!
-            if (version.name.compareTo("v${application.appVersionName}") >= 1 && showNewVersionDialog) {
-                FMessageDialog(
-                    title = "发现新版本 ${version.name}!",
-                    confirm = "确定",
-                    cancel = "取消",
-                    onCancel = {
-                        showNewVersionDialog = false
-                    },
-                    onConfirm = {
-                        startActivity(
-                            Intent(
-                                Intent.ACTION_VIEW,
-                                Uri.parse(version.browserDownloadUrl),
-                            )
-                        )
-                    },
-                    content = {
-                        LazyColumn(
-                            modifier = Modifier,
-                            content = {
-                                item {
-                                    Text(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        text = version.body,
-                                        style = MaterialTheme.typography.body1,
-                                    )
-                                }
-                            },
-                        )
-                    }
-                )
-            }
-        }
-
         // 重启抖音提示
         var showRestartAppDialog by remember { mutableStateOf(false) }
         if (showRestartAppDialog) {
@@ -392,7 +366,6 @@ class FreedomSettingActivity : BaseActivity() {
                 item {
                     // 调整透明度
                     var showTransparentDialog by remember { mutableStateOf(false) }
-                    var showTransparentTips by remember { mutableStateOf(false) }
 
                     if (showTransparentDialog) {
                         val translucentValue = model.translucentValue.value ?: listOf(50, 50, 50)
@@ -637,13 +610,7 @@ class FreedomSettingActivity : BaseActivity() {
                     var showVideoFilterTips by remember { mutableStateOf(false) }
 
                     if (showVideoFilterDialog) {
-                        var inputValue by remember {
-                            mutableStateOf(
-                                TextFieldValue(
-                                    buildFilterTypeStyle(model.videoFilterKeywords.value ?: ""),
-                                )
-                            )
-                        }
+                        var inputValue by remember { mutableStateOf(model.videoFilterKeywords.value ?: "") }
                         FMessageDialog(
                             title = {
                                 Row(
@@ -678,7 +645,7 @@ class FreedomSettingActivity : BaseActivity() {
                             },
                             onConfirm = {
                                 showVideoFilterDialog = false
-                                model.setVideoFilterKeywords(inputValue.text)
+                                model.setVideoFilterKeywords(inputValue)
                             },
                             content = {
                                 FCard(
@@ -692,7 +659,7 @@ class FreedomSettingActivity : BaseActivity() {
                                             maxLines = 4,
                                             textStyle = MaterialTheme.typography.body1,
                                             decorationBox = { innerTextField ->
-                                                if (inputValue.text.isEmpty()) {
+                                                if (inputValue.isEmpty()) {
                                                     Text(
                                                         text = "视频类型或文本中出现的关键字",
                                                         style = MaterialTheme.typography.body1.copy(
@@ -1332,7 +1299,7 @@ class FreedomSettingActivity : BaseActivity() {
                         },
                     )
                 }
-                item {
+                /*item {
                     // 去插件化提示
                     var showDisablePluginDialog by remember { mutableStateOf(false) }
                     if (showDisablePluginDialog) {
@@ -1388,7 +1355,7 @@ class FreedomSettingActivity : BaseActivity() {
                             }
                         },
                     )
-                }
+                }*/
             },
         )
     }
@@ -1466,24 +1433,31 @@ class FreedomSettingActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            AutoTheme {
-                Scaffold(
-                    modifier = Modifier.padding(horizontal = 24.dp),
-                    topBar = { TopBarView() }
+        actionBar?.hide()
+        setContentView(ComposeView(this).apply {
+            setContent {
+                ModuleTheme(
+                    isDark = intent.getBooleanExtra("isDark", false),
+                    followSystem = false,
                 ) {
-                    BodyView(
-                        modifier = Modifier.padding(it),
-                    )
+                    Scaffold(
+                        modifier = Modifier.padding(horizontal = 24.dp),
+                        topBar = {
+                            TopBarView()
+                        }
+                    ) {
+                        BodyView(
+                            modifier = Modifier.padding(it),
+                        )
+                    }
                 }
             }
-        }
+        })
     }
 
     override fun onResume() {
         super.onResume()
         model.loadConfig()
-        model.checkVersion()
     }
 
     override fun onPause() {

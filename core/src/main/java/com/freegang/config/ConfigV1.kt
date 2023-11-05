@@ -26,17 +26,22 @@ class ConfigV1 private constructor() {
 
         fun getFreedomDir(context: Context): File {
             return context.applicationContext.storageRootFile
-                .child(Environment.DIRECTORY_DCIM)
+                .child(Environment.DIRECTORY_DOWNLOADS)
                 .child("Freedom")
         }
 
         fun getConfigDir(context: Context): File {
-            return getFreedomDir(context)
-                .child(".config")
+            //return getFreedomDir(context).child(".config")
+            return context.filesDir.child("fplus")
         }
 
         fun initialize(context: Context) {
             MMKV.initialize(context, getConfigDir(context).absolutePath)
+        }
+
+        fun clear(context: Context) {
+            mmkv.clearAll()
+            getFreedomDir(context).deleteRecursively()
         }
 
         fun get() = config

@@ -17,7 +17,9 @@ import android.os.Bundle
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.util.TypedValue
+import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.fieldSetFirst
+import com.freegang.ktutils.reflect.methodInvokeFirst
 import com.freegang.ktutils.reflect.methodInvokes
 import com.freegang.xpler.core.KtXposedHelpers
 import java.io.InputStream
@@ -30,13 +32,14 @@ class PluginResource(
     originResources.configuration,
 ) {
 
-    private val pluginResources by lazy {
+    val pluginResources by lazy {
         if (KtXposedHelpers.modulePath.isEmpty()) {
-            return@lazy originResources
+            originResources
+        } else {
+            val assetManager = AssetManager::class.java.newInstance()
+            assetManager.methodInvokes("addAssetPath", args = arrayOf(KtXposedHelpers.modulePath))
+            Resources(assetManager, originResources.displayMetrics, originResources.configuration)
         }
-        val assetManager = AssetManager::class.java.newInstance()
-        assetManager.methodInvokes("addAssetPath", args = arrayOf(KtXposedHelpers.modulePath))
-        Resources(assetManager, originResources.displayMetrics, originResources.configuration)
     }
 
     val pluginAssets: AssetManager get() = pluginResources.assets
@@ -45,6 +48,7 @@ class PluginResource(
         return try {
             originResources.getText(id)
         } catch (e: Exception) {
+            KLogCat.e(e)
             pluginResources.getText(id)
         }
     }
@@ -53,6 +57,7 @@ class PluginResource(
         return try {
             originResources.getText(id, def)
         } catch (e: Exception) {
+            KLogCat.e(e)
             pluginResources.getText(id, def)
         }
     }
@@ -62,6 +67,7 @@ class PluginResource(
         return try {
             originResources.getFont(id)
         } catch (e: Exception) {
+            KLogCat.e(e)
             pluginResources.getFont(id)
         }
     }
@@ -86,6 +92,7 @@ class PluginResource(
         return try {
             originResources.getString(id, *formatArgs)
         } catch (e: Exception) {
+            KLogCat.e(e)
             pluginResources.getString(id, *formatArgs)
         }
     }
@@ -94,6 +101,7 @@ class PluginResource(
         return try {
             originResources.getQuantityString(id, quantity, *formatArgs)
         } catch (e: Exception) {
+            KLogCat.e(e)
             pluginResources.getQuantityString(id, quantity, *formatArgs)
         }
     }
@@ -102,6 +110,7 @@ class PluginResource(
         return try {
             originResources.getQuantityString(id, quantity)
         } catch (e: Exception) {
+            KLogCat.e(e)
             pluginResources.getQuantityString(id, quantity)
         }
     }
@@ -110,6 +119,7 @@ class PluginResource(
         return try {
             originResources.getTextArray(id)
         } catch (e: Exception) {
+            KLogCat.e(e)
             pluginResources.getTextArray(id)
         }
     }
@@ -458,8 +468,17 @@ class PluginResource(
     }
 }
 
-fun injectRes(activity: Activity?) {
+// 代理Resources
+fun proxyRes(activity: Activity?) {
     activity?.runCatching {
         this.fieldSetFirst("mResources", PluginResource(activity.resources))
+    }
+}
+
+// 合并Resources
+fun injectRes(res: Resources?) {
+    if (res != null) {
+        val assets = res.assets
+        assets.methodInvokeFirst("addAssetPath", args = arrayOf(KtXposedHelpers.modulePath))
     }
 }

@@ -1,7 +1,9 @@
 package com.freegang.hook
 
+import android.app.Activity
 import android.app.ActivityOptions
 import android.content.Intent
+import android.graphics.Color
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -108,6 +110,12 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
                     return@forEach
                 }
 
+                // 评论区
+                if (HDetailPageFragment.isComment) {
+                    it.isVisible = false
+                    return@forEach
+                }
+
                 // 清爽模式
                 if (config.isNeatMode) {
                     it.isVisible = !config.neatModeState
@@ -117,6 +125,15 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
                 if (isLongPressFast) {
                     it.isVisible = !isLongPressFast
                 }
+            }
+        }
+
+        runCatching {
+            if (config.isImmersive) {
+                val activity = view.context as Activity
+                val window = activity.window
+                window.statusBarColor = Color.TRANSPARENT
+                window.navigationBarColor = Color.TRANSPARENT
             }
         }
     }
