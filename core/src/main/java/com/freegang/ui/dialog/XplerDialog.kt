@@ -6,15 +6,10 @@ import android.view.ViewGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.ComposeView
-import com.freegang.ktutils.reflect.fieldSetFirst
+import com.freegang.plugin.PluginContextThemeWrapper
 
 open class XplerDialog(context: Context) : BaseXplerDialog(context) {
     private val content = mutableStateOf<(@Composable () -> Unit)?>(null)
-
-    init {
-        val contextThemeWrapper = XplerContextThemeWrapper(context)
-        this.fieldSetFirst("mContext", contextThemeWrapper)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,7 +20,8 @@ open class XplerDialog(context: Context) : BaseXplerDialog(context) {
             KLogCat.d("获取异常: \n\n${it.stackTraceToString()}")
         }*/
 
-        setContentView(ComposeView(context).apply {
+        val wrapper = PluginContextThemeWrapper(context)
+        setContentView(ComposeView(wrapper).apply {
             layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             setContent {
                 content.value?.invoke()

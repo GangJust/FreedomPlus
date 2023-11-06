@@ -48,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -63,8 +64,11 @@ import androidx.lifecycle.lifecycleScope
 import com.freegang.helper.HighlightStyleBuilder
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
+import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.json.getIntOrDefault
 import com.freegang.ktutils.json.parseJSONArray
+import com.freegang.ktutils.log.KLogCat
+import com.freegang.plugin.PluginContextThemeWrapper
 import com.freegang.plugin.PluginResource
 import com.freegang.plugin.v2.XplerActivityV2
 import com.freegang.ui.ModuleTheme
@@ -81,6 +85,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.random.Random
+import kotlin.system.exitProcess
 
 class FreedomSettingActivity : XplerActivityV2() {
     private val model by lazy {
@@ -88,13 +93,10 @@ class FreedomSettingActivity : XplerActivityV2() {
             .get(FreedomSettingVM::class.java)
     }
 
-    private val mResources by lazy {
-        PluginResource(super.getResources())
-    }
+    private var mResources: PluginResource? = null
 
-    override fun getResources(): Resources {
-        return mResources
-    }
+    private var isModuleStart = false
+    private var isDark = false
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
@@ -235,13 +237,36 @@ class FreedomSettingActivity : XplerActivityV2() {
                                     lifecycleScope.launch {
                                         withContext(Dispatchers.IO) {
                                             runCatching {
-                                                mResources.pluginAssets
-                                                    .open("update.log")
-                                                    .use {
-                                                        updateLog = it
-                                                            .readBytes()
-                                                            .decodeToString()
-                                                    }
+                                                KLogCat.d("测试1: ${mResources?.assets?.open("update.log")}")
+                                            }
+                                            runCatching {
+                                                KLogCat.d("测试2: ${resources.assets?.open("update.log")}")
+                                            }
+                                            runCatching {
+                                                KLogCat.d("测试3: ${assets?.open("update.log")}")
+                                            }
+                                            runCatching {
+                                                KLogCat.d("测试4: ${assets?.open("update.log")}")
+                                            }
+                                            runCatching {
+                                                KLogCat.d("测试5: ${(mResources?.asOrNull<PluginResource>())?.pluginAssets?.open("update.log")}")
+                                            }
+                                            runCatching {
+                                                KLogCat.d("测试6: ${(resources.asOrNull<PluginResource>())?.pluginAssets?.open("update.log")}")
+                                            }
+
+                                            mResources?.let {
+                                                runCatching {
+                                                    it.pluginAssets
+                                                        .open("update.log")
+                                                        .use {
+                                                            updateLog = it
+                                                                .readBytes()
+                                                                .decodeToString()
+                                                        }
+                                                }.onFailure {
+                                                    KToastUtils.show(application, "更新日志获取失败")
+                                                }
                                             }
                                         }
                                         showUpdateLogDialog = updateLog.isNotBlank()
@@ -275,7 +300,13 @@ class FreedomSettingActivity : XplerActivityV2() {
                     },
                     onConfirm = {
                         showRestartAppDialog = false
-                        model.setVersionConfig(mResources.pluginAssets)
+                        mResources?.let {
+                            runCatching {
+                                model.setVersionConfig(it.pluginAssets)
+                            }.onFailure {
+                                model.setVersionConfig(null)
+                            }
+                        }
                         KAppUtils.restartApplication(application)
                     },
                     content = {
@@ -1026,7 +1057,7 @@ class FreedomSettingActivity : XplerActivityV2() {
                                 isWaiting = true
                                 model.setWebDavConfig(webDavConfig)
                                 model.initWebDav { test, msg ->
-                                    KToastUtils.show(applicationContext, msg)
+                                    KToastUtils.show(application, msg)
                                     isWaiting = false
                                     if (test) {
                                         showWebDavConfigEditorDialog = false
@@ -1147,7 +1178,7 @@ class FreedomSettingActivity : XplerActivityV2() {
                             if (it) {
                                 isWebDavWaiting = true
                                 model.initWebDav { test, msg ->
-                                    KToastUtils.show(applicationContext, msg)
+                                    KToastUtils.show(application, msg)
                                     isWebDavWaiting = false
                                     if (test) {
                                         model.changeIsWebDav(true)
@@ -1185,7 +1216,7 @@ class FreedomSettingActivity : XplerActivityV2() {
                             )
                         }
 
-                        KToastUtils.show(applicationContext, "低于3分钟将不执行~")
+                        KToastUtils.show(application, "低于3分钟将不执行~")
                         FMessageDialog(
                             title = "定时退出时间设置",
                             cancel = "取消",
@@ -1198,14 +1229,14 @@ class FreedomSettingActivity : XplerActivityV2() {
                                 val intTimedExit = timedExit.toIntOrNull()
                                 val intFreeExit = freeExit.toIntOrNull()
                                 if (intTimedExit == null || intFreeExit == null) {
-                                    KToastUtils.show(applicationContext, "请输入正确的分钟数")
+                                    KToastUtils.show(application, "请输入正确的分钟数")
                                     return@FMessageDialog
                                 }
                                 if (intTimedExit < 0 || intFreeExit < 0) {
-                                    KToastUtils.show(applicationContext, "请输入正确的分钟数")
+                                    KToastUtils.show(application, "请输入正确的分钟数")
                                     return@FMessageDialog
                                 }
-                                KToastUtils.show(applicationContext, "设置成功, 下次启动生效")
+                                KToastUtils.show(application, "设置成功, 下次启动生效")
                                 model.setTimedExitValue("[$timedExit, $freeExit]")
                             }
                         ) {
@@ -1431,13 +1462,27 @@ class FreedomSettingActivity : XplerActivityV2() {
         )
     }
 
+    override fun getResources(): Resources {
+        return mResources ?: super.getResources()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        //
         actionBar?.hide()
-        setContentView(ComposeView(this).apply {
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+
+        //
+        isModuleStart = intent.getBooleanExtra("isModuleStart", false)
+        isDark = intent.getBooleanExtra("isDark", false)
+
+        //
+        val wrapper = PluginContextThemeWrapper(this)
+        setContentView(ComposeView(wrapper).apply {
             setContent {
+                mResources = LocalContext.current.resources?.asOrNull() // 强转
                 ModuleTheme(
-                    isDark = intent.getBooleanExtra("isDark", false),
+                    isDark = isDark,
                     followSystem = false,
                 ) {
                     Scaffold(
@@ -1462,7 +1507,18 @@ class FreedomSettingActivity : XplerActivityV2() {
 
     override fun onPause() {
         super.onPause()
-        model.setVersionConfig(mResources.pluginAssets)
+        mResources?.let {
+            runCatching {
+                model.setVersionConfig(it.assets)
+            }.onFailure {
+                model.setVersionConfig(null)
+            }
+        }
+    }
+
+    override fun finish() {
+        super.finish()
+        if (isModuleStart) exitProcess(0)
     }
 
     private fun buildFilterTypeStyle(value: String): AnnotatedString {

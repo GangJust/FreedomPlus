@@ -68,6 +68,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
                 val startModuleSetting = intent?.getBooleanExtra("startModuleSetting", false) ?: false
                 if (startModuleSetting) {
                     intent.setClass(this, FreedomSettingActivity::class.java)
+                    intent.putExtra("isModuleStart", true)
                     intent.putExtra("isDark", isDarkMode)
                     val options = ActivityOptions.makeCustomAnimation(
                         this,

@@ -32,8 +32,9 @@ class PluginResource(
     originResources.configuration,
 ) {
 
-    val pluginResources by lazy {
+    private val pluginResources by lazy {
         if (KtXposedHelpers.modulePath.isEmpty()) {
+            KLogCat.d("未获取到模块路径!")
             originResources
         } else {
             val assetManager = AssetManager::class.java.newInstance()
@@ -48,7 +49,7 @@ class PluginResource(
         return try {
             originResources.getText(id)
         } catch (e: Exception) {
-            KLogCat.e(e)
+            // KLogCat.e(e)
             pluginResources.getText(id)
         }
     }
@@ -57,7 +58,7 @@ class PluginResource(
         return try {
             originResources.getText(id, def)
         } catch (e: Exception) {
-            KLogCat.e(e)
+            // KLogCat.e(e)
             pluginResources.getText(id, def)
         }
     }
@@ -67,7 +68,7 @@ class PluginResource(
         return try {
             originResources.getFont(id)
         } catch (e: Exception) {
-            KLogCat.e(e)
+            // KLogCat.e(e)
             pluginResources.getFont(id)
         }
     }
@@ -92,7 +93,7 @@ class PluginResource(
         return try {
             originResources.getString(id, *formatArgs)
         } catch (e: Exception) {
-            KLogCat.e(e)
+            // KLogCat.e(e)
             pluginResources.getString(id, *formatArgs)
         }
     }
@@ -101,7 +102,7 @@ class PluginResource(
         return try {
             originResources.getQuantityString(id, quantity, *formatArgs)
         } catch (e: Exception) {
-            KLogCat.e(e)
+            // KLogCat.e(e)
             pluginResources.getQuantityString(id, quantity, *formatArgs)
         }
     }
@@ -110,7 +111,7 @@ class PluginResource(
         return try {
             originResources.getQuantityString(id, quantity)
         } catch (e: Exception) {
-            KLogCat.e(e)
+            // KLogCat.e(e)
             pluginResources.getQuantityString(id, quantity)
         }
     }
@@ -119,7 +120,7 @@ class PluginResource(
         return try {
             originResources.getTextArray(id)
         } catch (e: Exception) {
-            KLogCat.e(e)
+            // KLogCat.e(e)
             pluginResources.getTextArray(id)
         }
     }

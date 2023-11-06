@@ -190,7 +190,7 @@ object PluginBridgeV2 {
     /**
      * 启动未注册的Activity,将之前替换了的Intent,换回去.我们的目标是要启动未注册的Activity
      */
-    @SuppressLint("DiscouragedPrivateApi")
+    @SuppressLint("DiscouragedPrivateApi", "PrivateApi")
     fun hookLauncherActivity() {
         try {
             // 1.获取ActivityThread的Class对象

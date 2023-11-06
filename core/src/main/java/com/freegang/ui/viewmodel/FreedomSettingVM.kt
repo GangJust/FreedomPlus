@@ -380,15 +380,23 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     }
 
     // 保存版本信息
-    fun setVersionConfig(asset: AssetManager) {
+    fun setVersionConfig(asset: AssetManager?) {
+        if (asset == null) {
+            config.versionConfig = config.versionConfig.copy(
+                dyVersionName = app.appVersionName,
+                dyVersionCode = app.appVersionCode,
+            )
+            return
+        }
+
         val version = asset.readAssetsAsText("version")
         val versionName = version.substringBeforeLast("-")
         val versionCode = version.substringAfterLast("-")
-        config.versionConfig = ConfigV1.Version(
+        config.versionConfig = config.versionConfig.copy(
             versionName,
             versionCode.toLong(),
             app.appVersionName,
-            app.appVersionCode
+            app.appVersionCode,
         )
     }
 

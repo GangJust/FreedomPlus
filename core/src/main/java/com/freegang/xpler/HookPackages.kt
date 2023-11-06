@@ -9,6 +9,7 @@ object HookPackages {
     const val modulePackageName = "com.freegang.fplus"
     const val corePackageName = "com.freegang.xpler"
     const val douYinPackageName = "com.ss.android.ugc.aweme"
+    const val douYinLitePackageName = "com.ss.android.ugc.aweme.lite"
     const val douYinClonePackageName = "com.ss.android.ugc.awemf" //测试用
     const val douYinClone1PackageName = "com.ss.android.ugc.awemg" //测试用
 
@@ -17,6 +18,7 @@ object HookPackages {
         modulePackageName,
         corePackageName,
         douYinPackageName,
+        douYinLitePackageName,
         douYinClonePackageName,
         douYinClone1PackageName,
     )

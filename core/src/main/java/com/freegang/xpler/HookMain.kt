@@ -19,6 +19,12 @@ class HookMain : IXposedHookLoadPackage {
                 }
             }
 
+            HookPackages.douYinLitePackageName -> {
+                if (DouYinMain.awemeHostApplication.isInstance(application)) {
+                    DouYinMain(application)
+                }
+            }
+
             HookPackages.douYinClonePackageName,
             HookPackages.douYinClone1PackageName -> {
                 if (DouYinMain.awemeHostApplication.isInstance(application)) {
