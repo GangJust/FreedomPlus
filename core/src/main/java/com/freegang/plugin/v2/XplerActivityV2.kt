@@ -1,10 +1,14 @@
 package com.freegang.plugin.v2
 
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.OnBackPressedDispatcherOwner
+import androidx.activity.contextaware.ContextAware
+import androidx.activity.contextaware.ContextAwareHelper
+import androidx.activity.contextaware.OnContextAvailableListener
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.CallSuper
 import androidx.lifecycle.Lifecycle
@@ -20,11 +24,15 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.freegang.plugin.base.BaseXplerActivityV2
 
 open class XplerActivityV2 : BaseXplerActivityV2(),
+    ContextAware,
     LifecycleOwner,
     ViewModelStoreOwner,
     SavedStateRegistryOwner,
     OnBackPressedDispatcherOwner {
 
+    private val mContextAwareHelper = ContextAwareHelper()
+
+    // lifecycle
     private var _lifecycleRegistry: LifecycleRegistry? = null
 
     private val lifecycleRegistry: LifecycleRegistry
@@ -34,13 +42,14 @@ open class XplerActivityV2 : BaseXplerActivityV2(),
     override val lifecycle: Lifecycle
         get() = lifecycleRegistry
 
+    // view model
     private var _viewModelStore: ViewModelStore? = null
 
     override val viewModelStore: ViewModelStore
         get() = _viewModelStore ?: ViewModelStore()
             .also { _viewModelStore = ViewModelStore() }
 
-
+    // instance state
     private var _savedStateRegistryController: SavedStateRegistryController? = null
 
     private val savedStateRegistryController
@@ -50,9 +59,21 @@ open class XplerActivityV2 : BaseXplerActivityV2(),
     override val savedStateRegistry: SavedStateRegistry
         get() = savedStateRegistryController.savedStateRegistry
 
-
+    // back pressed
     override val onBackPressedDispatcher = OnBackPressedDispatcher {
         super.onBackPressed()
+    }
+
+    override fun addOnContextAvailableListener(listener: OnContextAvailableListener) {
+        mContextAwareHelper.addOnContextAvailableListener(listener)
+    }
+
+    override fun peekAvailableContext(): Context? {
+        return mContextAwareHelper.peekAvailableContext()
+    }
+
+    override fun removeOnContextAvailableListener(listener: OnContextAvailableListener) {
+        mContextAwareHelper.removeOnContextAvailableListener(listener)
     }
 
     @Deprecated("Deprecated in Java", ReplaceWith("onBackPressedDispatcher.onBackPressed()"))
@@ -67,10 +88,11 @@ open class XplerActivityV2 : BaseXplerActivityV2(),
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         // Restore the Saved State first so that it is available to
         // OnContextAvailableListener instances
         savedStateRegistryController.performRestore(savedInstanceState)
+        mContextAwareHelper.dispatchOnContextAvailable(this)
+        super.onCreate(savedInstanceState)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
     }
 
@@ -97,9 +119,10 @@ open class XplerActivityV2 : BaseXplerActivityV2(),
     override fun onDestroy() {
         super.onDestroy()
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-        _lifecycleRegistry = null
-        _viewModelStore = null
-        _savedStateRegistryController = null
+        mContextAwareHelper.clearAvailableContext()
+        if (isChangingConfigurations) {
+            _viewModelStore?.clear()
+        }
     }
 
     override fun setContentView(layoutResID: Int) {

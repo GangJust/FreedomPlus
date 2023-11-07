@@ -300,19 +300,39 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
                     "过滤统计" -> {
                         val builder = StringBuilder()
                         if (HVerticalViewPagerNew.filterLiveCount > 0) {
-                            builder.append("直播过滤: ").append(HVerticalViewPagerNew.filterLiveCount).append("\n")
+                            builder.append("直播过滤: ")
+                                .append(HVerticalViewPagerNew.filterLiveCount)
+                                .append("\n")
                         }
                         if (HVerticalViewPagerNew.filterImageCount > 0) {
-                            builder.append("图文过滤: ").append(HVerticalViewPagerNew.filterImageCount).append("\n")
+                            builder.append("图文过滤: ")
+                                .append(HVerticalViewPagerNew.filterImageCount)
+                                .append("\n")
                         }
                         if (HVerticalViewPagerNew.filterAdCount > 0) {
-                            builder.append("广告过滤: ").append(HVerticalViewPagerNew.filterAdCount).append("\n")
+                            builder.append("广告过滤: ")
+                                .append(HVerticalViewPagerNew.filterAdCount)
+                                .append("\n")
                         }
                         if (HVerticalViewPagerNew.filterLongVideoCount > 0) {
-                            builder.append("长视频过滤: ").append(HVerticalViewPagerNew.filterLongVideoCount).append("\n")
+                            builder.append("长视频过滤: ")
+                                .append(HVerticalViewPagerNew.filterLongVideoCount)
+                                .append("\n")
                         }
-                        if (HVerticalViewPagerNew.filterPopularEffectCount > 0) {
-                            builder.append("特效过滤: ").append(HVerticalViewPagerNew.filterPopularEffectCount).append("\n")
+                        if (HVerticalViewPagerNew.filterRecommendedCardsCount > 0) {
+                            builder.append("推荐卡片过滤: ")
+                                .append(HVerticalViewPagerNew.filterRecommendedCardsCount)
+                                .append("\n")
+                        }
+                        if (HVerticalViewPagerNew.filterRecommendedMerchantsCount > 0) {
+                            builder.append("推荐商家过滤: ")
+                                .append(HVerticalViewPagerNew.filterRecommendedMerchantsCount)
+                                .append("\n")
+                        }
+                        if (HVerticalViewPagerNew.filterEmptyDescCount > 0) {
+                            builder.append("空文案过滤: ")
+                                .append(HVerticalViewPagerNew.filterEmptyDescCount)
+                                .append("\n")
                         }
                         if (HVerticalViewPagerNew.filterOtherCount > 0) {
                             builder.append("关键字过滤: ").append(HVerticalViewPagerNew.filterOtherCount)

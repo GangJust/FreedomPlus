@@ -11,7 +11,6 @@ import com.freegang.ktutils.reflect.fieldGetFirst
 import com.freegang.ktutils.reflect.fieldSetFirst
 import com.freegang.ktutils.reflect.methodInvokeFirst
 import com.freegang.ktutils.text.KTextUtils
-import com.freegang.xpler.core.CallMethods
 import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.hookBlockRunning
 import com.freegang.xpler.core.hookClass
@@ -23,7 +22,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
 class HVerticalViewPagerNew(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<VerticalViewPager>(lpparam), CallMethods {
+    BaseHook<VerticalViewPager>(lpparam) {
     companion object {
         const val TAG = "HVerticalViewPager"
 
@@ -35,14 +34,18 @@ class HVerticalViewPagerNew(lpparam: XC_LoadPackage.LoadPackageParam) :
         var isFilterImage = false
         var isFilterAd = false
         var isFilterLongVideo = false
-        var isFilterPopularEffect = false
+        var isFilterRecommendedCards = false
+        var isFilterRecommendedMerchants = false
+        var isFilterEmptyDesc = false
 
         var filterLiveCount = 0
         var filterImageCount = 0
         var filterAdCount = 0
         var filterLongVideoCount = 0
         var filterOtherCount = 0
-        var filterPopularEffectCount = 0
+        var filterRecommendedCardsCount = 0
+        var filterRecommendedMerchantsCount = 0
+        var filterEmptyDescCount = 0
     }
 
     private val config get() = ConfigV1.get()
@@ -159,26 +162,6 @@ class HVerticalViewPagerNew(lpparam: XC_LoadPackage.LoadPackageParam) :
         }
     }
 
-    override fun callOnBeforeMethods(param: XC_MethodHook.MethodHookParam) {
-
-    }
-
-    override fun callOnAfterMethods(param: XC_MethodHook.MethodHookParam) {
-        /*hookBlockRunning(param){
-            val array = mutableListOf<String>().apply {
-                add("")
-                add("当前对象: $thisObject")
-                add("普通方法: $method")
-                addAll(argsOrEmpty.mapIndexed { index, any -> "参数[$index]: $any" })
-                add("返回: $resultOrThrowable")
-                add("")
-            }.toTypedArray()
-            KLogCat.d(*array)
-        }.onFailure {
-            KLogCat.tagE(TAG, it)
-        }*/
-    }
-
     private fun Aweme.sortString(): String {
         return "awemeType=${awemeType}, desc=${"$desc".replace(Regex("\\s"), "")}"
     }
@@ -218,8 +201,14 @@ class HVerticalViewPagerNew(lpparam: XC_LoadPackage.LoadPackageParam) :
             if ("长视频" == s) {
                 HVerticalViewPagerNew.isFilterLongVideo = true
             }
-            if ("热门特效" == s) {  // awemeType=145, desc=null
-                HVerticalViewPagerNew.isFilterPopularEffect = true
+            if ("推荐卡片" == s) {  // awemeType=145, desc=null [热门特效/认识的人]
+                HVerticalViewPagerNew.isFilterRecommendedCards = true
+            }
+            if ("推荐商家" == s) {  // awemeType=140, desc=null
+                HVerticalViewPagerNew.isFilterRecommendedMerchants = true
+            }
+            if ("空文案" == s) {  // desc=null
+                HVerticalViewPagerNew.isFilterEmptyDesc = true
             }
         }
     }
@@ -246,8 +235,18 @@ class HVerticalViewPagerNew(lpparam: XC_LoadPackage.LoadPackageParam) :
                 null
             }
 
-            HVerticalViewPagerNew.isFilterPopularEffect && aweme.awemeType == 145 -> {
-                HVerticalViewPagerNew.filterPopularEffectCount += 1
+            HVerticalViewPagerNew.isFilterRecommendedCards && aweme.awemeType == 145 -> {
+                HVerticalViewPagerNew.filterRecommendedCardsCount += 1
+                null
+            }
+
+            HVerticalViewPagerNew.isFilterRecommendedMerchants && aweme.awemeType == 140 -> {
+                HVerticalViewPagerNew.filterRecommendedMerchantsCount += 1
+                null
+            }
+
+            HVerticalViewPagerNew.isFilterEmptyDesc && KTextUtils.isEmpty(aweme.desc) -> {
+                HVerticalViewPagerNew.filterEmptyDescCount += 1
                 null
             }
 

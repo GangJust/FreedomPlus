@@ -68,6 +68,7 @@ import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.json.getIntOrDefault
 import com.freegang.ktutils.json.parseJSONArray
 import com.freegang.ktutils.log.KLogCat
+import com.freegang.plugin.PluginClassloader
 import com.freegang.plugin.PluginContextThemeWrapper
 import com.freegang.plugin.PluginResource
 import com.freegang.plugin.v2.XplerActivityV2
@@ -93,6 +94,7 @@ class FreedomSettingActivity : XplerActivityV2() {
             .get(FreedomSettingVM::class.java)
     }
 
+    private val mClassLoader by lazy { PluginClassloader() }
     private var mResources: PluginResource? = null
 
     private var isModuleStart = false
@@ -1460,6 +1462,10 @@ class FreedomSettingActivity : XplerActivityV2() {
                 }
             }
         )
+    }
+
+    override fun getClassLoader(): ClassLoader {
+        return mClassLoader
     }
 
     override fun getResources(): Resources {

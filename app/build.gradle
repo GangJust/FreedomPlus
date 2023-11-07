@@ -11,7 +11,7 @@ android {
         applicationId "com.freegang.fplus"
         minSdk 24
         targetSdk 33
-        versionCode 85
+        versionCode 88
         versionName "1.2.4-dev"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

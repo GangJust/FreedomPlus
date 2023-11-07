@@ -43,6 +43,18 @@
 
 
 
+## 开源库/Public Library
+
+注：删除线表示依赖被引用，但项目未使用
+
+- [dexkit](https://github.com/LuckyPray/DexKit)
+- [mmkv](https://github.com/Tencent/MMKV)
+- [sardine-android](https://github.com/thegrizzlylabs/sardine-android)
+- ~~[okhttp3](https://github.com/square/okhttp)~~
+- ~~[SpannableStringDslExtension](https://github.com/junerver/SpannableStringDslExtension#spannablestringdslextension)~~  
+
+
+
 ## 重要说明
 
 - 本项目作为一个工具，代码开源，供开发者学习参考使用；

@@ -64,7 +64,7 @@ dependencies {
     implementation(libs.mmkv)
     implementation(libs.dexkit)
     //implementation(libs.okhttp3)
-    implementation libs.ss.ktx
+    //implementation libs.ss.ktx
 
     implementation project(":webdav")
     implementation project(":ktutils")

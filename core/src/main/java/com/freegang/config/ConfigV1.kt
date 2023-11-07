@@ -31,7 +31,7 @@ class ConfigV1 private constructor() {
         }
 
         fun getConfigDir(context: Context): File {
-            //return getFreedomDir(context).child(".config")
+            // return getFreedomDir(context).child(".config")
             return context.filesDir.child("fplus")
         }
 
@@ -191,7 +191,7 @@ class ConfigV1 private constructor() {
         }
 
     /// 视频类型关键字
-    val videoFilterTypes = setOf("直播", "广告", "图文", "长视频", "热门特效")
+    val videoFilterTypes = setOf("直播", "广告", "图文", "长视频", "推荐卡片", "推荐商家", "空文案")
 
     /// 视频过滤关键字
     var videoFilterKeywords: String = "直播, #生日, 广告, 买, 优惠"
