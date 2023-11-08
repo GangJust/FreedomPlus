@@ -21,6 +21,7 @@ import com.freegang.ktutils.view.postRunning
 import com.freegang.ui.activity.FreedomSettingActivity
 import com.freegang.xpler.HookPackages
 import com.freegang.xpler.R
+import com.freegang.xpler.core.FutureHook
 import com.freegang.xpler.core.KtXposedHelpers
 import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.hookBlockRunning
@@ -38,8 +39,9 @@ class HSideBarNestedScrollView(lpparam: XC_LoadPackage.LoadPackageParam) :
 
     private val config get() = ConfigV1.get()
 
-    @OnAfter("dispatchTouchEvent")
-    fun dispatchTouchEventAfter(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {
+    @FutureHook
+    @OnAfter("onTouchEvent")
+    fun onTouchEventAfter(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {
         hookBlockRunning(params) {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
@@ -51,6 +53,7 @@ class HSideBarNestedScrollView(lpparam: XC_LoadPackage.LoadPackageParam) :
         }
     }
 
+    @FutureHook
     @OnAfter("onAttachedToWindow")
     fun onAttachedToWindowAfter(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {

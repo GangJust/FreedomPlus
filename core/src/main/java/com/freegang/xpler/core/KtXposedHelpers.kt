@@ -221,11 +221,11 @@ class KtXposedHelpers {
     /**
      * Hook某个方法
      *
-     * @param methodName 方法
+     * @param method 方法
      * @param block hook代码块, 可在内部书写hook逻辑
      */
-    fun method(methodName: Method, block: MethodHook.() -> Unit): KtXposedHelpers {
-        val methodHookImpl = MethodHookImpl(methodName)
+    fun method(method: Method, block: MethodHook.() -> Unit): KtXposedHelpers {
+        val methodHookImpl = MethodHookImpl(method)
         block.invoke(methodHookImpl)
         methodHookImpl.startHook()
         return this

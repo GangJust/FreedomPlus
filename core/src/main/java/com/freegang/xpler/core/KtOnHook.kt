@@ -1,6 +1,8 @@
 package com.freegang.xpler.core
 
 import com.freegang.ktutils.log.KLogCat
+import com.freegang.ktutils.reflect.KReflectUtils
+import com.freegang.xpler.core.bridge.MethodHookImpl
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedHelpers
@@ -123,6 +125,7 @@ annotation class Param(val name: String)
  *
  * 被该注解标注的方法将会在执行一次Hook之后立即解开Hook
  * (即Hook逻辑只会执行一次)
+ * 需要搭配 [OnBefore] [OnAfter] [OnReplace] 等方法使用
  *
  * 须知: 注解只是为了勾住方法, 被该注解标注的方法,
  * 参数名需要与Hook目标方法的参数名一致,
@@ -132,9 +135,19 @@ annotation class Param(val name: String)
 @Target(AnnotationTarget.FUNCTION)
 annotation class HookOnce()
 
+/**
+ * 该注解作用于Hook目标的成员方法(考虑到构造方法大多数情况下都会做自调用，该注解在构造方法上并没有多大意义)。
+ * 对部分将来会出现的方法Hook操作, 场景如下:
+ * 某些方法在低版本未出现, 而却在新版本出现了, 这时才会对目标方法Hook; 同理, 未来方法如果被删除, Hook逻辑也不被执行
+ * 需要搭配 [OnBefore] [OnAfter] [OnReplace] 等注解使用
+ */
+@Target(AnnotationTarget.FUNCTION)
+annotation class FutureHook()
+
 abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackageParam) {
     private lateinit var mTargetClazz: Class<*>
     protected val targetClazz get() = mTargetClazz
+    private val targetMethods = mutableSetOf<Method>()
 
     private var hookHelper: KtXposedHelpers? = null
     private val mineMethods = mutableSetOf<Method>()
@@ -148,6 +161,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
                 hookHelper = KtXposedHelpers.hookClass(targetClazz)
 
                 getMineAllMethods()
+                getHookTargetAllMethods()
 
                 invOnBefore()
                 invOnAfter()
@@ -190,12 +204,19 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     }
 
     /**
-     * 获取子类泛型中的类, 如果泛型类是 Any, 则需要通过 [setTargetClass] 对指定类进行设置
+     * 获取子类泛型中的Hook目标类, 如果泛型类是 Any, 则需要通过 [setTargetClass] 对指定类进行设置
      */
     @Throws
     private fun getHookTargetClass(): Class<*> {
         val type = this::class.java.genericSuperclass as ParameterizedType
         return type.actualTypeArguments[0] as Class<*>
+    }
+
+    /**
+     * 获取Hook目标类中的所有方法
+     */
+    private fun getHookTargetAllMethods() {
+        targetMethods.addAll(targetClazz.declaredMethods)
     }
 
     /**
@@ -215,9 +236,25 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
             if (value.getAnnotation(OnReplace::class.java) != null) continue
             value.isAccessible = true
 
+            val isFutureHook = value.getAnnotation(FutureHook::class.java) != null
+            val paramTypes = getTargetMethodParamTypes(value)
             val names = if (key.name.isEmpty()) arrayOf(value.name) else key.name
-            names.forEach {
-                hookHelper?.method(it, *getTargetMethodParamTypes(value)) {
+            names.forEach { name ->
+                var methodHookImpl: MethodHookImpl? = null
+                // 如果属于 FutureHook 则对目标Class进行搜索, 未搜索到则不Hook
+                if (isFutureHook) {
+                    val find = KReflectUtils.findMethodFirst(
+                        methods = targetMethods,
+                        name = name,
+                        paramTypes = paramTypes,
+                    )
+                    if (find != null) methodHookImpl = MethodHookImpl(find)
+                } else {
+                    methodHookImpl = MethodHookImpl(targetClazz, name, *paramTypes)
+                }
+
+                // 开启Hook
+                methodHookImpl?.apply {
                     onBefore {
                         val invArgs = arrayOf(this, *argsOrEmpty)
                         value.invoke(this@KtOnHook, *invArgs)
@@ -225,7 +262,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
                     if (value.getAnnotation(HookOnce::class.java) != null) {
                         onUnhook { _, _ -> }
                     }
-                }
+                }?.startHook()
             }
         }
     }
@@ -240,9 +277,25 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
             if (value.getAnnotation(OnReplace::class.java) != null) continue
             value.isAccessible = true
 
+            val isFutureHook = value.getAnnotation(FutureHook::class.java) != null
+            val paramTypes = getTargetMethodParamTypes(value)
             val names = if (key.name.isEmpty()) arrayOf(value.name) else key.name
-            names.forEach {
-                hookHelper?.method(it, *getTargetMethodParamTypes(value)) {
+            names.forEach { name ->
+                var methodHookImpl: MethodHookImpl? = null
+                // 如果属于 FutureHook 则对目标Class进行搜索, 未搜索到则不Hook
+                if (isFutureHook) {
+                    val find = KReflectUtils.findMethodFirst(
+                        methods = targetMethods,
+                        name = name,
+                        paramTypes = paramTypes,
+                    )
+                    if (find != null) methodHookImpl = MethodHookImpl(find)
+                } else {
+                    methodHookImpl = MethodHookImpl(targetClazz, name, *paramTypes)
+                }
+
+                // 开启Hook
+                methodHookImpl?.apply {
                     onAfter {
                         val invArgs = arrayOf(this, *argsOrEmpty)
                         value.invoke(this@KtOnHook, *invArgs)
@@ -250,7 +303,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
                     if (value.getAnnotation(HookOnce::class.java) != null) {
                         onUnhook { _, _ -> }
                     }
-                }
+                }?.startHook()
             }
         }
     }
@@ -265,9 +318,26 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
         val methodMap = getAnnotationMethod(OnReplace::class.java)
         for ((key, value) in methodMap) {
             value.isAccessible = true
+
+            val isFutureHook = value.getAnnotation(FutureHook::class.java) != null
+            val paramTypes = getTargetMethodParamTypes(value)
             val names = if (key.name.isEmpty()) arrayOf(value.name) else key.name
-            names.forEach {
-                hookHelper?.method(it, *getTargetMethodParamTypes(value)) {
+            names.forEach { name ->
+                var methodHookImpl: MethodHookImpl? = null
+                // 如果属于 FutureHook 则对目标Class进行搜索, 未搜索到则不Hook
+                if (isFutureHook) {
+                    val find = KReflectUtils.findMethodFirst(
+                        methods = targetMethods,
+                        name = name,
+                        paramTypes = paramTypes,
+                    )
+                    if (find != null) methodHookImpl = MethodHookImpl(find)
+                } else {
+                    methodHookImpl = MethodHookImpl(targetClazz, name, *paramTypes)
+                }
+
+                // 开启Hook
+                methodHookImpl?.apply {
                     onReplace {
                         val invArgs = arrayOf(this, *argsOrEmpty)
                         value.invoke(this@KtOnHook, *invArgs) ?: Unit
@@ -275,7 +345,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
                     if (value.getAnnotation(HookOnce::class.java) != null) {
                         onUnhook { _, _ -> }
                     }
-                }
+                }?.startHook()
             }
         }
     }
@@ -393,7 +463,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
      * 勾住所有普通方法
      */
     private fun defaultHookAllMethod() {
-        //所有普通方法
+        // 所有普通方法
         if (this@KtOnHook is CallMethods) {
             hookHelper?.methodAll {
                 onBefore {
@@ -411,7 +481,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
      * 勾住所有构造方法
      */
     private fun defaultHookAllConstructor() {
-        //所有构造方法
+        // 所有构造方法
         if (this@KtOnHook is CallConstructors) {
             hookHelper?.constructorsAll {
                 onBefore {
