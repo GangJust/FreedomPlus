@@ -268,6 +268,26 @@ class ConfigV1 private constructor() {
             field = value
         }
 
+    // 评论区颜色模式
+    var isCommentColorMode:Boolean = false
+        get(){
+            return mmkv.getBoolean("isCommentColorMode", false)
+        }
+        set(value){
+            mmkv.putBoolean("isCommentColorMode", value)
+            field = value
+        }
+
+    // 评论区颜色模式 [0: 浅色模式、1: 深色模式、2: 跟随系统]
+    var commentColorMode:Int = 0
+        get(){
+            return mmkv.getInt("commentColorMode", 0)
+        }
+        set(value){
+            mmkv.putInt("commentColorMode", value)
+            field = value
+        }
+
     /// 隐藏顶部tab
     var isHideTab: Boolean = false
         get() {

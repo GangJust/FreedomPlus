@@ -88,6 +88,12 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     private var _isLongPressMode = MutableLiveData(false)
     val isLongPressMode: LiveData<Boolean> = _isLongPressMode
 
+    private var _isCommentColorMode = MutableLiveData(false)
+    val isCommentColorMode:LiveData<Boolean> = _isCommentColorMode
+
+    private var _commentColorMode = MutableLiveData(0)
+    val commentColorMode:LiveData<Int> = _commentColorMode
+
     private var _isHideTab = MutableLiveData(false)
     var isHideTab: LiveData<Boolean> = _isHideTab
 
@@ -140,6 +146,7 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
             changeIsVibrate(config.isVibrate)
             changeIsTranslucent(config.isTranslucent)
             changeTranslucentValue(config.translucentValue)
+            changeIsRemoveSticker(config.isRemoveSticker)
             changeIsDoubleClickType(config.isDoubleClickType)
             changeDoubleClickType(config.doubleClickType)
             changeIsLongtimeVideoToast(config.isLongtimeVideoToast)
@@ -149,9 +156,10 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
             setVideoFilterKeywords(config.videoFilterKeywords)
             changeIsNeatMode(config.isNeatMode)
             changeLongPressMode(config.longPressMode)
-            changeIsRemoveSticker(config.isRemoveSticker)
             changeIsImmersive(config.isImmersive)
             changeSystemControllerValue(config.systemControllerValue)
+            changeIsCommentColorMode(config.isCommentColorMode)
+            changeCommentColorMode(config.commentColorMode)
             changeIsHideTab(config.isHideTab)
             setHideTabKeywords(config.hideTabKeywords)
             changeIsWebDav(config.isWebDav)
@@ -235,7 +243,7 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
         config.isHidePhotoButton = value
     }
 
-    // 禁止拍摄
+    // 改变底部加号拍摄模式
     fun changePhotoButtonType(value: Int) {
         _photoButtonType.value = value
         config.photoButtonType = value
@@ -277,6 +285,18 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     fun changeLongPressMode(value: Boolean) {
         _isLongPressMode.value = value
         config.longPressMode = value
+    }
+
+    // 评论区颜色模式
+    fun changeIsCommentColorMode(value: Boolean) {
+        _isCommentColorMode.value = value
+        config.isCommentColorMode = value
+    }
+
+    // 评论区颜色模式
+    fun changeCommentColorMode(value: Int) {
+        _commentColorMode.value = value
+        config.commentColorMode = value
     }
 
     // 隐藏顶部tab

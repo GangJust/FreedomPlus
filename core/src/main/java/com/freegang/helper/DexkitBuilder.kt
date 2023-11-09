@@ -10,6 +10,7 @@ import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.text.ifNotEmpty
 import com.freegang.xpler.core.findClass
 import com.freegang.xpler.core.lpparam
+import com.ss.android.ugc.aweme.comment.constants.CommentColorMode
 import org.json.JSONObject
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.query.ClassDataList
@@ -26,6 +27,7 @@ object DexkitBuilder {
     var cornerExtensionsPopupWindowClazz: Class<*>? = null
     var mainBottomTabViewClazz: Class<*>? = null
     var mainBottomTabItemClazz: Class<*>? = null
+    var commentListPageFragmentClazz: Class<*>? = null
     var seekBarSpeedModeBottomContainerClazz: Class<*>? = null
     var videoPlayerHelperClazz: Class<*>? = null
     var videoPinchViewClazz: Class<*>? = null
@@ -102,6 +104,30 @@ object DexkitBuilder {
                     }
                 }
             }.firstClass("mainBottomTabItem")
+
+            commentListPageFragmentClazz = bridge.findClass {
+                matcher {
+                    fields {
+                        add {
+                            type = "com.ss.android.ugc.aweme.comment.widget.CommentNestedLayout"
+                        }
+                        add {
+                            type = "com.ss.android.ugc.aweme.comment.param.VideoCommentPageParam"
+                        }
+                    }
+
+                    methods {
+                        add {
+                            returnType = CommentColorMode::class.java.name
+                        }
+                    }
+
+                    usingStrings = listOf(
+                        "com/ss/android/ugc/aweme/comment/ui/CommentListPageFragment",
+                        "CommentListPageFragment",
+                    )
+                }
+            }.firstClass("commentListPageFragment")
 
             videoPinchViewClazz = bridge.findClass {
                 matcher {
@@ -301,6 +327,7 @@ object DexkitBuilder {
         val cornerExtendsionsPopupWindow = cache.getStringOrDefault("coenerExtendsionsPoupWindow")
         val mainBottomTabView = cache.getStringOrDefault("mainBottomTabView")
         val mainBottomTabItem = cache.getStringOrDefault("mainBottomTabItem")
+        val commentListPageFragment = cache.getStringOrDefault("commentListPageFragment")
         val seekBarSpeedModeBottomContainer = cache.getStringOrDefault("seekBarSpeedModeBottomContainer")
         val videoPlayerHelper = cache.getStringOrDefault("videoPlayerHelper")
         val videoPinchView = cache.getStringOrDefault("videoPinchView")
@@ -323,6 +350,7 @@ object DexkitBuilder {
         cornerExtensionsPopupWindowClazz = cornerExtendsionsPopupWindow.ifNotEmpty { lpparam.findClass(it) }
         mainBottomTabViewClazz = mainBottomTabView.ifNotEmpty { lpparam.findClass(it) }
         mainBottomTabItemClazz = mainBottomTabItem.ifNotEmpty { lpparam.findClass(it) }
+        commentListPageFragmentClazz = commentListPageFragment.ifNotEmpty { lpparam.findClass(it) }
         seekBarSpeedModeBottomContainerClazz = seekBarSpeedModeBottomContainer.ifNotEmpty { lpparam.findClass(it) }
         videoPlayerHelperClazz = videoPlayerHelper.ifNotEmpty { lpparam.findClass(it) }
         videoPinchViewClazz = videoPinchView.ifNotEmpty { lpparam.findClass(it) }

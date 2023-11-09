@@ -487,14 +487,14 @@ class FreedomSettingActivity : XplerActivityV2() {
                 }
                 item {
                     // 双击视频类型
-                    var showDoubleClickModelDialog by remember { mutableStateOf(false) }
-                    if (showDoubleClickModelDialog) {
+                    var showDoubleClickModeDialog by remember { mutableStateOf(false) }
+                    if (showDoubleClickModeDialog) {
                         var radioIndex by remember { mutableStateOf(model.doubleClickType.value ?: 2) }
                         FMessageDialog(
                             title = "请选择双击响应模式",
                             confirm = "更改",
                             onlyConfirm = true,
-                            onConfirm = { showDoubleClickModelDialog = false },
+                            onConfirm = { showDoubleClickModeDialog = false },
                             content = {
                                 Column {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -549,7 +549,7 @@ class FreedomSettingActivity : XplerActivityV2() {
                         subtext = "点击调整双击视频响应方式",
                         checked = model.isDoubleClickType.observeAsState(false),
                         onClick = {
-                            showDoubleClickModelDialog = true
+                            showDoubleClickModeDialog = true
                         },
                         onCheckedChange = {
                             model.changeIsDoubleClickType(it)
@@ -873,6 +873,77 @@ class FreedomSettingActivity : XplerActivityV2() {
                         },
                         onCheckedChange = {
                             model.changeIsImmersive(it)
+                            showRestartAppDialog = true
+                        }
+                    )
+                }
+                item {
+                    // 评论区颜色模式
+                    var showCommentColorModeDialog by remember { mutableStateOf(false) }
+                    if (showCommentColorModeDialog) {
+                        var radioIndex by remember { mutableStateOf(model.commentColorMode.value ?: 0) }
+                        FMessageDialog(
+                            title = "请选择评论区颜色模式",
+                            confirm = "更改",
+                            onlyConfirm = true,
+                            onConfirm = { showCommentColorModeDialog = false },
+                            content = {
+                                Column {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        RadioButton(
+                                            selected = radioIndex == 0,
+                                            onClick = {
+                                                radioIndex = 0
+                                                model.changeCommentColorMode(radioIndex)
+                                            },
+                                        )
+                                        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                                        Text(
+                                            text = "浅色模式",
+                                            style = MaterialTheme.typography.body1,
+                                        )
+                                    }
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        RadioButton(
+                                            selected = radioIndex == 1,
+                                            onClick = {
+                                                radioIndex = 1
+                                                model.changeCommentColorMode(radioIndex)
+                                            },
+                                        )
+                                        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                                        Text(
+                                            text = "深色模式",
+                                            style = MaterialTheme.typography.body1,
+                                        )
+                                    }
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        RadioButton(
+                                            selected = radioIndex == 2,
+                                            onClick = {
+                                                radioIndex = 2
+                                                model.changeCommentColorMode(radioIndex)
+                                            },
+                                        )
+                                        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                                        Text(
+                                            text = "跟随主题",
+                                            style = MaterialTheme.typography.body1,
+                                        )
+                                    }
+                                }
+                            }
+                        )
+                    }
+                    SwitchItem(
+                        text = "评论区颜色模式",
+                        subtext = "点击调整评论区颜色模式",
+                        checked = model.isCommentColorMode.observeAsState(false),
+                        onClick = {
+                            showCommentColorModeDialog = true
+                        },
+                        onCheckedChange = {
+                            model.changeIsCommentColorMode(it)
                             showRestartAppDialog = true
                         }
                     )

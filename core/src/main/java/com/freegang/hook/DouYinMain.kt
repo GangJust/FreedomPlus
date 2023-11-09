@@ -78,7 +78,7 @@ class DouYinMain(private val app: Application) {
             // search and hook
             DexkitBuilder.running(
                 app = app,
-                version = 12,
+                version = 13,
                 searchBefore = {
                     HActivity(lpparam)
                     HMainActivity(lpparam)
@@ -100,6 +100,7 @@ class DouYinMain(private val app: Application) {
                     HCornerExtensionsPopupWindow(lpparam)
                     HMainBottomTabView(lpparam)
                     HMainBottomTabItem(lpparam)
+                    HCommentListPageFragment(lpparam)
                     HSeekBarSpeedModeBottomMask(lpparam)
                     HVideoPlayerHelper(lpparam)
                     HVerticalViewPagerNew(lpparam)
