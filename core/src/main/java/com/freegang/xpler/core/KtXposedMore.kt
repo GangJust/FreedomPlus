@@ -527,14 +527,14 @@ val XC_MethodHook.MethodHookParam.argsOrEmpty: Array<Any>
 
 /**
  * DSL特性便捷使用带param参数的方法
- * @param param XC_MethodHook.MethodHookParam
+ * @param params XC_MethodHook.MethodHookParam
  * @param block XC_MethodHook.MethodHookParam.()
  */
 inline fun <R> hookBlockRunning(
-    param: XC_MethodHook.MethodHookParam,
+    params: XC_MethodHook.MethodHookParam,
     block: XC_MethodHook.MethodHookParam.() -> R,
 ): Result<R> {
     return runCatching {
-        block.invoke(param)
+        block.invoke(params)
     }
 }

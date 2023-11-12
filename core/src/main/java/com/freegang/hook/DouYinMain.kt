@@ -78,18 +78,20 @@ class DouYinMain(private val app: Application) {
             // search and hook
             DexkitBuilder.running(
                 app = app,
-                version = 13,
+                version = 15,
                 searchBefore = {
                     HActivity(lpparam)
                     HMainActivity(lpparam)
+                    HLivePlayActivity(lpparam)
                     HDetailActivity(lpparam)
                     HSideBarNestedScrollView(lpparam)
                     HDisallowInterceptRelativeLayout(lpparam)
                     HMainTabStripScrollView(lpparam)
                     HFlippableViewPager(lpparam)
                     HCustomizedUISeekBar(lpparam)
-                    // HVideoViewHolder(lpparam)
                     HVideoViewHolderRootView(lpparam)
+                    // HVideoViewHolder(lpparam)
+                    // HVideoViewHolderRootViewNew(lpparam)
                     HPenetrateTouchRelativeLayout(lpparam)
                     HInteractStickerParent(lpparam)
                     HCommentAudioView(lpparam)
@@ -104,10 +106,10 @@ class DouYinMain(private val app: Application) {
                     HSeekBarSpeedModeBottomMask(lpparam)
                     HVideoPlayerHelper(lpparam)
                     HVerticalViewPagerNew(lpparam)
+                    // HVideoPagerAdapter(lpparam)
                     HVideoPinchView(lpparam)
                     HDetailPageFragment(lpparam)
                     HEmojiDetailDialogNew(lpparam)
-                    // HVideoPagerAdapter(lpparam)
                 }
             )
         }.onFailure {

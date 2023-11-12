@@ -11,8 +11,8 @@ android {
         applicationId "com.freegang.fplus"
         minSdk 24
         targetSdk 33
-        versionCode 90
-        versionName "1.2.4-dev"
+        versionCode 93
+        versionName "1.2.4"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
