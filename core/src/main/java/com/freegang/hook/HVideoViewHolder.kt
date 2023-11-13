@@ -11,36 +11,43 @@ import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.fieldGets
 import com.freegang.ktutils.reflect.methodInvokeFirst
-import com.freegang.xpler.core.EmptyHook
+import com.freegang.xpler.core.CallConstructors
 import com.freegang.xpler.core.hookBlockRunning
-import com.freegang.xpler.core.hookClass
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
 class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<EmptyHook>(lpparam) {
+    BaseHook<Any>(lpparam), CallConstructors {
     companion object {
         const val TAG = "HVideoViewHolder"
     }
 
     private val config get() = ConfigV1.get()
 
-    override fun onInit() {
-        lpparam.hookClass("com.ss.android.ugc.aweme.feed.adapter.VideoViewHolder")
-            .methodAllByName("bind") {
-                onAfter {
-                    val fieldGets = thisObject?.fieldGets(type = View::class.java) ?: emptyList()
+    private var onPreDraw: ViewTreeObserver.OnDrawListener? = null
 
-                    // PenetrateTouchRelativeLayout
-                    val penetrateTouchRelativeLayout = fieldGets.firstOrNull { it is PenetrateTouchRelativeLayout }
-                        ?.asOrNull<ViewGroup>()
-                    changePenetrateTouchRelativeLayout(this, penetrateTouchRelativeLayout)
-                }
-            }
+    override fun setTargetClass(): Class<*> {
+        return findClass("com.ss.android.ugc.aweme.feed.adapter.VideoViewHolder")
     }
 
-    private var onPreDraw: ViewTreeObserver.OnDrawListener? = null
+    override fun callOnBeforeConstructors(param: XC_MethodHook.MethodHookParam) {
+
+    }
+
+    override fun callOnAfterConstructors(param: XC_MethodHook.MethodHookParam) {
+        hookBlockRunning(param) {
+            val fieldGets = thisObject?.fieldGets(type = View::class.java) ?: emptyList()
+
+            // PenetrateTouchRelativeLayout
+            val penetrateTouchRelativeLayout = fieldGets.firstOrNull { it is PenetrateTouchRelativeLayout }
+                ?.asOrNull<ViewGroup>()
+            changePenetrateTouchRelativeLayout(this, penetrateTouchRelativeLayout)
+        }.onFailure {
+            KLogCat.tagE(TAG, it)
+        }
+    }
+
     private fun changePenetrateTouchRelativeLayout(params: XC_MethodHook.MethodHookParam, view: View?) {
         hookBlockRunning(params) {
             view?.also {

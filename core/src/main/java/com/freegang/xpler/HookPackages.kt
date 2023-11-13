@@ -10,8 +10,9 @@ object HookPackages {
     const val corePackageName = "com.freegang.xpler"
     const val douYinPackageName = "com.ss.android.ugc.aweme"
     const val douYinLitePackageName = "com.ss.android.ugc.aweme.lite"
-    const val douYinClonePackageName = "com.ss.android.ugc.awemf" //测试用
-    const val douYinClone1PackageName = "com.ss.android.ugc.awemg" //测试用
+    const val douYinLivePackageName = "com.ss.android.ugc.live"
+    const val douYinClonePackageName = "com.ss.android.ugc.awemf" // 测试用
+    const val douYinClone1PackageName = "com.ss.android.ugc.awemg" // 测试用
 
 
     val packages = listOf(
@@ -19,6 +20,7 @@ object HookPackages {
         corePackageName,
         douYinPackageName,
         douYinLitePackageName,
+        douYinLivePackageName,
         douYinClonePackageName,
         douYinClone1PackageName,
     )
