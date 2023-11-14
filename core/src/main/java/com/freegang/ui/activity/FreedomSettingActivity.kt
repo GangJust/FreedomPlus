@@ -238,7 +238,7 @@ class FreedomSettingActivity : XplerActivityV2() {
                                 onLongClick = {
                                     lifecycleScope.launch {
                                         withContext(Dispatchers.IO) {
-                                            runCatching {
+                                            /*runCatching {
                                                 KLogCat.d("测试1: ${mResources?.assets?.open("update.log")}")
                                             }
                                             runCatching {
@@ -255,7 +255,7 @@ class FreedomSettingActivity : XplerActivityV2() {
                                             }
                                             runCatching {
                                                 KLogCat.d("测试6: ${(resources.asOrNull<PluginResource>())?.pluginAssets?.open("update.log")}")
-                                            }
+                                            }*/
 
                                             mResources?.let {
                                                 runCatching {

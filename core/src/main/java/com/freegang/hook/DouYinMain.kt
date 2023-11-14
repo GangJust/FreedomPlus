@@ -24,6 +24,7 @@ import com.freegang.xpler.core.lpparam
 import com.freegang.xpler.core.xposedLog
 import com.freegang.xpler.loader.hostClassloader
 import com.freegang.xpler.loader.injectClassLoader
+import com.ss.android.ugc.aweme.feed.model.Aweme
 import kotlin.system.exitProcess
 
 class DouYinMain(private val app: Application) {
@@ -45,7 +46,7 @@ class DouYinMain(private val app: Application) {
 
             // 权限检查
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                if (!app.hasMediaPermission()) {
+                if (!app.hasOperationStorage() || !app.hasMediaPermission()) {
                     Toast.makeText(app, "抖音没有媒体操作权限!", Toast.LENGTH_LONG).show()
                     return@runCatching
                 }
@@ -89,9 +90,9 @@ class DouYinMain(private val app: Application) {
                     HMainTabStripScrollView(lpparam)
                     HFlippableViewPager(lpparam)
                     HCustomizedUISeekBar(lpparam)
-                    // HVideoViewHolderRootView(lpparam)
-                    HVideoViewHolder(lpparam)
-                    HVideoViewHolderRootViewNew(lpparam)
+                    HVideoViewHolderRootView(lpparam)
+                    // HVideoViewHolder(lpparam)
+                    // HVideoViewHolderRootViewNew(lpparam)
                     HPenetrateTouchRelativeLayout(lpparam)
                     HInteractStickerParent(lpparam)
                     HCommentAudioView(lpparam)
@@ -106,7 +107,6 @@ class DouYinMain(private val app: Application) {
                     HSeekBarSpeedModeBottomMask(lpparam)
                     HVideoPlayerHelper(lpparam)
                     HVerticalViewPagerNew(lpparam)
-                    // HVideoPagerAdapter(lpparam)
                     HVideoPinchView(lpparam)
                     HDetailPageFragment(lpparam)
                     HEmojiDetailDialogNew(lpparam)
@@ -174,4 +174,9 @@ class DouYinMain(private val app: Application) {
 fun CountDownTimer.restart() {
     cancel()
     start()
+}
+
+fun Aweme.sortString(): String {
+    val desc = "$desc".replace(Regex("\\s"), "")
+    return "awemeType=${awemeType}, desc=$desc"
 }

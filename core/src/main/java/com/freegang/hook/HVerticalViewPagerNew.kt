@@ -79,10 +79,12 @@ class HVerticalViewPagerNew(lpparam: XC_LoadPackage.LoadPackageParam) :
                         val mData = mModel?.fieldGetFirst("mData")
                         if (mData?.javaClass?.name?.contains("FeedItemList") == true) {
                             val items = mData.fieldGetFirst("items")?.asOrNull<List<Aweme>>() ?: emptyList()
+                            if (items.size < 3) return@onBefore
+
                             mData.fieldSetFirst("items", filterAwemeList(items))
-                            val array = items.map { it.sortString() }.toTypedArray()
-                            KLogCat.tagD(TAG, "推荐视频列表")
-                            KLogCat.tagD(TAG, array.joinToString("\n"))
+                            // val array = items.map { it.sortString() }.toTypedArray()
+                            // KLogCat.tagD(TAG, "推荐视频列表")
+                            // KLogCat.tagD(TAG, array.joinToString("\n"))
                         }
                     }
                 }
@@ -100,10 +102,12 @@ class HVerticalViewPagerNew(lpparam: XC_LoadPackage.LoadPackageParam) :
                         val mData = mModel?.fieldGetFirst("mData")
                         if (mData?.javaClass?.name?.contains("FollowFeedList") == true) {
                             val mItems = mData.fieldGetFirst("mItems")?.asOrNull<List<FollowFeed>>() ?: emptyList()
+                            if (mItems.size < 3) return@onBefore
+
                             mData.fieldSetFirst("mItems", filterFollowFeedList(mItems))
-                            val array = mItems.map { it.aweme.sortString() }.toTypedArray()
-                            KLogCat.tagD(TAG, "关注页视频列表")
-                            KLogCat.tagD(TAG, array.joinToString("\n"))
+                            // val array = mItems.map { it.aweme.sortString() }.toTypedArray()
+                            // KLogCat.tagD(TAG, "关注页视频列表")
+                            // KLogCat.tagD(TAG, array.joinToString("\n"))
                         }
                     }
                 }
@@ -160,10 +164,6 @@ class HVerticalViewPagerNew(lpparam: XC_LoadPackage.LoadPackageParam) :
         }.onFailure {
             KLogCat.tagE(TAG, it)
         }
-    }
-
-    private fun Aweme.sortString(): String {
-        return "awemeType=${awemeType}, desc=${"$desc".replace(Regex("\\s"), "")}"
     }
 
     private fun filterAwemeList(items: List<Aweme>): List<Aweme> {
