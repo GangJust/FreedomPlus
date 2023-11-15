@@ -32,6 +32,8 @@ import com.freegang.fplus.R
 import com.freegang.fplus.Themes
 import com.freegang.fplus.resource.StringRes
 import com.freegang.ktutils.app.activeActivity
+import com.freegang.ktutils.app.appVersionCode
+import com.freegang.ktutils.app.appVersionName
 import com.freegang.ui.component.ScrollableContainer
 import kotlin.system.exitProcess
 
@@ -56,6 +58,10 @@ class ErrorActivity : ComponentActivity() {
                         Text(
                             text = StringRes.moduleSubtitle,
                             style = Themes.nowTypography.subtitle2,
+                        )
+                        Text(
+                            text = "Version $appVersionName ($appVersionCode)",
+                            style = Themes.nowTypography.caption,
                         )
                     }
                     Icon(
@@ -127,6 +133,6 @@ class ErrorActivity : ComponentActivity() {
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "text/plain"
         intent.putExtra(Intent.EXTRA_TEXT, text)
-        startActivity(Intent.createChooser(intent, "错误信息"))
+        startActivity(Intent.createChooser(intent, "日志分享"))
     }
 }

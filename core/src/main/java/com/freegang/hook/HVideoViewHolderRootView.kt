@@ -37,6 +37,7 @@ import com.freegang.xpler.core.thisView
 import com.freegang.xpler.core.thisViewGroup
 import com.ss.android.ugc.aweme.ad.feed.VideoViewHolderRootView
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
+import com.ss.android.ugc.aweme.feed.ui.seekbar.SeekBarState
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlin.math.abs
@@ -118,7 +119,13 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
 
                 // 清爽模式
                 if (config.isNeatMode) {
-                    it.isVisible = !config.neatModeState
+                    // it.isVisible = !config.neatModeState
+                    if (config.neatModeState) {
+                        // 视频是否暂停
+                        it.isVisible = HCustomizedUISeekBar.action == SeekBarState.Action.PAUSE
+                    } else {
+                        it.isVisible = true
+                    }
                 }
 
                 // 长按快进
@@ -136,6 +143,41 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
                 window.navigationBarColor = Color.TRANSPARENT
             }
         }
+    }
+
+    private fun interdictEvent(param: XC_MethodHook.MethodHookParam, event: MotionEvent): Boolean {
+        hookBlockRunning(param) {
+            val cancelEvent = MotionEvent.obtain(
+                event.downTime,
+                event.eventTime,
+                MotionEvent.ACTION_CANCEL,
+                event.x,
+                event.y,
+                event.metaState
+            )
+
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                // 避免快速下发 ACTION_DOWN
+                if (KFastClickUtils.isFastDoubleClick(50L)) {
+                    return true
+                }
+
+                // 防止双击点赞 (see at: HVideoPlayerHelper#callOnBeforeMethods#禁用双击点赞)
+                if (KFastClickUtils.isFastDoubleClick(300L) && config.isDoubleClickType) {
+                    thisView.parentView?.dispatchTouchEvent(cancelEvent)
+                    // 打开评论区
+                    if (config.doubleClickType == 1) {
+                        onClickViewV2(thisView, targetContent = Regex("评论(.*?)，按钮"))
+                    } else if (config.doubleClickType == 0) {
+                        result = true
+                    }
+                    return true
+                }
+            }
+        }.onFailure {
+            KLogCat.tagE(TAG, it)
+        }
+        return false
     }
 
     private fun longPressEvent(param: XC_MethodHook.MethodHookParam, event: MotionEvent) {
@@ -211,41 +253,6 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
         }.onFailure {
             KLogCat.tagE(TAG, it)
         }
-    }
-
-    private fun interdictEvent(param: XC_MethodHook.MethodHookParam, event: MotionEvent): Boolean {
-        hookBlockRunning(param) {
-            val cancelEvent = MotionEvent.obtain(
-                event.downTime,
-                event.eventTime,
-                MotionEvent.ACTION_CANCEL,
-                event.x,
-                event.y,
-                event.metaState
-            )
-
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                // 避免快速下发 ACTION_DOWN
-                if (KFastClickUtils.isFastDoubleClick(50L)) {
-                    return true
-                }
-
-                // 防止双击点赞 (see at: HVideoPlayerHelper#callOnBeforeMethods#禁用双击点赞)
-                if (KFastClickUtils.isFastDoubleClick(300L) && config.isDoubleClickType) {
-                    thisView.parentView?.dispatchTouchEvent(cancelEvent)
-                    // 打开评论区
-                    if (config.doubleClickType == 1) {
-                        onClickViewV2(thisView, targetContent = Regex("评论(.*?)，按钮"))
-                    } else if (config.doubleClickType == 0) {
-                        result = true
-                    }
-                    return true
-                }
-            }
-        }.onFailure {
-            KLogCat.tagE(TAG, it)
-        }
-        return false
     }
 
     private fun showOptionsMenuV1(view: ViewGroup) {

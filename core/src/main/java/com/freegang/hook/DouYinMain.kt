@@ -12,7 +12,7 @@ import com.freegang.ktutils.app.KActivityUtils
 import com.freegang.ktutils.app.KAppCrashUtils
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
-import com.freegang.ktutils.io.hasOperationStorage
+import com.freegang.ktutils.io.hasStoragePermission
 import com.freegang.ktutils.json.getIntOrDefault
 import com.freegang.ktutils.json.parseJSONArray
 import com.freegang.ktutils.log.KLogCat
@@ -46,12 +46,12 @@ class DouYinMain(private val app: Application) {
 
             // 权限检查
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                if (!app.hasOperationStorage() || !app.hasMediaPermission()) {
-                    Toast.makeText(app, "抖音没有媒体操作权限!", Toast.LENGTH_LONG).show()
+                if (!app.hasStoragePermission() && !app.hasMediaPermission()) {
+                    Toast.makeText(app, "抖音没有文件/媒体操作权限!", Toast.LENGTH_LONG).show()
                     return@runCatching
                 }
             } else {
-                if (!app.hasOperationStorage()) {
+                if (!app.hasStoragePermission()) {
                     Toast.makeText(app, "抖音没有文件读写权限!", Toast.LENGTH_LONG).show()
                     return@runCatching
                 }
@@ -79,7 +79,7 @@ class DouYinMain(private val app: Application) {
             // search and hook
             DexkitBuilder.running(
                 app = app,
-                version = 15,
+                version = 16,
                 searchBefore = {
                     HActivity(lpparam)
                     HMainActivity(lpparam)
@@ -90,8 +90,9 @@ class DouYinMain(private val app: Application) {
                     HMainTabStripScrollView(lpparam)
                     HFlippableViewPager(lpparam)
                     HCustomizedUISeekBar(lpparam)
+                    HVideoViewHolder(lpparam)
                     HVideoViewHolderRootView(lpparam)
-                    // HVideoViewHolder(lpparam)
+                    // HVideoViewHolderNew(lpparam)
                     // HVideoViewHolderRootViewNew(lpparam)
                     HPenetrateTouchRelativeLayout(lpparam)
                     HInteractStickerParent(lpparam)

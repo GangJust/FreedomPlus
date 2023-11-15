@@ -28,6 +28,9 @@ class HActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Activity>(l
     fun dispatchTouchEventBefore(param: XC_MethodHook.MethodHookParam, event: MotionEvent) {
         hookBlockRunning(param) {
             DouYinMain.freeExitCountDown?.restart()
+            if (event.action == MotionEvent.ACTION_DOWN) {// 重新沉浸
+                initImmersive(thisActivity)
+            }
         }.onFailure {
             KLogCat.tagE(TAG, it)
         }
