@@ -42,6 +42,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlin.math.abs
 
+@Deprecated("淘汰区域，删除倒计时中")
 class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
     BaseHook<VideoViewHolderRootView>(lpparam), CallConstructors {
     companion object {
@@ -301,7 +302,11 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
                     }
 
                     "下载" -> {
-                        DownloadLogic(this@HVideoViewHolderRootView, view.context, HVerticalViewPagerNew.currentAweme)
+                        DownloadLogic(
+                            this@HVideoViewHolderRootView,
+                            view.context,
+                            HVideoViewHolderNew.aweme,
+                        )
                     }
 
                     "过滤统计" -> {

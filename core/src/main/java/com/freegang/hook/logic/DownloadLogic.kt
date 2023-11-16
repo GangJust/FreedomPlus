@@ -79,7 +79,8 @@ class DownloadLogic(
                 hook.showToast(context, "未获取到基本信息")
             }
         }.onFailure {
-            hook.showToast(context, "未获取到基本信息")
+            KLogCat.e(it)
+            hook.showToast(context, "基本信息获取失败")
         }
     }
 

@@ -10,6 +10,7 @@ import androidx.core.view.children
 import androidx.core.view.updatePadding
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
+import com.freegang.helper.ImmersiveHelper
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.app.isDarkMode
@@ -121,7 +122,7 @@ class HSideBarNestedScrollView(lpparam: XC_LoadPackage.LoadPackageParam) :
 
             if (config.isImmersive) {
                 // 全面屏手势沉浸式底部垫高 (首页侧滑)，底部导航栏则不处理
-                if (HMainActivity.isEdgeToEdgeEnabled) {
+                if (ImmersiveHelper.isEdgeToEdgeEnabled) {
                     onlyChild.updatePadding(bottom = context.navigationBarHeight)
                 }
             }

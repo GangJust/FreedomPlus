@@ -6,6 +6,7 @@ import com.freegang.config.ConfigV1
 import com.freegang.ktutils.media.KMediaUtils
 import com.freegang.ktutils.io.child
 import com.freegang.ktutils.io.need
+import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.net.KHttpUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -30,7 +31,8 @@ class SaveEmojiLogic(
             }
             onSaveEmoji(urlList)
         }.onFailure {
-            hook.showToast(context, "未获取到表情内容")
+            KLogCat.e(it)
+            hook.showToast(context, "表情内容获取失败")
         }
     }
 

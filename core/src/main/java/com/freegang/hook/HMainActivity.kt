@@ -44,10 +44,6 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
     companion object {
         const val TAG = "HMainActivity"
 
-        @get:Synchronized
-        @set:Synchronized
-        var isEdgeToEdgeEnabled = false
-
         @SuppressLint("StaticFieldLeak")
         var mainTitleBar: View? = null
 
@@ -138,7 +134,11 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
         if (config.isDownload) {
             clipboardLogic.addClipboardListener(activity) { clipData, firstText ->
                 val aweme = findVideoAweme(activity)
-                DownloadLogic(this@HMainActivity, activity, aweme)
+                DownloadLogic(
+                    this@HMainActivity,
+                    activity,
+                    aweme ?: HVideoViewHolderNew.aweme,
+                )
             }
         }
     }
@@ -181,7 +181,6 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
         if (config.isTranslucent) {
             val alphaValue = config.translucentValue[0] / 100f
             mainTitleBar?.alpha = alphaValue
-            mainTitleBar?.isVisible = alphaValue > 0
         }
     }
 
@@ -190,7 +189,6 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
         if (config.isTranslucent) {
             val alphaValue = config.translucentValue[2] / 100f
             bottomTabView?.parentView?.alpha = alphaValue
-            bottomTabView?.parentView?.isVisible = alphaValue > 0
         }
 
         // 底部导航栏全局沉浸式

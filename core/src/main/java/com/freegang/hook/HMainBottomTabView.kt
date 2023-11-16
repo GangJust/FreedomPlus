@@ -2,7 +2,6 @@ package com.freegang.hook
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
 import com.freegang.helper.DexkitBuilder
@@ -48,7 +47,6 @@ class HMainBottomTabView(lpparam: XC_LoadPackage.LoadPackageParam) :
             if (config.isTranslucent) {
                 val alphaValue = config.translucentValue[2] / 100f
                 thisViewGroup.parentView?.alpha = alphaValue
-                thisViewGroup.parentView?.isVisible = alphaValue > 0
             }
 
             // 底部导航栏全局沉浸式

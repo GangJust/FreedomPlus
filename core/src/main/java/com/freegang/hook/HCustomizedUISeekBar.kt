@@ -32,7 +32,7 @@ class HCustomizedUISeekBar(lpparam: XC_LoadPackage.LoadPackageParam) :
         hookBlockRunning(params) {
             if (config.isImmersive) {
                 // 全面屏手势沉浸式底部垫高 (进度条)，底部导航栏则不处理
-                if (HDisallowInterceptRelativeLayout.isEdgeToEdgeEnabled) {
+                if (ImmersiveHelper.isEdgeToEdgeEnabled) {
                     thisView.apply {
                         val lp = layoutParams as FrameLayout.LayoutParams?
                         lp?.updateMargins(bottom = context.dip2px(58f))

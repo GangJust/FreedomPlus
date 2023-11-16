@@ -211,7 +211,11 @@ class HVideoViewHolderRootViewNew(lpparam: XC_LoadPackage.LoadPackageParam) :
                     }
 
                     "下载" -> {
-                        DownloadLogic(this@HVideoViewHolderRootViewNew, view.context, HVerticalViewPagerNew.currentAweme)
+                        DownloadLogic(
+                            this@HVideoViewHolderRootViewNew,
+                            view.context,
+                            HVideoViewHolderNew.aweme,
+                        )
                     }
 
                     "过滤统计" -> {

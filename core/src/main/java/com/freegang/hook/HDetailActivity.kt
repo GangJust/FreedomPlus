@@ -50,8 +50,8 @@ class HDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Detai
         // 23.5.0 ~ 24.1.0
         if (firstAweme == null) {
             // deprecated
-            //val any1 = activity.getObjectField<Any>("LIZJ")
-            //firstAweme = any1?.methodInvokeFirst(returnType = Aweme::class.java)
+            // val any1 = activity.getObjectField<Any>("LIZJ")
+            // firstAweme = any1?.methodInvokeFirst(returnType = Aweme::class.java)
 
             // new
             val any1 = activity.fieldGetFirst("LIZJ")
@@ -64,7 +64,11 @@ class HDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Detai
         if (!config.isDownload) return
         clipboardLogic.addClipboardListener(activity) { clipData, firstText ->
             val aweme = findVideoAweme(activity)
-            DownloadLogic(this@HDetailActivity, activity, aweme)
+            DownloadLogic(
+                this@HDetailActivity,
+                activity,
+                aweme ?: HVideoViewHolderNew.aweme,
+            )
         }
     }
 }

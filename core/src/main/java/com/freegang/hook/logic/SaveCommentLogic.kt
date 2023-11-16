@@ -6,6 +6,7 @@ import com.freegang.config.ConfigV1
 import com.freegang.ktutils.media.KMediaUtils
 import com.freegang.ktutils.io.child
 import com.freegang.ktutils.io.need
+import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.net.KHttpUtils
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import kotlinx.coroutines.Dispatchers
@@ -40,7 +41,8 @@ class SaveCommentLogic(
                 hook.showToast(context, "未获取到基本信息")
             }
         }.onFailure {
-            hook.showToast(context, "未获取到基本信息")
+            KLogCat.e(it)
+            hook.showToast(context, "基本信息获取失败")
         }
     }
 

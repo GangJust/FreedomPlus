@@ -11,6 +11,7 @@ import com.freegang.xpler.core.hookBlockRunning
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
+@Deprecated("淘汰区域，删除倒计时中")
 class HVideoPinchView(lpparam: XC_LoadPackage.LoadPackageParam) :
     BaseHook<Any>(lpparam), CallMethods {
     companion object {

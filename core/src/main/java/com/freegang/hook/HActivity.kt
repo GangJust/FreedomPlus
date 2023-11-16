@@ -1,14 +1,11 @@
 package com.freegang.hook
 
 import android.app.Activity
-import android.graphics.Color
 import android.os.Bundle
 import android.view.MotionEvent
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
-import com.freegang.ktutils.app.navBarInteractionMode
+import com.freegang.helper.ImmersiveHelper
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.OnBefore
@@ -29,7 +26,7 @@ class HActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Activity>(l
         hookBlockRunning(param) {
             DouYinMain.freeExitCountDown?.restart()
             if (event.action == MotionEvent.ACTION_DOWN) {// 重新沉浸
-                initImmersive(thisActivity)
+                ImmersiveHelper.with(thisActivity, config)
             }
         }.onFailure {
             KLogCat.tagE(TAG, it)
@@ -39,7 +36,7 @@ class HActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Activity>(l
     @OnAfter("onCreate")
     fun onCreateAfter(params: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {
         hookBlockRunning(params) {
-            initImmersive(thisActivity)
+            ImmersiveHelper.with(thisActivity, config)
         }.onFailure {
             KLogCat.tagE(TAG, it)
         }
@@ -51,28 +48,6 @@ class HActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Activity>(l
             DouYinMain.freeExitCountDown?.restart()
         }.onFailure {
             KLogCat.tagE(TAG, it)
-        }
-    }
-
-    private fun initImmersive(activity: Activity) {
-        // 全屏沉浸式
-        if (config.isImmersive) {
-            val window = activity.window
-            if (config.systemControllerValue[0]) {
-                WindowCompat.getInsetsController(window, window.decorView).hide(WindowInsetsCompat.Type.statusBars())
-            }
-            if (config.systemControllerValue[1]) {
-                WindowCompat.getInsetsController(window, window.decorView).hide(WindowInsetsCompat.Type.navigationBars())
-            }
-            if (activity.navBarInteractionMode == 2) {
-                HMainActivity.isEdgeToEdgeEnabled = true
-                WindowCompat.setDecorFitsSystemWindows(window, false)
-                window.statusBarColor = Color.TRANSPARENT
-                window.navigationBarColor = Color.TRANSPARENT
-            } else {
-                window.statusBarColor = Color.TRANSPARENT
-                window.navigationBarColor = Color.parseColor("#161616")
-            }
         }
     }
 }

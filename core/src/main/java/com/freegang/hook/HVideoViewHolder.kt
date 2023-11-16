@@ -4,6 +4,7 @@ import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
+@Deprecated("淘汰区域，删除倒计时中")
 class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
     BaseHook<Any>(lpparam) {
     companion object {
