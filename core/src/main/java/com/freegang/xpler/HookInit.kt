@@ -33,7 +33,6 @@ class HookInit : IXposedHookLoadPackage, IXposedHookZygoteInit {
         lpparam.hookClass(Application::class.java)
             .method("onCreate") {
                 onBefore {
-                    hookMain.handleLoadPackage(lpparam)
                     hookMain.handleLoadPackage(lpparam, thisApplication)
                 }
             }

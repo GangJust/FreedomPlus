@@ -10,7 +10,7 @@ import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.fieldGets
 import com.freegang.ktutils.reflect.methodInvokeFirst
-import com.freegang.xpler.core.CallConstructors
+import com.freegang.xpler.core.interfaces.CallConstructors
 import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.hookBlockRunning
 import com.ss.android.ugc.aweme.feed.model.Aweme

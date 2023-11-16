@@ -32,11 +32,11 @@ object HookStatus {
      * 模块状态直接调用该方法进行判断
      */
     fun isExpModuleActive(context: Context): Boolean {
-        //是否安装太极
+        // 是否安装太极
         val installed = KAppUtils.isAppInstalled(context, "me.weishu.exp")
         if (!installed) return false
 
-        //模块启用检测
+        // 模块启用检测
         val resolver = context.contentResolver
         val uri = Uri.parse("content://me.weishu.exposed.CP/")
         var result: Bundle? = null
@@ -74,9 +74,9 @@ object HookStatus {
      * @return 字符串数组, 包含 Lspatch 的版本名、版本号等
      */
     fun isLspatchActive(context: Context, packageName: String): Array<String> {
-        //see at:
-        //https://github.com/LSPosed/LSPatch/blob/master/manager/src/main/java/org/lsposed/lspatch/util/LSPPackageManager.kt#L73
-        //https://github.com/LSPosed/LSPatch/blob/master/manager/src/main/java/org/lsposed/lspatch/ui/viewmodel/manage/AppManageViewModel.kt#L42
+        // see at:
+        // https://github.com/LSPosed/LSPatch/blob/master/manager/src/main/java/org/lsposed/lspatch/util/LSPPackageManager.kt#L73
+        // https://github.com/LSPosed/LSPatch/blob/master/manager/src/main/java/org/lsposed/lspatch/ui/viewmodel/manage/AppManageViewModel.kt#L42
         try {
             val packageInfo = KAppUtils.getPackageInfo(
                 context = context,

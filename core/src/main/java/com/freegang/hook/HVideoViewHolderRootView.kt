@@ -30,7 +30,7 @@ import com.freegang.ktutils.view.toViewTreeString
 import com.freegang.ktutils.view.traverse
 import com.freegang.ui.activity.FreedomSettingActivity
 import com.freegang.xpler.HookPackages
-import com.freegang.xpler.core.CallConstructors
+import com.freegang.xpler.core.interfaces.CallConstructors
 import com.freegang.xpler.core.OnBefore
 import com.freegang.xpler.core.hookBlockRunning
 import com.freegang.xpler.core.thisView

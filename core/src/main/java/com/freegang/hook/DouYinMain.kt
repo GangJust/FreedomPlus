@@ -20,6 +20,7 @@ import com.freegang.ktutils.media.hasMediaPermission
 import com.freegang.plugin.v2.PluginBridgeV2
 import com.freegang.xpler.HookPackages
 import com.freegang.xpler.core.findClass
+import com.freegang.xpler.core.log.XplerLog
 import com.freegang.xpler.core.lpparam
 import com.freegang.xpler.core.xposedLog
 import com.freegang.xpler.loader.hostClassloader
@@ -114,7 +115,7 @@ class DouYinMain(private val app: Application) {
                 }
             )
         }.onFailure {
-            KLogCat.xposedLog("Freedom+ inject err..\n${it.stackTraceToString()}")
+            XplerLog.xposedLog("Freedom+ inject err..\n${it.stackTraceToString()}")
             KToastUtils.show(app, "Freedom+ Error: ${it.message}")
         }
     }

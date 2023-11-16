@@ -1,19 +1,19 @@
 package com.freegang.hook
 
 import android.view.MotionEvent
+import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
 import com.freegang.helper.DexkitBuilder
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.xpler.core.CallMethods
-import com.freegang.xpler.core.KtOnHook
 import com.freegang.xpler.core.NoneHook
 import com.freegang.xpler.core.argsOrEmpty
 import com.freegang.xpler.core.hookBlockRunning
+import com.freegang.xpler.core.interfaces.CallMethods
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
 class HVideoPlayerHelper(lpparam: XC_LoadPackage.LoadPackageParam) :
-    KtOnHook<Any>(lpparam), CallMethods {
+    BaseHook<Any>(lpparam), CallMethods {
     companion object {
         const val TAG = "HVideoPlayerHelper"
     }

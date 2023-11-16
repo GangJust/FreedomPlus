@@ -1,25 +1,21 @@
 package com.freegang.hook
 
-import android.app.Activity
-import android.graphics.Color
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.view.postRunning
 import com.freegang.ktutils.view.removeInParent
 import com.freegang.ktutils.view.traverse
-import com.freegang.xpler.core.CallConstructors
-import com.freegang.xpler.core.EmptyHook
 import com.freegang.xpler.core.findClass
 import com.freegang.xpler.core.hookBlockRunning
 import com.freegang.xpler.core.hookConstructorsAll
+import com.freegang.xpler.core.interfaces.CallConstructors
 import com.freegang.xpler.core.thisViewGroup
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
 class HDisallowInterceptRelativeLayout(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<EmptyHook>(lpparam),
-    CallConstructors {
+    BaseHook<Any>(lpparam), CallConstructors {
     companion object {
         const val TAG = "HDisallowInterceptRelativeLayout"
     }

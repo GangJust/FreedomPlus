@@ -9,7 +9,7 @@ import com.freegang.helper.DexkitBuilder
 import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.view.postRunning
-import com.freegang.xpler.core.CallMethods
+import com.freegang.xpler.core.interfaces.CallMethods
 import com.freegang.xpler.core.hookBlockRunning
 import com.freegang.xpler.core.hookClass
 import com.freegang.xpler.core.thisViewGroup

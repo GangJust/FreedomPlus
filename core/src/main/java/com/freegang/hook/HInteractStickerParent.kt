@@ -5,7 +5,7 @@ import com.freegang.config.ConfigV1
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.view.postRunning
 import com.freegang.ktutils.view.removeInParent
-import com.freegang.xpler.core.CallConstructors
+import com.freegang.xpler.core.interfaces.CallConstructors
 import com.freegang.xpler.core.hookBlockRunning
 import com.freegang.xpler.core.thisViewGroup
 import com.ss.android.ugc.aweme.sticker.infoSticker.interact.consume.view.InteractStickerParent

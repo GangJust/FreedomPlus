@@ -16,7 +16,7 @@ import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.fieldGets
 import com.freegang.ktutils.text.KTextUtils
 import com.freegang.xpler.R
-import com.freegang.xpler.core.CallMethods
+import com.freegang.xpler.core.interfaces.CallMethods
 import com.freegang.xpler.core.KtXposedHelpers
 import com.freegang.xpler.core.argsOrEmpty
 import com.freegang.xpler.core.hookBlockRunning

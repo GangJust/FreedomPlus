@@ -1,4 +1,4 @@
-package com.freegang.xpler.core
+package com.freegang.xpler.core.interfaces
 
 import de.robv.android.xposed.XC_MethodHook
 

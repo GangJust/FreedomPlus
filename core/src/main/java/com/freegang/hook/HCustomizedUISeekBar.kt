@@ -4,7 +4,7 @@ import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
 import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.xpler.core.CallMethods
+import com.freegang.xpler.core.interfaces.CallMethods
 import com.freegang.xpler.core.argsOrEmpty
 import com.freegang.xpler.core.hookBlockRunning
 import com.ss.android.ugc.aweme.feed.ui.seekbar.SeekBarState

@@ -1,6 +1,6 @@
 package com.freegang.xpler.core.bridge
 
-import com.freegang.ktutils.log.KLogCat
+import com.freegang.xpler.core.log.XplerLog
 import com.freegang.xpler.core.xposedLog
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
@@ -71,7 +71,7 @@ open class MethodHookImpl(private var method: Member) : MethodHook {
                         maybeUnhook(param.method)
                         return invoke
                     }.onFailure {
-                        KLogCat.xposedLog("报错方法: ${param.method}\n错误堆栈: ${it.stackTraceToString()}")
+                        XplerLog.xposedLog("报错方法: ${param.method}\n错误堆栈: ${it.stackTraceToString()}")
                     }
                     return param.resultOrThrowable
                 }
@@ -85,7 +85,7 @@ open class MethodHookImpl(private var method: Member) : MethodHook {
                         if (afterBlock != null) return
                         maybeUnhook(param.method)
                     }.onFailure {
-                        KLogCat.xposedLog("报错方法: ${param.method}\n错误堆栈: ${it.stackTraceToString()}")
+                        XplerLog.xposedLog("报错方法: ${param.method}\n错误堆栈: ${it.stackTraceToString()}")
                     }
                 }
 
@@ -94,7 +94,7 @@ open class MethodHookImpl(private var method: Member) : MethodHook {
                         afterBlock?.invoke(param)
                         maybeUnhook(param.method)
                     }.onFailure {
-                        KLogCat.xposedLog("报错方法: ${param.method}\n错误堆栈: ${it.stackTraceToString()}")
+                        XplerLog.xposedLog("报错方法: ${param.method}\n错误堆栈: ${it.stackTraceToString()}")
                     }
                 }
             })

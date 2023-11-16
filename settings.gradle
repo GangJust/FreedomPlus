@@ -20,4 +20,3 @@ include ":core"
 include ":aweme"
 include ":webdav"
 include ":ktutils"
-project(':ktutils').projectDir = new File('D:\\Gang\\GitHub\\ktutils')

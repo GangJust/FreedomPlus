@@ -13,11 +13,11 @@ import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.annotation.LayoutRes
 import androidx.annotation.StringRes
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.xpler.core.KtXposedHelpers.Companion.setLpparam
 import com.freegang.xpler.core.bridge.ConstructorHook
 import com.freegang.xpler.core.bridge.MethodHook
 import com.freegang.xpler.core.bridge.MethodHookImpl
+import com.freegang.xpler.core.log.XplerLog
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
@@ -360,11 +360,11 @@ fun XC_MethodHook.MethodHookParam.xposedLog(log: Throwable) {
 /**
  * 打印Xposed日志
  *
- * 并打印KLogCat日志
+ * 并打印XplerLog日志
  *
  * @param log 内容
  */
-fun KLogCat.Companion.xposedLog(log: String, xposed: Boolean = true) {
+fun XplerLog.Companion.xposedLog(log: String, xposed: Boolean = true) {
     d(log)
     if (xposed) {
         XposedBridge.log(log)
@@ -374,11 +374,11 @@ fun KLogCat.Companion.xposedLog(log: String, xposed: Boolean = true) {
 /**
  * 打印Xposed日志
  *
- * 并打印KLogCat日志
+ * 并打印XplerLog日志
  *
  * @param log 内容
  */
-fun KLogCat.Companion.xposedLog(log: Throwable, xposed: Boolean = true) {
+fun XplerLog.Companion.xposedLog(log: Throwable, xposed: Boolean = true) {
     e(log)
     if (xposed) {
         XposedBridge.log(log)
@@ -408,48 +408,13 @@ fun Any.xposedLog() {
 }
 
 /**
- * 对任意对象, 打印KLogCat日志
- */
-fun Any.logd(save: Boolean = false) {
-    if (save) {
-        KLogCat.openStorage()
-    } else {
-        KLogCat.closeStorage()
-    }
-
-    if (this is Map<*, *>) {
-        KLogCat.d(
-            "$this",
-            this.map { "key=${it.key},value=${it.value}" }.joinToString(", "),
-        )
-        return
-    }
-    if (this is Collection<*>) {
-        KLogCat.d(
-            "$this",
-            this.joinToString(", "),
-        )
-        return
-    }
-    if (this is Array<*>) {
-        KLogCat.d(
-            "$this",
-            this.joinToString(", ")
-        )
-        return
-    }
-    KLogCat.d("$this")
-    KLogCat.closeStorage()
-}
-
-/**
  * 打印方法中的堆栈信息
  */
 fun Any.dumpStackLog() {
     try {
         throw Exception("Stack trace")
     } catch (e: Exception) {
-        KLogCat.d(e.stackTraceToString())
+        XplerLog.d(e.stackTraceToString())
     }
 }
 

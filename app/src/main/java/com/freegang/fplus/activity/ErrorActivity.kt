@@ -19,7 +19,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -43,52 +42,49 @@ class ErrorActivity : ComponentActivity() {
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     private fun TopBarView() {
-        TopAppBar(
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp),
-            elevation = 0.dp,
-            backgroundColor = Themes.nowColors.colors.background,
-            content = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = StringRes.moduleTitle,
-                            style = Themes.nowTypography.subtitle1,
-                        )
-                        Spacer(modifier = Modifier.padding(vertical = 2.dp))
-                        Text(
-                            text = StringRes.moduleSubtitle,
-                            style = Themes.nowTypography.subtitle2,
-                        )
-                        Text(
-                            text = "Version $appVersionName ($appVersionCode)",
-                            style = Themes.nowTypography.caption,
-                        )
-                    }
-                    Icon(
-                        painter = painterResource(R.drawable.ic_acute),
-                        contentDescription = "分享",
-                        tint = Themes.nowColors.icon,
-                        modifier = Modifier
-                            .size(20.dp)
-                            .combinedClickable(
-                                indication = null,
-                                interactionSource = remember { MutableInteractionSource() },
-                                onClick = {
-                                    shareErrorMessage(errMessage!!)
-                                },
-                                onLongClick = {
-                                    shareErrorMessage(errMessage!!)
-                                }
-                            )
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = StringRes.moduleTitle,
+                    style = Themes.nowTypography.subtitle1,
+                )
+                Spacer(modifier = Modifier.padding(vertical = 2.dp))
+                Text(
+                    text = StringRes.moduleSubtitle,
+                    style = Themes.nowTypography.subtitle2,
+                )
+                Text(
+                    text = "Version $appVersionName ($appVersionCode)",
+                    style = Themes.nowTypography.caption,
+                )
+            }
+            Icon(
+                painter = painterResource(R.drawable.ic_acute),
+                contentDescription = "分享",
+                tint = Themes.nowColors.icon,
+                modifier = Modifier
+                    .size(20.dp)
+                    .combinedClickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() },
+                        onClick = {
+                            shareErrorMessage(errMessage!!)
+                        },
+                        onLongClick = {
+                            shareErrorMessage(errMessage!!)
+                        }
                     )
-                }
-            },
-        )
+            )
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         errMessage = intent.getStringExtra("errMessage") ?: return finish()
+        errMessage = "模块版本: $appVersionName ($appVersionCode)\n$errMessage"
 
         setContent {
             FreedomTheme(

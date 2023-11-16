@@ -8,13 +8,10 @@ import com.freegang.config.ConfigV1
 import com.freegang.helper.DexkitBuilder
 import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.view.getViewTree
-import com.freegang.ktutils.view.toViewTreeString
 import com.freegang.ktutils.view.traverse
-import com.freegang.xpler.core.CallMethods
+import com.freegang.xpler.core.interfaces.CallMethods
 import com.freegang.xpler.core.NoneHook
 import com.freegang.xpler.core.hookBlockRunning
-import com.freegang.xpler.core.logd
 import com.freegang.xpler.core.thisView
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage

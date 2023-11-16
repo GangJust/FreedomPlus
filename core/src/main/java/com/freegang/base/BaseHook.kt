@@ -21,13 +21,13 @@ import com.freegang.ktutils.app.IProgressNotification
 import com.freegang.ktutils.app.KNotifiUtils
 import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.app.isDarkMode
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.view.KDialog
 import com.freegang.view.adapter.DialogChoiceAdapter
 import com.freegang.xpler.R
 import com.freegang.xpler.core.KtOnHook
 import com.freegang.xpler.core.KtXposedHelpers
 import com.freegang.xpler.core.inflateModuleView
+import com.freegang.xpler.core.log.XplerLog
 import com.freegang.xpler.core.xposedLog
 import com.freegang.xpler.databinding.DialogChoiceLayoutBinding
 import com.freegang.xpler.databinding.DialogInputChoiceLayoutBinding
@@ -44,7 +44,8 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<T>(lpparam) {
+abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) :
+    KtOnHook<T>(lpparam) {
     protected val handler: Handler = Handler(Looper.getMainLooper())
     private val mainScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
     private var toast: Toast? = null
@@ -57,7 +58,7 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
                 return@CoroutineExceptionHandler
             }
 
-            KLogCat.xposedLog("错误堆栈: \n${throwable.stackTraceToString()}")
+            XplerLog.xposedLog("错误堆栈: \n${throwable.stackTraceToString()}")
             if (coroutineContext.isActive) {
                 coroutineContext.cancel()
                 coroutineContext.cancelChildren()
@@ -70,7 +71,7 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) : KtOnHook<
                 e.printStackTrace()
             } catch (e: Exception) {
                 e.printStackTrace()
-                KLogCat.xposedLog("错误堆栈: \n${e.stackTraceToString()}")
+                XplerLog.xposedLog("错误堆栈: \n${e.stackTraceToString()}")
             }
         }
         return job

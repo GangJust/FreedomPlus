@@ -1,8 +1,10 @@
 package com.freegang.xpler.core
 
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.KReflectUtils
 import com.freegang.xpler.core.bridge.MethodHookImpl
+import com.freegang.xpler.core.interfaces.CallConstructors
+import com.freegang.xpler.core.interfaces.CallMethods
+import com.freegang.xpler.core.log.XplerLog
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedHelpers
@@ -136,7 +138,8 @@ annotation class Param(val name: String)
 annotation class HookOnce()
 
 /**
- * 该注解作用于Hook目标的成员方法(考虑到构造方法大多数情况下都会做自调用，该注解在构造方法上并没有多大意义)。
+ * 该注解作用于Hook目标的成员方法(考虑到构造方法多数情况下都会自调用，该注解在构造方法上并没有多大意义)。
+ *
  * 对部分将来会出现的方法Hook操作, 场景如下:
  * 某些方法在低版本未出现, 而却在新版本出现了, 这时才会对目标方法Hook; 同理, 未来方法如果被删除, Hook逻辑也不被执行
  * 需要搭配 [OnBefore] [OnAfter] [OnReplace] 等注解使用
@@ -176,7 +179,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
             }
             this.onInit()
         }.onFailure {
-            // KLogCat.xposedLog(it)
+            XplerLog.xposedLog(it)
         }
     }
 
@@ -198,7 +201,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
         return try {
             XposedHelpers.findClass(className, classLoader ?: lpparam.classLoader)
         } catch (e: Exception) {
-            KLogCat.tagE(this.javaClass.simpleName, e)
+            XplerLog.tagE(this.javaClass.simpleName, e)
             NoneHook::class.java
         }
     }

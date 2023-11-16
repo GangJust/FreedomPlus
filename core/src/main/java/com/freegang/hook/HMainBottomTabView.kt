@@ -9,7 +9,7 @@ import com.freegang.ktutils.extension.isPrimitiveObjectType
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.view.parentView
 import com.freegang.ktutils.view.traverse
-import com.freegang.xpler.core.CallMethods
+import com.freegang.xpler.core.interfaces.CallMethods
 import com.freegang.xpler.core.NoneHook
 import com.freegang.xpler.core.argsOrEmpty
 import com.freegang.xpler.core.hookBlockRunning

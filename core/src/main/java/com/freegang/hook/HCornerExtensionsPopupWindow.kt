@@ -18,7 +18,7 @@ import com.freegang.ktutils.view.postRunning
 import com.freegang.ui.activity.FreedomSettingActivity
 import com.freegang.xpler.HookPackages
 import com.freegang.xpler.R
-import com.freegang.xpler.core.CallMethods
+import com.freegang.xpler.core.interfaces.CallMethods
 import com.freegang.xpler.core.KtXposedHelpers
 import com.freegang.xpler.core.NoneHook
 import com.freegang.xpler.core.argsOrEmpty
