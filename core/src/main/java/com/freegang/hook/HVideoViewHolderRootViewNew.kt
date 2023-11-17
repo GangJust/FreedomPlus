@@ -19,6 +19,7 @@ import com.freegang.ktutils.other.KAutomationUtils
 import com.freegang.ktutils.reflect.fields
 import com.freegang.ktutils.view.KFastClickUtils
 import com.freegang.ktutils.view.KViewUtils
+import com.freegang.ktutils.view.idHex
 import com.freegang.ktutils.view.parentView
 import com.freegang.ktutils.view.toViewTreeString
 import com.freegang.ktutils.view.traverse
@@ -282,7 +283,7 @@ class HVideoViewHolderRootViewNew(lpparam: XC_LoadPackage.LoadPackageParam) :
                         KLogCat.openStorage()
                         KLogCat.d(
                             view.rootView.toViewTreeString(indent = 2) {
-                                "${it.view?.javaClass?.name}, id=${it.view?.id}, desc=${it.view?.contentDescription}"
+                                "${it.view?.javaClass?.name}, id=${it.view?.id}, idHex=${it.view?.idHex}, desc=${it.view?.contentDescription}"
                             }
                         )
                         KLogCat.closeStorage()

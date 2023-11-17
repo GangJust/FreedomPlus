@@ -91,8 +91,6 @@ class DouYinMain(private val app: Application) {
                     HMainTabStripScrollView(lpparam)
                     HFlippableViewPager(lpparam)
                     HCustomizedUISeekBar(lpparam)
-                    // HVideoViewHolder(lpparam)
-                    // HVideoViewHolderRootView(lpparam)
                     HVideoViewHolderNew(lpparam)
                     HVideoViewHolderRootViewNew(lpparam)
                     HPenetrateTouchRelativeLayout(lpparam)
@@ -109,7 +107,6 @@ class DouYinMain(private val app: Application) {
                     HSeekBarSpeedModeBottomMask(lpparam)
                     HVideoPlayerHelper(lpparam)
                     HVerticalViewPagerNew(lpparam)
-                    HVideoPinchView(lpparam)
                     HDetailPageFragment(lpparam)
                     HEmojiDetailDialogNew(lpparam)
                 }
