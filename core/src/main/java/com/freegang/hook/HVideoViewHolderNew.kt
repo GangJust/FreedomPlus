@@ -1,26 +1,27 @@
 package com.freegang.hook
 
-import android.app.Activity
-import android.graphics.Color
 import android.view.View
-import android.view.ViewTreeObserver
-import androidx.core.view.isVisible
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
 import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.reflect.fieldGets
+import com.freegang.ktutils.reflect.fields
+import com.freegang.ktutils.view.parentView
 import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.OnBefore
 import com.freegang.xpler.core.hookBlockRunning
+import com.freegang.xpler.core.interfaces.CallConstructors
+import com.ss.android.ugc.aweme.feed.adapter.VideoViewHolder
 import com.ss.android.ugc.aweme.feed.model.Aweme
-import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
-import com.ss.android.ugc.aweme.feed.ui.seekbar.SeekBarState
+import com.ss.android.ugc.aweme.feed.ui.AwemeIntroInfoLayout
+import com.ss.android.ugc.aweme.feed.ui.FeedRightScaleView
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
 class HVideoViewHolderNew(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<Any>(lpparam) {
+    BaseHook<VideoViewHolder>(lpparam), CallConstructors {
     companion object {
         const val TAG = "HVideoViewHolder"
 
@@ -29,13 +30,7 @@ class HVideoViewHolderNew(lpparam: XC_LoadPackage.LoadPackageParam) :
         var aweme: Aweme? = null
     }
 
-    private var onPreDrawMap = mutableMapOf<String, ViewTreeObserver.OnPreDrawListener?>()
-
     private val config get() = ConfigV1.get()
-
-    override fun setTargetClass(): Class<*> {
-        return findClass("com.ss.android.ugc.aweme.feed.adapter.VideoViewHolder")
-    }
 
     @OnAfter("getAweme")
     fun getAwemeAfter(params: XC_MethodHook.MethodHookParam) {
@@ -46,134 +41,73 @@ class HVideoViewHolderNew(lpparam: XC_LoadPackage.LoadPackageParam) :
         }
     }
 
-    @OnAfter("onViewHolderSelected")
-    fun onViewHolderSelectedAfter(params: XC_MethodHook.MethodHookParam, i: Int) {
+    @OnBefore("isCleanMode")
+    fun isCleanModeBefore(params: XC_MethodHook.MethodHookParam, view: View?, boolean: Boolean) {
         hookBlockRunning(params) {
-            val container = getWidgetContainer(params)
-            // KLogCat.d("onViewHolderSelected: $container")
-            addOnPreDraw(container)
-        }.onFailure {
-            KLogCat.tagE(TAG, it)
-        }
-    }
+            KLogCat.d(
+                "清空模式: ",
+                "boolean: $boolean",
+                "playState: ${HVideoPlayerState.playState}",
+            )
 
-    // @OnAfter("onHolderResume")
-    fun onHolderResumeAfter(params: XC_MethodHook.MethodHookParam, i: Int) {
-        hookBlockRunning(params) {
-            KLogCat.d("onHolderResume: ", *onPreDrawMap.map { "${it.key} = ${it.value}" }.toTypedArray())
-        }.onFailure {
-            KLogCat.tagE(TAG, it)
-        }
-    }
+            if (boolean) return
 
-    @OnAfter("onResume")
-    fun onResumeAfter(params: XC_MethodHook.MethodHookParam) {
-        hookBlockRunning(params) {
-            val container = getWidgetContainer(params)
-            addOnPreDraw(container)
-            // KLogCat.d("onResume: ", *onPreDrawMap.map { "${it.key} = ${it.value}" }.toTypedArray())
-        }.onFailure {
-            KLogCat.tagE(TAG, it)
-        }
-    }
-
-    @OnBefore("onViewHolderUnSelected")
-    fun onViewHolderUnSelectedBefore(params: XC_MethodHook.MethodHookParam) {
-        hookBlockRunning(params) {
-            val container = getWidgetContainer(params)
-            // KLogCat.d("onViewHolderUnSelected: $container")
-            removeOnPreDraw(container)
-        }.onFailure {
-            KLogCat.tagE(TAG, it)
-        }
-    }
-
-    // @OnBefore("onHolderPause")
-    fun onHolderPauseBefore(params: XC_MethodHook.MethodHookParam, i: Int) {
-        hookBlockRunning(params) {
-            KLogCat.d("onHolderPause: ", *onPreDrawMap.map { "${it.key} = ${it.value}" }.toTypedArray())
-        }.onFailure {
-            KLogCat.tagE(TAG, it)
-        }
-    }
-
-    @OnAfter("onPause")
-    fun onPauseAfter(params: XC_MethodHook.MethodHookParam) {
-        hookBlockRunning(params) {
-            val container = getWidgetContainer(params)
-            removeOnPreDraw(container)
-            KLogCat.d("onPause: ", *onPreDrawMap.map { "${it.key} = ${it.value}" }.toTypedArray())
-        }.onFailure {
-            KLogCat.tagE(TAG, it)
-        }
-    }
-
-    private fun addOnPreDraw(view: View?) {
-        if (view == null) {
-            KLogCat.d("addOnPreDraw: view == null")
-            return
-        }
-
-        val hexString = Integer.toHexString(System.identityHashCode(view))
-
-        onPreDrawMap.putIfAbsent(hexString, ViewTreeObserver.OnPreDrawListener {
-            changeView(view)
-            true
-        })
-
-        view.viewTreeObserver.addOnPreDrawListener(onPreDrawMap[hexString])
-    }
-
-    private fun removeOnPreDraw(view: View?) {
-        if (view == null) {
-            KLogCat.d("removeOnPreDraw: view == null")
-            return
-        }
-
-        val hexString = Integer.toHexString(System.identityHashCode(view))
-
-        view.viewTreeObserver.removeOnPreDrawListener(onPreDrawMap[hexString])
-        onPreDrawMap[hexString] = null
-    }
-
-    private fun changeView(view: View?) {
-        if (view == null) {
-            KLogCat.d("changeView: view == null")
-            return
-        }
-
-        // 清爽模式
-        if (config.isNeatMode) {
-            if (config.neatModeState) {
-                // 视频是否暂停
-                val isPause = HCustomizedUISeekBar.action == SeekBarState.Action.PAUSE
-                view.isVisible = isPause
-            } else {
-                view.isVisible = true
+            // 清爽模式
+            if (config.isNeatMode) {
+                args[1] = config.neatModeState
+                if (config.neatModeState) {
+                    args[1] = HVideoPlayerState.playState == 2
+                }
             }
+
+        }.onFailure {
+            KLogCat.tagE(TAG, it)
+        }
+    }
+
+    override fun callOnBeforeConstructors(params: XC_MethodHook.MethodHookParam) {
+
+    }
+
+    override fun callOnAfterConstructors(params: XC_MethodHook.MethodHookParam) {
+        val fields = params.thisObject?.fields(type = View::class.java) ?: emptyList()
+        for (field in fields) {
+            val view = field.get(params.thisObject)?.asOrNull<View?>()
+            view ?: continue
+
+            // KLogCat.d(
+            //     "当前对象: ${params.thisObject}",
+            //     "${field.type.simpleName} ${field.name} = $view",
+            //     "parent: ${view.parentView}"
+            // )
+            when {
+                view is FeedRightScaleView -> {
+                    changeAlpha(view.parentView)
+                }
+
+                view is AwemeIntroInfoLayout -> {
+                    changeAlpha(view.parentView)
+                }
+
+                (field.name == "mBottomViewContainer" || view is LinearLayout)
+                        || (field.name == "mMiddleEntranceStyleContainer" || view.parentView is RelativeLayout)
+                        || view.javaClass.name.contains("MeasureOnceFrameLayout")
+                -> {
+                    changeAlpha(view)
+                }
+            }
+        }
+    }
+
+    private fun changeAlpha(view: View?) {
+        if (view == null) {
+            KLogCat.d("changeAlpha: view == null")
+            return
         }
 
         // 半透明
         if (config.isTranslucent) {
             view.alpha = config.translucentValue[1] / 100f
         }
-
-        // 全屏沉浸式
-        runCatching {
-            if (config.isImmersive) {
-                val activity = view.context as Activity
-                val window = activity.window
-                window.statusBarColor = Color.TRANSPARENT
-                window.navigationBarColor = Color.TRANSPARENT
-            }
-        }
-    }
-
-    private fun getWidgetContainer(params: XC_MethodHook.MethodHookParam): PenetrateTouchRelativeLayout? {
-        val allView = params.thisObject?.fieldGets(type = View::class.java)?.asOrNull<List<View?>>() ?: emptyList()
-
-        // PenetrateTouchRelativeLayout
-        return allView.firstOrNull { it is PenetrateTouchRelativeLayout }
-            ?.asOrNull<PenetrateTouchRelativeLayout>()
     }
 }

@@ -20,10 +20,10 @@ class HMainTabStripScrollView(lpparam: XC_LoadPackage.LoadPackageParam) :
 
     private val config get() = ConfigV1.get()
 
-    override fun callOnBeforeMethods(param: XC_MethodHook.MethodHookParam) {}
+    override fun callOnBeforeMethods(params: XC_MethodHook.MethodHookParam) {}
 
-    override fun callOnAfterMethods(param: XC_MethodHook.MethodHookParam) {
-        hookBlockRunning(param) {
+    override fun callOnAfterMethods(params: XC_MethodHook.MethodHookParam) {
+        hookBlockRunning(params) {
             // 透明度
             if (config.isTranslucent) {
                 thisViewGroup.findParentExact(MainTitleBar::class.java)?.alpha = config.translucentValue[0] / 100f

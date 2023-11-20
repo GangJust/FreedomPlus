@@ -6,6 +6,8 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.view.children
+import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
 import com.freegang.hook.logic.DownloadLogic
@@ -14,12 +16,12 @@ import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.app.activeActivity
 import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.display.KDisplayUtils
+import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.other.KAutomationUtils
 import com.freegang.ktutils.reflect.fields
 import com.freegang.ktutils.view.KFastClickUtils
 import com.freegang.ktutils.view.KViewUtils
-import com.freegang.ktutils.view.idHex
 import com.freegang.ktutils.view.parentView
 import com.freegang.ktutils.view.toViewTreeString
 import com.freegang.ktutils.view.traverse
@@ -30,6 +32,7 @@ import com.freegang.xpler.core.hookBlockRunning
 import com.freegang.xpler.core.thisView
 import com.freegang.xpler.core.thisViewGroup
 import com.ss.android.ugc.aweme.ad.feed.VideoViewHolderRootView
+import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlin.math.abs
@@ -50,10 +53,28 @@ class HVideoViewHolderRootViewNew(lpparam: XC_LoadPackage.LoadPackageParam) :
     private var longPressFastRunnable: Runnable? = null
     private var longPressRunnable: Runnable? = null
 
+    // has pause video
+    private var hasPauseVideoRunnable: Runnable? = null
+
     @OnBefore("dispatchTouchEvent")
     fun dispatchTouchEventBefore(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {
         if (interdictEvent(params, event)) return
         longPressEvent(params, event)
+    }
+
+
+    private fun toggleView(view: View, visible: Boolean) {
+        val viewHolderRootView = view as VideoViewHolderRootView
+        val monitorScrollFrameLayout = viewHolderRootView.children.lastOrNull {
+            it.javaClass.name.contains("MonitorScrollFrameLayout")
+        }?.asOrNull<ViewGroup>()
+
+        monitorScrollFrameLayout?.children?.forEach {
+            if (it is PenetrateTouchRelativeLayout) {
+                // 清爽模式
+                it.isVisible = visible
+            }
+        }
     }
 
     private fun longPressEvent(param: XC_MethodHook.MethodHookParam, event: MotionEvent) {
@@ -196,6 +217,7 @@ class HVideoViewHolderRootViewNew(lpparam: XC_LoadPackage.LoadPackageParam) :
                 when (item) {
                     "清爽模式", "普通模式" -> {
                         config.neatModeState = !config.neatModeState
+                        toggleView(view, !config.neatModeState)
                         showToast(it.context, if (config.neatModeState) "清爽模式" else "普通模式")
                     }
 
@@ -282,9 +304,7 @@ class HVideoViewHolderRootViewNew(lpparam: XC_LoadPackage.LoadPackageParam) :
                         KLogCat.clearStorage()
                         KLogCat.openStorage()
                         KLogCat.d(
-                            view.rootView.toViewTreeString(indent = 2) {
-                                "${it.view?.javaClass?.name}, id=${it.view?.id}, idHex=${it.view?.idHex}, desc=${it.view?.contentDescription}"
-                            }
+                            view.rootView.toViewTreeString(indent = 1)
                         )
                         KLogCat.closeStorage()
                         KToastUtils.show(view.context.applicationContext, "布局信息获取成功!")

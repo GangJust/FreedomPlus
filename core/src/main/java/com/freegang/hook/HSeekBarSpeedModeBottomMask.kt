@@ -41,12 +41,12 @@ class HSeekBarSpeedModeBottomMask(lpparam: XC_LoadPackage.LoadPackageParam) :
         }
     }
 
-    override fun callOnBeforeMethods(param: XC_MethodHook.MethodHookParam) {
+    override fun callOnBeforeMethods(params: XC_MethodHook.MethodHookParam) {
 
     }
 
-    override fun callOnAfterMethods(param: XC_MethodHook.MethodHookParam) {
-        hookBlockRunning(param) {
+    override fun callOnAfterMethods(params: XC_MethodHook.MethodHookParam) {
+        hookBlockRunning(params) {
             if (config.isImmersive) {
                 thisViewGroup.postRunning {
                     background = ColorDrawable(Color.TRANSPARENT)

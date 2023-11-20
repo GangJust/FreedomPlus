@@ -113,7 +113,7 @@ class ConfigV1 private constructor() {
             field = value
         }
 
-    /// 首页控件透明度
+    /// 首页控件透明度 [顶部导航, 视频控件, 底部导航]
     var translucentValue: List<Int> = listOf(50, 50, 50)
         get() {
             field = mmkv.getString("translucentValue", "50, 50, 50")!!.split(",").map { it.trim().toInt() }

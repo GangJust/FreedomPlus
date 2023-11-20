@@ -28,17 +28,20 @@ import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.hookBlockRunning
 import com.freegang.xpler.core.thisViewGroup
 import com.freegang.xpler.databinding.SideFreedomSettingBinding
-import com.ss.android.ugc.aweme.sidebar.SideBarNestedScrollView
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
 class HSideBarNestedScrollView(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<SideBarNestedScrollView>(lpparam) {
+    BaseHook<Any>(lpparam) {
     companion object {
         const val TAG = "HSideBarNestedScrollView"
     }
 
     private val config get() = ConfigV1.get()
+
+    override fun setTargetClass(): Class<*> {
+        return findClass("com.ss.android.ugc.aweme.sidebar.SideBarNestedScrollView")
+    }
 
     @FutureHook
     @OnAfter("onTouchEvent")

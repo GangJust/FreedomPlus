@@ -28,12 +28,12 @@ class HMainBottomTabItem(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<An
         return DexkitBuilder.mainBottomTabItemClazz ?: NoneHook::class.java
     }
 
-    override fun callOnBeforeMethods(param: XC_MethodHook.MethodHookParam) {
+    override fun callOnBeforeMethods(params: XC_MethodHook.MethodHookParam) {
 
     }
 
-    override fun callOnAfterMethods(param: XC_MethodHook.MethodHookParam) {
-        hookBlockRunning(param) {
+    override fun callOnAfterMethods(params: XC_MethodHook.MethodHookParam) {
+        hookBlockRunning(params) {
             isHidePhotoButton(thisView)
         }.onFailure {
             KLogCat.tagE(TAG, it)

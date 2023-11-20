@@ -17,7 +17,7 @@ import com.freegang.ktutils.json.getIntOrDefault
 import com.freegang.ktutils.json.parseJSONArray
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.media.hasMediaPermission
-import com.freegang.plugin.v2.PluginBridgeV2
+import com.freegang.plugin.v1.PluginBridge
 import com.freegang.xpler.HookPackages
 import com.freegang.xpler.core.findClass
 import com.freegang.xpler.core.log.XplerLog
@@ -43,7 +43,7 @@ class DouYinMain(private val app: Application) {
 
             // 插件化注入
             val stubClazz = hostClassloader!!.loadClass("com.ss.android.ugc.aweme.setting.ui.AboutActivity")
-            PluginBridgeV2.init(app, stubClazz)
+            PluginBridge.init(app, stubClazz)
 
             // 权限检查
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -80,7 +80,7 @@ class DouYinMain(private val app: Application) {
             // search and hook
             DexkitBuilder.running(
                 app = app,
-                version = 16,
+                version = 18,
                 searchBefore = {
                     HActivity(lpparam)
                     HMainActivity(lpparam)
@@ -95,7 +95,7 @@ class DouYinMain(private val app: Application) {
                     HVideoViewHolderRootViewNew(lpparam)
                     HPenetrateTouchRelativeLayout(lpparam)
                     HInteractStickerParent(lpparam)
-                    HCommentAudioView(lpparam)
+                    // HCommentAudioView(lpparam)
                     HGifEmojiDetailActivity(lpparam)
                     HEmojiDetailDialog(lpparam)
                 },
@@ -105,6 +105,7 @@ class DouYinMain(private val app: Application) {
                     HMainBottomTabItem(lpparam)
                     HCommentListPageFragment(lpparam)
                     HSeekBarSpeedModeBottomMask(lpparam)
+                    HVideoPlayerState(lpparam)
                     HVideoPlayerHelper(lpparam)
                     HVerticalViewPagerNew(lpparam)
                     HDetailPageFragment(lpparam)

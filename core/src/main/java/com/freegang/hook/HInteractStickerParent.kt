@@ -20,12 +20,12 @@ class HInteractStickerParent(lpparam: XC_LoadPackage.LoadPackageParam) :
 
     private val config get() = ConfigV1.get()
 
-    override fun callOnBeforeConstructors(param: XC_MethodHook.MethodHookParam) {
+    override fun callOnBeforeConstructors(params: XC_MethodHook.MethodHookParam) {
 
     }
 
-    override fun callOnAfterConstructors(param: XC_MethodHook.MethodHookParam) {
-        hookBlockRunning(param) {
+    override fun callOnAfterConstructors(params: XC_MethodHook.MethodHookParam) {
+        hookBlockRunning(params) {
             // 移除悬浮贴纸
             if (config.isRemoveSticker) {
                 thisViewGroup.postRunning {

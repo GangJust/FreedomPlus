@@ -4,6 +4,7 @@ import android.view.MotionEvent
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
 import com.freegang.ktutils.log.KLogCat
+import com.freegang.xpler.core.FutureHook
 import com.freegang.xpler.core.OnBefore
 import com.freegang.xpler.core.hookBlockRunning
 import com.ss.android.ugc.aweme.base.ui.FlippableViewPager
@@ -17,6 +18,7 @@ class HFlippableViewPager(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<F
 
     private val config get() = ConfigV1.get()
 
+    @FutureHook
     @OnBefore("onInterceptTouchEvent", "onTouchEvent", "dispatchTouchEvent")
     fun onTouchEventBefore(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {
         hookBlockRunning(params) {

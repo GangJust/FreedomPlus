@@ -34,10 +34,10 @@ class HCommentAudioView(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Any
         return findClass("com.ss.android.ugc.aweme.comment.audiocomment.ui.CommentAudioView")
     }
 
-    override fun callOnBeforeMethods(param: XC_MethodHook.MethodHookParam) {}
+    override fun callOnBeforeMethods(params: XC_MethodHook.MethodHookParam) {}
 
-    override fun callOnAfterMethods(param: XC_MethodHook.MethodHookParam) {
-        hookBlockRunning(param) {
+    override fun callOnAfterMethods(params: XC_MethodHook.MethodHookParam) {
+        hookBlockRunning(params) {
             if (argsOrEmpty.size != 4) return
             val value = args[1].fieldGets().filterNotNull().firstOrNull() ?: return
             val gets = value.fieldGets().filter { it?.javaClass?.`package`?.name == "X" }

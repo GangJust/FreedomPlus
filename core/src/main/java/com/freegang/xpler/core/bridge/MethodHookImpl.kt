@@ -7,6 +7,7 @@ import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import java.lang.reflect.Member
+import java.lang.reflect.Modifier
 
 /// 实现类
 open class MethodHookImpl(private var method: Member) : MethodHook {
@@ -63,6 +64,12 @@ open class MethodHookImpl(private var method: Member) : MethodHook {
 
     // 开启hook, 统一执行Hook逻辑
     fun startHook() {
+        // 跳过抽象方法
+        if (Modifier.isAbstract(method.modifiers)) {
+            XplerLog.e(IllegalArgumentException("Cannot hook abstract method: $method"))
+            return
+        }
+
         if (replaceBlock != null) {
             val unhook = XposedBridge.hookMethod(method, object : XC_MethodReplacement() {
                 override fun replaceHookedMethod(param: MethodHookParam): Any {

@@ -29,6 +29,7 @@ object DexkitBuilder {
     var mainBottomTabItemClazz: Class<*>? = null
     var commentListPageFragmentClazz: Class<*>? = null
     var seekBarSpeedModeBottomContainerClazz: Class<*>? = null
+    var videoPlayerStateClazz: Class<*>? = null
     var videoPlayerHelperClazz: Class<*>? = null
     var videoPinchViewClazz: Class<*>? = null
     var videoPagerAdapterClazz: Class<*>? = null
@@ -242,6 +243,52 @@ object DexkitBuilder {
                 }
             }.firstClass("seekBarSpeedModeBottomContainer")
 
+            videoPlayerStateClazz = bridge.findClass {
+                matcher {
+                    fields {
+                        add {
+                            type = "com.ss.android.ugc.aweme.feed.model.Aweme"
+                        }
+                        add {
+                            type = "java.lang.String"
+                        }
+                        add {
+                            type = "int"
+                        }
+                        add {
+                            type {
+                                modifiers = Modifier.INTERFACE
+                            }
+                        }
+                    }
+
+                    methods {
+                        add {
+                            name = "<init>"
+                            params {
+                                add {
+                                    type = "com.ss.android.ugc.aweme.feed.model.Aweme"
+                                }
+                                add {
+                                    type = "java.lang.String"
+                                }
+                                add {
+                                    type = "int"
+                                }
+                                add {
+                                    type = "int"
+                                }
+                                add {
+                                    type {
+                                        modifiers = Modifier.INTERFACE
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }.firstClass("videoPlayerState")
+
             val findMaps = bridge.batchFindClassUsingStrings {
                 addSearchGroup {
                     groupName = "mainBottomTabView"
@@ -329,6 +376,7 @@ object DexkitBuilder {
         val mainBottomTabItem = cache.getStringOrDefault("mainBottomTabItem")
         val commentListPageFragment = cache.getStringOrDefault("commentListPageFragment")
         val seekBarSpeedModeBottomContainer = cache.getStringOrDefault("seekBarSpeedModeBottomContainer")
+        val videoPlayerState = cache.getStringOrDefault("videoPlayerState")
         val videoPlayerHelper = cache.getStringOrDefault("videoPlayerHelper")
         val videoPinchView = cache.getStringOrDefault("videoPinchView")
         val videoPagerAdapter = cache.getStringOrDefault("videoPagerAdapter")
@@ -352,6 +400,7 @@ object DexkitBuilder {
         mainBottomTabItemClazz = mainBottomTabItem.ifNotEmpty { lpparam.findClass(it) }
         commentListPageFragmentClazz = commentListPageFragment.ifNotEmpty { lpparam.findClass(it) }
         seekBarSpeedModeBottomContainerClazz = seekBarSpeedModeBottomContainer.ifNotEmpty { lpparam.findClass(it) }
+        videoPlayerStateClazz = videoPlayerState.ifNotEmpty { lpparam.findClass(it) }
         videoPlayerHelperClazz = videoPlayerHelper.ifNotEmpty { lpparam.findClass(it) }
         videoPinchViewClazz = videoPinchView.ifNotEmpty { lpparam.findClass(it) }
         videoPagerAdapterClazz = videoPagerAdapter.ifNotEmpty { lpparam.findClass(it) }

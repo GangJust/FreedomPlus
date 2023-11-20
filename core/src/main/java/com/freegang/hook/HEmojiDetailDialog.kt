@@ -61,12 +61,12 @@ class HEmojiDetailDialog(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Em
             }
     }
 
-    override fun callOnBeforeMethods(param: XC_MethodHook.MethodHookParam) {
+    override fun callOnBeforeMethods(params: XC_MethodHook.MethodHookParam) {
 
     }
 
-    override fun callOnAfterMethods(param: XC_MethodHook.MethodHookParam) {
-        hookBlockRunning(param) {
+    override fun callOnAfterMethods(params: XC_MethodHook.MethodHookParam) {
+        hookBlockRunning(params) {
             if (!config.isEmoji) return
             if (urlList.isNotEmpty()) return
 

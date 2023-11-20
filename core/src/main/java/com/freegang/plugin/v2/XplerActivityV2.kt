@@ -1,153 +1,55 @@
 package com.freegang.plugin.v2
 
-import android.content.Context
+import android.content.res.AssetManager
+import android.content.res.Resources
 import android.os.Bundle
-import android.view.View
-import android.view.ViewGroup
-import androidx.activity.OnBackPressedDispatcher
-import androidx.activity.OnBackPressedDispatcherOwner
-import androidx.activity.contextaware.ContextAware
-import androidx.activity.contextaware.ContextAwareHelper
-import androidx.activity.contextaware.OnContextAvailableListener
-import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
-import androidx.annotation.CallSuper
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
-import androidx.lifecycle.ViewModelStore
-import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.setViewTreeLifecycleOwner
-import androidx.savedstate.SavedStateRegistry
-import androidx.savedstate.SavedStateRegistryController
-import androidx.savedstate.SavedStateRegistryOwner
-import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
+import com.freegang.ktutils.extension.asOrNull
+import com.freegang.plugin.PluginClassloader
+import com.freegang.plugin.PluginContextThemeWrapper
+import com.freegang.plugin.PluginResource
 import com.freegang.plugin.base.BaseXplerActivityV2
 
-open class XplerActivityV2 : BaseXplerActivityV2(),
-    ContextAware,
-    LifecycleOwner,
-    ViewModelStoreOwner,
-    SavedStateRegistryOwner,
-    OnBackPressedDispatcherOwner {
+open class XplerActivityV2 : BaseXplerActivityV2() {
 
-    private val mContextAwareHelper = ContextAwareHelper()
+    private val mClassLoader: PluginClassloader? = null
 
-    // lifecycle
-    private var _lifecycleRegistry: LifecycleRegistry? = null
+    private var mResources: PluginResource? = null
 
-    private val lifecycleRegistry: LifecycleRegistry
-        get() = _lifecycleRegistry ?: LifecycleRegistry(this)
-            .also { _lifecycleRegistry = it }
+    private val content = mutableStateOf<(@Composable () -> Unit)?>(null)
 
-    override val lifecycle: Lifecycle
-        get() = lifecycleRegistry
-
-    // view model
-    private var _viewModelStore: ViewModelStore? = null
-
-    override val viewModelStore: ViewModelStore
-        get() = _viewModelStore ?: ViewModelStore()
-            .also { _viewModelStore = ViewModelStore() }
-
-    // instance state
-    private var _savedStateRegistryController: SavedStateRegistryController? = null
-
-    private val savedStateRegistryController
-        get() = _savedStateRegistryController ?: SavedStateRegistryController.create(this)
-            .also { _savedStateRegistryController = it }
-
-    override val savedStateRegistry: SavedStateRegistry
-        get() = savedStateRegistryController.savedStateRegistry
-
-    // back pressed
-    override val onBackPressedDispatcher = OnBackPressedDispatcher {
-        super.onBackPressed()
+    override fun getClassLoader(): ClassLoader {
+        return mClassLoader ?: super.getClassLoader()
     }
 
-    override fun addOnContextAvailableListener(listener: OnContextAvailableListener) {
-        mContextAwareHelper.addOnContextAvailableListener(listener)
+    override fun getResources(): Resources {
+        return mResources ?: super.getResources()
     }
 
-    override fun peekAvailableContext(): Context? {
-        return mContextAwareHelper.peekAvailableContext()
-    }
+    override fun getAssets(): AssetManager = mResources?.assets ?: super.getAssets()
 
-    override fun removeOnContextAvailableListener(listener: OnContextAvailableListener) {
-        mContextAwareHelper.removeOnContextAvailableListener(listener)
-    }
-
-    @Deprecated("Deprecated in Java", ReplaceWith("onBackPressedDispatcher.onBackPressed()"))
-    @CallSuper
-    override fun onBackPressed() {
-        onBackPressedDispatcher.onBackPressed()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        savedStateRegistryController.performSave(outState)
-    }
+    protected val pluginAssets: AssetManager get() = mResources?.pluginAssets ?: super.getAssets()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Restore the Saved State first so that it is available to
-        // OnContextAvailableListener instances
-        savedStateRegistryController.performRestore(savedInstanceState)
-        mContextAwareHelper.dispatchOnContextAvailable(this)
         super.onCreate(savedInstanceState)
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+        //
+        actionBar?.hide()
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+
+        //
+        val wrapper = PluginContextThemeWrapper(this)
+        setContentView(ComposeView(wrapper).apply {
+            setContent {
+                mResources = LocalContext.current.resources?.asOrNull() // 强转
+                content.value?.invoke()
+            }
+        })
     }
 
-    override fun onStart() {
-        super.onStart()
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-        mContextAwareHelper.clearAvailableContext()
-        if (isChangingConfigurations) {
-            _viewModelStore?.clear()
-        }
-    }
-
-    override fun setContentView(layoutResID: Int) {
-        initViewTreeOwners()
-        super.setContentView(layoutResID)
-    }
-
-    override fun setContentView(view: View) {
-        initViewTreeOwners()
-        super.setContentView(view)
-    }
-
-    override fun setContentView(view: View, params: ViewGroup.LayoutParams?) {
-        initViewTreeOwners()
-        super.setContentView(view, params)
-    }
-
-    override fun addContentView(view: View, params: ViewGroup.LayoutParams?) {
-        initViewTreeOwners()
-        super.addContentView(view, params)
-    }
-
-    private fun initViewTreeOwners() {
-        window!!.decorView.setViewTreeLifecycleOwner(this)
-        window!!.decorView.setViewTreeOnBackPressedDispatcherOwner(this)
-        window!!.decorView.setViewTreeSavedStateRegistryOwner(this)
+    protected fun setContent(content: @Composable () -> Unit) {
+        this.content.value = content
     }
 }

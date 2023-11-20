@@ -29,15 +29,15 @@ class HMainBottomTabView(lpparam: XC_LoadPackage.LoadPackageParam) :
         return DexkitBuilder.mainBottomTabViewClazz ?: NoneHook::class.java
     }
 
-    override fun callOnBeforeMethods(param: XC_MethodHook.MethodHookParam) {
-        hookBlockRunning(param) {
+    override fun callOnBeforeMethods(params: XC_MethodHook.MethodHookParam) {
+        hookBlockRunning(params) {
         }.onFailure {
             KLogCat.tagE(TAG, it)
         }
     }
 
-    override fun callOnAfterMethods(param: XC_MethodHook.MethodHookParam) {
-        hookBlockRunning(param) {
+    override fun callOnAfterMethods(params: XC_MethodHook.MethodHookParam) {
+        hookBlockRunning(params) {
             if (method.name.contains(Regex("Background|Alpha|Enabled"))) return
             if (argsOrEmpty.size != 1) return
             if (args.first()?.javaClass?.isPrimitiveObjectType == false) return

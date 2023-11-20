@@ -39,12 +39,12 @@ class HCornerExtensionsPopupWindow(lpparam: XC_LoadPackage.LoadPackageParam) :
         return DexkitBuilder.cornerExtensionsPopupWindowClazz ?: NoneHook::class.java
     }
 
-    override fun callOnBeforeMethods(param: XC_MethodHook.MethodHookParam) {
+    override fun callOnBeforeMethods(params: XC_MethodHook.MethodHookParam) {
 
     }
 
-    override fun callOnAfterMethods(param: XC_MethodHook.MethodHookParam) {
-        hookBlockRunning(param) {
+    override fun callOnAfterMethods(params: XC_MethodHook.MethodHookParam) {
+        hookBlockRunning(params) {
             if (argsOrEmpty.size != 1) return
             if (args.first()?.javaClass?.isPrimitiveObjectType == false) return
             if (args.first() == false) return // fist type is Boolean

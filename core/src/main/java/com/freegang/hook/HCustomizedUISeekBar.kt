@@ -45,12 +45,12 @@ class HCustomizedUISeekBar(lpparam: XC_LoadPackage.LoadPackageParam) :
         }
     }*/
 
-    override fun callOnBeforeMethods(param: XC_MethodHook.MethodHookParam) {
+    override fun callOnBeforeMethods(params: XC_MethodHook.MethodHookParam) {
 
     }
 
-    override fun callOnAfterMethods(param: XC_MethodHook.MethodHookParam) {
-        hookBlockRunning(param) {
+    override fun callOnAfterMethods(params: XC_MethodHook.MethodHookParam) {
+        hookBlockRunning(params) {
             action = argsOrEmpty.firstOrNull()?.asOrNull<SeekBarState.Action>() ?: return
         }.onFailure {
             KLogCat.tagE(TAG, it)

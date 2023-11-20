@@ -20,12 +20,12 @@ class HPenetrateTouchRelativeLayout(lpparam: XC_LoadPackage.LoadPackageParam) :
 
     private val config get() = ConfigV1.get()
 
-    override fun callOnBeforeMethods(param: XC_MethodHook.MethodHookParam) {
+    override fun callOnBeforeMethods(params: XC_MethodHook.MethodHookParam) {
 
     }
 
-    override fun callOnAfterMethods(param: XC_MethodHook.MethodHookParam) {
-        hookBlockRunning(param) {
+    override fun callOnAfterMethods(params: XC_MethodHook.MethodHookParam) {
+        hookBlockRunning(params) {
             if (config.isImmersive) {
                 thisViewGroup.apply {
                     val bottomPadding = context.dip2px(58f) // BottomTabBarHeight

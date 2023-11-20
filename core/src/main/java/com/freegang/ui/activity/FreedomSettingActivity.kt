@@ -1,6 +1,5 @@
 package com.freegang.ui.activity
 
-import android.content.res.Resources
 import android.os.Bundle
 import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
@@ -47,8 +46,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -64,13 +61,9 @@ import androidx.lifecycle.lifecycleScope
 import com.freegang.helper.HighlightStyleBuilder
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
-import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.json.getIntOrDefault
 import com.freegang.ktutils.json.parseJSONArray
-import com.freegang.ktutils.log.KLogCat
-import com.freegang.plugin.PluginClassloader
-import com.freegang.plugin.PluginContextThemeWrapper
-import com.freegang.plugin.PluginResource
+import com.freegang.plugin.v1.XplerActivity
 import com.freegang.plugin.v2.XplerActivityV2
 import com.freegang.ui.ModuleTheme
 import com.freegang.ui.asDp
@@ -88,14 +81,11 @@ import kotlinx.coroutines.withContext
 import kotlin.random.Random
 import kotlin.system.exitProcess
 
-class FreedomSettingActivity : XplerActivityV2() {
+class FreedomSettingActivity : XplerActivity() {
     private val model by lazy {
         ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory(application))
             .get(FreedomSettingVM::class.java)
     }
-
-    private val mClassLoader by lazy { PluginClassloader() }
-    private var mResources: PluginResource? = null
 
     private var isModuleStart = false
     private var isDark = false
@@ -238,37 +228,16 @@ class FreedomSettingActivity : XplerActivityV2() {
                                 onLongClick = {
                                     lifecycleScope.launch {
                                         withContext(Dispatchers.IO) {
-                                            /*runCatching {
-                                                KLogCat.d("测试1: ${mResources?.assets?.open("update.log")}")
-                                            }
                                             runCatching {
-                                                KLogCat.d("测试2: ${resources.assets?.open("update.log")}")
-                                            }
-                                            runCatching {
-                                                KLogCat.d("测试3: ${assets?.open("update.log")}")
-                                            }
-                                            runCatching {
-                                                KLogCat.d("测试4: ${assets?.open("update.log")}")
-                                            }
-                                            runCatching {
-                                                KLogCat.d("测试5: ${(mResources?.asOrNull<PluginResource>())?.pluginAssets?.open("update.log")}")
-                                            }
-                                            runCatching {
-                                                KLogCat.d("测试6: ${(resources.asOrNull<PluginResource>())?.pluginAssets?.open("update.log")}")
-                                            }*/
-
-                                            mResources?.let {
-                                                runCatching {
-                                                    it.pluginAssets
-                                                        .open("update.log")
-                                                        .use {
-                                                            updateLog = it
-                                                                .readBytes()
-                                                                .decodeToString()
-                                                        }
-                                                }.onFailure {
-                                                    KToastUtils.show(application, "更新日志获取失败")
-                                                }
+                                                pluginAssets
+                                                    .open("update.log")
+                                                    .use {
+                                                        updateLog = it
+                                                            .readBytes()
+                                                            .decodeToString()
+                                                    }
+                                            }.onFailure {
+                                                KToastUtils.show(application, "更新日志获取失败")
                                             }
                                         }
                                         showUpdateLogDialog = updateLog.isNotBlank()
@@ -302,12 +271,10 @@ class FreedomSettingActivity : XplerActivityV2() {
                     },
                     onConfirm = {
                         showRestartAppDialog = false
-                        mResources?.let {
-                            runCatching {
-                                model.setVersionConfig(it.pluginAssets)
-                            }.onFailure {
-                                model.setVersionConfig(null)
-                            }
+                        runCatching {
+                            model.setVersionConfig(pluginAssets)
+                        }.onFailure {
+                            model.setVersionConfig(null)
                         }
                         KAppUtils.restartApplication(application)
                     },
@@ -1535,46 +1502,25 @@ class FreedomSettingActivity : XplerActivityV2() {
         )
     }
 
-    override fun getClassLoader(): ClassLoader {
-        return mClassLoader
-    }
-
-    override fun getResources(): Resources {
-        return mResources ?: super.getResources()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //
-        actionBar?.hide()
-        window.statusBarColor = android.graphics.Color.TRANSPARENT
-
-        //
-        isModuleStart = intent.getBooleanExtra("isModuleStart", false)
-        isDark = intent.getBooleanExtra("isDark", false)
-
-        //
-        val wrapper = PluginContextThemeWrapper(this)
-        setContentView(ComposeView(wrapper).apply {
-            setContent {
-                mResources = LocalContext.current.resources?.asOrNull() // 强转
-                ModuleTheme(
-                    isDark = isDark,
-                    followSystem = false,
-                ) {
-                    Scaffold(
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        topBar = {
-                            TopBarView()
-                        }
-                    ) {
-                        BodyView(
-                            modifier = Modifier.padding(it),
-                        )
+        setContent {
+            ModuleTheme(
+                isDark = isDark,
+                followSystem = false,
+            ) {
+                Scaffold(
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    topBar = {
+                        TopBarView()
                     }
+                ) {
+                    BodyView(
+                        modifier = Modifier.padding(it),
+                    )
                 }
             }
-        })
+        }
     }
 
     override fun onResume() {
@@ -1584,12 +1530,10 @@ class FreedomSettingActivity : XplerActivityV2() {
 
     override fun onPause() {
         super.onPause()
-        mResources?.let {
-            runCatching {
-                model.setVersionConfig(it.assets)
-            }.onFailure {
-                model.setVersionConfig(null)
-            }
+        runCatching {
+            model.setVersionConfig(pluginAssets)
+        }.onFailure {
+            model.setVersionConfig(null)
         }
     }
 
