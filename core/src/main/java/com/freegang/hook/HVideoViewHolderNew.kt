@@ -1,27 +1,27 @@
 package com.freegang.hook
 
 import android.view.View
-import android.widget.LinearLayout
-import android.widget.RelativeLayout
+import android.view.ViewTreeObserver
+import androidx.core.view.isVisible
 import com.freegang.base.BaseHook
 import com.freegang.config.ConfigV1
 import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.reflect.fields
-import com.freegang.ktutils.view.parentView
+import com.freegang.ktutils.reflect.fieldGetFirst
+import com.freegang.ktutils.reflect.fieldGets
+import com.freegang.ktutils.reflect.methodFirst
 import com.freegang.xpler.core.OnAfter
 import com.freegang.xpler.core.OnBefore
 import com.freegang.xpler.core.hookBlockRunning
-import com.freegang.xpler.core.interfaces.CallConstructors
 import com.ss.android.ugc.aweme.feed.adapter.VideoViewHolder
 import com.ss.android.ugc.aweme.feed.model.Aweme
-import com.ss.android.ugc.aweme.feed.ui.AwemeIntroInfoLayout
-import com.ss.android.ugc.aweme.feed.ui.FeedRightScaleView
+import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
 import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
 class HVideoViewHolderNew(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<VideoViewHolder>(lpparam), CallConstructors {
+    BaseHook<VideoViewHolder>(lpparam) {
     companion object {
         const val TAG = "HVideoViewHolder"
 
@@ -30,7 +30,70 @@ class HVideoViewHolderNew(lpparam: XC_LoadPackage.LoadPackageParam) :
         var aweme: Aweme? = null
     }
 
+    private var onDrawMaps = mutableMapOf<String, ViewTreeObserver.OnDrawListener?>()
+
     private val config get() = ConfigV1.get()
+
+    private fun addOnDraw(view: View?) {
+        if (view == null) {
+            KLogCat.d("addOnDraw", "view == null")
+            return
+        }
+
+        val key = Integer.toHexString(System.identityHashCode(view))
+        val isNeatMode = config.isNeatMode
+        val neatModeState = config.neatModeState
+        val isTranslucent = config.isTranslucent
+        val translucentValue = config.translucentValue
+
+        onDrawMaps.putIfAbsent(key, ViewTreeObserver.OnDrawListener {
+            if (!isNeatMode) return@OnDrawListener
+
+            if (neatModeState) {
+                if (HPlayerController.isPlaying && view.isVisible) {
+                    view.isVisible = false
+                } else if (!HPlayerController.isPlaying && !view.isVisible) {
+                    view.isVisible = true
+                }
+            }
+
+            if (isTranslucent) {
+                if (view.isVisible) {
+                    val alpha = translucentValue[1] / 100f
+                    if (view.alpha > alpha) {
+                        view.alpha = alpha
+                    }
+                }
+            }
+        })
+
+        view.viewTreeObserver.addOnDrawListener(onDrawMaps[key])
+    }
+
+    private fun removeOnDraw(view: View?) {
+        if (view == null) {
+            KLogCat.d("removeOnDraw", "view == null")
+            return
+        }
+
+        val key = Integer.toHexString(System.identityHashCode(view))
+        view.viewTreeObserver.removeOnDrawListener(onDrawMaps[key])
+    }
+
+    private fun testOnDraw(tag: String) {
+        val array = onDrawMaps.map { "${it.key} = ${it.value}" }.toTypedArray()
+        KLogCat.d(tag, *array)
+    }
+
+    private fun testAllOnDraw(view: View?) {
+        if (view == null) {
+            KLogCat.d("removeOnDraw", "view == null")
+            return
+        }
+
+        val first = view.viewTreeObserver.fieldGetFirst("mOnDrawListeners")?.asOrNull<List<*>>() ?: return
+        KLogCat.d("监听集合", *first.map { "$it" }.toTypedArray())
+    }
 
     @OnAfter("getAweme")
     fun getAwemeAfter(params: XC_MethodHook.MethodHookParam) {
@@ -41,73 +104,55 @@ class HVideoViewHolderNew(lpparam: XC_LoadPackage.LoadPackageParam) :
         }
     }
 
-    @OnBefore("isCleanMode")
-    fun isCleanModeBefore(params: XC_MethodHook.MethodHookParam, view: View?, boolean: Boolean) {
+    @OnAfter("onViewHolderSelected")
+    fun onViewHolderSelectedAfter(params: XC_MethodHook.MethodHookParam, index: Int) {
         hookBlockRunning(params) {
-            KLogCat.d(
-                "清空模式: ",
-                "boolean: $boolean",
-                "playState: ${HVideoPlayerState.playState}",
-            )
-
-            if (boolean) return
-
-            // 清爽模式
-            if (config.isNeatMode) {
-                args[1] = config.neatModeState
-                if (config.neatModeState) {
-                    args[1] = HVideoPlayerState.playState == 2
-                }
-            }
-
+            val container = getWidgetContainer(params)
+            addOnDraw(container)
         }.onFailure {
             KLogCat.tagE(TAG, it)
         }
     }
 
-    override fun callOnBeforeConstructors(params: XC_MethodHook.MethodHookParam) {
-
-    }
-
-    override fun callOnAfterConstructors(params: XC_MethodHook.MethodHookParam) {
-        val fields = params.thisObject?.fields(type = View::class.java) ?: emptyList()
-        for (field in fields) {
-            val view = field.get(params.thisObject)?.asOrNull<View?>()
-            view ?: continue
-
-            // KLogCat.d(
-            //     "当前对象: ${params.thisObject}",
-            //     "${field.type.simpleName} ${field.name} = $view",
-            //     "parent: ${view.parentView}"
-            // )
-            when {
-                view is FeedRightScaleView -> {
-                    changeAlpha(view.parentView)
-                }
-
-                view is AwemeIntroInfoLayout -> {
-                    changeAlpha(view.parentView)
-                }
-
-                (field.name == "mBottomViewContainer" || view is LinearLayout)
-                        || (field.name == "mMiddleEntranceStyleContainer" || view.parentView is RelativeLayout)
-                        || view.javaClass.name.contains("MeasureOnceFrameLayout")
-                -> {
-                    changeAlpha(view)
-                }
-            }
+    @OnAfter("onViewHolderUnSelected")
+    fun onViewHolderUnSelectedAfter(params: XC_MethodHook.MethodHookParam) {
+        hookBlockRunning(params) {
+            val container = getWidgetContainer(params)
+            removeOnDraw(container)
+        }.onFailure {
+            KLogCat.tagE(TAG, it)
         }
     }
 
-    private fun changeAlpha(view: View?) {
-        if (view == null) {
-            KLogCat.d("changeAlpha: view == null")
-            return
+    @OnBefore("onPause")
+    fun onPauseBefore(params: XC_MethodHook.MethodHookParam) {
+        hookBlockRunning(params) {
+            val container = getWidgetContainer(params)
+            removeOnDraw(container)
+            onDrawMaps.clear()
+        }.onFailure {
+            KLogCat.tagE(TAG, it)
         }
+    }
 
-        // 半透明
-        if (config.isTranslucent) {
-            view.alpha = config.translucentValue[1] / 100f
+    @OnAfter("onResume")
+    fun onResumeAfter(params: XC_MethodHook.MethodHookParam) {
+        hookBlockRunning(params) {
+            val container = getWidgetContainer(params)
+            addOnDraw(container)
+        }.onFailure {
+            KLogCat.tagE(TAG, it)
         }
+    }
+
+    private fun getWidgetContainer(params: XC_MethodHook.MethodHookParam): PenetrateTouchRelativeLayout? {
+        val views = params.thisObject?.fieldGets(type = View::class.java) ?: emptyList()
+        return views.firstOrNull { it is PenetrateTouchRelativeLayout }
+            ?.asOrNull<PenetrateTouchRelativeLayout>()
+    }
+
+    private fun callOpenCleanMode(params: XC_MethodHook.MethodHookParam, boolean: Boolean) {
+        val first = params.thisObject.methodFirst("openCleanMode", paramTypes = arrayOf(Boolean::class.java))
+        XposedBridge.invokeOriginalMethod(first, params.thisObject, arrayOf(boolean))
     }
 }

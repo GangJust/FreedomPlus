@@ -64,7 +64,6 @@ import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.json.getIntOrDefault
 import com.freegang.ktutils.json.parseJSONArray
 import com.freegang.plugin.v1.XplerActivity
-import com.freegang.plugin.v2.XplerActivityV2
 import com.freegang.ui.ModuleTheme
 import com.freegang.ui.asDp
 import com.freegang.ui.component.FCard

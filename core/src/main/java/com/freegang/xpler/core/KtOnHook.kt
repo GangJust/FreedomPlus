@@ -240,32 +240,60 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
             value.isAccessible = true
 
             val isFutureHook = value.getAnnotation(FutureHook::class.java) != null
+            val names = key.name
             val paramTypes = getTargetMethodParamTypes(value)
-            val names = if (key.name.isEmpty()) arrayOf(value.name) else key.name
-            names.forEach { name ->
-                var methodHookImpl: MethodHookImpl? = null
-                // 如果属于 FutureHook 则对目标Class进行搜索, 未搜索到则不Hook
-                if (isFutureHook) {
-                    val find = KReflectUtils.findMethodFirst(
-                        methods = targetMethods,
-                        name = name,
-                        paramTypes = paramTypes,
-                    )
-                    if (find != null) methodHookImpl = MethodHookImpl(find)
-                } else {
-                    methodHookImpl = MethodHookImpl(targetClazz, name, *paramTypes)
-                }
 
-                // 开启Hook
-                methodHookImpl?.apply {
-                    onBefore {
-                        val invArgs = arrayOf(this, *argsOrEmpty)
-                        value.invoke(this@KtOnHook, *invArgs)
+            // 目标方法名, 参数名同时为空
+            if (names.isEmpty() && paramTypes.isEmpty()) {
+                return
+            }
+
+            // 目标方法名为空, 对同类型的所有参数做Hook
+            if (names.isEmpty()) {
+                val finds = KReflectUtils.findMethods(
+                    methods = targetMethods,
+                    paramTypes = paramTypes,
+                )
+                finds.forEach { method ->
+                    // 开启Hook
+                    MethodHookImpl(method).apply {
+                        onBefore {
+                            onBefore {
+                                val invArgs = arrayOf(this, *argsOrEmpty)
+                                value.invoke(this@KtOnHook, *invArgs)
+                            }
+                            if (value.getAnnotation(HookOnce::class.java) != null) {
+                                onUnhook { _, _ -> }
+                            }
+                        }
+                    }.startHook()
+                }
+            } else {
+                names.forEach { name ->
+                    var methodHookImpl: MethodHookImpl? = null
+                    // 如果属于 FutureHook 则对目标Class进行搜索, 未搜索到则不Hook
+                    if (isFutureHook) {
+                        val find = KReflectUtils.findMethodFirst(
+                            methods = targetMethods,
+                            name = name,
+                            paramTypes = paramTypes,
+                        )
+                        if (find != null) methodHookImpl = MethodHookImpl(find)
+                    } else {
+                        methodHookImpl = MethodHookImpl(targetClazz, name, *paramTypes)
                     }
-                    if (value.getAnnotation(HookOnce::class.java) != null) {
-                        onUnhook { _, _ -> }
-                    }
-                }?.startHook()
+
+                    // 开启Hook
+                    methodHookImpl?.apply {
+                        onBefore {
+                            val invArgs = arrayOf(this, *argsOrEmpty)
+                            value.invoke(this@KtOnHook, *invArgs)
+                        }
+                        if (value.getAnnotation(HookOnce::class.java) != null) {
+                            onUnhook { _, _ -> }
+                        }
+                    }?.startHook()
+                }
             }
         }
     }
@@ -281,32 +309,60 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
             value.isAccessible = true
 
             val isFutureHook = value.getAnnotation(FutureHook::class.java) != null
+            val names = key.name
             val paramTypes = getTargetMethodParamTypes(value)
-            val names = if (key.name.isEmpty()) arrayOf(value.name) else key.name
-            names.forEach { name ->
-                var methodHookImpl: MethodHookImpl? = null
-                // 如果属于 FutureHook 则对目标Class进行搜索, 未搜索到则不Hook
-                if (isFutureHook) {
-                    val find = KReflectUtils.findMethodFirst(
-                        methods = targetMethods,
-                        name = name,
-                        paramTypes = paramTypes,
-                    )
-                    if (find != null) methodHookImpl = MethodHookImpl(find)
-                } else {
-                    methodHookImpl = MethodHookImpl(targetClazz, name, *paramTypes)
-                }
 
-                // 开启Hook
-                methodHookImpl?.apply {
-                    onAfter {
-                        val invArgs = arrayOf(this, *argsOrEmpty)
-                        value.invoke(this@KtOnHook, *invArgs)
+            // 目标方法名, 参数名同时为空
+            if (names.isEmpty() && paramTypes.isEmpty()) {
+                return
+            }
+
+            // 目标方法名为空, 对同类型的所有参数做Hook
+            if (names.isEmpty()) {
+                val finds = KReflectUtils.findMethods(
+                    methods = targetMethods,
+                    paramTypes = paramTypes,
+                )
+                finds.forEach { method ->
+                    // 开启Hook
+                    MethodHookImpl(method).apply {
+                        onBefore {
+                            onAfter {
+                                val invArgs = arrayOf(this, *argsOrEmpty)
+                                value.invoke(this@KtOnHook, *invArgs)
+                            }
+                            if (value.getAnnotation(HookOnce::class.java) != null) {
+                                onUnhook { _, _ -> }
+                            }
+                        }
+                    }.startHook()
+                }
+            } else {
+                names.forEach { name ->
+                    var methodHookImpl: MethodHookImpl? = null
+                    // 如果属于 FutureHook 则对目标Class进行搜索, 未搜索到则不Hook
+                    if (isFutureHook) {
+                        val find = KReflectUtils.findMethodFirst(
+                            methods = targetMethods,
+                            name = name,
+                            paramTypes = paramTypes,
+                        )
+                        if (find != null) methodHookImpl = MethodHookImpl(find)
+                    } else {
+                        methodHookImpl = MethodHookImpl(targetClazz, name, *paramTypes)
                     }
-                    if (value.getAnnotation(HookOnce::class.java) != null) {
-                        onUnhook { _, _ -> }
-                    }
-                }?.startHook()
+
+                    // 开启Hook
+                    methodHookImpl?.apply {
+                        onAfter {
+                            val invArgs = arrayOf(this, *argsOrEmpty)
+                            value.invoke(this@KtOnHook, *invArgs)
+                        }
+                        if (value.getAnnotation(HookOnce::class.java) != null) {
+                            onUnhook { _, _ -> }
+                        }
+                    }?.startHook()
+                }
             }
         }
     }
@@ -323,32 +379,58 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
             value.isAccessible = true
 
             val isFutureHook = value.getAnnotation(FutureHook::class.java) != null
+            val names = key.name
             val paramTypes = getTargetMethodParamTypes(value)
-            val names = if (key.name.isEmpty()) arrayOf(value.name) else key.name
-            names.forEach { name ->
-                var methodHookImpl: MethodHookImpl? = null
-                // 如果属于 FutureHook 则对目标Class进行搜索, 未搜索到则不Hook
-                if (isFutureHook) {
-                    val find = KReflectUtils.findMethodFirst(
-                        methods = targetMethods,
-                        name = name,
-                        paramTypes = paramTypes,
-                    )
-                    if (find != null) methodHookImpl = MethodHookImpl(find)
-                } else {
-                    methodHookImpl = MethodHookImpl(targetClazz, name, *paramTypes)
-                }
 
-                // 开启Hook
-                methodHookImpl?.apply {
-                    onReplace {
-                        val invArgs = arrayOf(this, *argsOrEmpty)
-                        value.invoke(this@KtOnHook, *invArgs) ?: Unit
+            // 目标方法名, 参数名同时为空
+            if (names.isEmpty() && paramTypes.isEmpty()) {
+                return
+            }
+
+            // 目标方法名为空, 对同类型的所有参数做Hook
+            if (names.isEmpty()) {
+                val finds = KReflectUtils.findMethods(
+                    methods = targetMethods,
+                    paramTypes = paramTypes,
+                )
+                finds.forEach { method ->
+                    // 开启Hook
+                    MethodHookImpl(method).apply {
+                        onReplace {
+                            val invArgs = arrayOf(this, *argsOrEmpty)
+                            value.invoke(this@KtOnHook, *invArgs) ?: Unit
+                        }
+                        if (value.getAnnotation(HookOnce::class.java) != null) {
+                            onUnhook { _, _ -> }
+                        }
+                    }.startHook()
+                }
+            } else {
+                names.forEach { name ->
+                    var methodHookImpl: MethodHookImpl? = null
+                    // 如果属于 FutureHook 则对目标Class进行搜索, 未搜索到则不Hook
+                    if (isFutureHook) {
+                        val find = KReflectUtils.findMethodFirst(
+                            methods = targetMethods,
+                            name = name,
+                            paramTypes = paramTypes,
+                        )
+                        if (find != null) methodHookImpl = MethodHookImpl(find)
+                    } else {
+                        methodHookImpl = MethodHookImpl(targetClazz, name, *paramTypes)
                     }
-                    if (value.getAnnotation(HookOnce::class.java) != null) {
-                        onUnhook { _, _ -> }
-                    }
-                }?.startHook()
+
+                    // 开启Hook
+                    methodHookImpl?.apply {
+                        onReplace {
+                            val invArgs = arrayOf(this, *argsOrEmpty)
+                            value.invoke(this@KtOnHook, *invArgs) ?: Unit
+                        }
+                        if (value.getAnnotation(HookOnce::class.java) != null) {
+                            onUnhook { _, _ -> }
+                        }
+                    }?.startHook()
+                }
             }
         }
     }

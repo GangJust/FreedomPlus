@@ -53,15 +53,11 @@ class HVideoViewHolderRootViewNew(lpparam: XC_LoadPackage.LoadPackageParam) :
     private var longPressFastRunnable: Runnable? = null
     private var longPressRunnable: Runnable? = null
 
-    // has pause video
-    private var hasPauseVideoRunnable: Runnable? = null
-
     @OnBefore("dispatchTouchEvent")
     fun dispatchTouchEventBefore(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {
         if (interdictEvent(params, event)) return
         longPressEvent(params, event)
     }
-
 
     private fun toggleView(view: View, visible: Boolean) {
         val viewHolderRootView = view as VideoViewHolderRootView

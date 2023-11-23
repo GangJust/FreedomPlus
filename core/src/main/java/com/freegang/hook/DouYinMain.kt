@@ -2,21 +2,17 @@ package com.freegang.hook
 
 import android.app.Application
 import android.content.Intent
-import android.os.Build
 import android.os.CountDownTimer
 import android.os.Process
-import android.widget.Toast
 import com.freegang.config.ConfigV1
 import com.freegang.helper.DexkitBuilder
 import com.freegang.ktutils.app.KActivityUtils
 import com.freegang.ktutils.app.KAppCrashUtils
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
-import com.freegang.ktutils.io.hasStoragePermission
 import com.freegang.ktutils.json.getIntOrDefault
 import com.freegang.ktutils.json.parseJSONArray
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.media.hasMediaPermission
 import com.freegang.plugin.v1.PluginBridge
 import com.freegang.xpler.HookPackages
 import com.freegang.xpler.core.findClass
@@ -46,7 +42,7 @@ class DouYinMain(private val app: Application) {
             PluginBridge.init(app, stubClazz)
 
             // 权限检查
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 if (!app.hasStoragePermission() && !app.hasMediaPermission()) {
                     Toast.makeText(app, "抖音没有文件/媒体操作权限!", Toast.LENGTH_LONG).show()
                     return@runCatching
@@ -56,7 +52,7 @@ class DouYinMain(private val app: Application) {
                     Toast.makeText(app, "抖音没有文件读写权限!", Toast.LENGTH_LONG).show()
                     return@runCatching
                 }
-            }
+            }*/
 
             // 加载配置
             ConfigV1.initialize(app)
@@ -80,7 +76,7 @@ class DouYinMain(private val app: Application) {
             // search and hook
             DexkitBuilder.running(
                 app = app,
-                version = 18,
+                version = 19,
                 searchBefore = {
                     HActivity(lpparam)
                     HMainActivity(lpparam)
@@ -91,6 +87,7 @@ class DouYinMain(private val app: Application) {
                     HMainTabStripScrollView(lpparam)
                     HFlippableViewPager(lpparam)
                     HCustomizedUISeekBar(lpparam)
+                    HPlayerController(lpparam)
                     HVideoViewHolderNew(lpparam)
                     HVideoViewHolderRootViewNew(lpparam)
                     HPenetrateTouchRelativeLayout(lpparam)
@@ -105,7 +102,6 @@ class DouYinMain(private val app: Application) {
                     HMainBottomTabItem(lpparam)
                     HCommentListPageFragment(lpparam)
                     HSeekBarSpeedModeBottomMask(lpparam)
-                    HVideoPlayerState(lpparam)
                     HVideoPlayerHelper(lpparam)
                     HVerticalViewPagerNew(lpparam)
                     HDetailPageFragment(lpparam)

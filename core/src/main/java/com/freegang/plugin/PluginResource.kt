@@ -304,10 +304,16 @@ class PluginResource(
     }
 
     override fun getXml(id: Int): XmlResourceParser {
-        return try {
+        /*return try {
             originResources.getXml(id)
         } catch (e: Exception) {
             pluginResources.getXml(id)
+        }*/
+
+        return try {
+            pluginResources.getXml(id)
+        } catch (e: Exception) {
+            originResources.getXml(id)
         }
     }
 
