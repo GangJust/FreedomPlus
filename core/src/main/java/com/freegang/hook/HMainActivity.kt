@@ -49,6 +49,11 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
 
         @SuppressLint("StaticFieldLeak")
         var bottomTabView: View? = null
+
+        fun toggleView(visible: Boolean) {
+            mainTitleBar?.isVisible = visible
+            bottomTabView?.isVisible = visible
+        }
     }
 
     private val config get() = ConfigV1.get()
@@ -104,18 +109,8 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
     fun onPause(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
             saveConfig(thisContext)
+            clearView()
             clipboardLogic.removeClipboardListener(thisContext)
-        }.onFailure {
-            KLogCat.tagE(TAG, it)
-        }
-    }
-
-    @OnBefore("onStop")
-    fun onStopBefore(params: XC_MethodHook.MethodHookParam) {
-        hookBlockRunning(params) {
-            mainTitleBar = null
-            bottomTabView = null
-            disallowInterceptRelativeLayout = null
         }.onFailure {
             KLogCat.tagE(TAG, it)
         }
@@ -137,7 +132,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
                 DownloadLogic(
                     this@HMainActivity,
                     activity,
-                    aweme ?: HVideoViewHolderNew.aweme,
+                    aweme ?: HVideoViewHolder.aweme,
                 )
             }
         }
@@ -219,6 +214,12 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
                 }
             }
         }
+    }
+
+    private fun clearView() {
+        mainTitleBar = null
+        bottomTabView = null
+        disallowInterceptRelativeLayout = null
     }
 
     // 保存配置信息

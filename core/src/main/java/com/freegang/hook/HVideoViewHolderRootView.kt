@@ -37,7 +37,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlin.math.abs
 
-class HVideoViewHolderRootViewNew(lpparam: XC_LoadPackage.LoadPackageParam) :
+class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
     BaseHook<VideoViewHolderRootView>(lpparam) {
     companion object {
         const val TAG = "HVideoViewHolderRootView"
@@ -70,6 +70,8 @@ class HVideoViewHolderRootViewNew(lpparam: XC_LoadPackage.LoadPackageParam) :
                 // 清爽模式
                 it.isVisible = visible
             }
+
+            HMainActivity.toggleView(visible)
         }
     }
 
@@ -231,51 +233,51 @@ class HVideoViewHolderRootViewNew(lpparam: XC_LoadPackage.LoadPackageParam) :
 
                     "下载" -> {
                         DownloadLogic(
-                            this@HVideoViewHolderRootViewNew,
+                            this@HVideoViewHolderRootView,
                             view.context,
-                            HVideoViewHolderNew.aweme,
+                            HVideoViewHolder.aweme,
                         )
                     }
 
                     "过滤统计" -> {
                         val builder = StringBuilder()
-                        if (HVerticalViewPagerNew.filterLiveCount > 0) {
+                        if (HVerticalViewPager.filterLiveCount > 0) {
                             builder.append("直播过滤: ")
-                                .append(HVerticalViewPagerNew.filterLiveCount)
+                                .append(HVerticalViewPager.filterLiveCount)
                                 .append("\n")
                         }
-                        if (HVerticalViewPagerNew.filterImageCount > 0) {
+                        if (HVerticalViewPager.filterImageCount > 0) {
                             builder.append("图文过滤: ")
-                                .append(HVerticalViewPagerNew.filterImageCount)
+                                .append(HVerticalViewPager.filterImageCount)
                                 .append("\n")
                         }
-                        if (HVerticalViewPagerNew.filterAdCount > 0) {
+                        if (HVerticalViewPager.filterAdCount > 0) {
                             builder.append("广告过滤: ")
-                                .append(HVerticalViewPagerNew.filterAdCount)
+                                .append(HVerticalViewPager.filterAdCount)
                                 .append("\n")
                         }
-                        if (HVerticalViewPagerNew.filterLongVideoCount > 0) {
+                        if (HVerticalViewPager.filterLongVideoCount > 0) {
                             builder.append("长视频过滤: ")
-                                .append(HVerticalViewPagerNew.filterLongVideoCount)
+                                .append(HVerticalViewPager.filterLongVideoCount)
                                 .append("\n")
                         }
-                        if (HVerticalViewPagerNew.filterRecommendedCardsCount > 0) {
+                        if (HVerticalViewPager.filterRecommendedCardsCount > 0) {
                             builder.append("推荐卡片过滤: ")
-                                .append(HVerticalViewPagerNew.filterRecommendedCardsCount)
+                                .append(HVerticalViewPager.filterRecommendedCardsCount)
                                 .append("\n")
                         }
-                        if (HVerticalViewPagerNew.filterRecommendedMerchantsCount > 0) {
+                        if (HVerticalViewPager.filterRecommendedMerchantsCount > 0) {
                             builder.append("推荐商家过滤: ")
-                                .append(HVerticalViewPagerNew.filterRecommendedMerchantsCount)
+                                .append(HVerticalViewPager.filterRecommendedMerchantsCount)
                                 .append("\n")
                         }
-                        if (HVerticalViewPagerNew.filterEmptyDescCount > 0) {
+                        if (HVerticalViewPager.filterEmptyDescCount > 0) {
                             builder.append("空文案过滤: ")
-                                .append(HVerticalViewPagerNew.filterEmptyDescCount)
+                                .append(HVerticalViewPager.filterEmptyDescCount)
                                 .append("\n")
                         }
-                        if (HVerticalViewPagerNew.filterOtherCount > 0) {
-                            builder.append("关键字过滤: ").append(HVerticalViewPagerNew.filterOtherCount)
+                        if (HVerticalViewPager.filterOtherCount > 0) {
+                            builder.append("关键字过滤: ").append(HVerticalViewPager.filterOtherCount)
                         }
                         val msg = builder.toString().trim()
                         if (msg.isEmpty()) {
@@ -307,14 +309,14 @@ class HVideoViewHolderRootViewNew(lpparam: XC_LoadPackage.LoadPackageParam) :
                     }
 
                     "视频信息" -> {
-                        if (HVerticalViewPagerNew.currentAweme == null) {
+                        if (HVerticalViewPager.currentAweme == null) {
                             KToastUtils.show(view.context.applicationContext, "未获取到视频信息!")
                             return@showChoiceDialog
                         }
                         KLogCat.clearStorage()
                         KLogCat.openStorage()
-                        HVerticalViewPagerNew.currentAweme?.fields()?.forEach {
-                            KLogCat.i("${it.type.name} ${it.name} = ${it.get(HVerticalViewPagerNew.currentAweme)}")
+                        HVerticalViewPager.currentAweme?.fields()?.forEach {
+                            KLogCat.i("${it.type.name} ${it.name} = ${it.get(HVerticalViewPager.currentAweme)}")
                         }
                         KLogCat.closeStorage()
                         KToastUtils.show(view.context.applicationContext, "视频信息获取成功!")

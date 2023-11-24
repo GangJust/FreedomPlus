@@ -21,7 +21,7 @@ import com.ss.android.ugc.aweme.follow.presenter.FollowFeed
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
-class HVerticalViewPagerNew(lpparam: XC_LoadPackage.LoadPackageParam) :
+class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) :
     BaseHook<VerticalViewPager>(lpparam) {
     companion object {
         const val TAG = "HVerticalViewPager"
@@ -190,68 +190,68 @@ class HVerticalViewPagerNew(lpparam: XC_LoadPackage.LoadPackageParam) :
     private fun resetFilter() {
         for (s in filterKeywordsAndTypes) {
             if ("直播" == s) {
-                HVerticalViewPagerNew.isFilterLive = true
+                HVerticalViewPager.isFilterLive = true
             }
             if ("图文" == s) {
-                HVerticalViewPagerNew.isFilterImage = true
+                HVerticalViewPager.isFilterImage = true
             }
             if ("广告" == s) {
-                HVerticalViewPagerNew.isFilterAd = true
+                HVerticalViewPager.isFilterAd = true
             }
             if ("长视频" == s) {
-                HVerticalViewPagerNew.isFilterLongVideo = true
+                HVerticalViewPager.isFilterLongVideo = true
             }
             if ("推荐卡片" == s) {  // awemeType=145, desc=null [热门特效/认识的人]
-                HVerticalViewPagerNew.isFilterRecommendedCards = true
+                HVerticalViewPager.isFilterRecommendedCards = true
             }
             if ("推荐商家" == s) {  // awemeType=140, desc=null
-                HVerticalViewPagerNew.isFilterRecommendedMerchants = true
+                HVerticalViewPager.isFilterRecommendedMerchants = true
             }
             if ("空文案" == s) {  // desc=null
-                HVerticalViewPagerNew.isFilterEmptyDesc = true
+                HVerticalViewPager.isFilterEmptyDesc = true
             }
         }
     }
 
     private fun needAweme(aweme: Aweme): Aweme? {
         return when {
-            HVerticalViewPagerNew.isFilterLive && aweme.isLive -> {
-                HVerticalViewPagerNew.filterLiveCount += 1
+            HVerticalViewPager.isFilterLive && aweme.isLive -> {
+                HVerticalViewPager.filterLiveCount += 1
                 null
             }
 
-            HVerticalViewPagerNew.isFilterImage && aweme.isMultiImage -> {
-                HVerticalViewPagerNew.filterImageCount += 1
+            HVerticalViewPager.isFilterImage && aweme.isMultiImage -> {
+                HVerticalViewPager.filterImageCount += 1
                 null
             }
 
-            HVerticalViewPagerNew.isFilterAd && aweme.isAd -> {
-                HVerticalViewPagerNew.filterAdCount += 1
+            HVerticalViewPager.isFilterAd && aweme.isAd -> {
+                HVerticalViewPager.filterAdCount += 1
                 null
             }
 
-            HVerticalViewPagerNew.isFilterLongVideo && aweme.isCopyRightLongVideo -> {
-                HVerticalViewPagerNew.filterLongVideoCount += 1
+            HVerticalViewPager.isFilterLongVideo && aweme.isCopyRightLongVideo -> {
+                HVerticalViewPager.filterLongVideoCount += 1
                 null
             }
 
-            HVerticalViewPagerNew.isFilterRecommendedCards && aweme.awemeType == 145 -> {
-                HVerticalViewPagerNew.filterRecommendedCardsCount += 1
+            HVerticalViewPager.isFilterRecommendedCards && aweme.awemeType == 145 -> {
+                HVerticalViewPager.filterRecommendedCardsCount += 1
                 null
             }
 
-            HVerticalViewPagerNew.isFilterRecommendedMerchants && aweme.awemeType == 140 -> {
-                HVerticalViewPagerNew.filterRecommendedMerchantsCount += 1
+            HVerticalViewPager.isFilterRecommendedMerchants && aweme.awemeType == 140 -> {
+                HVerticalViewPager.filterRecommendedMerchantsCount += 1
                 null
             }
 
-            HVerticalViewPagerNew.isFilterEmptyDesc && KTextUtils.isEmpty(aweme.desc) -> {
-                HVerticalViewPagerNew.filterEmptyDescCount += 1
+            HVerticalViewPager.isFilterEmptyDesc && KTextUtils.isEmpty(aweme.desc) -> {
+                HVerticalViewPager.filterEmptyDescCount += 1
                 null
             }
 
             keywordsRegex.pattern.isNotBlank() && KTextUtils.get(aweme.desc).contains(keywordsRegex) -> {
-                HVerticalViewPagerNew.filterOtherCount += 1
+                HVerticalViewPager.filterOtherCount += 1
                 null
             }
 

@@ -20,7 +20,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
-class HVideoViewHolderNew(lpparam: XC_LoadPackage.LoadPackageParam) :
+class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
     BaseHook<VideoViewHolder>(lpparam) {
     companion object {
         const val TAG = "HVideoViewHolder"
@@ -29,6 +29,8 @@ class HVideoViewHolderNew(lpparam: XC_LoadPackage.LoadPackageParam) :
         @set:Synchronized
         var aweme: Aweme? = null
     }
+
+    private var isClearMode = false
 
     private var onDrawMaps = mutableMapOf<String, ViewTreeObserver.OnDrawListener?>()
 
@@ -41,27 +43,23 @@ class HVideoViewHolderNew(lpparam: XC_LoadPackage.LoadPackageParam) :
         }
 
         val key = Integer.toHexString(System.identityHashCode(view))
-        val isNeatMode = config.isNeatMode
-        val neatModeState = config.neatModeState
-        val isTranslucent = config.isTranslucent
-        val translucentValue = config.translucentValue
 
         onDrawMaps.putIfAbsent(key, ViewTreeObserver.OnDrawListener {
-            if (!isNeatMode) return@OnDrawListener
-
-            if (neatModeState) {
-                if (HPlayerController.isPlaying && view.isVisible) {
-                    view.isVisible = false
-                } else if (!HPlayerController.isPlaying && !view.isVisible) {
-                    view.isVisible = true
+            if (config.isTranslucent) {
+                val alpha = config.translucentValue[1] / 100f
+                if (view.alpha > alpha) {
+                    view.alpha = alpha
                 }
             }
 
-            if (isTranslucent) {
-                if (view.isVisible) {
-                    val alpha = translucentValue[1] / 100f
-                    if (view.alpha > alpha) {
-                        view.alpha = alpha
+            if (config.isNeatMode) {
+                if (config.neatModeState) {
+                    if (!HPlayerController.isPlaying && isClearMode) {
+                        view.isVisible = false
+                        HMainActivity.toggleView(false)
+                    } else {
+                        view.isVisible = !HPlayerController.isPlaying
+                        HMainActivity.toggleView(!HPlayerController.isPlaying)
                     }
                 }
             }
@@ -140,6 +138,20 @@ class HVideoViewHolderNew(lpparam: XC_LoadPackage.LoadPackageParam) :
         hookBlockRunning(params) {
             val container = getWidgetContainer(params)
             addOnDraw(container)
+        }.onFailure {
+            KLogCat.tagE(TAG, it)
+        }
+    }
+
+    @OnBefore
+    fun booleanAllBefore(params: XC_MethodHook.MethodHookParam, boolean: Boolean) {
+        hookBlockRunning(params) {
+            // KLogCat.d("$method", "$boolean")
+            isClearMode = if (HPlayerController.isPlaying) {
+                false
+            } else {
+                boolean
+            }
         }.onFailure {
             KLogCat.tagE(TAG, it)
         }

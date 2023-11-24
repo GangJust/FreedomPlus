@@ -67,7 +67,7 @@ class HDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) : BaseHook<Detai
             DownloadLogic(
                 this@HDetailActivity,
                 activity,
-                aweme ?: HVideoViewHolderNew.aweme,
+                aweme ?: HVideoViewHolder.aweme,
             )
         }
     }

@@ -16,8 +16,8 @@ class HPlayerController(lpparam: XC_LoadPackage.LoadPackageParam) :
     companion object {
         const val TAG = "HPlayerController"
 
-        @get:Synchronized
-        @set:Synchronized
+        // @get:Synchronized
+        // @set:Synchronized
         var isPlaying = true
     }
 
@@ -70,7 +70,7 @@ class HPlayerController(lpparam: XC_LoadPackage.LoadPackageParam) :
     @OnAfter("onPlayProgressChange")
     fun onPlayProgressChangeAfter(params: XC_MethodHook.MethodHookParam, float: Float) {
         hookBlockRunning(params) {
-            // isPlaying = true
+            isPlaying = true
             // callOpenCleanMode(params, true)
         }.onFailure {
             KLogCat.tagE(TAG, it)
