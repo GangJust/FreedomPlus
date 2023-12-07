@@ -87,15 +87,29 @@
 -dontwarn org.openjsse.net.ssl.OpenJSSE
 
 # 模块核心
--keepclassmembers class com.freegang.xpler.core.** { *; }
+-keepclassmembers class io.github.xpler.core.** { *; }
+-keep,allowobfuscation class io.github.xpler.core.KeepParam
+-keep,allowobfuscation class io.github.xpler.core.Param
+-keep,allowobfuscation class io.github.xpler.core.FutureHook
+-keep,allowobfuscation class io.github.xpler.core.HookOnce
+-keep,allowobfuscation class io.github.xpler.core.OnBefore
+-keep,allowobfuscation class io.github.xpler.core.OnAfter
+-keep,allowobfuscation class io.github.xpler.core.OnReplace
+-keep,allowobfuscation class io.github.xpler.core.OnConstructorBefore
+-keep,allowobfuscation class io.github.xpler.core.OnConstructorAfter
+-keep,allowobfuscation class io.github.xpler.core.OnConstructorReplace
 -keepclassmembers class * {
-    @com.freegang.xpler.core.OnBefore <methods>;
-    @com.freegang.xpler.core.OnAfter <methods>;
-    @com.freegang.xpler.core.OnReplace <methods>;
-    @com.freegang.xpler.core.OnConstructorBefore <methods>;
-    @com.freegang.xpler.core.OnConstructorAfter <methods>;
-    @com.freegang.xpler.core.OnConstructorReplace <methods>;
+    @io.github.xpler.core.KeepParam <methods>;
+    @io.github.xpler.core.Param <methods>;
+    @io.github.xpler.core.FutureHook <methods>;
+    @io.github.xpler.core.HookOnce <methods>;
+    @io.github.xpler.core.OnBefore <methods>;
+    @io.github.xpler.core.OnAfter <methods>;
+    @io.github.xpler.core.OnReplace <methods>;
+    @io.github.xpler.core.OnConstructorBefore <methods>;
+    @io.github.xpler.core.OnConstructorAfter <methods>;
+    @io.github.xpler.core.OnConstructorReplace <methods>;
 }
 # 模块状态
--keep class com.freegang.xpler.HookInit extends * { *; }
--keep class com.freegang.xpler.HookStatus extends * { *; }
+-keep class io.github.xpler.HookInit extends * { *; }
+-keep class io.github.xpler.HookStatus extends * { *; }

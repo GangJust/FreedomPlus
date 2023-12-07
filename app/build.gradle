@@ -4,14 +4,14 @@ plugins {
 }
 
 android {
-    namespace "com.freegang.fplus"
+    namespace "io.github.fplus"
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.freegang.fplus"
+        applicationId "io.github.fplus"
         minSdk 24
         targetSdk 33
-        versionCode 99
+        versionCode 109
         versionName "1.2.5-dev"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

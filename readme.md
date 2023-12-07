@@ -44,7 +44,7 @@
 
 ## 开源库/Public Library
 
-注：删除线表示依赖被引用，但项目未使用
+注：删除线表示依赖被引用，但项目未使用或曾经使用
 
 - [dexkit](https://github.com/LuckyPray/DexKit)
 - [mmkv](https://github.com/Tencent/MMKV)
