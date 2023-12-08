@@ -6,6 +6,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.ImmersiveHelper
+import io.github.xpler.core.FutureHook
 import io.github.xpler.core.OnAfter
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.thisActivity
@@ -23,13 +24,14 @@ class HLivePlayActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
         return findClass("com.ss.android.ugc.aweme.live.LivePlayActivity")
     }
 
+    @FutureHook
     @OnAfter("onWindowFocusChanged")
     fun onWindowFocusChangedAfter(params: XC_MethodHook.MethodHookParam, boolean: Boolean) {
         hookBlockRunning(params) {
             if (config.isImmersive) {
                 ImmersiveHelper.immersive(thisActivity)
-                ImmersiveHelper.statusBar(thisActivity, true)
-                ImmersiveHelper.navigationBars(thisActivity, true)
+                // ImmersiveHelper.statusBar(thisActivity, true)
+                // ImmersiveHelper.navigationBars(thisActivity, true)
             }
         }.onFailure {
             KLogCat.tagE(TAG, it)
