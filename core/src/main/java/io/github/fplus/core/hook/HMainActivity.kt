@@ -142,7 +142,9 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
         activity.contentView.postRunning {
             mainTitleBar = findViewsByType(MainTitleBar::class.java).firstOrNull()
             bottomTabView = DexkitBuilder.mainBottomTabViewClazz?.let {
-                findViewsByType(it.asSubclass(View::class.java)).firstOrNull()
+                findViewsByExact(ViewGroup::class.java) {
+                    this.javaClass.name == DexkitBuilder.mainBottomTabViewClazz?.name
+                }.firstOrNull()
             }
             disallowInterceptRelativeLayout = findViewsByExact(ViewGroup::class.java) {
                 this.javaClass.name.contains("DisallowInterceptRelativeLayout")

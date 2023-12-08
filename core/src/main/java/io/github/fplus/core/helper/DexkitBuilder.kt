@@ -7,8 +7,6 @@ import com.freegang.ktutils.json.getIntOrDefault
 import com.freegang.ktutils.json.getJSONArrayOrDefault
 import com.freegang.ktutils.json.getStringOrDefault
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.text.ifNotEmpty
-import com.ss.android.ugc.aweme.comment.constants.CommentColorMode
 import io.github.fplus.core.config.ConfigV1
 import io.github.xpler.core.findClass
 import io.github.xpler.core.findMethod
@@ -16,10 +14,10 @@ import io.github.xpler.core.lpparam
 import org.json.JSONArray
 import org.json.JSONObject
 import org.luckypray.dexkit.DexKitBridge
-import org.luckypray.dexkit.query.ClassDataList
-import org.luckypray.dexkit.query.MethodDataList
 import org.luckypray.dexkit.query.enums.StringMatchType
+import org.luckypray.dexkit.result.ClassDataList
 import org.luckypray.dexkit.result.MethodData
+import org.luckypray.dexkit.result.MethodDataList
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
@@ -114,7 +112,7 @@ object DexkitBuilder {
             matcher {
                 className = "com.ss.android.ugc.aweme.sidebar.SideBarNestedScrollView"
             }
-        }.firstInstance("sideBarNestedScrollView")
+        }.singleInstance("sideBarNestedScrollView")
 
         cornerExtensionsPopupWindowClazz = bridge.findClass {
             matcher {
@@ -142,7 +140,7 @@ object DexkitBuilder {
                     }
                 }
             }
-        }.firstInstance("coenerExtendsionsPoupWindow")
+        }.singleInstance("coenerExtendsionsPoupWindow")
 
         mainBottomTabItemClazz = bridge.findClass {
             matcher {
@@ -159,7 +157,7 @@ object DexkitBuilder {
                     }
                 }
             }
-        }.firstInstance("mainBottomTabItem")
+        }.singleInstance("mainBottomTabItem")
 
         commentListPageFragmentClazz = bridge.findClass {
             matcher {
@@ -174,7 +172,7 @@ object DexkitBuilder {
 
                 methods {
                     add {
-                        returnType = CommentColorMode::class.java.name
+                        returnType = "com.ss.android.ugc.aweme.comment.constants.CommentColorMode"
                     }
                 }
 
@@ -183,7 +181,7 @@ object DexkitBuilder {
                     "CommentListPageFragment",
                 )
             }
-        }.firstInstance("commentListPageFragment")
+        }.singleInstance("commentListPageFragment")
 
         conversationFragmentClazz = bridge.findClass {
             matcher {
@@ -201,7 +199,7 @@ object DexkitBuilder {
                     "ConversationFragment",
                 )
             }
-        }.firstInstance("conversationFragment")
+        }.singleInstance("conversationFragment")
 
         videoPinchViewClazz = bridge.findClass {
             matcher {
@@ -221,7 +219,7 @@ object DexkitBuilder {
                     }
                 }
             }
-        }.firstInstance("videoPinchView")
+        }.singleInstance("videoPinchView")
 
         videoPagerAdapterClazz = bridge.findClass {
             matcher {
@@ -238,7 +236,7 @@ object DexkitBuilder {
                     }
                 }
             }
-        }.firstInstance("videoPagerAdapter")
+        }.singleInstance("videoPagerAdapter")
 
         recommendFeedFetchPresenterClazz = bridge.findClass {
             matcher {
@@ -251,7 +249,7 @@ object DexkitBuilder {
                 addUsingString("enter_from")
                 addUsingString("homepage_hot")
             }
-        }.firstInstance("recommendFeedFetchPresenter")
+        }.singleInstance("recommendFeedFetchPresenter")
 
         fullFeedFollowFetchPresenterClazz = bridge.findClass {
             matcher {
@@ -264,7 +262,7 @@ object DexkitBuilder {
                 addUsingString("enter_from")
                 addUsingString("homepage_follow")
             }
-        }.firstInstance("fullFeedFollowFetchPresenter")
+        }.singleInstance("fullFeedFollowFetchPresenter")
 
         emojiPopupWindowClazz = bridge.findClass {
             matcher {
@@ -294,7 +292,7 @@ object DexkitBuilder {
                     }
                 }
             }
-        }.firstInstance("emojiPopupWindow")
+        }.singleInstance("emojiPopupWindow")
 
         seekBarSpeedModeBottomContainerClazz = bridge.findClass {
             // findFirst = true
@@ -314,13 +312,13 @@ object DexkitBuilder {
                     }
                 }
             }
-        }.firstInstance("seekBarSpeedModeBottomContainer")
+        }.singleInstance("seekBarSpeedModeBottomContainer")
 
         poiCreateInstanceImplClazz = bridge.findClass {
             matcher {
                 className = "com.ss.android.ugc.aweme.poi.PoiCreateInstanceImpl"
             }
-        }.firstInstance("poiCreateInstanceImpl")
+        }.singleInstance("poiCreateInstanceImpl")
 
         videoPlayerStateClazz = bridge.findClass {
             matcher {
@@ -366,7 +364,34 @@ object DexkitBuilder {
                     }
                 }
             }
-        }.firstInstance("videoPlayerState")
+        }.singleInstance("videoPlayerState")
+
+        emojiApiProxyClazz = bridge.findClass {
+            matcher {
+                fields {
+                    add {
+                        type = "com.ss.android.ugc.aweme.emoji.utils.EmojiApi"
+                    }
+                    add {
+                        type = "com.ss.android.ugc.aweme.emoji.store.EmojiShopApi"
+                    }
+                }
+
+                methods {
+                    add {
+                        returnType = "com.ss.android.ugc.aweme.emoji.utils.EmojiApi"
+                    }
+                    add {
+                        returnType = "com.ss.android.ugc.aweme.emoji.store.EmojiShopApi"
+                    }
+                }
+
+                usingStrings {
+                    add("https://", StringMatchType.Equals)
+                    add("/aweme/v1/", StringMatchType.Equals)
+                }
+            }
+        }.singleInstance("emojiApiProxy")
 
         val findMaps = bridge.batchFindClassUsingStrings {
             addSearchGroup {
@@ -394,11 +419,6 @@ object DexkitBuilder {
                 )
             }
             addSearchGroup {
-                groupName = "emojiApiProxy"
-                add("https://", StringMatchType.Equals)
-                add("/aweme/v1/", StringMatchType.Equals)
-            }
-            addSearchGroup {
                 groupName = "ripsChatRoomFragment"
                 usingStrings = listOf(
                     "com/ss/android/ugc/aweme/im/sdk/chat/rips/RipsChatRoomFragment",
@@ -407,11 +427,11 @@ object DexkitBuilder {
                 )
             }
         }
-        DexkitBuilder.mainBottomTabViewClazz = findMaps.firstInstance("mainBottomTabView")
-        DexkitBuilder.videoPlayerHelperClazz = findMaps.firstInstance("videoPlayerHelper")
-        DexkitBuilder.detailPageFragmentClazz = findMaps.firstInstance("detailPageFragment")
-        DexkitBuilder.emojiApiProxyClazz = findMaps.firstInstance("emojiApiProxy")
-        DexkitBuilder.ripsChatRoomFragmentClazz = findMaps.firstInstance("ripsChatRoomFragment")
+
+        DexkitBuilder.mainBottomTabViewClazz = findMaps.singleInstance("mainBottomTabView")
+        DexkitBuilder.videoPlayerHelperClazz = findMaps.singleInstance("videoPlayerHelper")
+        DexkitBuilder.detailPageFragmentClazz = findMaps.singleInstance("detailPageFragment")
+        DexkitBuilder.ripsChatRoomFragmentClazz = findMaps.singleInstance("ripsChatRoomFragment")
     }
 
     /**
@@ -483,43 +503,24 @@ object DexkitBuilder {
         val classCache = cache.getJSONObject("class")
 
         //
-        val sideBarNestedScrollView = classCache.getStringOrDefault("sideBarNestedScrollView")
-        val cornerExtendsionsPopupWindow = classCache.getStringOrDefault("coenerExtendsionsPoupWindow")
-        val mainBottomTabView = classCache.getStringOrDefault("mainBottomTabView")
-        val mainBottomTabItem = classCache.getStringOrDefault("mainBottomTabItem")
-        val commentListPageFragment = classCache.getStringOrDefault("commentListPageFragment")
-        val conversationFragment = classCache.getStringOrDefault("conversationFragment")
-        val seekBarSpeedModeBottomContainer = classCache.getStringOrDefault("seekBarSpeedModeBottomContainer")
-        val poiCreateInstanceImpl = classCache.getStringOrDefault("poiCreateInstanceImpl")
-        val videoPlayerState = classCache.getStringOrDefault("videoPlayerState")
-        val videoPlayerHelper = classCache.getStringOrDefault("videoPlayerHelper")
-        val videoPinchView = classCache.getStringOrDefault("videoPinchView")
-        val videoPagerAdapter = classCache.getStringOrDefault("videoPagerAdapter")
-        val recommendFeedFetchPresenter = classCache.getStringOrDefault("recommendFeedFetchPresenter")
-        val fullFeedFollowFetchPresenter = classCache.getStringOrDefault("fullFeedFollowFetchPresenter")
-        val emojiPopupWindow = classCache.getStringOrDefault("emojiPopupWindow")
-        val detailPageFragment = classCache.getStringOrDefault("detailPageFragment")
-        val emojiApiProxy = classCache.getStringOrDefault("emojiApiProxy")
-        val ripsChatRoomFragment = classCache.getStringOrDefault("ripsChatRoomFragment")
-
-        sideBarNestedScrollViewClazz = sideBarNestedScrollView.ifNotEmpty { lpparam.findClass(it) }
-        cornerExtensionsPopupWindowClazz = cornerExtendsionsPopupWindow.ifNotEmpty { lpparam.findClass(it) }
-        mainBottomTabViewClazz = mainBottomTabView.ifNotEmpty { lpparam.findClass(it) }
-        mainBottomTabItemClazz = mainBottomTabItem.ifNotEmpty { lpparam.findClass(it) }
-        commentListPageFragmentClazz = commentListPageFragment.ifNotEmpty { lpparam.findClass(it) }
-        conversationFragmentClazz = conversationFragment.ifNotEmpty { lpparam.findClass(it) }
-        seekBarSpeedModeBottomContainerClazz = seekBarSpeedModeBottomContainer.ifNotEmpty { lpparam.findClass(it) }
-        poiCreateInstanceImplClazz = poiCreateInstanceImpl.ifNotEmpty { lpparam.findClass(it) }
-        videoPlayerStateClazz = videoPlayerState.ifNotEmpty { lpparam.findClass(it) }
-        videoPlayerHelperClazz = videoPlayerHelper.ifNotEmpty { lpparam.findClass(it) }
-        videoPinchViewClazz = videoPinchView.ifNotEmpty { lpparam.findClass(it) }
-        videoPagerAdapterClazz = videoPagerAdapter.ifNotEmpty { lpparam.findClass(it) }
-        recommendFeedFetchPresenterClazz = recommendFeedFetchPresenter.ifNotEmpty { lpparam.findClass(it) }
-        fullFeedFollowFetchPresenterClazz = fullFeedFollowFetchPresenter.ifNotEmpty { lpparam.findClass(it) }
-        emojiPopupWindowClazz = emojiPopupWindow.ifNotEmpty { lpparam.findClass(it) }
-        detailPageFragmentClazz = detailPageFragment.ifNotEmpty { lpparam.findClass(it) }
-        emojiApiProxyClazz = emojiApiProxy.ifNotEmpty { lpparam.findClass(it) }
-        ripsChatRoomFragmentClazz = ripsChatRoomFragment.ifNotEmpty { lpparam.findClass(it) }
+        sideBarNestedScrollViewClazz = classCache.getStringOrDefault("sideBarNestedScrollView").loadOrFindClass()
+        cornerExtensionsPopupWindowClazz = classCache.getStringOrDefault("coenerExtendsionsPoupWindow").loadOrFindClass()
+        mainBottomTabViewClazz = classCache.getStringOrDefault("mainBottomTabView").loadOrFindClass()
+        mainBottomTabItemClazz = classCache.getStringOrDefault("mainBottomTabItem").loadOrFindClass()
+        commentListPageFragmentClazz = classCache.getStringOrDefault("commentListPageFragment").loadOrFindClass()
+        conversationFragmentClazz = classCache.getStringOrDefault("conversationFragment").loadOrFindClass()
+        seekBarSpeedModeBottomContainerClazz = classCache.getStringOrDefault("seekBarSpeedModeBottomContainer").loadOrFindClass()
+        poiCreateInstanceImplClazz = classCache.getStringOrDefault("poiCreateInstanceImpl").loadOrFindClass()
+        videoPlayerStateClazz = classCache.getStringOrDefault("videoPlayerState").loadOrFindClass()
+        videoPlayerHelperClazz = classCache.getStringOrDefault("videoPlayerHelper").loadOrFindClass()
+        videoPinchViewClazz = classCache.getStringOrDefault("videoPinchView").loadOrFindClass()
+        videoPagerAdapterClazz = classCache.getStringOrDefault("videoPagerAdapter").loadOrFindClass()
+        recommendFeedFetchPresenterClazz = classCache.getStringOrDefault("recommendFeedFetchPresenter").loadOrFindClass()
+        fullFeedFollowFetchPresenterClazz = classCache.getStringOrDefault("fullFeedFollowFetchPresenter").loadOrFindClass()
+        emojiPopupWindowClazz = classCache.getStringOrDefault("emojiPopupWindow").loadOrFindClass()
+        detailPageFragmentClazz = classCache.getStringOrDefault("detailPageFragment").loadOrFindClass()
+        emojiApiProxyClazz = classCache.getStringOrDefault("emojiApiProxy").loadOrFindClass()
+        ripsChatRoomFragmentClazz = classCache.getStringOrDefault("ripsChatRoomFragment").loadOrFindClass()
     }
 
     /**
@@ -546,17 +547,16 @@ object DexkitBuilder {
         ConfigV1.get().dexkitCache = cacheJson
     }
 
-
     // 拓展方法
-    private fun Map<String, ClassDataList>.firstInstance(key: String): Class<*>? {
-        val classData = this[key]?.firstOrNull()
+    private fun Map<String, ClassDataList>.singleInstance(key: String): Class<*>? {
+        val classData = this[key]?.singleOrNull()
         KLogCat.tagD(TAG, "found-class[$key]: ${classData?.name}")
         classCacheJson.put(key, classData?.name)
         return classData?.getInstance(lpparam.classLoader)
     }
 
-    private fun ClassDataList.firstInstance(label: String): Class<*>? {
-        val classData = this.firstOrNull()
+    private fun ClassDataList.singleInstance(label: String): Class<*>? {
+        val classData = this.singleOrNull()
         KLogCat.tagD(TAG, "found-class[$label]: ${classData?.name}")
         classCacheJson.put(label, classData?.name)
         return classData?.getInstance(lpparam.classLoader)
@@ -595,5 +595,17 @@ object DexkitBuilder {
             }
         }
         return methods
+    }
+
+    private fun String.loadOrFindClass(): Class<*>? {
+        if (this.isEmpty()) {
+            return null
+        }
+
+        return try {
+            app?.classLoader?.loadClass(this)
+        } catch (e: ClassNotFoundException) {
+            lpparam.findClass(this)
+        }
     }
 }

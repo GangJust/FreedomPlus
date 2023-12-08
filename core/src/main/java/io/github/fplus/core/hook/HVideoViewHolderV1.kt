@@ -2,7 +2,6 @@ package io.github.fplus.core.hook
 
 import android.view.View
 import android.view.ViewTreeObserver
-import androidx.core.view.isVisible
 import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.fieldGetFirst
@@ -19,7 +18,6 @@ import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.xpler.core.OnAfter
 import io.github.xpler.core.OnBefore
-import io.github.xpler.core.argsOrEmpty
 import io.github.xpler.core.hook
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.interfaces.CallConstructors

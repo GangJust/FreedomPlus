@@ -1,6 +1,8 @@
 package io.github.fplus.core.hook
 
 import android.view.MotionEvent
+import android.view.View
+import android.widget.TextView
 import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
@@ -8,6 +10,8 @@ import com.freegang.ktutils.reflect.fieldGetFirst
 import com.freegang.ktutils.reflect.fieldSetFirst
 import com.freegang.ktutils.reflect.methodInvokeFirst
 import com.freegang.ktutils.text.KTextUtils
+import com.freegang.ktutils.view.idHex
+import com.freegang.ktutils.view.toViewTreeString
 import com.ss.android.ugc.aweme.common.widget.VerticalViewPager
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.follow.presenter.FollowFeed
@@ -83,8 +87,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) :
 
                             mData.fieldSetFirst("items", filterAwemeList(items))
                             // val array = items.map { it.sortString() }.toTypedArray()
-                            // KLogCat.tagD(TAG, "推荐视频列表")
-                            // KLogCat.tagD(TAG, array.joinToString("\n"))
+                            // KLogCat.tagD(TAG, arrayOf("推荐视频列表", array.joinToString("\n")))
                         }
                     }
                 }
@@ -106,8 +109,7 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) :
 
                             mData.fieldSetFirst("mItems", filterFollowFeedList(mItems))
                             // val array = mItems.map { it.aweme.sortString() }.toTypedArray()
-                            // KLogCat.tagD(TAG, "关注页视频列表")
-                            // KLogCat.tagD(TAG, array.joinToString("\n"))
+                            // KLogCat.tagD(TAG, arrayOf("关注视频列表", array.joinToString("\n")))
                         }
                     }
                 }
@@ -117,12 +119,42 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) :
     }
 
     @OnAfter("onInterceptTouchEvent")
-    fun onInterceptTouchEvent(param: XC_MethodHook.MethodHookParam, event: MotionEvent) {
-        longVideoJudge(param, event)
+    fun onInterceptTouchEvent(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {
+        longVideoJudge(params, event)
     }
 
-    private fun longVideoJudge(param: XC_MethodHook.MethodHookParam, event: MotionEvent) {
-        hookBlockRunning(param) {
+    // @OnAfter
+    fun onViewAddedBefore(
+        params: XC_MethodHook.MethodHookParam,
+        view: View?,
+        boolean: Boolean,
+        i: Int,
+        i2: Int,
+        i3: Int,
+    ) {
+        hookBlockRunning(params) {
+            val treeString = view?.toViewTreeString {
+                val tmp = it.view
+                if (tmp is TextView?) {
+                    "${tmp?.javaClass?.simpleName}, idHex=${tmp?.idHex}, text=${tmp?.text}, desc=${tmp?.contentDescription}"
+                } else {
+                    "${tmp?.javaClass?.simpleName}, idHex=${tmp?.idHex}, desc=${tmp?.contentDescription}"
+                }
+            }
+            KLogCat.d(
+                "boolean: $boolean",
+                "i: $i",
+                "i2: $i2",
+                "i3: $i3",
+                "$treeString",
+            )
+        }.onFailure {
+            KLogCat.tagE(TAG, it)
+        }
+    }
+
+    private fun longVideoJudge(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {
+        hookBlockRunning(params) {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     val adapter = thisObject.methodInvokeFirst("getAdapter") ?: return

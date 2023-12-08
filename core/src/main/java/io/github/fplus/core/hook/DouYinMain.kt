@@ -13,7 +13,6 @@ import com.ss.android.ugc.aweme.feed.model.Aweme
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.plugin.proxy.v1.PluginBridge
-import io.github.fplus.plugin.proxy.v2.PluginBridgeV2
 import io.github.xpler.HookConfig
 import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.lpparam
@@ -30,7 +29,7 @@ class DouYinMain(private val app: Application) {
 
     init {
         runCatching {
-            injectClassLoader(app.classLoader)
+            injectClassLoader(lpparam, app.classLoader)
 
             // 插件化注入
             val stubClazz = hostClassloader!!.loadClass("com.ss.android.ugc.aweme.setting.ui.AboutActivity")
@@ -58,6 +57,7 @@ class DouYinMain(private val app: Application) {
             // 日志工具
             KLogCat.init(app)
             KLogCat.clearStorage()
+            KLogCat.silence() //静默
 
             // 全局异常捕获工具
             val intent = Intent()
@@ -71,7 +71,7 @@ class DouYinMain(private val app: Application) {
             // search and hook
             DexkitBuilder.running(
                 app = app,
-                version = 1,
+                version = 2,
                 searchBefore = {
                     HActivity(lpparam)
                     HMainActivity(lpparam)
@@ -83,6 +83,7 @@ class DouYinMain(private val app: Application) {
                     HCustomizedUISeekBar(lpparam)
                     HPlayerController(lpparam)
                     // HVideoViewHolder(lpparam)
+                    HBaseCommonLiveViewHolder(lpparam)
                     HVideoViewHolderRootView(lpparam)
                     HPenetrateTouchRelativeLayout(lpparam)
                     HInteractStickerParent(lpparam)

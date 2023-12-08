@@ -4,7 +4,6 @@ import android.app.Activity
 import android.graphics.Color
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import io.github.fplus.core.config.ConfigV1
 import com.freegang.ktutils.app.navBarInteractionMode
 
 object ImmersiveHelper {
@@ -12,24 +11,41 @@ object ImmersiveHelper {
     @set:Synchronized
     var isEdgeToEdgeEnabled = false
 
-    fun with(activity: Activity, config: ConfigV1) {
-        // 全屏沉浸式
-        if (config.isImmersive) {
-            val window = activity.window
-            if (config.systemControllerValue[0]) {
-                WindowCompat.getInsetsController(window, window.decorView).hide(WindowInsetsCompat.Type.statusBars())
-            }
-            if (config.systemControllerValue[1]) {
-                WindowCompat.getInsetsController(window, window.decorView).hide(WindowInsetsCompat.Type.navigationBars())
-            }
-            if (activity.navBarInteractionMode == 2) {
-                ImmersiveHelper.isEdgeToEdgeEnabled = true
-                WindowCompat.setDecorFitsSystemWindows(window, false)
-                window.statusBarColor = Color.TRANSPARENT
-                window.navigationBarColor = Color.TRANSPARENT
+    fun immersive(activity: Activity) {
+        val window = activity.window
+        if (activity.navBarInteractionMode == 2) {
+            ImmersiveHelper.isEdgeToEdgeEnabled = true
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            window.statusBarColor = Color.TRANSPARENT
+            window.navigationBarColor = Color.TRANSPARENT
+        } else {
+            window.statusBarColor = Color.TRANSPARENT
+            window.navigationBarColor = Color.parseColor("#161616")
+        }
+    }
+
+    fun statusBar(activity: Activity, isHide: Boolean) {
+        val window = activity.window
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = Color.TRANSPARENT
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            if (isHide) {
+                hide(WindowInsetsCompat.Type.statusBars())
             } else {
-                window.statusBarColor = Color.TRANSPARENT
-                window.navigationBarColor = Color.parseColor("#161616")
+                show(WindowInsetsCompat.Type.statusBars())
+            }
+        }
+    }
+
+    fun navigationBars(activity: Activity, isHide: Boolean) {
+        val window = activity.window
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.navigationBarColor = Color.TRANSPARENT
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            if (isHide) {
+                hide(WindowInsetsCompat.Type.navigationBars())
+            } else {
+                show(WindowInsetsCompat.Type.navigationBars())
             }
         }
     }

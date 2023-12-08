@@ -26,7 +26,11 @@ class HLivePlayActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
     @OnAfter("onWindowFocusChanged")
     fun onWindowFocusChangedAfter(params: XC_MethodHook.MethodHookParam, boolean: Boolean) {
         hookBlockRunning(params) {
-            ImmersiveHelper.with(thisActivity, config)
+            if (config.isImmersive) {
+                ImmersiveHelper.immersive(thisActivity)
+                ImmersiveHelper.statusBar(thisActivity, true)
+                ImmersiveHelper.navigationBars(thisActivity, true)
+            }
         }.onFailure {
             KLogCat.tagE(TAG, it)
         }

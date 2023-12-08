@@ -11,7 +11,7 @@ android {
         applicationId "io.github.fplus"
         minSdk 24
         targetSdk 33
-        versionCode 109
+        versionCode 111
         versionName "1.2.5-dev"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

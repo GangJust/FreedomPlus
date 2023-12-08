@@ -1,5 +1,6 @@
 package io.github.xpler.loader
 
+import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.xpler.HookInit
 import java.net.URL
 
@@ -30,14 +31,19 @@ class XplerClassloader(
     }
 }
 
-fun injectClassLoader(loader: ClassLoader) {
+fun injectClassLoader(
+    lpparam: XC_LoadPackage.LoadPackageParam,
+    loader: ClassLoader,
+) {
     val fParent = ClassLoader::class.java.declaredFields.first { it.name == "parent" }.apply { isAccessible = true }
     val mine = HookInit::class.java.classLoader
     val parent = fParent.get(mine) as ClassLoader
     if (parent::class.java != XplerClassloader::class.java) {
         hostClassloader = loader
         moduleClassloader = mine
-        fParent.set(mine, XplerClassloader(loader, parent))
+        fParent.set(mine, XplerClassloader(loader, parent).also { lpparam.classLoader = it })
+    } else {
+        lpparam.classLoader = parent
     }
 }
 
