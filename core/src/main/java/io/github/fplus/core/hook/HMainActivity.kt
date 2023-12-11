@@ -132,7 +132,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
                 DownloadLogic(
                     this@HMainActivity,
                     activity,
-                    aweme ?: HVideoViewHolderV1.aweme,
+                    aweme ?: HVideoViewHolder.aweme,
                 )
             }
         }

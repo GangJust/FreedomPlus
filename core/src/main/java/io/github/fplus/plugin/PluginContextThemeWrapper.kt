@@ -41,8 +41,11 @@ class PluginContextThemeWrapper(
     }
 
     override fun getAssets(): AssetManager {
-        // return mResources.assets
-        return mResources.pluginAssets
+        val resources = mResources
+        if (resources is PluginResources?) {
+            return resources?.pluginAssets ?: mResources?.assets ?: super.getAssets()
+        }
+        return resources?.assets ?: super.getAssets()
     }
 
     override fun getTheme(): Resources.Theme {

@@ -1,13 +1,14 @@
 package io.github.fplus.core.hook
 
+import android.content.Context
 import android.view.View
 import android.view.ViewTreeObserver
-import androidx.core.view.isVisible
 import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.fieldGetFirst
 import com.freegang.ktutils.reflect.fieldGets
 import com.freegang.ktutils.reflect.methodFirst
+import com.freegang.ktutils.reflect.methodInvokeFirst
 import com.ss.android.ugc.aweme.feed.adapter.VideoViewHolder
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
@@ -16,13 +17,16 @@ import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
+import io.github.fplus.core.helper.DexkitBuilder
 import io.github.xpler.core.OnAfter
 import io.github.xpler.core.OnBefore
+import io.github.xpler.core.hook
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.interfaces.CallConstructors
 
-@Deprecated("暂存区")
 class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<VideoViewHolder>(lpparam) {
+    BaseHook<VideoViewHolder>(lpparam), CallConstructors {
+
     companion object {
         const val TAG = "HVideoViewHolder"
 
@@ -31,11 +35,9 @@ class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
         var aweme: Aweme? = null
     }
 
-    private var isClearMode = false
+    private val config get() = ConfigV1.get()
 
     private var onDrawMaps = mutableMapOf<String, ViewTreeObserver.OnDrawListener?>()
-
-    private val config get() = ConfigV1.get()
 
     private fun addOnDraw(view: View?) {
         if (view == null) {
@@ -50,18 +52,6 @@ class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
                 val alpha = config.translucentValue[1] / 100f
                 if (view.alpha > alpha) {
                     view.alpha = alpha
-                }
-            }
-
-            if (config.isNeatMode) {
-                if (config.neatModeState) {
-                    if (!HPlayerController.isPlaying && isClearMode) {
-                        view.isVisible = false
-                        HMainActivity.toggleView(false)
-                    } else {
-                        view.isVisible = !HPlayerController.isPlaying
-                        HMainActivity.toggleView(!HPlayerController.isPlaying)
-                    }
                 }
             }
         })
@@ -94,18 +84,51 @@ class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
         KLogCat.d("监听集合", *first.map { "$it" }.toTypedArray())
     }
 
+    private fun callOpenCleanMode(params: XC_MethodHook.MethodHookParam, bool: Boolean) {
+        if (!config.isNeatMode) {
+            return
+        }
+
+        if (!config.neatModeState) {
+            return
+        }
+
+        val first = params.thisObject.methodFirst("openCleanMode", paramTypes = arrayOf(Boolean::class.java))
+        XposedBridge.invokeOriginalMethod(first, params.thisObject, arrayOf(bool))
+
+        //
+        HMainActivity.toggleView(!bool)
+    }
+
+    private fun getAllView(params: XC_MethodHook.MethodHookParam): List<View?> {
+        val views = params.thisObject.fieldGets(type = View::class.java)
+        return views.asOrNull<List<View?>>() ?: emptyList()
+    }
+
+    private fun getWidgetContainer(params: XC_MethodHook.MethodHookParam): PenetrateTouchRelativeLayout? {
+        val views = params.thisObject?.fieldGets(type = View::class.java) ?: emptyList()
+        return views.firstOrNull { it is PenetrateTouchRelativeLayout }
+            ?.asOrNull<PenetrateTouchRelativeLayout>()
+    }
+
+    private fun getContext(params: XC_MethodHook.MethodHookParam): Context? {
+        return params.thisObject.methodInvokeFirst("getContext")?.asOrNull<Context>()
+    }
+
     @OnAfter("getAweme")
     fun getAwemeAfter(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
-            aweme = result.asOrNull()
+            HVideoViewHolder.aweme = result.asOrNull()
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            KLogCat.tagE(HVideoViewHolder.TAG, it)
         }
     }
 
     @OnAfter("onViewHolderSelected")
     fun onViewHolderSelectedAfter(params: XC_MethodHook.MethodHookParam, index: Int) {
         hookBlockRunning(params) {
+            // KLogCat.d("onViewHolderSelected")
+            callOpenCleanMode(params, true)
             val container = getWidgetContainer(params)
             addOnDraw(container)
         }.onFailure {
@@ -116,6 +139,7 @@ class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
     @OnAfter("onViewHolderUnSelected")
     fun onViewHolderUnSelectedAfter(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
+            // KLogCat.d("onViewHolderSelected")
             val container = getWidgetContainer(params)
             removeOnDraw(container)
         }.onFailure {
@@ -144,28 +168,21 @@ class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
         }
     }
 
-    @OnBefore
-    fun booleanAllBefore(params: XC_MethodHook.MethodHookParam, boolean: Boolean) {
+    override fun callOnBeforeConstructors(params: XC_MethodHook.MethodHookParam) {
+
+    }
+
+    override fun callOnAfterConstructors(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
-            // KLogCat.d("$method", "$boolean")
-            isClearMode = if (HPlayerController.isPlaying) {
-                false
-            } else {
-                boolean
-            }
-        }.onFailure {
-            KLogCat.tagE(TAG, it)
+            callOpenCleanMode(params, true)
         }
     }
 
-    private fun getWidgetContainer(params: XC_MethodHook.MethodHookParam): PenetrateTouchRelativeLayout? {
-        val views = params.thisObject?.fieldGets(type = View::class.java) ?: emptyList()
-        return views.firstOrNull { it is PenetrateTouchRelativeLayout }
-            ?.asOrNull<PenetrateTouchRelativeLayout>()
-    }
-
-    private fun callOpenCleanMode(params: XC_MethodHook.MethodHookParam, boolean: Boolean) {
-        val first = params.thisObject.methodFirst("openCleanMode", paramTypes = arrayOf(Boolean::class.java))
-        XposedBridge.invokeOriginalMethod(first, params.thisObject, arrayOf(boolean))
+    override fun onInit() {
+        DexkitBuilder.videoViewHolderMethods.firstOrNull()?.hook {
+            onAfter {
+                callOpenCleanMode(this, true)
+            }
+        }
     }
 }

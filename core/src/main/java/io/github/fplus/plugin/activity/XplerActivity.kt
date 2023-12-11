@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.view.WindowCompat
 import com.freegang.ktutils.extension.asOrNull
 import io.github.fplus.plugin.PluginClassloader
 import io.github.fplus.plugin.PluginContextThemeWrapper
@@ -17,7 +18,7 @@ abstract class XplerActivity : BaseActivity() {
 
     private val mClassLoader: PluginClassloader? = null
 
-    private var mResources: PluginResources? = null
+    private var mResources: Resources? = null
 
     private val content = mutableStateOf<(@Composable () -> Unit)?>(null)
 
@@ -29,13 +30,21 @@ abstract class XplerActivity : BaseActivity() {
         return mResources ?: super.getResources()
     }
 
-    override fun getAssets(): AssetManager = mResources?.pluginAssets ?: mResources?.assets ?: super.getAssets()
+    override fun getAssets(): AssetManager {
+        val resources = mResources
+        if (resources is PluginResources?) {
+            return resources?.pluginAssets ?: mResources?.assets ?: super.getAssets()
+        }
+        return mResources?.assets ?: super.getAssets()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //
         actionBar?.hide()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
 
         //
         val wrapper = PluginContextThemeWrapper(this)

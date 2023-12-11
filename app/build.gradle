@@ -11,8 +11,8 @@ android {
         applicationId "io.github.fplus"
         minSdk 24
         targetSdk 33
-        versionCode 111
-        versionName "1.2.5-dev"
+        versionCode 112
+        versionName "1.2.5"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

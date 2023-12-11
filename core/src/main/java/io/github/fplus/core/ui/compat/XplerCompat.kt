@@ -45,7 +45,7 @@ fun painterResourceCompat(@DrawableRes id: Int): Painter {
  * Helper method to seek to the first tag within the VectorDrawable xml asset
  */
 @Throws(XmlPullParserException::class)
-fun XmlPullParser.seekToStartTag(): XmlPullParser {
+private fun XmlPullParser.seekToStartTag(): XmlPullParser {
     var type = next()
     while (type != XmlPullParser.START_TAG && type != XmlPullParser.END_DOCUMENT) {
         // Empty loop

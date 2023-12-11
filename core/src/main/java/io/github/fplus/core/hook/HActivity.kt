@@ -28,13 +28,11 @@ class HActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
             DouYinMain.freeExitCountDown?.restart()
             if (event.action == MotionEvent.ACTION_DOWN) {// 重新沉浸
                 if (config.isImmersive) {
-                    if (config.systemControllerValue[0]) {
-                        ImmersiveHelper.statusBar(thisActivity, true)
-                    }
-                    if (config.systemControllerValue[1]) {
-                        ImmersiveHelper.navigationBars(thisActivity, true)
-                    }
-                    ImmersiveHelper.immersive(thisActivity)
+                    ImmersiveHelper.immersive(
+                        thisActivity,
+                        hideStatusBar = config.systemControllerValue[0],
+                        hideNavigationBars = config.systemControllerValue[1],
+                    )
                 }
             }
         }.onFailure {
@@ -46,13 +44,11 @@ class HActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
     fun onCreateAfter(params: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {
         hookBlockRunning(params) {
             if (config.isImmersive) {
-                if (config.systemControllerValue[0]) {
-                    ImmersiveHelper.statusBar(thisActivity, true)
-                }
-                if (config.systemControllerValue[1]) {
-                    ImmersiveHelper.navigationBars(thisActivity, true)
-                }
-                ImmersiveHelper.immersive(thisActivity)
+                ImmersiveHelper.immersive(
+                    thisActivity,
+                    hideStatusBar = config.systemControllerValue[0],
+                    hideNavigationBars = config.systemControllerValue[1],
+                )
             }
         }.onFailure {
             KLogCat.tagE(TAG, it)

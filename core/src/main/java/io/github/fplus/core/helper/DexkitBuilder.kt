@@ -7,6 +7,7 @@ import com.freegang.ktutils.json.getIntOrDefault
 import com.freegang.ktutils.json.getJSONArrayOrDefault
 import com.freegang.ktutils.json.getStringOrDefault
 import com.freegang.ktutils.log.KLogCat
+import com.freegang.ktutils.text.KTextUtils
 import io.github.fplus.core.config.ConfigV1
 import io.github.xpler.core.findClass
 import io.github.xpler.core.findMethod
@@ -41,12 +42,14 @@ object DexkitBuilder {
     var poiCreateInstanceImplClazz: Class<*>? = null
     var videoPlayerStateClazz: Class<*>? = null
     var videoPlayerHelperClazz: Class<*>? = null
+    var abstractFeedAdapterClazz: Class<*>? = null
     var recommendFeedFetchPresenterClazz: Class<*>? = null
     var fullFeedFollowFetchPresenterClazz: Class<*>? = null
     var detailPageFragmentClazz: Class<*>? = null
     var emojiApiProxyClazz: Class<*>? = null
     var emojiPopupWindowClazz: Class<*>? = null
     var ripsChatRoomFragmentClazz: Class<*>? = null
+    var restartUtilsClazz: Class<*>? = null
 
     // methods
     var videoViewHolderMethods: List<Method> = listOf()
@@ -198,6 +201,32 @@ object DexkitBuilder {
                 )
             }
         }.singleInstance("conversationFragment")
+
+        abstractFeedAdapterClazz = bridge.findClass {
+            matcher {
+                fields {
+                    add {
+                        type = "android.view.LayoutInflater"
+                    }
+                    add {
+                        type = "com.ss.android.ugc.aweme.feed.model.BaseFeedPageParams"
+                    }
+                }
+
+                methods {
+                    add {
+                        name = "getItemPosition"
+                    }
+                    add {
+                        name = "finishUpdate"
+                    }
+                }
+
+                usingStrings {
+                    add("AbstractFeedAdapter aweme.aid = ")
+                }
+            }
+        }.singleInstance("abstractFeedAdapter")
 
         recommendFeedFetchPresenterClazz = bridge.findClass {
             matcher {
@@ -394,6 +423,21 @@ object DexkitBuilder {
             }
         }.singleInstance("mainBottomTabView")
 
+        restartUtilsClazz = bridge.findClass {
+            searchPackages("X")
+            matcher {
+                methods {
+                    add {
+                        paramTypes = listOf("android.content.Context")
+                        usingNumbers = listOf(0x10008000)
+                    }
+                }
+                usingStrings {
+                    add("System.exit returned normally, while it was supposed to halt JVM.")
+                }
+            }
+        }.singleInstance("restartUtils")
+
         val findMaps = bridge.batchFindClassUsingStrings {
             addSearchGroup {
                 groupName = "videoPlayerHelper"
@@ -504,12 +548,14 @@ object DexkitBuilder {
         poiCreateInstanceImplClazz = classCache.getStringOrDefault("poiCreateInstanceImpl").loadOrFindClass()
         videoPlayerStateClazz = classCache.getStringOrDefault("videoPlayerState").loadOrFindClass()
         videoPlayerHelperClazz = classCache.getStringOrDefault("videoPlayerHelper").loadOrFindClass()
+        abstractFeedAdapterClazz = classCache.getStringOrDefault("abstractFeedAdapter").loadOrFindClass()
         recommendFeedFetchPresenterClazz = classCache.getStringOrDefault("recommendFeedFetchPresenter").loadOrFindClass()
         fullFeedFollowFetchPresenterClazz = classCache.getStringOrDefault("fullFeedFollowFetchPresenter").loadOrFindClass()
         emojiPopupWindowClazz = classCache.getStringOrDefault("emojiPopupWindow").loadOrFindClass()
         detailPageFragmentClazz = classCache.getStringOrDefault("detailPageFragment").loadOrFindClass()
         emojiApiProxyClazz = classCache.getStringOrDefault("emojiApiProxy").loadOrFindClass()
         ripsChatRoomFragmentClazz = classCache.getStringOrDefault("ripsChatRoomFragment").loadOrFindClass()
+        restartUtilsClazz = classCache.getStringOrDefault("restartUtils").loadOrFindClass()
     }
 
     /**
@@ -587,13 +633,17 @@ object DexkitBuilder {
     }
 
     private fun String.loadOrFindClass(): Class<*>? {
-        if (this.isEmpty()) {
+        if (KTextUtils.isEmpty(this)) {
             return null
         }
 
         return try {
             app?.classLoader?.loadClass(this)
-        } catch (e: ClassNotFoundException) {
+        } catch (e: Throwable) {
+            if (e is LinkageError && "${e.message}".contains("overrides final")) {
+                return null // 过滤类似错误
+            }
+
             lpparam.findClass(this)
         }
     }

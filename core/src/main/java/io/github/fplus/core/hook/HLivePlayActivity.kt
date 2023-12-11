@@ -8,6 +8,7 @@ import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.ImmersiveHelper
 import io.github.xpler.core.FutureHook
 import io.github.xpler.core.OnAfter
+import io.github.xpler.core.OnBefore
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.thisActivity
 
@@ -25,13 +26,16 @@ class HLivePlayActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
     }
 
     @FutureHook
+    @OnBefore("onWindowFocusChanged")
     @OnAfter("onWindowFocusChanged")
     fun onWindowFocusChangedAfter(params: XC_MethodHook.MethodHookParam, boolean: Boolean) {
         hookBlockRunning(params) {
             if (config.isImmersive) {
-                ImmersiveHelper.immersive(thisActivity)
-                // ImmersiveHelper.statusBar(thisActivity, true)
-                // ImmersiveHelper.navigationBars(thisActivity, true)
+                ImmersiveHelper.immersive(
+                    thisActivity,
+                    hideStatusBar = true,
+                    hideNavigationBars = true,
+                )
             }
         }.onFailure {
             KLogCat.tagE(TAG, it)

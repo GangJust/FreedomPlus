@@ -59,9 +59,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
+import com.freegang.ktutils.reflect.methodInvokeFirst
 import io.github.fplus.core.R
+import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.helper.HighlightStyleBuilder
 import io.github.fplus.core.ui.ModuleTheme
 import io.github.fplus.core.ui.asDp
@@ -155,6 +156,7 @@ class FreedomSettingActivity : XplerActivity() {
                     }
                     Icon(
                         painter = painterResource(id = R.drawable.ic_manage),
+                        // imageVector = Icons.Rounded.Search,
                         contentDescription = "Log",
                         modifier = Modifier
                             .size(24.dp)
@@ -214,6 +216,7 @@ class FreedomSettingActivity : XplerActivity() {
 
                     Icon(
                         painter = painterResource(id = R.drawable.ic_motion),
+                        // imageVector = Icons.Rounded.Info,
                         contentDescription = "更新日志",
                         modifier = Modifier
                             .size(20.dp)
@@ -276,7 +279,8 @@ class FreedomSettingActivity : XplerActivity() {
                         }.onFailure {
                             model.setVersionConfig(null)
                         }
-                        KAppUtils.restartApplication(application)
+                        // KAppUtils.restartApplication(application)
+                        DexkitBuilder.restartUtilsClazz?.methodInvokeFirst(args = arrayOf(this))
                     },
                 ) {
                     Text(

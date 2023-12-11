@@ -68,7 +68,7 @@ class HDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
             DownloadLogic(
                 this@HDetailActivity,
                 activity,
-                aweme ?: HVideoViewHolderV1.aweme,
+                aweme ?: HVideoViewHolder.aweme,
             )
         }
     }

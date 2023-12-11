@@ -1,6 +1,7 @@
 package io.github.xpler.core
 
 import com.freegang.ktutils.reflect.KReflectUtils
+import com.freegang.ktutils.text.KTextUtils
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedHelpers
@@ -118,7 +119,7 @@ annotation class OnConstructorReplace()
  * 并且还需在首位增加一个 [XC_MethodHook.MethodHookParam] 的方法参数
  * 这是必要的
  *
- * @param name 应该是一个完整的类名, 如: com.sample.User
+ * @param name 应该是一个完整的类名, 如: com.sample.User；允许为 `”null“` 或 `”“` 字符串，将模糊匹配任意类型
  */
 @Target(AnnotationTarget.VALUE_PARAMETER)
 annotation class Param(val name: String)
@@ -351,7 +352,8 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
                         methodHookImpl = MethodHookImpl(method)
                     }
                 } else {
-                    methodHookImpl = MethodHookImpl(targetClazz, name, *paramTypes)
+                    val normalParamTypes = paramTypes.map { it ?: Any::class.java }.toTypedArray()
+                    methodHookImpl = MethodHookImpl(targetClazz, name, *normalParamTypes)
                 }
 
                 // 开启Hook
@@ -456,7 +458,8 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
                         methodHookImpl = MethodHookImpl(method)
                     }
                 } else {
-                    methodHookImpl = MethodHookImpl(targetClazz, name, *paramTypes)
+                    val normalParamTypes = paramTypes.map { it ?: Any::class.java }.toTypedArray()
+                    methodHookImpl = MethodHookImpl(targetClazz, name, *normalParamTypes)
                 }
 
                 // 开启Hook
@@ -562,7 +565,8 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
                         methodHookImpl = MethodHookImpl(method)
                     }
                 } else {
-                    methodHookImpl = MethodHookImpl(targetClazz, name, *paramTypes)
+                    val normalParamTypes = paramTypes.map { it ?: Any::class.java }.toTypedArray()
+                    methodHookImpl = MethodHookImpl(targetClazz, name, *normalParamTypes)
                 }
 
                 // 开启Hook
@@ -589,7 +593,9 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
             if (value.getAnnotation(OnConstructorReplace::class.java) != null) continue
             value.isAccessible = true
 
-            hookHelper?.constructor(*getTargetMethodParamTypes(value)) {
+            val paramTypes = getTargetMethodParamTypes(value)
+            val normalParamTypes = paramTypes.map { it ?: Any::class.java }.toTypedArray()
+            hookHelper?.constructor(*normalParamTypes) {
                 onBefore {
                     val invArgs = arrayOf(this, *argsOrEmpty)
                     value.invoke(this@KtOnHook, *invArgs)
@@ -611,7 +617,9 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
             if (value.getAnnotation(OnConstructorReplace::class.java) != null) continue
             value.isAccessible = true
 
-            hookHelper?.constructor(*getTargetMethodParamTypes(value)) {
+            val paramTypes = getTargetMethodParamTypes(value)
+            val normalParamTypes = paramTypes.map { it ?: Any::class.java }.toTypedArray()
+            hookHelper?.constructor(*normalParamTypes) {
                 onAfter {
                     val invArgs = arrayOf(this, *argsOrEmpty)
                     value.invoke(this@KtOnHook, *invArgs)
@@ -631,7 +639,9 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
         val methodMap = getAnnotationMethod(OnConstructorReplace::class.java)
         for ((_, value) in methodMap) {
             value.isAccessible = true
-            hookHelper?.constructor(*getTargetMethodParamTypes(value)) {
+            val paramTypes = getTargetMethodParamTypes(value)
+            val normalParamTypes = paramTypes.map { it ?: Any::class.java }.toTypedArray()
+            hookHelper?.constructor(*normalParamTypes) {
                 onReplace {
                     val invArgs = arrayOf(this, *argsOrEmpty)
                     value.invoke(this@KtOnHook, *invArgs)
@@ -672,7 +682,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
      * @param method 目标方法
      * @return Array
      */
-    private fun getTargetMethodParamTypes(method: Method): Array<Class<*>> {
+    private fun getTargetMethodParamTypes(method: Method): Array<Class<*>?> {
         val parameterAnnotations = method.parameterAnnotations
         val parameterTypes = method.parameterTypes
 
@@ -700,7 +710,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     private fun getTargetMethodParamTypesOnlyAnnotations(
         parameterAnnotations: Array<Array<Annotation>>,
         parameterTypes: Array<Class<*>>
-    ): Array<Class<*>> {
+    ): Array<Class<*>?> {
         // 整理参数, 将第一个参数`XC_MethodHook.MethodHookParam`移除
         val paramTypes = parameterTypes.toMutableList().apply { removeFirst() }
 
@@ -709,7 +719,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
             if (clazz == Any::class.java) {
                 val param = parameterAnnotations[index++].filterIsInstance<Param>()
                     .ifEmpty { return@map clazz } // 如果某个参数没有@Param注解, 直接return
-                findClass(param[0].name)// 寻找注解类
+                findTargetParamClass(param[0].name)// 寻找注解类
             } else {
                 clazz
             }
@@ -724,8 +734,8 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
      */
     private fun getTargetMethodParamTypesNormal(
         parameterAnnotations: Array<Array<Annotation>>,
-        parameterTypes: Array<Class<*>>
-    ): Array<Class<*>> {
+        parameterTypes: Array<Class<*>?>
+    ): Array<Class<*>?> {
         // 整理参数、参数注解列表, 将第一个参数`XC_MethodHook.MethodHookParam`移除
         val paramAnnotations = parameterAnnotations.toMutableList().apply { removeFirst() }
         val paramTypes = parameterTypes.toMutableList().apply { removeFirst() }
@@ -735,10 +745,24 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
             if (paramAnnotations[index].isEmpty()) return@mapIndexed clazz // 如果某个参数没有注解
             val param = paramAnnotations[index].filterIsInstance<Param>()
                 .ifEmpty { return@mapIndexed clazz } // 如果某个参数有注解, 但没有@Param注解, 直接return
-            findClass(param[0].name) // 寻找注解类
+            findTargetParamClass(param[0].name) // 寻找注解类
         }.toTypedArray()
 
         return finalParamTypes
+    }
+
+    private fun findTargetParamClass(
+        name: String,
+        classLoader: ClassLoader? = null,
+    ): Class<*>? {
+        if (KTextUtils.isEmpty(name)) {
+            return null
+        }
+        return try {
+            XposedHelpers.findClass(name, classLoader ?: lpparam.classLoader)
+        } catch (e: Exception) {
+            return null
+        }
     }
 
     /**

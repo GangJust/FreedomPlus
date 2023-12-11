@@ -237,7 +237,7 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
                         DownloadLogic(
                             this@HVideoViewHolderRootView,
                             view.context,
-                            HVideoViewHolderV1.aweme,
+                            HVideoViewHolder.aweme,
                         )
                     }
 
@@ -386,7 +386,7 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
                             DownloadLogic(
                                 this@HVideoViewHolderRootView,
                                 view.context,
-                                HVideoViewHolderV1.aweme,
+                                HVideoViewHolder.aweme,
                             )
                         }
 
