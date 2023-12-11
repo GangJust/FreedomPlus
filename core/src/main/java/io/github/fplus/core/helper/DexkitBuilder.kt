@@ -41,8 +41,6 @@ object DexkitBuilder {
     var poiCreateInstanceImplClazz: Class<*>? = null
     var videoPlayerStateClazz: Class<*>? = null
     var videoPlayerHelperClazz: Class<*>? = null
-    var videoPinchViewClazz: Class<*>? = null
-    var videoPagerAdapterClazz: Class<*>? = null
     var recommendFeedFetchPresenterClazz: Class<*>? = null
     var fullFeedFollowFetchPresenterClazz: Class<*>? = null
     var detailPageFragmentClazz: Class<*>? = null
@@ -98,7 +96,7 @@ object DexkitBuilder {
     private fun startSearch() {
         KLogCat.tagD(TAG, "Dexkit开始搜索")
         System.loadLibrary("dexkit")
-        DexKitBridge.create(lpparam.appInfo.sourceDir)?.use { bridge ->
+        DexKitBridge.create(lpparam.appInfo.sourceDir).use { bridge ->
             searchClass(bridge)
             searchMethod(bridge)
         }
@@ -200,43 +198,6 @@ object DexkitBuilder {
                 )
             }
         }.singleInstance("conversationFragment")
-
-        videoPinchViewClazz = bridge.findClass {
-            matcher {
-                fields {
-                    add {
-                        type = "com.ss.android.ugc.aweme.feed.ui.seekbar.CustomizedUISeekBar"
-                    }
-                }
-                methods {
-                    add {
-                        name = "getMOriginView"
-                        returnType = "android.view.View"
-                    }
-                    add {
-                        name = "handleMsg"
-                        paramTypes = listOf("android.os.Message")
-                    }
-                }
-            }
-        }.singleInstance("videoPinchView")
-
-        videoPagerAdapterClazz = bridge.findClass {
-            matcher {
-                methods {
-                    add {
-                        this.returnType = "java.util.List"
-                    }
-                    add {
-                        paramTypes = listOf("com.ss.android.ugc.aweme.feed.model.Aweme")
-                        returnType = "com.ss.android.ugc.aweme.feed.model.Aweme"
-                    }
-                    add {
-                        returnType = "com.ss.android.ugc.aweme.feed.adapter.FeedImageViewHolder"
-                    }
-                }
-            }
-        }.singleInstance("videoPagerAdapter")
 
         recommendFeedFetchPresenterClazz = bridge.findClass {
             matcher {
@@ -393,15 +354,47 @@ object DexkitBuilder {
             }
         }.singleInstance("emojiApiProxy")
 
-        val findMaps = bridge.batchFindClassUsingStrings {
-            addSearchGroup {
-                groupName = "mainBottomTabView"
-                usingStrings = listOf(
-                    "alpha",
-                    "translationY",
-                    "MainBottomTabView",
-                )
+        mainBottomTabViewClazz = bridge.findClass {
+            matcher {
+                superClass = "android.widget.FrameLayout"
+
+                fields {
+                    add {
+                        type = "com.bytedance.dux.image.DuxImageView"
+                    }
+                }
+
+                methods {
+                    add {
+                        name = "getBottomColor"
+                    }
+                    add {
+                        name = "setBackgroundDrawable"
+                        paramTypes = listOf("android.graphics.drawable.Drawable")
+                    }
+                    add {
+                        name = "setBackgroundResource"
+                    }
+                    add {
+                        name = "setBackgroundColor"
+                    }
+                    add {
+                        name = "setVisibility"
+                    }
+                    add {
+                        name = "setAlpha"
+                    }
+                }
+
+                usingStrings {
+                    add("alpha", StringMatchType.Equals)
+                    add("translationY", StringMatchType.Equals)
+                    add("MainBottomTabView", StringMatchType.Equals)
+                }
             }
+        }.singleInstance("mainBottomTabView")
+
+        val findMaps = bridge.batchFindClassUsingStrings {
             addSearchGroup {
                 groupName = "videoPlayerHelper"
                 usingStrings = listOf(
@@ -427,8 +420,6 @@ object DexkitBuilder {
                 )
             }
         }
-
-        DexkitBuilder.mainBottomTabViewClazz = findMaps.singleInstance("mainBottomTabView")
         DexkitBuilder.videoPlayerHelperClazz = findMaps.singleInstance("videoPlayerHelper")
         DexkitBuilder.detailPageFragmentClazz = findMaps.singleInstance("detailPageFragment")
         DexkitBuilder.ripsChatRoomFragmentClazz = findMaps.singleInstance("ripsChatRoomFragment")
@@ -513,8 +504,6 @@ object DexkitBuilder {
         poiCreateInstanceImplClazz = classCache.getStringOrDefault("poiCreateInstanceImpl").loadOrFindClass()
         videoPlayerStateClazz = classCache.getStringOrDefault("videoPlayerState").loadOrFindClass()
         videoPlayerHelperClazz = classCache.getStringOrDefault("videoPlayerHelper").loadOrFindClass()
-        videoPinchViewClazz = classCache.getStringOrDefault("videoPinchView").loadOrFindClass()
-        videoPagerAdapterClazz = classCache.getStringOrDefault("videoPagerAdapter").loadOrFindClass()
         recommendFeedFetchPresenterClazz = classCache.getStringOrDefault("recommendFeedFetchPresenter").loadOrFindClass()
         fullFeedFollowFetchPresenterClazz = classCache.getStringOrDefault("fullFeedFollowFetchPresenter").loadOrFindClass()
         emojiPopupWindowClazz = classCache.getStringOrDefault("emojiPopupWindow").loadOrFindClass()
@@ -551,14 +540,14 @@ object DexkitBuilder {
     private fun Map<String, ClassDataList>.singleInstance(key: String): Class<*>? {
         val classData = this[key]?.singleOrNull()
         KLogCat.tagD(TAG, "found-class[$key]: ${classData?.name}")
-        classCacheJson.put(key, classData?.name)
+        classCacheJson.put(key, "${classData?.name}")
         return classData?.getInstance(lpparam.classLoader)
     }
 
     private fun ClassDataList.singleInstance(label: String): Class<*>? {
         val classData = this.singleOrNull()
         KLogCat.tagD(TAG, "found-class[$label]: ${classData?.name}")
-        classCacheJson.put(label, classData?.name)
+        classCacheJson.put(label, "${classData?.name}")
         return classData?.getInstance(lpparam.classLoader)
     }
 

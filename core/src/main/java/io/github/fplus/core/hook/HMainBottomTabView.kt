@@ -5,7 +5,7 @@ import android.graphics.drawable.ColorDrawable
 import com.freegang.ktutils.extension.isPrimitiveObjectType
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.view.parentView
-import com.freegang.ktutils.view.traverse
+import com.freegang.ktutils.view.onEachChild
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
@@ -50,7 +50,7 @@ class HMainBottomTabView(lpparam: XC_LoadPackage.LoadPackageParam) :
             // 底部导航栏全局沉浸式
             if (config.isImmersive) {
                 thisViewGroup.parentView?.background = ColorDrawable(Color.TRANSPARENT)
-                thisViewGroup.traverse {
+                thisViewGroup.onEachChild {
                     background = ColorDrawable(Color.TRANSPARENT)
                 }
             }

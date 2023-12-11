@@ -18,9 +18,9 @@ import com.freegang.ktutils.other.KAutomationUtils
 import com.freegang.ktutils.reflect.fields
 import com.freegang.ktutils.view.KFastClickUtils
 import com.freegang.ktutils.view.KViewUtils
+import com.freegang.ktutils.view.onEachChild
 import com.freegang.ktutils.view.parentView
 import com.freegang.ktutils.view.toViewTreeString
-import com.freegang.ktutils.view.traverse
 import com.ss.android.ugc.aweme.ad.feed.VideoViewHolderRootView
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
 import de.robv.android.xposed.XC_MethodHook
@@ -474,7 +474,7 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
         targetHint: Regex = Regex(""),
         targetContent: Regex = Regex(""),
     ) {
-        parent.traverse {
+        parent.onEachChild {
             var needClick = false
             if (this is TextView) {
                 needClick = "$text".containsNotEmpty(targetText)
@@ -482,7 +482,7 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
             }
             needClick = needClick || "$contentDescription".containsNotEmpty(targetContent)
             needClick = needClick || (targetView?.isInstance(this) ?: false)
-            if (!needClick) return@traverse
+            if (!needClick) return@onEachChild
             // KLogCat.d("找到: \n${this}")
 
             // 是否具有点击事件
@@ -491,7 +491,7 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
                 if (!KFastClickUtils.isFastDoubleClick(200L)) {
                     onClickListener.onClick(this)
                 }
-                return@traverse
+                return@onEachChild
             }
             // KLogCat.d("没有点击事件")
 
@@ -504,7 +504,7 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
                 if (!KFastClickUtils.isFastDoubleClick(200)) {
                     KAutomationUtils.simulateClickByView(this, location[0].toFloat(), location[1].toFloat())
                 }
-                return@traverse
+                return@onEachChild
             }
         }
     }

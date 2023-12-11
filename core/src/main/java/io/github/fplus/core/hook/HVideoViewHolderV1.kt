@@ -162,15 +162,6 @@ class HVideoViewHolderV1(lpparam: XC_LoadPackage.LoadPackageParam) :
         }
     }
 
-    // @OnAfter("LJ")
-    fun boolBefore(params: XC_MethodHook.MethodHookParam, bool: Boolean?) {
-        hookBlockRunning(params) {
-            callOpenCleanMode(params, true)
-        }.onFailure {
-            KLogCat.tagE(TAG, it)
-        }
-    }
-
     override fun callOnBeforeConstructors(params: XC_MethodHook.MethodHookParam) {
 
     }

@@ -18,10 +18,10 @@ import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.methodInvokeFirst
 import com.freegang.ktutils.view.findViewsByExact
 import com.freegang.ktutils.view.findViewsByType
+import com.freegang.ktutils.view.onEachChild
 import com.freegang.ktutils.view.parentView
 import com.freegang.ktutils.view.postRunning
 import com.freegang.ktutils.view.removeInParent
-import com.freegang.ktutils.view.traverse
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.homepage.ui.titlebar.MainTitleBar
 import com.ss.android.ugc.aweme.main.MainActivity
@@ -165,7 +165,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
                 .replace("\\s".toRegex(), "")
                 .replace("[,，]".toRegex(), "|")
                 .toRegex()
-            mainTitleBar?.traverse {
+            mainTitleBar?.onEachChild {
                 if (config.isHideTab) {
                     if ("$contentDescription".contains(hideTabKeywords)) {
                         isVisible = false
@@ -191,7 +191,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
         // 底部导航栏全局沉浸式
         if (config.isImmersive) {
             bottomTabView?.parentView?.background = ColorDrawable(Color.TRANSPARENT)
-            bottomTabView?.traverse {
+            bottomTabView?.onEachChild {
                 background = ColorDrawable(Color.TRANSPARENT)
             }
         }
@@ -199,9 +199,9 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
 
     private fun initDisallowInterceptRelativeLayout() {
         if (config.isImmersive) {
-            disallowInterceptRelativeLayout?.traverse {
+            disallowInterceptRelativeLayout?.onEachChild {
                 runCatching {
-                    traverse {
+                    onEachChild {
                         // 移除顶部间隔
                         if (javaClass.name == "android.view.View") {
                             removeInParent()

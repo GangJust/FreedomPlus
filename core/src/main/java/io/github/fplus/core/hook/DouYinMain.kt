@@ -57,7 +57,7 @@ class DouYinMain(private val app: Application) {
             // 日志工具
             KLogCat.init(app)
             KLogCat.clearStorage()
-            KLogCat.silence() //静默
+            // KLogCat.silence() //静默
 
             // 全局异常捕获工具
             val intent = Intent()
@@ -71,7 +71,7 @@ class DouYinMain(private val app: Application) {
             // search and hook
             DexkitBuilder.running(
                 app = app,
-                version = 2,
+                version = 3,
                 searchBefore = {
                     HActivity(lpparam)
                     HMainActivity(lpparam)

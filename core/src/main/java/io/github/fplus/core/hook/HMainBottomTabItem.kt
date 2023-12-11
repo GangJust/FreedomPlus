@@ -5,7 +5,7 @@ import android.widget.ImageView
 import androidx.core.view.isVisible
 import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.view.traverse
+import com.freegang.ktutils.view.onEachChild
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
@@ -43,12 +43,12 @@ class HMainBottomTabItem(lpparam: XC_LoadPackage.LoadPackageParam) :
 
     private fun isHidePhotoButton(view: View) {
         if (!config.isHidePhotoButton) return
-        view.traverse {
+        view.onEachChild {
             if ("$contentDescription".contains(Regex("拍摄|道具"))) {
                 // 隐藏按钮
                 if (config.photoButtonType == 2) {
                     view.isVisible = false
-                    return@traverse
+                    return@onEachChild
                 }
 
                 // 占位按钮, 移除加号图标
@@ -61,7 +61,7 @@ class HMainBottomTabItem(lpparam: XC_LoadPackage.LoadPackageParam) :
                 // 允许拍摄直接结束逻辑
                 if (config.photoButtonType == 0) {
                     view.isVisible = true
-                    return@traverse
+                    return@onEachChild
                 }
 
                 // 不允许拍摄

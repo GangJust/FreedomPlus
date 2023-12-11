@@ -3,7 +3,7 @@ package io.github.fplus.core.hook
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.view.postRunning
 import com.freegang.ktutils.view.removeInParent
-import com.freegang.ktutils.view.traverse
+import com.freegang.ktutils.view.onEachChild
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
@@ -44,7 +44,7 @@ class HDisallowInterceptRelativeLayout(lpparam: XC_LoadPackage.LoadPackageParam)
             if (config.isImmersive) {
                 thisViewGroup.postRunning {
                     runCatching {
-                        traverse {
+                        onEachChild {
                             // 移除顶部间隔
                             if (javaClass.name == "android.view.View") {
                                 removeInParent()
