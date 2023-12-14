@@ -1,11 +1,11 @@
 package io.github.xpler.core
 
 import com.freegang.ktutils.reflect.KReflectUtils
-import com.freegang.ktutils.text.KTextUtils
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage
+import io.github.xpler.core.bridge.ConstructorHookImpl
 import io.github.xpler.core.bridge.MethodHookImpl
 import io.github.xpler.core.interfaces.CallConstructors
 import io.github.xpler.core.interfaces.CallMethods
@@ -17,126 +17,92 @@ import java.lang.reflect.ParameterizedType
 /// 使用案例, 详见: https://github.com/GangJust/Xpler/blob/main/docs/readme.md
 
 /**
- * 该注解适用于方法, 将作用于Hook目标的成员方法
+ * 对于目标类某个普通方法的挂勾，等价于 [XC_MethodHook.beforeHookedMethod]。
  *
- * 被该注解标注的方法将会在Hook目标的成员方法执行开始时执行逻辑
+ * 被标注的方法第一个参数需要是 [XC_MethodHook.MethodHookParam]，其后才是原方法参数列表；
+ * 若某个方法中的参数类型无法直接被引用，可参考使用 [Param] 注解直接指定。
  *
- * 等价于: [XC_MethodReplacement.beforeHookedMethod]
+ * @param name Hook目标方法名
  *
- * 须知: 注解只是为了勾住方法, 被该注解标注的方法,
- * 参数名需要与Hook目标方法的参数名一致,
- * 并且还需在首位增加一个 [XC_MethodHook.MethodHookParam] 的方法参数
- * 这是必要的
- *
- * @param name Hook目标方法名, 当多个方法名时, 同一逻辑将作用在多个方法上, 需参数一致
  */
 @Target(AnnotationTarget.FUNCTION)
 annotation class OnBefore(vararg val name: String)
 
 /**
- * 该注解适用于方法, 将作用于Hook目标的成员方法
+ * 对于目标类某个普通方法的挂勾，等价于 [XC_MethodHook.afterHookedMethod]。
  *
- * 被该注解标注的方法将会在Hook目标的成员方法执行结束后执行逻辑
+ * 被标注的方法第一个参数需要是 [XC_MethodHook.MethodHookParam]，其后才是原方法参数列表；
+ * 若某个方法中的参数类型无法直接被引用，可参考使用 [Param] 注解直接指定。
  *
- * 等价于: [XC_MethodReplacement.afterHookedMethod]
+ * @param name Hook目标方法名
  *
- * 须知: 注解只是为了勾住方法, 被该注解标注的方法,
- * 参数名需要与Hook目标方法的参数名一致,
- * 并且还需在首位增加一个 [XC_MethodHook.MethodHookParam] 的方法参数
- * 这是必要的
- *
- * @param name Hook目标方法名, 当多个方法名时, 同一逻辑将作用在多个方法上, 需参数一致
  */
 @Target(AnnotationTarget.FUNCTION)
 annotation class OnAfter(vararg val name: String)
 
 /**
- * 该注解适用于方法, 将作用于Hook目标的成员方法
+ * 对于目标类某个普通方法的挂勾，等价于 [XC_MethodReplacement.replaceHookedMethod]。
  *
- * 被该注解标注的方法将会替换Hook目标的成员方法逻辑
+ * 被标注的方法第一个参数需要是 [XC_MethodHook.MethodHookParam]，其后才是原方法参数列表；
+ * 若某个方法中的参数类型无法直接被引用，可参考使用 [Param] 注解直接指定。
  *
- * 等价于: [XC_MethodReplacement.replaceHookedMethod]
+ * @param name Hook目标方法名
  *
- * 须知: 注解只是为了勾住方法, 被该注解标注的方法,
- * 参数名需要与Hook目标方法的参数名一致,
- * 并且还需在首位增加一个 [XC_MethodHook.MethodHookParam] 的方法参数
- * 这是必要的
- *
- * @param name Hook目标方法名, 当多个方法名时, 同一逻辑将作用在多个方法上, 需参数一致
  */
 @Target(AnnotationTarget.FUNCTION)
 annotation class OnReplace(vararg val name: String)
 
 /**
- * 该注解适用于方法, 将作用于Hook目标的构造方法
+ * 对于目标类某个构造方法的挂勾，等价于 [XC_MethodHook.beforeHookedMethod]。
  *
- * 被该注解标注的方法将会在Hook目标的构造方法执行结束开始时执行逻辑
- *
- * 等价于: [XC_MethodReplacement.beforeHookedMethod]
- *
- * 须知: 注解只是为了勾住方法, 被该注解标注的方法,
- * 参数名需要与Hook目标方法的参数名一致,
- * 并且还需在首位增加一个 [XC_MethodHook.MethodHookParam] 的方法参数
- * 这是必要的
- *
+ * 被标注的方法第一个参数需要是 [XC_MethodHook.MethodHookParam]，其后才是原方法参数列表；
+ * 若某个方法中的参数类型无法直接被引用，可参考使用 [Param] 注解直接指定。
  */
 @Target(AnnotationTarget.FUNCTION)
 annotation class OnConstructorBefore()
 
 /**
- * 该注解适用于方法, 将作用于Hook目标的构造方法
+ * 对于目标类某个构造方法的挂勾，等价于 [XC_MethodHook.afterHookedMethod]。
  *
- * 被该注解标注的方法将会在Hook目标的构造方法执行结束后执行逻辑
- *
- * 等价于: [XC_MethodReplacement.afterHookedMethod]
- * 须知: 注解只是为了勾住方法, 被该注解标注的方法,
- * 参数名需要与Hook目标方法的参数名一致,
- * 并且还需在首位增加一个 [XC_MethodHook.MethodHookParam] 的方法参数
- * 这是必要的
+ * 被标注的方法第一个参数需要是 [XC_MethodHook.MethodHookParam]，其后才是原方法参数列表；
+ * 若某个方法中的参数类型无法直接被引用，可参考使用 [Param] 注解直接指定。
  */
 @Target(AnnotationTarget.FUNCTION)
 annotation class OnConstructorAfter()
 
 /**
- * 该注解适用于方法, 将作用于Hook目标的构造方法
+ * 对于目标类某个构造方法的挂勾，等价于 [XC_MethodReplacement.replaceHookedMethod]。
  *
- * 被该注解标注的方法将会替换Hook目标的构造方法逻辑
- *
- * 等价于: [XC_MethodReplacement.replaceHookedMethod]
- * 须知: 注解只是为了勾住方法, 被该注解标注的方法,
- * 参数名需要与Hook目标方法的参数名一致,
- * 并且还需在首位增加一个 [XC_MethodHook.MethodHookParam] 的方法参数
- * 这是必要的
+ * 被标注的方法第一个参数需要是 [XC_MethodHook.MethodHookParam]，其后才是原方法参数列表；
+ * 若某个方法中的参数类型无法直接被引用，可参考使用 [Param] 注解直接指定。
  */
 @Target(AnnotationTarget.FUNCTION)
 annotation class OnConstructorReplace()
 
 /**
- * 该注解适用于方法参数, 将作用于Hook目标成员方法的方法参数，被该注解标注的方法参数将被指定 [Class] 类型
+ * 对于目标方法中出现的不确定参数类型。
  *
- * 须知: 注解只是为了勾住方法, 被该注解标注的方法,
- * 参数名需要与Hook目标方法的参数名一致,
- * 并且还需在首位增加一个 [XC_MethodHook.MethodHookParam] 的方法参数
- * 这是必要的
+ * 若某个参数属于宿主如：`com.sample.User`，书写时无法直接通过`import`引入，可使用该注解手动指定。
+ * 而该类型则需要使用[java.lang.Object]/[kotlin.Any]顶层类代替。
  *
- * @param name 应该是一个完整的类名, 如: com.sample.User；允许为 `”null“` 或 `”“` 字符串，将模糊匹配任意类型
+ * @param name 应该是一个完整的类名, 如: com.sample.User；
+ *             允许为 `”null“` 或 `”“` 字符串，将模糊匹配任意类型。
  */
 @Target(AnnotationTarget.VALUE_PARAMETER)
 annotation class Param(val name: String)
 
 /**
- * 配合 [Param] 注解使用, 一般用在参数类型为 [Any] 的时候。
+ * [Param]的衍生类，对于处理某些情况下原始类型本身是[java.lang.Object]/[kotlin.Any]的情况。
  *
- * 增加它的原因见 [KtOnHook.getTargetMethodParamTypesOnlyAnnotations] 的注释。
+ * [KeepParam]出现的原因见 [KtOnHook.getTargetMethodParamTypesOnlyAnnotations] 的解释。
  *
- * 实际上它只是为了给注解二维数组占位，并未使用。
+ * 实际上它只是为了给注解二维数组占位，并未有任何实际意义。
  *
- * 当然你也可以使用其他任意非 [Param] 的参数注解给 [Any] 占位。
- * 或者你不嫌麻烦，可以为每一个原始类型这样注解：
+ * 或者只要你愿意，可以为每一个原始类型这样注解：
  * ```
  * @OnBefore
  * fun test(
- *      //@KeepParam any: Any?,
+ *      //@KeepParam any: Any?, //与下一行目的相同
  *      @Param("java.lang.Object") any: Any?,
  *      @Param("com.test.User") user: Any?,
  * ){
@@ -148,26 +114,24 @@ annotation class Param(val name: String)
 annotation class KeepParam()
 
 /**
- * 该注解适用于方法, 将作用于Hook目标的成员方法
+ * 一次性的Hook注解。
  *
- * 被该注解标注的方法将会在执行一次Hook之后立即解开Hook
- * (即Hook逻辑只会执行一次)
- * 需要搭配 [OnBefore] [OnAfter] [OnReplace] 等方法使用
+ * 需要搭配 [OnBefore]、[OnAfter]、[OnReplace]、[OnConstructorBefore]、[OnConstructorAfter]、[OnConstructorReplace] 使用。
  *
- * 须知: 注解只是为了勾住方法, 被该注解标注的方法,
- * 参数名需要与Hook目标方法的参数名一致,
- * 并且还需在首位增加一个 [XC_MethodHook.MethodHookParam] 的方法参数
- * 这是必要的
+ * 被该标注的某个逻辑方法会在执行一次Hook后立即解开。
  */
 @Target(AnnotationTarget.FUNCTION)
 annotation class HookOnce()
 
 /**
- * 该注解作用于Hook目标的成员方法(考虑到构造方法多数情况下都会自调用，该注解在构造方法上并没有多大意义)。
+ * 未来方法的Hook注解。
  *
  * 对部分将来会出现的方法Hook操作, 场景如下:
- * 某些方法在低版本未出现, 而却在新版本出现了, 这时才会对目标方法Hook; 同理, 未来方法如果被删除, Hook逻辑也不被执行
- * 需要搭配 [OnBefore] [OnAfter] [OnReplace] 等注解使用
+ *
+ * 某些方法在低版本未出现, 而却在新版本出现了, 这时才会对目标方法Hook;
+ * 同理, 未来方法如果被删除, 也不会对这些方法进行Hook。
+ *
+ * 需要搭配 [OnBefore]、[OnAfter]、[OnReplace] 注解使用，对于构造方法该注解不适用。
  */
 @Target(AnnotationTarget.FUNCTION)
 annotation class FutureHook()
@@ -224,7 +188,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     open fun onInit() {}
 
     /**
-     * 手动设置目标类, 通常在泛型 <T> 为 Any 时做替换, 常见情况是未对目标app类做只读引入,
+     * 手动设置目标类, 通常在泛型 <T> 为 Any 时做替换, 常见情况是无法直接`import`宿主类时,
      * 则需要通过: XposedHelpers.findClass("类名", lpparam.classLoader)
      */
     open fun setTargetClass(): Class<*> = getHookTargetClass()
@@ -244,10 +208,16 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     /**
      * 获取子类泛型中的Hook目标类, 如果泛型类是 Any, 则需要通过 [setTargetClass] 对指定类进行设置
      */
-    @Throws
     private fun getHookTargetClass(): Class<*> {
         val type = this::class.java.genericSuperclass as ParameterizedType
         return type.actualTypeArguments[0] as Class<*>
+    }
+
+    /**
+     * 获取泛型子类的所有方法
+     */
+    private fun getMineAllMethods() {
+        mineMethods.addAll(this::class.java.declaredMethods)
     }
 
     /**
@@ -258,16 +228,8 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     }
 
     /**
-     * 获取子类所有方法
+     * 查找子类方法[mineMethods]中被 [OnBefore] 标注的所有方法, 并将其Hook
      */
-    private fun getMineAllMethods() {
-        mineMethods.addAll(this::class.java.declaredMethods)
-    }
-
-    /**
-     * 查找子类方法[mineMethods]中被 [@OnBefore] 标注的所有方法, 并将其Hook
-     */
-    @Throws
     private fun invOnBefore() {
         val methodMap = getAnnotationMethod(OnBefore::class.java)
         for ((key, value) in methodMap) {
@@ -283,7 +245,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
                 continue
             }
 
-            // 目标方法名为空, 对同类型的所有参数做Hook
+            // 目标方法名为空, 对所有参数类型一致的方法Hook
             if (names.isEmpty()) {
                 val finds = KReflectUtils.findMethods(
                     methods = targetMethods,
@@ -310,7 +272,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
                 continue
             }
 
-            // 目标方法名不为空, 但参数为空
+            // 目标方法名不为空, 但参数为空，对所有方法名一致的方法Hook
             if (paramTypes.isEmpty()) {
                 names.forEach {
                     val finds = KReflectUtils.findMethods(
@@ -371,9 +333,8 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     }
 
     /**
-     * 查找子类方法[mineMethods]中被 [@OnAfter] 标注的所有方法, 并将其Hook
+     * 查找子类方法[mineMethods]中被 [OnAfter] 标注的所有方法, 并将其Hook
      */
-    @Throws
     private fun invOnAfter() {
         val methodMap = getAnnotationMethod(OnAfter::class.java)
         for ((key, value) in methodMap) {
@@ -389,7 +350,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
                 continue
             }
 
-            // 目标方法名为空, 对同类型的所有参数做Hook
+            // 目标方法名为空, 对所有参数类型一致的方法Hook
             if (names.isEmpty()) {
                 val finds = KReflectUtils.findMethods(
                     methods = targetMethods,
@@ -416,7 +377,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
                 continue
             }
 
-            // 目标方法名不为空, 但参数为空
+            // 目标方法名不为空, 但参数为空，对所有方法名一致的方法Hook
             if (paramTypes.isEmpty()) {
                 names.forEach { name ->
                     val finds = KReflectUtils.findMethods(
@@ -477,11 +438,10 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     }
 
     /**
-     * 查找子类方法[mineMethods]中被 [@OnReplace] 标注的所有方法,并将其Hook
-     * 值得注意的是, 某个方法一旦标注了 [@OnReplace] 如果该方法又同时
+     * 查找子类方法[mineMethods]中被 [OnReplace] 标注的所有方法,并将其Hook
+     * 值得注意的是, 某个方法一旦标注了 [OnReplace] 如果该方法又同时
      * 被[@OnBefore]或[@OnAfter]标注, 该方法跳过它们, 只对 [@OnReplace] 生效
      */
-    @Throws
     private fun invOnReplace() {
         val methodMap = getAnnotationMethod(OnReplace::class.java)
         for ((key, value) in methodMap) {
@@ -496,7 +456,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
                 continue
             }
 
-            // 目标方法名为空, 对同类型的所有参数做Hook
+            // 目标方法名为空, 对所有参数类型一致的方法Hook
             if (names.isEmpty()) {
                 val finds = KReflectUtils.findMethods(
                     methods = targetMethods,
@@ -523,7 +483,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
                 continue
             }
 
-            // 目标方法名不为空, 但参数为空
+            // 目标方法名不为空, 但参数为空，对所有方法名一致的方法Hook
             if (paramTypes.isEmpty()) {
                 names.forEach {
                     val finds = KReflectUtils.findMethods(
@@ -584,9 +544,8 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     }
 
     /**
-     * 查找子类方法[mineMethods]中被 [@OnConstructorBefore] 标注的所有方法, 并将其Hook
+     * 查找子类方法[mineMethods]中被 [OnConstructorBefore] 标注的所有方法, 并将其Hook
      */
-    @Throws
     private fun invOnConstructorBefore() {
         val methodMap = getAnnotationMethod(OnConstructorBefore::class.java)
         for ((_, value) in methodMap) {
@@ -595,22 +554,22 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
 
             val paramTypes = getTargetMethodParamTypes(value)
             val normalParamTypes = paramTypes.map { it ?: Any::class.java }.toTypedArray()
-            hookHelper?.constructor(*normalParamTypes) {
-                onBefore {
-                    val invArgs = arrayOf(this, *argsOrEmpty)
-                    value.invoke(this@KtOnHook, *invArgs)
-                }
-                if (value.getAnnotation(HookOnce::class.java) != null) {
-                    onUnhook { _, _ -> }
-                }
-            }
+            ConstructorHookImpl(targetClazz, *normalParamTypes)
+                .apply {
+                    onBefore {
+                        val invArgs = arrayOf(this, *argsOrEmpty)
+                        value.invoke(this@KtOnHook, *invArgs)
+                    }
+                    if (value.getAnnotation(HookOnce::class.java) != null) {
+                        onUnhook { _, _ -> }
+                    }
+                }.startHook()
         }
     }
 
     /**
-     * 查找子类方法[mineMethods]中被 [@OnConstructorAfter] 标注的所有方法, 并将其Hook
+     * 查找子类方法[mineMethods]中被 [OnConstructorAfter] 标注的所有方法, 并将其Hook
      */
-    @Throws
     private fun invOnConstructorAfter() {
         val methodMap = getAnnotationMethod(OnConstructorAfter::class.java)
         for ((_, value) in methodMap) {
@@ -619,38 +578,39 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
 
             val paramTypes = getTargetMethodParamTypes(value)
             val normalParamTypes = paramTypes.map { it ?: Any::class.java }.toTypedArray()
-            hookHelper?.constructor(*normalParamTypes) {
-                onAfter {
-                    val invArgs = arrayOf(this, *argsOrEmpty)
-                    value.invoke(this@KtOnHook, *invArgs)
-                }
-                if (value.getAnnotation(HookOnce::class.java) != null) {
-                    onUnhook { _, _ -> }
-                }
-            }
+            ConstructorHookImpl(targetClazz, *normalParamTypes)
+                .apply {
+                    onAfter {
+                        val invArgs = arrayOf(this, *argsOrEmpty)
+                        value.invoke(this@KtOnHook, *invArgs)
+                    }
+                    if (value.getAnnotation(HookOnce::class.java) != null) {
+                        onUnhook { _, _ -> }
+                    }
+                }.startHook()
         }
     }
 
     /**
-     * 查找子类方法[mineMethods]中被 [@OnConstructorReplace] 标注的所有方法, 并将其Hook
+     * 查找子类方法[mineMethods]中被 [OnConstructorReplace] 标注的所有方法, 并将其Hook
      */
-    @Throws
     private fun invOnConstructorReplace() {
         val methodMap = getAnnotationMethod(OnConstructorReplace::class.java)
         for ((_, value) in methodMap) {
             value.isAccessible = true
             val paramTypes = getTargetMethodParamTypes(value)
             val normalParamTypes = paramTypes.map { it ?: Any::class.java }.toTypedArray()
-            hookHelper?.constructor(*normalParamTypes) {
-                onReplace {
-                    val invArgs = arrayOf(this, *argsOrEmpty)
-                    value.invoke(this@KtOnHook, *invArgs)
-                    thisObject
-                }
-                if (value.getAnnotation(HookOnce::class.java) != null) {
-                    onUnhook { _, _ -> }
-                }
-            }
+            ConstructorHookImpl(targetClazz, *normalParamTypes)
+                .apply {
+                    onReplace {
+                        val invArgs = arrayOf(this, *argsOrEmpty)
+                        value.invoke(this@KtOnHook, *invArgs)
+                        thisObject
+                    }
+                    if (value.getAnnotation(HookOnce::class.java) != null) {
+                        onUnhook { _, _ -> }
+                    }
+                }.startHook()
         }
     }
 
@@ -659,6 +619,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
      * @param a  a extends Annotation
      * @return Map
      */
+    @Throws(IllegalArgumentException::class)
     private fun <A : Annotation> getAnnotationMethod(a: Class<A>): Map<A, Method> {
         val map = mutableMapOf<A, Method>()
         for (method in mineMethods) {
@@ -678,7 +639,7 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
     }
 
     /**
-     * 替换@Param注解, 获取目标方法中的的真实参数列表
+     * 替换 [Param] 注解, 获取目标方法中的的真实参数列表
      * @param method 目标方法
      * @return Array
      */
@@ -751,13 +712,18 @@ abstract class KtOnHook<T>(protected val lpparam: XC_LoadPackage.LoadPackagePara
         return finalParamTypes
     }
 
+    /**
+     * 查找方法参数注解中的类，未找到则用 null 代替。
+     */
     private fun findTargetParamClass(
         name: String,
         classLoader: ClassLoader? = null,
     ): Class<*>? {
-        if (KTextUtils.isEmpty(name)) {
+        if (name.isEmpty() || name.isBlank() || name == "null") {
             return null
         }
+
+        //
         return try {
             XposedHelpers.findClass(name, classLoader ?: lpparam.classLoader)
         } catch (e: Exception) {
