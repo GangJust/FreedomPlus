@@ -7,14 +7,12 @@ import android.view.MotionEvent
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.view.children
-import androidx.core.view.updatePadding
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.app.isDarkMode
-import com.freegang.ktutils.app.navigationBarHeight
 import com.freegang.ktutils.color.KColorUtils
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.view.findViewsByType
+import com.freegang.ktutils.view.firstOrNull
 import com.freegang.ktutils.view.postRunning
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
@@ -23,7 +21,6 @@ import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.databinding.SideFreedomSettingBinding
 import io.github.fplus.core.helper.DexkitBuilder
-import io.github.fplus.core.helper.ImmersiveHelper
 import io.github.fplus.core.ui.activity.FreedomSettingActivity
 import io.github.xpler.HookConfig
 import io.github.xpler.core.FutureHook
@@ -77,7 +74,7 @@ class HSideBarNestedScrollView(lpparam: XC_LoadPackage.LoadPackageParam) :
         viewGroup.postRunning {
             val onlyChild = getChildAt(0) as ViewGroup
             if (onlyChild.children.lastOrNull()?.contentDescription == "扩展功能") return@postRunning
-            val text = onlyChild.findViewsByType(TextView::class.java).firstOrNull() ?: return@postRunning
+            val text = onlyChild.firstOrNull(TextView::class.java) ?: return@postRunning
             val isDark = KColorUtils.isDarkColor(text.currentTextColor)
 
             val setting = KtXposedHelpers.inflateView<ViewGroup>(onlyChild.context, R.layout.side_freedom_setting)

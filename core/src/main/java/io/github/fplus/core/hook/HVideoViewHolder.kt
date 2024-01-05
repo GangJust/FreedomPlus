@@ -3,14 +3,20 @@ package io.github.fplus.core.hook
 import android.content.Context
 import android.view.View
 import android.view.ViewTreeObserver
+import android.widget.FrameLayout
+import android.widget.TextView
+import androidx.core.view.isVisible
 import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.fieldGetFirst
 import com.freegang.ktutils.reflect.fieldGets
 import com.freegang.ktutils.reflect.methodFirst
 import com.freegang.ktutils.reflect.methodInvokeFirst
+import com.freegang.ktutils.view.firstParentOrNull
+import com.freegang.ktutils.view.forEachChild
 import com.ss.android.ugc.aweme.feed.adapter.VideoViewHolder
 import com.ss.android.ugc.aweme.feed.model.Aweme
+import com.ss.android.ugc.aweme.feed.ui.FeedRightScaleView
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
@@ -36,6 +42,15 @@ class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
     }
 
     private val config get() = ConfigV1.get()
+
+    private val videoOptionBarFilterKeywords by lazy {
+        config.videoOptionBarFilterKeywords
+            .removePrefix(",").removePrefix("，")
+            .removeSuffix(",").removeSuffix("，")
+            .replace("\\s".toRegex(), "")
+            .replace("[,，]".toRegex(), "|")
+            .toRegex()
+    }
 
     private var onDrawMaps = mutableMapOf<String, ViewTreeObserver.OnDrawListener?>()
 
@@ -111,6 +126,29 @@ class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
             ?.asOrNull<PenetrateTouchRelativeLayout>()
     }
 
+    private fun changeFeedRightScaleView(params: XC_MethodHook.MethodHookParam) {
+        if (!config.isVideoOptionBarFilter) return
+
+        val isAvatarImageWithLive = videoOptionBarFilterKeywords.pattern.contains("头像")
+
+        val views = params.thisObject?.fieldGets(type = View::class.java) ?: emptyList()
+        val view = views.firstOrNull { it is FeedRightScaleView }?.asOrNull<FeedRightScaleView>() ?: return
+
+        view.forEachChild {
+            if (isAvatarImageWithLive && this.javaClass.name.contains("AvatarImageWithLive")) {
+                this.firstParentOrNull(FrameLayout::class.java)?.isVisible = false
+            }
+
+            if ("${this.contentDescription}".contains(videoOptionBarFilterKeywords)) {
+                this.firstParentOrNull(FrameLayout::class.java)?.isVisible = false
+            }
+
+            if (this is TextView && "$text".contains(videoOptionBarFilterKeywords)) {
+                this.firstParentOrNull(FrameLayout::class.java)?.isVisible = false
+            }
+        }
+    }
+
     private fun getContext(params: XC_MethodHook.MethodHookParam): Context? {
         return params.thisObject.methodInvokeFirst("getContext")?.asOrNull<Context>()
     }
@@ -121,6 +159,16 @@ class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
             HVideoViewHolder.aweme = result.asOrNull()
         }.onFailure {
             KLogCat.tagE(HVideoViewHolder.TAG, it)
+        }
+    }
+
+    @OnAfter
+    fun startStayTime(params: XC_MethodHook.MethodHookParam, long: Long?) {
+        hookBlockRunning(params) {
+            // KLogCat.d("long: $long")
+            changeFeedRightScaleView(params)
+        }.onFailure {
+            KLogCat.tagE(TAG, it)
         }
     }
 

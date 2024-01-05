@@ -35,19 +35,6 @@ class DouYinMain(private val app: Application) {
             val stubClazz = hostClassloader!!.loadClass("com.ss.android.ugc.aweme.setting.ui.AboutActivity")
             PluginBridge.init(app, stubClazz)
 
-            // 权限检查
-            /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                if (!app.hasStoragePermission() && !app.hasMediaPermission()) {
-                    Toast.makeText(app, "抖音没有文件/媒体操作权限!", Toast.LENGTH_LONG).show()
-                    return@runCatching
-                }
-            } else {
-                if (!app.hasStoragePermission()) {
-                    Toast.makeText(app, "抖音没有文件读写权限!", Toast.LENGTH_LONG).show()
-                    return@runCatching
-                }
-            }*/
-
             // 加载配置
             ConfigV1.initialize(app)
 
@@ -63,7 +50,7 @@ class DouYinMain(private val app: Application) {
             val intent = Intent()
             val className = "${HookConfig.modulePackageName}.activity.ErrorActivity"
             intent.setClassName(HookConfig.modulePackageName, className)
-            KAppCrashUtils.instance.init(app, intent, "抖音异常退出!")
+            KAppCrashUtils.init(app, "抖音异常退出!", intent)
 
             // 定时退出
             initTimedShutdown(app)
@@ -76,7 +63,6 @@ class DouYinMain(private val app: Application) {
                     HActivity(lpparam)
                     HMainActivity(lpparam)
                     HLivePlayActivity(lpparam)
-                    HDetailActivity(lpparam)
                     HDisallowInterceptRelativeLayout(lpparam)
                     HMainTabStripScrollView(lpparam)
                     HFlippableViewPager(lpparam)

@@ -4,11 +4,10 @@ import android.os.Bundle
 import android.widget.TextView
 import androidx.core.view.isVisible
 import com.freegang.ktutils.app.contentView
-import com.freegang.ktutils.collection.ifNotEmpty
 import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.fieldGetFirst
-import com.freegang.ktutils.view.findViewsByExact
+import com.freegang.ktutils.view.firstOrNull
 import com.freegang.ktutils.view.idName
 import com.ss.android.ugc.aweme.comment.ui.GifEmojiDetailActivity
 import com.ss.android.ugc.aweme.emoji.model.Emoji
@@ -38,11 +37,6 @@ class HGifEmojiDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
             if (!config.isEmoji) return
             val gifEmoji = thisActivity.intent.getSerializableExtra("gif_emoji") as Emoji? ?: return
 
-            // deprecated
-            // val animateUrl = gifEmoji.getObjectField<Any>("animateUrl")
-            // urlList = animateUrl?.getObjectField<List<String>>("urlList") ?: emptyList()
-
-            // new
             val animateUrl = gifEmoji.fieldGetFirst("animateUrl")
             urlList = animateUrl?.fieldGetFirst("urlList")?.asOrNull<List<String>>() ?: emptyList()
             if (urlList.isEmpty()) return
@@ -58,15 +52,13 @@ class HGifEmojiDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
         launch {
             delay(200L)
 
-            activity.contentView.findViewsByExact(TextView::class.java) {
-                idName.contains("text_right")
-            }.ifNotEmpty {
-                first().apply {
-                    isVisible = true
-                    text = "保存"
-                    setOnClickListener {
-                        SaveEmojiLogic(this@HGifEmojiDetailActivity, activity, urlList)
-                    }
+            activity.contentView.firstOrNull<TextView> {
+                it.idName.contains("text_right")
+            }?.apply {
+                isVisible = true
+                text = "保存"
+                setOnClickListener {
+                    SaveEmojiLogic(this@HGifEmojiDetailActivity, activity, urlList)
                 }
             }
         }

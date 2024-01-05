@@ -31,15 +31,13 @@ class SaveAudioLogic(
             hook.showToast(context, "保存语音, 请稍后..")
             val file = File(parentPath, "${filename}.mp3")
             withContext(Dispatchers.IO) {
-                KHttpUtils.download(url, FileOutputStream(file)) { real, total, isInterrupt ->
-                    if (real >= total) {
-                        hook.showToast(context, "保存成功!")
-                        KMediaUtils.notifyMediaUpdate(context, file.absolutePath)
-                        if (config.isVibrate) hook.vibrate(context, 5L)
-                    }
-                    if (isInterrupt) {
-                        hook.showToast(context, "保存失败!")
-                    }
+                val result = KHttpUtils.download(url, FileOutputStream(file))
+                if (result) {
+                    hook.showToast(context, "保存成功!")
+                    KMediaUtils.notifyMediaUpdate(context, file.absolutePath)
+                    if (config.isVibrate) hook.vibrate(context, 5L)
+                } else {
+                    hook.showToast(context, "保存失败!")
                 }
             }
         }

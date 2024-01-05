@@ -1,6 +1,7 @@
 package io.github.fplus
 
 import android.app.Application
+import android.content.Intent
 import io.github.fplus.activity.ErrorActivity
 import com.freegang.ktutils.app.KAppCrashUtils
 import com.freegang.ktutils.log.KLogCat
@@ -13,8 +14,12 @@ class App : Application() {
         super.onCreate()
         KLogCat.init(this)
         KLogCat.openStorage()
-        KAppCrashUtils.instance.init(this, ErrorActivity::class.java, "Freedom+崩溃退出!")
-        // PluginBridge.init(this, StubActivity::class.java)
-        // PluginBridgeV2.init(this, StubActivity::class.java)
+        KAppCrashUtils.init(
+            this,
+            "Freedom+崩溃退出!",
+            Intent().apply {
+                setClass(this@App, ErrorActivity::class.java)
+            }
+        )
     }
 }

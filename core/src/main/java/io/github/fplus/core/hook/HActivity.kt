@@ -26,15 +26,7 @@ class HActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
     fun dispatchTouchEventBefore(param: XC_MethodHook.MethodHookParam, event: MotionEvent) {
         hookBlockRunning(param) {
             DouYinMain.freeExitCountDown?.restart()
-            if (event.action == MotionEvent.ACTION_DOWN) {// 重新沉浸
-                if (config.isImmersive) {
-                    ImmersiveHelper.immersive(
-                        thisActivity,
-                        hideStatusBar = config.systemControllerValue[0],
-                        hideNavigationBars = config.systemControllerValue[1],
-                    )
-                }
-            }
+            ImmersiveHelper.transparentBar(thisActivity)
         }.onFailure {
             KLogCat.tagE(TAG, it)
         }
@@ -45,7 +37,7 @@ class HActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
         hookBlockRunning(params) {
             if (config.isImmersive) {
                 ImmersiveHelper.immersive(
-                    thisActivity,
+                    activity = thisActivity,
                     hideStatusBar = config.systemControllerValue[0],
                     hideNavigationBars = config.systemControllerValue[1],
                 )

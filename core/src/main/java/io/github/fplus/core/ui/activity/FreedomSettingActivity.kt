@@ -47,7 +47,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -66,6 +65,7 @@ import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.helper.HighlightStyleBuilder
 import io.github.fplus.core.ui.ModuleTheme
 import io.github.fplus.core.ui.asDp
+import io.github.fplus.core.ui.compat.painterResourceCompat
 import io.github.fplus.core.ui.component.FCard
 import io.github.fplus.core.ui.component.FCardBorder
 import io.github.fplus.core.ui.component.FMessageDialog
@@ -155,8 +155,7 @@ class FreedomSettingActivity : XplerActivity() {
                         }
                     }
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_manage),
-                        // imageVector = Icons.Rounded.Search,
+                        painter = painterResourceCompat(id = R.drawable.ic_manage),
                         contentDescription = "Log",
                         modifier = Modifier
                             .size(24.dp)
@@ -215,8 +214,7 @@ class FreedomSettingActivity : XplerActivity() {
                     }
 
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_motion),
-                        // imageVector = Icons.Rounded.Info,
+                        painter = painterResourceCompat(id = R.drawable.ic_motion),
                         contentDescription = "更新日志",
                         modifier = Modifier
                             .size(20.dp)
@@ -324,11 +322,7 @@ class FreedomSettingActivity : XplerActivity() {
                     ) {
                         Text(
                             text = buildAnnotatedString {
-                                append("开启后在视频页操作")
-                                withStyle(SpanStyle(Color.Red)) {
-                                    append("“分享->复制链接”")
-                                }
-                                append("即可弹出下载选项。")
+                                append("开启后请在清爽模式弹窗中下载。")
                             },
                         )
                     }
@@ -642,6 +636,126 @@ class FreedomSettingActivity : XplerActivity() {
                 var showFilterTips by remember { mutableStateOf(false) }
 
                 SwitchItem(
+                    text = "视频右侧控件栏",
+                    subtext = "点击设置视频右侧控件栏显示项",
+                    checked = model.isVideoOptionBarFilter.observeAsState(false),
+                    onClick = {
+                        showFilterDialog = true
+                    },
+                    onCheckedChange = {
+                        model.changeIsVideoOptionBarFilter(it)
+                    }
+                )
+
+                if (showFilterDialog) {
+                    var inputValue by remember { mutableStateOf(model.videoOptionBarFilterKeywords.value ?: "") }
+                    FMessageDialog(
+                        title = {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 24.dp, vertical = 16.dp)
+                            ) {
+                                Text(
+                                    text = "请输入关键字, 用逗号分开",
+                                    style = MaterialTheme.typography.body1,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                Icon(
+                                    imageVector = Icons.Outlined.Info,
+                                    contentDescription = "帮助",
+                                    modifier = Modifier
+                                        .size(16.dp)
+                                        .combinedClickable(
+                                            indication = null,
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            onClick = {
+                                                showFilterTips = true
+                                            },
+                                        ),
+                                )
+                            }
+                        },
+                        cancel = "取消",
+                        confirm = "确定",
+                        onCancel = {
+                            showFilterDialog = false
+                        },
+                        onConfirm = {
+                            showFilterDialog = false
+                            model.setVideoOptionBarFilterKeywords(inputValue)
+                            showRestartAppDialog = true
+                        },
+                    ) {
+                        FCard(
+                            border = FCardBorder(borderWidth = 1.0.dp),
+                        ) {
+                            BasicTextField(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                value = inputValue,
+                                maxLines = 4,
+                                textStyle = MaterialTheme.typography.body1,
+                                decorationBox = { innerTextField ->
+                                    if (inputValue.isEmpty()) {
+                                        Text(
+                                            text = "控件类型或文本中出现的关键字",
+                                            style = MaterialTheme.typography.body1.copy(
+                                                color = Color(0xFF999999)
+                                            ),
+                                        )
+                                    }
+                                    innerTextField()
+                                },
+                                onValueChange = { value ->
+                                    inputValue = value
+                                },
+                                visualTransformation = { text ->
+                                    TransformedText(
+                                        text = buildFilterTypeStyle(model.videoOptionBarFilterTypes, text.text),
+                                        offsetMapping = OffsetMapping.Identity
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
+
+                if (showFilterTips) {
+                    FMessageDialog(
+                        title = "提示",
+                        onlyConfirm = true,
+                        confirm = "确定",
+                        onConfirm = {
+                            showFilterTips = false
+                        }
+                    ) {
+                        Text(
+                            text = buildAnnotatedString {
+                                append("支持的控件关键字列表：")
+                                append(
+                                    buildFilterTypeStyle(
+                                        regexText = model.videoOptionBarFilterTypes,
+                                        value = model.videoOptionBarFilterTypes.joinToString("，")
+                                    )
+                                )
+                                append("\n对于意外出现的控件项支持自定义文本，如：")
+                                withStyle(SpanStyle(Color.Red)) {
+                                    append("不喜欢")
+                                }
+                                append("。")
+                            },
+                            style = MaterialTheme.typography.body1,
+                        )
+                    }
+                }
+            }
+            item {
+                var showFilterDialog by remember { mutableStateOf(false) }
+                var showFilterTips by remember { mutableStateOf(false) }
+
+                SwitchItem(
                     text = "视频过滤",
                     subtext = "点击设置视频过滤类型或文本关键字",
                     checked = model.isVideoFilter.observeAsState(false),
@@ -690,6 +804,7 @@ class FreedomSettingActivity : XplerActivity() {
                         onConfirm = {
                             showFilterDialog = false
                             model.setVideoFilterKeywords(inputValue)
+                            showRestartAppDialog = true
                         },
                     ) {
                         FCard(
@@ -718,7 +833,7 @@ class FreedomSettingActivity : XplerActivity() {
                                 },
                                 visualTransformation = { text ->
                                     TransformedText(
-                                        text = buildFilterTypeStyle(text.text),
+                                        text = buildFilterTypeStyle(model.videoFilterTypes, text.text),
                                         offsetMapping = OffsetMapping.Identity
                                     )
                                 }
@@ -741,9 +856,8 @@ class FreedomSettingActivity : XplerActivity() {
                                 append("支持过滤的视频类型：")
                                 append(
                                     buildFilterTypeStyle(
-                                        value = model.videoFilterTypes.joinToString(
-                                            "，"
-                                        )
+                                        regexText = model.videoFilterTypes,
+                                        value = model.videoFilterTypes.joinToString("，")
                                     )
                                 )
                                 append("\n支持文案关键字过滤视频，如视频文案中出现 “优惠,买,#生日” 等文本字样。")
@@ -806,6 +920,7 @@ class FreedomSettingActivity : XplerActivity() {
                         onConfirm = {
                             showFilterDialog = false
                             model.setDialogFilterKeywords(inputValue)
+                            showRestartAppDialog = true
                         },
                     ) {
                         Column {
@@ -833,12 +948,6 @@ class FreedomSettingActivity : XplerActivity() {
                                     onValueChange = { value ->
                                         inputValue = value
                                     },
-                                    visualTransformation = { text ->
-                                        TransformedText(
-                                            text = buildFilterTypeStyle(text.text),
-                                            offsetMapping = OffsetMapping.Identity
-                                        )
-                                    }
                                 )
                             }
                             Divider(modifier = Modifier.padding(vertical = 12.dp))
@@ -968,6 +1077,7 @@ class FreedomSettingActivity : XplerActivity() {
                                     isHideNavigateBar.value,
                                 )
                             )
+                            showRestartAppDialog = true
                         },
                     ) {
                         Column {
@@ -1014,7 +1124,7 @@ class FreedomSettingActivity : XplerActivity() {
                         onlyConfirm = true,
                         onConfirm = {
                             showCommentColorModeDialog = false
-                            KToastUtils.show(application, "重启抖音生效")
+                            showRestartAppDialog = true
                         },
                     ) {
                         Column {
@@ -1207,7 +1317,7 @@ class FreedomSettingActivity : XplerActivity() {
 
                                     BoxWithConstraints {
                                         Icon(
-                                            painter = painterResource(id = R.drawable.ic_history),
+                                            painter = painterResourceCompat(id = R.drawable.ic_history),
                                             contentDescription = "WebDav列表",
                                             modifier = Modifier
                                                 .size(16.dp)
@@ -1636,8 +1746,8 @@ class FreedomSettingActivity : XplerActivity() {
         }
     }
 
-    private fun buildFilterTypeStyle(value: String): AnnotatedString {
-        val regex = model.videoFilterTypes
+    private fun buildFilterTypeStyle(regexText: Set<String>, value: String): AnnotatedString {
+        val regex = regexText
             .joinToString("|") { "(?<![^,，\\s])($it)(?![^,，\\s])" }
             .toRegex()
         return HighlightStyleBuilder(value)

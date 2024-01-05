@@ -70,6 +70,12 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     private var _photoButtonType = MutableLiveData(2)
     val photoButtonType: LiveData<Int> = _photoButtonType
 
+    private var _isVideoOptionBarFilter = MutableLiveData(false)
+    val isVideoOptionBarFilter: LiveData<Boolean> = _isVideoOptionBarFilter
+
+    private var _videoOptionBarFilterKeywords = MutableLiveData("")
+    var videoOptionBarFilterKeywords: LiveData<String> = _videoOptionBarFilterKeywords
+
     private var _isVideoFilter = MutableLiveData(false)
     val isVideoFilter: LiveData<Boolean> = _isVideoFilter
 
@@ -161,6 +167,8 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
             changeIsLongtimeVideoToast(config.isLongtimeVideoToast)
             changeIsHidePhotoButton(config.isHidePhotoButton)
             changePhotoButtonType(config.photoButtonType)
+            changeIsVideoOptionBarFilter(config.isVideoOptionBarFilter)
+            setVideoOptionBarFilterKeywords(config.videoOptionBarFilterKeywords)
             changeIsVideoFilter(config.isVideoFilter)
             setVideoFilterKeywords(config.videoFilterKeywords)
             changeIsDialogFilter(config.isDialogFilter)
@@ -259,6 +267,20 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     fun changePhotoButtonType(value: Int) {
         _photoButtonType.value = value
         config.photoButtonType = value
+    }
+
+    val videoOptionBarFilterTypes get() = config.videoOptionBarFilterTypes
+
+    // 视频右侧控件栏
+    fun changeIsVideoOptionBarFilter(value: Boolean) {
+        _isVideoOptionBarFilter.value = value
+        config.isVideoOptionBarFilter = value
+    }
+
+    // 视频过滤关键字
+    fun setVideoOptionBarFilterKeywords(value: String) {
+        _videoOptionBarFilterKeywords.value = value
+        config.videoOptionBarFilterKeywords = value
     }
 
     val videoFilterTypes get() = config.videoFilterTypes

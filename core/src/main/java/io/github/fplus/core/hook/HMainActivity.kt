@@ -8,21 +8,16 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.view.isVisible
 import com.freegang.ktutils.app.appVersionCode
 import com.freegang.ktutils.app.appVersionName
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.reflect.methodInvokeFirst
-import com.freegang.ktutils.view.findViewsByExact
-import com.freegang.ktutils.view.findViewsByType
-import com.freegang.ktutils.view.onEachChild
+import com.freegang.ktutils.view.forEachChild
 import com.freegang.ktutils.view.parentView
 import com.freegang.ktutils.view.postRunning
 import com.freegang.ktutils.view.removeInParent
-import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.homepage.ui.titlebar.MainTitleBar
 import com.ss.android.ugc.aweme.main.MainActivity
 import de.robv.android.xposed.XC_MethodHook
@@ -30,8 +25,6 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
-import io.github.fplus.core.hook.logic.ClipboardLogic
-import io.github.fplus.core.hook.logic.DownloadLogic
 import io.github.fplus.core.ui.activity.FreedomSettingActivity
 import io.github.xpler.core.OnAfter
 import io.github.xpler.core.OnBefore
@@ -57,8 +50,6 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
     }
 
     private val config get() = ConfigV1.get()
-
-    private val clipboardLogic = ClipboardLogic(this)
 
     private var disallowInterceptRelativeLayout: View? = null
 
@@ -98,7 +89,6 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
     @OnAfter("onResume")
     fun onResume(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
-            addClipboardListener(thisActivity)
             initView(thisActivity)
         }.onFailure {
             KLogCat.tagE(TAG, it)
@@ -110,45 +100,26 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
         hookBlockRunning(params) {
             saveConfig(thisContext)
             clearView()
-            clipboardLogic.removeClipboardListener(thisContext)
         }.onFailure {
             KLogCat.tagE(TAG, it)
         }
     }
 
-    private fun findVideoAweme(activity: Activity): Aweme? {
-        var firstAweme = activity.methodInvokeFirst(returnType = Aweme::class.java)
-        if (firstAweme == null) {
-            val curFragment = activity.methodInvokeFirst("getCurFragment")
-            firstAweme = curFragment?.methodInvokeFirst(returnType = Aweme::class.java)
-        }
-        return firstAweme as Aweme?
-    }
-
-    private fun addClipboardListener(activity: Activity) {
-        if (config.isDownload) {
-            clipboardLogic.addClipboardListener(activity) { clipData, firstText ->
-                val aweme = findVideoAweme(activity)
-                DownloadLogic(
-                    this@HMainActivity,
-                    activity,
-                    aweme ?: HVideoViewHolder.aweme,
-                )
-            }
-        }
-    }
-
     private fun initView(activity: Activity) {
         activity.contentView.postRunning {
-            mainTitleBar = findViewsByType(MainTitleBar::class.java).firstOrNull()
-            bottomTabView = DexkitBuilder.mainBottomTabViewClazz?.let {
-                findViewsByExact(ViewGroup::class.java) {
-                    this.javaClass.name == DexkitBuilder.mainBottomTabViewClazz?.name
-                }.firstOrNull()
+            forEachChild {
+                if (this is MainTitleBar) {
+                    mainTitleBar = this
+                }
+
+                if (DexkitBuilder.mainBottomTabViewClazz?.name == this.javaClass.name) {
+                    bottomTabView = this
+                }
+
+                if (this.javaClass.name.contains("DisallowInterceptRelativeLayout")) {
+                    disallowInterceptRelativeLayout = this
+                }
             }
-            disallowInterceptRelativeLayout = findViewsByExact(ViewGroup::class.java) {
-                this.javaClass.name.contains("DisallowInterceptRelativeLayout")
-            }.firstOrNull()
 
             initMainTitleBar()
             initBottomTabView()
@@ -165,7 +136,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
                 .replace("\\s".toRegex(), "")
                 .replace("[,，]".toRegex(), "|")
                 .toRegex()
-            mainTitleBar?.onEachChild {
+            mainTitleBar?.forEachChild {
                 if (config.isHideTab) {
                     if ("$contentDescription".contains(hideTabKeywords)) {
                         isVisible = false
@@ -191,7 +162,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
         // 底部导航栏全局沉浸式
         if (config.isImmersive) {
             bottomTabView?.parentView?.background = ColorDrawable(Color.TRANSPARENT)
-            bottomTabView?.onEachChild {
+            bottomTabView?.forEachChild {
                 background = ColorDrawable(Color.TRANSPARENT)
             }
         }
@@ -199,9 +170,9 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
 
     private fun initDisallowInterceptRelativeLayout() {
         if (config.isImmersive) {
-            disallowInterceptRelativeLayout?.onEachChild {
+            disallowInterceptRelativeLayout?.postRunning {
                 runCatching {
-                    onEachChild {
+                    forEachChild {
                         // 移除顶部间隔
                         if (javaClass.name == "android.view.View") {
                             removeInParent()

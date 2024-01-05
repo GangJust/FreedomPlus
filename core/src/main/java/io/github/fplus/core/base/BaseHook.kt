@@ -113,9 +113,7 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) :
     ) {
         XplerDialogWrapper(context).apply {
             setWrapperContent {
-                content.invoke {
-                    this.dismiss()
-                }
+                content.invoke(this::dismiss)
             }
         }.show()
     }

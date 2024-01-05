@@ -179,6 +179,31 @@ class ConfigV1 private constructor() {
             field = value
         }
 
+    /// 视频右侧控件栏
+    var isVideoOptionBarFilter: Boolean = false
+        get() {
+            field = mmkv.getBoolean("isVideoOptionBarFilter", false)
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("isVideoOptionBarFilter", value)
+            field = value
+        }
+
+    /// 右侧控件栏类型关键字
+    val videoOptionBarFilterTypes = setOf("头像", "喜欢", "评论", "收藏", "分享", "少推荐")
+
+    /// 右侧控件栏隐藏关键字
+    var videoOptionBarFilterKeywords: String = "少推荐"
+        get() {
+            field = mmkv.getString("videoOptionBarFilterKeywords", "少推荐")!!
+            return field
+        }
+        set(value) {
+            mmkv.putString("videoOptionBarFilterKeywords", value)
+            field = value
+        }
+
     /// 视频过滤
     var isVideoFilter: Boolean = false
         get() {

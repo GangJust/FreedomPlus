@@ -3,11 +3,10 @@ package io.github.fplus.core.hook
 import android.os.Bundle
 import android.widget.TextView
 import com.freegang.ktutils.app.contentView
-import com.freegang.ktutils.collection.ifNotEmpty
 import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.fieldGetFirst
-import com.freegang.ktutils.view.KViewUtils
+import com.freegang.ktutils.view.firstOrNull
 import com.ss.android.ugc.aweme.base.model.UrlModel
 import com.ss.android.ugc.aweme.emoji.store.view.EmojiBottomSheetDialog
 import com.ss.android.ugc.aweme.emoji.views.EmojiDetailDialog
@@ -45,16 +44,14 @@ class HEmojiDetailDialog(lpparam: XC_LoadPackage.LoadPackageParam) :
                         if (urlList.isEmpty()) return@launch
 
                         val contentView = emojiDialog.window?.contentView ?: return@launch
-                        KViewUtils.findViewsExact(contentView, TextView::class.java) {
-                            it.text.contains("添加")
-                        }.ifNotEmpty {
-                            first().apply {
-                                text = "添加表情 (长按保存)"
-                                isHapticFeedbackEnabled = false
-                                setOnLongClickListener {
-                                    SaveEmojiLogic(this@HEmojiDetailDialog, it.context, urlList)
-                                    true
-                                }
+                        contentView.firstOrNull<TextView> {
+                            "${it.text}".contains("添加")
+                        }?.apply {
+                            text = "添加表情 (长按保存)"
+                            isHapticFeedbackEnabled = false
+                            setOnLongClickListener {
+                                SaveEmojiLogic(this@HEmojiDetailDialog, it.context, urlList)
+                                true
                             }
                         }
                     }
@@ -72,10 +69,6 @@ class HEmojiDetailDialog(lpparam: XC_LoadPackage.LoadPackageParam) :
             if (urlList.isNotEmpty()) return
 
             val urlModel = thisObject.fieldGetFirst(type = UrlModel::class.java)
-            // deprecated
-            // urlList = urlModel?.getObjectField<List<String>>("urlList") ?: listOf()
-
-            // new
             urlList = urlModel?.fieldGetFirst("urlList")?.asOrNull<List<String>>() ?: listOf()
         }.onFailure {
             KLogCat.tagE(TAG, it)

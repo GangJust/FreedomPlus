@@ -13,6 +13,7 @@ import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.media.KMediaUtils
 import com.freegang.ktutils.net.KHttpUtils
 import com.ss.android.ugc.aweme.feed.model.Aweme
+import de.robv.android.xposed.XposedBridge
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.webdav.WebDav
@@ -426,17 +427,17 @@ class DownloadLogic(
         progressText: String,
     ): Boolean {
         return withContext(Dispatchers.IO) {
-            var finished = false
-            KHttpUtils.download(url, FileOutputStream(downloadFile)) { real, total, isInterrupt ->
+            KHttpUtils.download(url, FileOutputStream(downloadFile)) { real, total, e ->
+                if (e != null) {
+                    XposedBridge.log(e)
+                }
+
                 if (notify is KNotifiUtils.ProgressNotification) { // 通知栏在ui线程中刷新会造成ui卡顿, 排查了一下午, 麻了
                     notify.notifyProgress((real * 100 / total).toInt(), progressText)
                 } else {
                     hook.refresh { notify.notifyProgress((real * 100 / total).toInt(), progressText) }
                 }
-                if (isInterrupt) finished = false
-                if (real >= total) finished = true
             }
-            finished
         }
     }
 
@@ -450,7 +451,7 @@ class DownloadLogic(
             webdav.put(file = file, "Freedom".plus(directoryName))
             true
         } catch (e: Exception) {
-            KLogCat.e(e)
+            XposedBridge.log(e)
             false
         }
     }

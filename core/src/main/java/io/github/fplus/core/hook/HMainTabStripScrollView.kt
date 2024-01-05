@@ -1,7 +1,7 @@
 package io.github.fplus.core.hook
 
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.view.findParentExact
+import com.freegang.ktutils.view.firstParentOrNull
 import com.ss.android.ugc.aweme.homepage.ui.titlebar.MainTitleBar
 import com.ss.android.ugc.aweme.homepage.ui.view.MainTabStripScrollView
 import de.robv.android.xposed.XC_MethodHook
@@ -26,7 +26,7 @@ class HMainTabStripScrollView(lpparam: XC_LoadPackage.LoadPackageParam) :
         hookBlockRunning(params) {
             // 透明度
             if (config.isTranslucent) {
-                thisViewGroup.findParentExact(MainTitleBar::class.java)?.alpha = config.translucentValue[0] / 100f
+                thisViewGroup.firstParentOrNull(MainTitleBar::class.java)?.alpha = config.translucentValue[0] / 100f
             }
         }.onFailure {
             KLogCat.tagE(TAG, it)

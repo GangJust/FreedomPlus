@@ -5,7 +5,8 @@ import android.content.ClipboardManager
 import android.content.Context
 import io.github.fplus.core.base.BaseHook
 
-class ClipboardLogic(
+@Deprecated("暂存区, 删除倒计时中..")
+private class ClipboardLogic(
     private val hook: BaseHook<*>,
 ) {
     private var primaryClipChangedListener: ClipboardManager.OnPrimaryClipChangedListener? = null

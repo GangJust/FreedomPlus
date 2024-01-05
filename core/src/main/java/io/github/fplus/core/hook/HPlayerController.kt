@@ -16,7 +16,7 @@ class HPlayerController(lpparam: XC_LoadPackage.LoadPackageParam) :
     companion object {
         const val TAG = "HPlayerController"
 
-        var playingAid = ""
+        var playingAid: String? = ""
 
         @get:Synchronized
         @set:Synchronized
@@ -30,8 +30,9 @@ class HPlayerController(lpparam: XC_LoadPackage.LoadPackageParam) :
     }
 
     @OnBefore("onPlaying")
-    fun onPlayingAfter(params: XC_MethodHook.MethodHookParam, aid: String) {
+    fun onPlayingAfter(params: XC_MethodHook.MethodHookParam, aid: String?) {
         hookBlockRunning(params) {
+            // KLogCat.d("onPlaying: $aid")
             playingAid = aid
             isPlaying = true
             callOpenCleanMode(params, true)
@@ -41,7 +42,7 @@ class HPlayerController(lpparam: XC_LoadPackage.LoadPackageParam) :
     }
 
     @OnBefore("onResumePlay")
-    fun onResumePlayBefore(params: XC_MethodHook.MethodHookParam, aid: String) {
+    fun onResumePlayBefore(params: XC_MethodHook.MethodHookParam, aid: String?) {
         hookBlockRunning(params) {
             playingAid = aid
             isPlaying = true
@@ -52,8 +53,9 @@ class HPlayerController(lpparam: XC_LoadPackage.LoadPackageParam) :
     }
 
     @OnBefore("onPausePlay")
-    fun onPausePlayAfter(params: XC_MethodHook.MethodHookParam, aid: String) {
+    fun onPausePlayAfter(params: XC_MethodHook.MethodHookParam, aid: String?) {
         hookBlockRunning(params) {
+            // KLogCat.d("onPausePlay: $aid")
             if (playingAid == aid) {
                 isPlaying = false
             }
@@ -64,7 +66,7 @@ class HPlayerController(lpparam: XC_LoadPackage.LoadPackageParam) :
     }
 
     // @OnBefore("onPlayCompleted")
-    fun onPlayCompletedAfter(params: XC_MethodHook.MethodHookParam, string: String) {
+    fun onPlayCompletedAfter(params: XC_MethodHook.MethodHookParam, aid: String?) {
         hookBlockRunning(params) {
             // isPlaying = false
             // callOpenCleanMode(params, false)
@@ -74,7 +76,7 @@ class HPlayerController(lpparam: XC_LoadPackage.LoadPackageParam) :
     }
 
     // @OnBefore("onPlayCompletedFirstTime")
-    fun onPlayCompletedFirstTimeAfter(params: XC_MethodHook.MethodHookParam, string: String) {
+    fun onPlayCompletedFirstTimeAfter(params: XC_MethodHook.MethodHookParam, aid: String?) {
         hookBlockRunning(params) {
             // isPlaying = false
             // callOpenCleanMode(params, false)
@@ -83,11 +85,16 @@ class HPlayerController(lpparam: XC_LoadPackage.LoadPackageParam) :
         }
     }
 
-    // @OnBefore("onPlayProgressChange")
-    fun onPlayProgressChangeAfter(params: XC_MethodHook.MethodHookParam, float: Float) {
+    @OnBefore("onPlayProgressChange")
+    fun onPlayProgressChangeBefore(
+        params: XC_MethodHook.MethodHookParam, aid: String?,
+        current: Long,
+        duration: Long,
+    ) {
         hookBlockRunning(params) {
+            playingAid = aid
             isPlaying = true
-            // callOpenCleanMode(params, true)
+            // callOpenCleanMode(params, false)
         }.onFailure {
             KLogCat.tagE(TAG, it)
         }

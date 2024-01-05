@@ -9,7 +9,7 @@ import androidx.core.view.updatePadding
 import com.freegang.ktutils.display.dip2px
 import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.view.onEachChild
+import com.freegang.ktutils.view.forEachChild
 import com.ss.android.ugc.aweme.ad.feed.VideoViewHolderRootView
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
@@ -46,7 +46,7 @@ class HAbstractFeedAdapter(lpparam: XC_LoadPackage.LoadPackageParam) :
                 // KLogCat.d("view: $view")
                 view ?: return
                 if (view is FrameLayout && view !is VideoViewHolderRootView) {
-                    view.onEachChild { if (background is GradientDrawable) background = null }
+                    view.forEachChild { if (background is GradientDrawable) background = null }
                     val bottomPadding = view.context.dip2px(58f) // BottomTabBarHeight
                     val viewGroup = view.children.last().asOrNull<ViewGroup>() ?: return
                     viewGroup.updatePadding(bottom = bottomPadding)

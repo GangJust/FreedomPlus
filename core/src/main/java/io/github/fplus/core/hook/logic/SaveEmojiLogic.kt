@@ -45,15 +45,13 @@ class SaveEmojiLogic(
             hook.showToast(context, "保存表情, 请稍后..")
             val file = File(parentPath, "${System.currentTimeMillis() / 1000}.gif")
             withContext(Dispatchers.IO) {
-                KHttpUtils.download(urlList.first(), FileOutputStream(file)) { real, total, isInterrupt ->
-                    if (real >= total) {
-                        hook.showToast(context, "保存成功!")
-                        KMediaUtils.notifyMediaUpdate(context, file.absolutePath)
-                        if (config.isVibrate) hook.vibrate(context, 5L)
-                    }
-                    if (isInterrupt) {
-                        hook.showToast(context, "保存失败!")
-                    }
+                val result = KHttpUtils.download(urlList.first(), FileOutputStream(file))
+                if (result) {
+                    hook.showToast(context, "保存成功!")
+                    KMediaUtils.notifyMediaUpdate(context, file.absolutePath)
+                    if (config.isVibrate) hook.vibrate(context, 5L)
+                } else {
+                    hook.showToast(context, "保存失败!")
                 }
             }
         }

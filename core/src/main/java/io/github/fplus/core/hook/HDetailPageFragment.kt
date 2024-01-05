@@ -5,14 +5,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
-import android.widget.TextView
-import androidx.core.view.updatePadding
-import com.freegang.ktutils.collection.ifNotEmpty
-import com.freegang.ktutils.display.KDisplayUtils
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.methodInvokeFirst
-import com.freegang.ktutils.view.KViewUtils
-import com.freegang.ktutils.view.findViewsByExact
+import com.freegang.ktutils.view.firstOrNull
 import com.freegang.ktutils.view.postRunning
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import de.robv.android.xposed.XC_MethodHook
@@ -55,9 +50,7 @@ class HDetailPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) :
                 // awemeType 【134:评论区图片, 133|136:评论区视频, 0:主页视频详情, 68:主页图文详情, 13:私信视频/图文, 6000:私信图片】 by 25.1.0 至今
                 if (aweme.awemeType != 134 && aweme.awemeType != 133 && aweme.awemeType != 136) return@postRunning
 
-                val imageViews = KViewUtils.findViewsByDesc(view, ImageView::class.java, "返回")
-                if (imageViews.isEmpty()) return@postRunning
-                val backBtn = imageViews.first()
+                val backBtn = view.firstOrNull<ImageView> { "${it.contentDescription}".contains("返回") } ?: return@postRunning
 
                 // 清空旧视图
                 val viewGroup = backBtn.parent as ViewGroup
@@ -79,11 +72,11 @@ class HDetailPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) :
                 HDetailPageFragment.isComment = true
 
                 // 我也发一张
-                view.findViewsByExact(TextView::class.java) {
+                /*view.findViewsByExact(TextView::class.java) {
                     "$text".contains("我也发") || "$contentDescription".contains("我也发")
                 }.ifNotEmpty {
                     binding.rightSpace.updatePadding(right = KDisplayUtils.dip2px(view.context, 128f))
-                }
+                }*/
             }
         }.onFailure {
             KLogCat.tagE(TAG, it)

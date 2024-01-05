@@ -4,11 +4,9 @@ import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import com.freegang.ktutils.app.contentView
-import com.freegang.ktutils.collection.ifNotEmpty
 import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.fieldFirst
-import com.freegang.ktutils.view.findViewsByExact
+import com.freegang.ktutils.view.firstOrNull
 import com.freegang.ktutils.view.postDelayedRunning
 import com.ss.android.ugc.aweme.emoji.base.BaseEmoji
 import com.ss.android.ugc.aweme.emoji.similaremoji.EmojiDetailDialogNew
@@ -35,19 +33,26 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) :
 
     override fun onInit() {
         // 该类是 retrofit2 代理类的Hook, 直接通过实例获取class进行hook
-        if (DexkitBuilder.emojiApiProxyClazz != null) {
-            val emojiApiField = DexkitBuilder.emojiApiProxyClazz?.fieldFirst(type = EmojiApi::class.java)
+        DexkitBuilder.emojiApiProxyClazz?.let { it ->
+            val emojiApiField = it.fieldFirst(type = EmojiApi::class.java)
             val emojiApi = emojiApiField?.get(null)
             if (emojiApi != null) {
                 lpparam.hookClass(emojiApi::class.java)
-                    .methodAll {
+                    .method(
+                        "getSimilarEmoji",
+                        String::class.java,
+                        Int::class.java,
+                        String::class.java,
+                        Long::class.java,
+                        Long::class.java,
+                        Long::class.java,
+                        String::class.java,
+                        String::class.java,
+                    ) {
                         onAfter {
                             runCatching {
-                                if (method.name.contains("getSimilarEmoji")) {
-                                    urlList = mutableListOf(args[7] as String)
-                                }
+                                urlList = mutableListOf(args[7] as String)
                             }.onFailure {
-                                KLogCat.tagE(TAG, it)
                                 urlList = emptyList()
                             }
                         }
@@ -70,16 +75,14 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) :
                         if (urlList.isEmpty()) {
                             return@postDelayedRunning
                         }
-                        findViewsByExact(TextView::class.java) {
-                            "$text".contains("添加表情")
-                        }.ifNotEmpty {
-                            first().apply {
-                                text = "添加表情 (长按保存)"
-                                isHapticFeedbackEnabled = false
-                                setOnLongClickListener {
-                                    SaveEmojiLogic(this@HEmojiDetailDialogNew, it.context, urlList)
-                                    true
-                                }
+                        this.firstOrNull<TextView> {
+                            "${it.text}".contains("添加表情")
+                        }?.apply {
+                            text = "添加表情 (长按保存)"
+                            isHapticFeedbackEnabled = false
+                            setOnLongClickListener {
+                                SaveEmojiLogic(this@HEmojiDetailDialogNew, it.context, urlList)
+                                true
                             }
                         }
                     }
@@ -87,8 +90,8 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) :
             }
 
         // 表情弹层
-        DexkitBuilder.emojiPopupWindowClazz?.runCatching {
-            lpparam.hookClass(this)
+        DexkitBuilder.emojiPopupWindowClazz?.let { it ->
+            lpparam.hookClass(it)
                 .methodAll {
                     onAfter {
                         if (!config.isEmoji) return@onAfter
@@ -96,7 +99,8 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) :
                             val emoji = argsOrEmpty[0].asOrNull<BaseEmoji>()
                             popUrlList = popUrlList.ifEmpty {
                                 emoji?.detailEmoji?.animateUrl?.urlList
-                                    ?: emoji?.detailEmoji?.staticUrl?.urlList ?: emptyList()
+                                    ?: emoji?.detailEmoji?.staticUrl?.urlList
+                                    ?: emptyList()
                             }
                         }
 
@@ -115,8 +119,6 @@ class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) :
                         }
                     }
                 }
-        }?.onFailure {
-            KLogCat.tagE(TAG, it)
         }
     }
 }
