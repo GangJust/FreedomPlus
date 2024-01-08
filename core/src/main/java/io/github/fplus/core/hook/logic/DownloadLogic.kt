@@ -1,9 +1,12 @@
 package io.github.fplus.core.hook.logic
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
 import com.freegang.ktutils.app.IProgressNotification
 import com.freegang.ktutils.app.KNotifiUtils
+import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.io.child
 import com.freegang.ktutils.io.need
 import com.freegang.ktutils.io.pureFileName
@@ -12,6 +15,7 @@ import com.freegang.ktutils.io.secureFilename
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.media.KMediaUtils
 import com.freegang.ktutils.net.KHttpUtils
+import com.freegang.ktutils.text.KTextUtils
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import de.robv.android.xposed.XposedBridge
 import io.github.fplus.core.base.BaseHook
@@ -102,7 +106,7 @@ class DownloadLogic(
      */
     private fun showChoiceDialog(aweme: Aweme) {
         val urlList = getVideoUrlList(aweme)
-        val items = mutableListOf(if (urlList.isNotEmpty()) "视频" else "图片", "背景音乐")
+        val items = mutableListOf("文案", if (urlList.isNotEmpty()) "视频" else "图片", "背景音乐")
         if (config.isWebDav) {
             items.add(if (urlList.isNotEmpty()) "视频(WebDav)" else "图片(WebDav)")
             items.add("背景音乐(WebDav)")
@@ -130,6 +134,7 @@ class DownloadLogic(
                     mPureFileName = tempFile.pureName
                 }
                 when (item) {
+                    "文案" -> copyDesc(aweme)
                     "视频" -> downloadVideo(aweme)
                     "图片" -> downloadImages(aweme)
                     "背景音乐" -> downloadMusic(aweme)
@@ -139,6 +144,20 @@ class DownloadLogic(
                 }
             }
         )
+    }
+
+    /**
+     * 复制文案
+     * @param aweme
+     */
+    private fun copyDesc(aweme: Aweme) {
+        if (KTextUtils.isEmpty(aweme.desc)) {
+            KToastUtils.show(context, "文案为空或获取失败")
+            return
+        }
+        val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboardManager.setPrimaryClip(ClipData.newPlainText("视频文案", aweme.desc))
+        KToastUtils.show(context, "文案复制成功")
     }
 
     /**

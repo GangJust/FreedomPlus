@@ -191,7 +191,7 @@ class ConfigV1 private constructor() {
         }
 
     /// 右侧控件栏类型关键字
-    val videoOptionBarFilterTypes = setOf("头像", "喜欢", "评论", "收藏", "分享", "少推荐")
+    val videoOptionBarFilterTypes = setOf("头像", "喜欢", "评论", "收藏", "分享", "少推荐", "音乐")
 
     /// 右侧控件栏隐藏关键字
     var videoOptionBarFilterKeywords: String = "少推荐"

@@ -13,6 +13,7 @@ import com.freegang.ktutils.app.appVersionCode
 import com.freegang.ktutils.app.appVersionName
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.app.isDarkMode
+import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.view.forEachChild
 import com.freegang.ktutils.view.parentView
@@ -25,6 +26,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
+import io.github.fplus.core.helper.ImmersiveHelper
 import io.github.fplus.core.ui.activity.FreedomSettingActivity
 import io.github.xpler.core.OnAfter
 import io.github.xpler.core.OnBefore
@@ -46,6 +48,9 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
         fun toggleView(visible: Boolean) {
             mainTitleBar?.isVisible = visible
             bottomTabView?.isVisible = visible
+
+            val activity = mainTitleBar?.context?.asOrNull<Activity>() ?: return
+            ImmersiveHelper.immersive(activity, !visible, !visible)
         }
     }
 

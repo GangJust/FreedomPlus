@@ -55,6 +55,7 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
 
     @OnBefore("dispatchTouchEvent")
     fun dispatchTouchEventBefore(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {
+        onActionUpEvent(params, event)
         if (interdictEvent(params, event)) return
         longPressEvent(params, event)
     }
@@ -65,18 +66,18 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
             it.javaClass.name.contains("MonitorScrollFrameLayout")
         }?.asOrNull<ViewGroup>()
 
+        // 清爽模式
         monitorScrollFrameLayout?.children?.forEach {
-            // 清爽模式
             if (it is PenetrateTouchRelativeLayout) {
                 it.isVisible = visible
             }
-
-            HMainActivity.toggleView(visible)
         }
+
+        HMainActivity.toggleView(visible)
     }
 
-    private fun longPressEvent(param: XC_MethodHook.MethodHookParam, event: MotionEvent) {
-        hookBlockRunning(param) {
+    private fun longPressEvent(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {
+        hookBlockRunning(params) {
             val cancelEvent = MotionEvent.obtain(
                 event.downTime,
                 event.eventTime,
@@ -152,8 +153,8 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
         }
     }
 
-    private fun interdictEvent(param: XC_MethodHook.MethodHookParam, event: MotionEvent): Boolean {
-        hookBlockRunning(param) {
+    private fun interdictEvent(params: XC_MethodHook.MethodHookParam, event: MotionEvent): Boolean {
+        hookBlockRunning(params) {
             val cancelEvent = MotionEvent.obtain(
                 event.downTime,
                 event.eventTime,
@@ -185,6 +186,26 @@ class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
             KLogCat.tagE(TAG, it)
         }
         return false
+    }
+
+    private fun onActionUpEvent(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {
+        hookBlockRunning(params) {
+            if (event.action != MotionEvent.ACTION_UP) {
+                return
+            }
+
+            if (!config.isNeatMode) {
+                return
+            }
+
+            if (!config.neatModeState) {
+                return
+            }
+
+            // some logic...
+        }.onFailure {
+            KLogCat.tagE(TAG, it)
+        }
     }
 
     private fun showOptionsMenuV1(view: ViewGroup) {

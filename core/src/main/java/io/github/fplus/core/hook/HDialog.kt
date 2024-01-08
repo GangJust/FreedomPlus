@@ -48,7 +48,6 @@ class HDialog(lpparam: XC_LoadPackage.LoadPackageParam) :
                 if ("${this.contentDescription}".contains(dialogFilterKeywords)) {
                     dialog.dismiss()
                     if (config.dialogDismissTips) {
-                        // KToastUtils.show(dialog.context, "弹窗关闭成功!")
                         KToastUtils.show(dialog.context, "“${this.contentDescription.ellipsis(5)}”关闭成功!")
                     }
                     return@forEachWhereChild true
@@ -56,7 +55,6 @@ class HDialog(lpparam: XC_LoadPackage.LoadPackageParam) :
                     if ("${this.text}".contains(dialogFilterKeywords)) {
                         dialog.dismiss()
                         if (config.dialogDismissTips) {
-                            // KToastUtils.show(dialog.context, "弹窗关闭成功!")
                             KToastUtils.show(dialog.context, "“${this.text.ellipsis(5)}”关闭成功!")
                         }
                         return@forEachWhereChild true

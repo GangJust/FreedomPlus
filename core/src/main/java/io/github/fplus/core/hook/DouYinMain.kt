@@ -40,6 +40,7 @@ class DouYinMain(private val app: Application) {
 
             // 全局Application
             KAppUtils.setApplication(app)
+            KActivityUtils.register(app)
 
             // 日志工具
             KLogCat.init(app)
@@ -50,7 +51,10 @@ class DouYinMain(private val app: Application) {
             val intent = Intent()
             val className = "${HookConfig.modulePackageName}.activity.ErrorActivity"
             intent.setClassName(HookConfig.modulePackageName, className)
-            KAppCrashUtils.init(app, "抖音异常退出!", intent)
+            KAppCrashUtils.init(app, "抖音异常退出!", intent) {
+                KActivityUtils.unregister(app)
+                true
+            }
 
             // 定时退出
             initTimedShutdown(app)
@@ -117,6 +121,7 @@ class DouYinMain(private val app: Application) {
             timedExitCountDown = object : CountDownTimer(timedExit, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
                     val second = millisUntilFinished / 1000
+                    // KLogCat.d("定时倒计时: ${second}秒")
                     if (second == 30L) {
                         KToastUtils.show(app, "抖音将在30秒后定时退出")
                     }
@@ -138,6 +143,7 @@ class DouYinMain(private val app: Application) {
             freeExitCountDown = object : CountDownTimer(freeExit, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
                     val second = millisUntilFinished / 1000
+                    // KLogCat.d("空闲倒计时: ${second}秒")
                     if (second == 30L) {
                         KToastUtils.show(app, "长时间无操作, 抖音将在30秒后空闲退出")
                     }

@@ -14,6 +14,8 @@ import com.freegang.ktutils.reflect.methodFirst
 import com.freegang.ktutils.reflect.methodInvokeFirst
 import com.freegang.ktutils.view.firstParentOrNull
 import com.freegang.ktutils.view.forEachChild
+import com.freegang.ktutils.view.getSiblingViewAt
+import com.freegang.ktutils.view.postRunning
 import com.ss.android.ugc.aweme.feed.adapter.VideoViewHolder
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.feed.ui.FeedRightScaleView
@@ -134,18 +136,23 @@ class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
         val views = params.thisObject?.fieldGets(type = View::class.java) ?: emptyList()
         val view = views.firstOrNull { it is FeedRightScaleView }?.asOrNull<FeedRightScaleView>() ?: return
 
-        view.forEachChild {
-            if (isAvatarImageWithLive && this.javaClass.name.contains("AvatarImageWithLive")) {
-                this.firstParentOrNull(FrameLayout::class.java)?.isVisible = false
+        view.postRunning {
+            view.forEachChild {
+                if (isAvatarImageWithLive && this.javaClass.name.contains("AvatarImageWithLive")) {
+                    this.firstParentOrNull(FrameLayout::class.java)?.isVisible = false
+                }
+
+                if ("${this.contentDescription}".contains(videoOptionBarFilterKeywords)) {
+                    this.firstParentOrNull(FrameLayout::class.java)?.isVisible = false
+                }
+
+                if (this is TextView && "$text".contains(videoOptionBarFilterKeywords)) {
+                    this.firstParentOrNull(FrameLayout::class.java)?.isVisible = false
+                }
             }
 
-            if ("${this.contentDescription}".contains(videoOptionBarFilterKeywords)) {
-                this.firstParentOrNull(FrameLayout::class.java)?.isVisible = false
-            }
-
-            if (this is TextView && "$text".contains(videoOptionBarFilterKeywords)) {
-                this.firstParentOrNull(FrameLayout::class.java)?.isVisible = false
-            }
+            val isMusicContainer = videoOptionBarFilterKeywords.pattern.contains("音乐")
+            view.getSiblingViewAt(1)?.isVisible = !isMusicContainer
         }
     }
 

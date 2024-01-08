@@ -1,23 +1,13 @@
 package io.github.fplus.core.hook
 
-import android.view.Gravity
 import android.view.MotionEvent
-import android.view.View
-import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.RelativeLayout
-import android.widget.TextView
 import com.freegang.ktutils.app.KToastUtils
-import com.freegang.ktutils.display.dip2px
 import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.fieldGetFirst
 import com.freegang.ktutils.reflect.fieldSetFirst
 import com.freegang.ktutils.reflect.methodInvokeFirst
 import com.freegang.ktutils.text.KTextUtils
-import com.freegang.ktutils.view.firstParentOrNull
-import com.freegang.ktutils.view.forEachChild
-import com.freegang.ktutils.view.parentView
 import com.ss.android.ugc.aweme.common.widget.VerticalViewPager
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.follow.presenter.FollowFeed
@@ -128,47 +118,6 @@ class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) :
     @OnAfter("onInterceptTouchEvent")
     fun onInterceptTouchEvent(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {
         longVideoJudge(params, event)
-    }
-
-    @OnAfter
-    fun onViewAddedBefore(
-        params: XC_MethodHook.MethodHookParam,
-        view: View?,
-        boolean: Boolean,
-        i: Int,
-        i2: Int,
-        i3: Int,
-    ) {
-        hookBlockRunning(params) {
-            // 杂项设置, 全屏之后可能出现的控件漂移的各种问题
-            // KLogCat.d("view: $view")
-            view?.forEachChild {
-                runCatching {
-                    if (this is TextView && "${this.text}".startsWith("点击进入直播间")) {
-                        this.firstParentOrNull<LinearLayout> { it.childCount == 3 }?.gravity = Gravity.CENTER_HORIZONTAL
-                    }
-
-                    if (this is FrameLayout && "${this.contentDescription}".startsWith("取消静音")) {
-                        val lp = this.layoutParams.asOrNull<RelativeLayout.LayoutParams>()
-                        this.layoutParams = lp?.apply {
-                            addRule(RelativeLayout.ALIGN_PARENT_END)
-                            marginEnd = context.dip2px(8f)
-                        }
-                    }
-
-                    if (this is FrameLayout && "${this.contentDescription}".startsWith("音乐，")) {
-                        val parent = this.parentView
-                        val lp = parent?.layoutParams?.asOrNull<RelativeLayout.LayoutParams>()
-                        parent?.layoutParams = lp?.apply {
-                            addRule(RelativeLayout.ALIGN_PARENT_END)
-                            marginEnd = context.dip2px(8f)
-                        }
-                    }
-                }
-            }
-        }.onFailure {
-            KLogCat.tagE(TAG, it)
-        }
     }
 
     private fun longVideoJudge(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {

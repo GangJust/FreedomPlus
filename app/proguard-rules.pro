@@ -91,6 +91,7 @@
 -keep,allowobfuscation class io.github.xpler.core.KeepParam
 -keep,allowobfuscation class io.github.xpler.core.Param
 -keep,allowobfuscation class io.github.xpler.core.FutureHook
+-keep,allowobfuscation class io.github.xpler.core.ReturnType
 -keep,allowobfuscation class io.github.xpler.core.HookOnce
 -keep,allowobfuscation class io.github.xpler.core.OnBefore
 -keep,allowobfuscation class io.github.xpler.core.OnAfter
@@ -102,6 +103,7 @@
     @io.github.xpler.core.KeepParam <methods>;
     @io.github.xpler.core.Param <methods>;
     @io.github.xpler.core.FutureHook <methods>;
+    @io.github.xpler.core.ReturnType <methods>;
     @io.github.xpler.core.HookOnce <methods>;
     @io.github.xpler.core.OnBefore <methods>;
     @io.github.xpler.core.OnAfter <methods>;
