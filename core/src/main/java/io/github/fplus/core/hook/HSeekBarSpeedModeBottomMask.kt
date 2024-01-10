@@ -13,7 +13,7 @@ import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.hookClass
-import io.github.xpler.core.interfaces.CallMethods
+import io.github.xpler.core.wrapper.CallMethods
 import io.github.xpler.core.thisViewGroup
 
 class HSeekBarSpeedModeBottomMask(lpparam: XC_LoadPackage.LoadPackageParam) :

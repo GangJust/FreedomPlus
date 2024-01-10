@@ -16,6 +16,7 @@ dependencyResolutionManagement {
 }
 rootProject.name = "FreedomPlus"
 include ":app"
+include ":xpler"
 include ":core"
 include ":aweme"
 include ":webdav"

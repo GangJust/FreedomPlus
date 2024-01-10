@@ -20,12 +20,12 @@ import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.databinding.PopupFreedomSettingBinding
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.ui.activity.FreedomSettingActivity
-import io.github.xpler.HookConfig
+import io.github.fplus.Constant
 import io.github.xpler.core.KtXposedHelpers
-import io.github.xpler.core.NoneHook
+import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.argsOrEmpty
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.interfaces.CallMethods
+import io.github.xpler.core.wrapper.CallMethods
 
 class HCornerExtensionsPopupWindow(lpparam: XC_LoadPackage.LoadPackageParam) :
     BaseHook<Any>(lpparam), CallMethods {
@@ -60,11 +60,11 @@ class HCornerExtensionsPopupWindow(lpparam: XC_LoadPackage.LoadPackageParam) :
                 binding.freedomSettingContainer.setOnClickListener { view ->
                     val intent = Intent()
                     if (config.isDisablePlugin) {
-                        if (!KAppUtils.isAppInstalled(view.context, HookConfig.modulePackageName)) {
+                        if (!KAppUtils.isAppInstalled(view.context, Constant.modulePackage)) {
                             KToastUtils.show(context, "未安装Freedom+模块!")
                             return@setOnClickListener
                         }
-                        intent.setClassName(HookConfig.modulePackageName, "io.github.fplus.activity.MainActivity")
+                        intent.setClassName(Constant.modulePackage, "io.github.fplus.activity.MainActivity")
                         KToastUtils.show(context, "若设置未生效请尝试重启抖音!")
                     } else {
                         intent.setClass(view.context, FreedomSettingActivity::class.java)

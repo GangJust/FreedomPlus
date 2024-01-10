@@ -7,11 +7,11 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.helper.DexkitBuilder
-import io.github.xpler.core.EmptyHook
-import io.github.xpler.core.KeepParam
-import io.github.xpler.core.NoneHook
-import io.github.xpler.core.OnBefore
-import io.github.xpler.core.Param
+import io.github.xpler.core.entity.EmptyHook
+import io.github.xpler.core.entity.KeepParam
+import io.github.xpler.core.entity.NoneHook
+import io.github.xpler.core.entity.OnBefore
+import io.github.xpler.core.entity.Param
 import io.github.xpler.core.hookBlockRunning
 import org.json.JSONObject
 

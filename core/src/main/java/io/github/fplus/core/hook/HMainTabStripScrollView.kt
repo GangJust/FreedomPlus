@@ -9,7 +9,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.interfaces.CallMethods
+import io.github.xpler.core.wrapper.CallMethods
 import io.github.xpler.core.thisViewGroup
 
 class HMainTabStripScrollView(lpparam: XC_LoadPackage.LoadPackageParam) :

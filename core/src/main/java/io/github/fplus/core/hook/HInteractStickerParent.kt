@@ -9,7 +9,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.interfaces.CallConstructors
+import io.github.xpler.core.wrapper.CallConstructors
 import io.github.xpler.core.thisViewGroup
 
 class HInteractStickerParent(lpparam: XC_LoadPackage.LoadPackageParam) :

@@ -8,7 +8,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
-import io.github.xpler.core.OnBefore
+import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
 
 class HPlayerController(lpparam: XC_LoadPackage.LoadPackageParam) :

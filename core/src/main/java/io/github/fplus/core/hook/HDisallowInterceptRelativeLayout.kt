@@ -11,7 +11,7 @@ import io.github.fplus.core.config.ConfigV1
 import io.github.xpler.core.findClass
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.hookConstructorsAll
-import io.github.xpler.core.interfaces.CallConstructors
+import io.github.xpler.core.wrapper.CallConstructors
 import io.github.xpler.core.thisViewGroup
 
 class HDisallowInterceptRelativeLayout(lpparam: XC_LoadPackage.LoadPackageParam) :

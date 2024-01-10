@@ -12,7 +12,7 @@ import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.xpler.core.argsOrEmpty
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.interfaces.CallMethods
+import io.github.xpler.core.wrapper.CallMethods
 import io.github.xpler.core.thisView
 
 class HCustomizedUISeekBar(lpparam: XC_LoadPackage.LoadPackageParam) :

@@ -8,7 +8,7 @@ import com.freegang.ktutils.reflect.fieldGetFirst
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
-import io.github.xpler.core.OnBefore
+import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.argsOrEmpty
 import io.github.xpler.core.hookBlockRunning
 

@@ -16,17 +16,17 @@ import com.freegang.ktutils.view.firstOrNull
 import com.freegang.ktutils.view.postRunning
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
+import io.github.fplus.Constant
 import io.github.fplus.core.R
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.databinding.SideFreedomSettingBinding
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.ui.activity.FreedomSettingActivity
-import io.github.xpler.HookConfig
-import io.github.xpler.core.FutureHook
+import io.github.xpler.core.entity.FutureHook
 import io.github.xpler.core.KtXposedHelpers
-import io.github.xpler.core.NoneHook
-import io.github.xpler.core.OnAfter
+import io.github.xpler.core.entity.NoneHook
+import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.thisViewGroup
 
@@ -102,11 +102,11 @@ class HSideBarNestedScrollView(lpparam: XC_LoadPackage.LoadPackageParam) :
             binding.freedomSetting.setOnClickListener { view ->
                 val intent = Intent()
                 if (config.isDisablePlugin) {
-                    if (!KAppUtils.isAppInstalled(view.context, HookConfig.modulePackageName)) {
+                    if (!KAppUtils.isAppInstalled(view.context, Constant.modulePackage)) {
                         KToastUtils.show(context, "未安装Freedom+模块!")
                         return@setOnClickListener
                     }
-                    intent.setClassName(HookConfig.modulePackageName, "io.github.fplus.activity.MainActivity")
+                    intent.setClassName(Constant.modulePackage, "io.github.fplus.activity.MainActivity")
                     KToastUtils.show(context, "若设置未生效请尝试重启抖音!")
                 } else {
                     intent.setClass(view.context, FreedomSettingActivity::class.java)

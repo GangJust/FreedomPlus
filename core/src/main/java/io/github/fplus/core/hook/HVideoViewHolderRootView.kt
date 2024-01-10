@@ -31,7 +31,7 @@ import io.github.fplus.core.hook.logic.DownloadLogic
 import io.github.fplus.core.ui.activity.FreedomSettingActivity
 import io.github.fplus.core.ui.dialog.FreedomDialog
 import io.github.xpler.core.KtXposedHelpers
-import io.github.xpler.core.OnBefore
+import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.thisView
 import io.github.xpler.core.thisViewGroup

@@ -6,9 +6,9 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.ImmersiveHelper
-import io.github.xpler.core.FutureHook
-import io.github.xpler.core.OnAfter
-import io.github.xpler.core.OnBefore
+import io.github.xpler.core.entity.FutureHook
+import io.github.xpler.core.entity.OnAfter
+import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.thisActivity
 

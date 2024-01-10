@@ -10,13 +10,12 @@ import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.log.KLogCat
 import com.ss.android.ugc.aweme.feed.model.Aweme
+import io.github.fplus.Constant
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.plugin.proxy.v1.PluginBridge
-import io.github.xpler.HookConfig
 import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.lpparam
-import io.github.xpler.core.xposedLog
 import io.github.xpler.loader.hostClassloader
 import io.github.xpler.loader.injectClassLoader
 import kotlin.system.exitProcess
@@ -49,8 +48,8 @@ class DouYinMain(private val app: Application) {
 
             // 全局异常捕获工具
             val intent = Intent()
-            val className = "${HookConfig.modulePackageName}.activity.ErrorActivity"
-            intent.setClassName(HookConfig.modulePackageName, className)
+            val className = "${Constant.modulePackage}.activity.ErrorActivity"
+            intent.setClassName(Constant.modulePackage, className)
             KAppCrashUtils.init(app, "抖音异常退出!", intent) {
                 KActivityUtils.unregister(app)
                 true
@@ -102,7 +101,7 @@ class DouYinMain(private val app: Application) {
             )
 
         }.onFailure {
-            XplerLog.xposedLog("Freedom+ inject err..\n${it.stackTraceToString()}")
+            XplerLog.e(it)
             KToastUtils.show(app, "Freedom+ Error: ${it.message}")
         }
     }

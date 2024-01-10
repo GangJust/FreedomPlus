@@ -92,29 +92,26 @@ class ErrorActivity : ComponentActivity() {
                 isImmersive = true,
                 isDark = false,
                 followSystem = false,
-                content = {
-                    Scaffold(
-                        topBar = { TopBarView() },
-                        content = {
-                            BoxWithConstraints(
-                                modifier = Modifier.padding(it),
-                                content = {
-                                    ScrollableContainer {
-                                        BasicTextField(
-                                            value = errMessage!!,
-                                            textStyle = Themes.nowTypography.body2,
-                                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                            readOnly = true,
-                                            onValueChange = { /*nothing*/ },
-                                            modifier = Modifier.padding(horizontal = 16.dp)
-                                        )
-                                    }
-                                },
+            ){
+                Scaffold(
+                    topBar = { TopBarView() },
+                ){
+                    BoxWithConstraints(
+                        modifier = Modifier.padding(it),
+                    ){
+                        ScrollableContainer {
+                            BasicTextField(
+                                value = errMessage!!,
+                                textStyle = Themes.nowTypography.body2,
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                readOnly = true,
+                                onValueChange = { /*nothing*/ },
+                                modifier = Modifier.padding(horizontal = 16.dp)
                             )
-                        },
-                    )
+                        }
+                    }
                 }
-            )
+            }
         }
     }
 

@@ -22,7 +22,7 @@ import io.github.fplus.core.hook.logic.SaveAudioLogic
 import io.github.xpler.core.KtXposedHelpers
 import io.github.xpler.core.argsOrEmpty
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.interfaces.CallMethods
+import io.github.xpler.core.wrapper.CallMethods
 import io.github.xpler.core.thisView
 
 class HCommentAudioView(lpparam: XC_LoadPackage.LoadPackageParam) :

@@ -61,7 +61,9 @@ import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.app.appVersionName
 import com.freegang.ktutils.log.KLogCat
+import io.github.fplus.Constant
 import io.github.fplus.FreedomTheme
+import io.github.fplus.HookStatus
 import io.github.fplus.R
 import io.github.fplus.Themes
 import io.github.fplus.core.config.ConfigV1
@@ -69,8 +71,6 @@ import io.github.fplus.core.ui.component.FCard
 import io.github.fplus.core.ui.component.FMessageDialog
 import io.github.fplus.resource.StringRes
 import io.github.fplus.viewmodel.HomeVM
-import io.github.xpler.HookConfig
-import io.github.xpler.HookStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -104,21 +104,20 @@ class HomeActivity : ComponentActivity() {
             ) {
                 LazyColumn(
                     modifier = Modifier,
-                    content = {
-                        item {
-                            AndroidView(
-                                modifier = Modifier.fillMaxSize(),
-                                factory = { context ->
-                                    TextView(context).apply {
-                                        text = updateLog
-                                        textSize = Themes.nowTypography.body1.fontSize.value
-                                        setTextIsSelectable(true)
-                                    }
-                                },
-                            )
-                        }
-                    },
-                )
+                ) {
+                    item {
+                        AndroidView(
+                            modifier = Modifier.fillMaxSize(),
+                            factory = { context ->
+                                TextView(context).apply {
+                                    text = updateLog
+                                    textSize = Themes.nowTypography.body1.fontSize.value
+                                    setTextIsSelectable(true)
+                                }
+                            },
+                        )
+                    }
+                }
             }
         }
 
@@ -235,7 +234,7 @@ class HomeActivity : ComponentActivity() {
                     "旧数据迁移失败, 请手动将[外置存储器/DCIM/Freedom]目录合并至[外置存储器/Download/Freedom]中!"
                 } else {
                     val deleteAll = model.freedomPlusData.deleteRecursively()
-                    if (deleteAll) "旧数据迁移成功!" else "旧数据迁移成功, 但旧数据删除失败, 请手动将[外置存储器/Download/Freedom]删除!"
+                    if (deleteAll) "旧数据迁移成功!" else "旧数据迁移成功, 但旧数据删除失败, 请手动将[外置存储器/DCIM/Freedom]删除!"
                 }
             }
         }
@@ -264,16 +263,15 @@ class HomeActivity : ComponentActivity() {
                 ) {
                     LazyColumn(
                         modifier = Modifier,
-                        content = {
-                            item {
-                                Text(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    text = version.body,
-                                    style = MaterialTheme.typography.body1,
-                                )
-                            }
-                        },
-                    )
+                    ) {
+                        item {
+                            Text(
+                                modifier = Modifier.fillMaxWidth(),
+                                text = version.body,
+                                style = MaterialTheme.typography.body1,
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -284,75 +282,73 @@ class HomeActivity : ComponentActivity() {
             item {
                 FCard(
                     modifier = Modifier.padding(bottom = 24.dp, top = 12.dp),
-                    content = {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 24.dp),
-                            content = {
-                                Column(
-                                    modifier = Modifier.align(Alignment.Center),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    val packageInfo =
-                                        KAppUtils.getPackageInfo(application, HookConfig.douYinPackageName)
-                                    val lspatchActive =
-                                        HookStatus.isLspatchActive(application, HookConfig.douYinPackageName)
-                                    if (lspatchActive.isNotEmpty()) {
-                                        moduleState.value = "Lspatch加载成功!"
-                                        Text(
-                                            text = moduleState.value,
-                                            style = Themes.nowTypography.body1,
-                                        )
-                                        Spacer(modifier = Modifier.padding(vertical = 2.dp))
-                                        Text(
-                                            text = "${lspatchActive[0]} ${lspatchActive[1]} - ${lspatchActive[2]}",
-                                            style = Themes.nowTypography.body2,
-                                        )
-                                    } else if (HookStatus.isExpModuleActive(this@HomeActivity)) {
-                                        moduleState.value = "太极加载成功!"
-                                        Text(
-                                            text = moduleState.value,
-                                            style = Themes.nowTypography.body1,
-                                        )
-                                        Spacer(modifier = Modifier.padding(vertical = 2.dp))
-                                        Text(
-                                            text = "已放弃太极适配, 部分功能在使用时可能出现异常",
-                                            style = Themes.nowTypography.body2,
-                                        )
-                                    } else if (HookStatus.isEnabled) {
-                                        moduleState.value = if (HookStatus.moduleState == "Unknown") {
-                                            "未知框架, 加载成功!"
-                                        } else {
-                                            "${HookStatus.moduleState}加载成功!"
-                                        }
-                                        Text(
-                                            text = moduleState.value,
-                                            style = Themes.nowTypography.body1,
-                                        )
-                                    } else {
-                                        Text(
-                                            text = StringRes.moduleHintFailed,
-                                            style = Themes.nowTypography.body1,
-                                        )
-                                    }
-                                    if (packageInfo != null) {
-                                        var hint by remember { mutableStateOf("自行测试功能") }
-                                        LaunchedEffect("Versions") {
-                                            hint = model.isSupportVersions(packageInfo.versionName)
-                                        }
-
-                                        Spacer(modifier = Modifier.padding(vertical = 2.dp))
-                                        Text(
-                                            text = "抖音: ${packageInfo.versionName}，$hint",
-                                            style = Themes.nowTypography.body2,
-                                        )
-                                    }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 24.dp),
+                    ) {
+                        Column(
+                            modifier = Modifier.align(Alignment.Center),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            val packageInfo =
+                                KAppUtils.getPackageInfo(application, Constant.scopes[0].packageName)
+                            val lspatchActive =
+                                HookStatus.isLSPatchActive(application, Constant.scopes[0].packageName)
+                            if (lspatchActive.isNotEmpty()) {
+                                moduleState.value = "Lspatch加载成功!"
+                                Text(
+                                    text = moduleState.value,
+                                    style = Themes.nowTypography.body1,
+                                )
+                                Spacer(modifier = Modifier.padding(vertical = 2.dp))
+                                Text(
+                                    text = "${lspatchActive[0]} ${lspatchActive[1]} - ${lspatchActive[2]}",
+                                    style = Themes.nowTypography.body2,
+                                )
+                            } else if (HookStatus.isExpActive(this@HomeActivity)) {
+                                moduleState.value = "太极加载成功!"
+                                Text(
+                                    text = moduleState.value,
+                                    style = Themes.nowTypography.body1,
+                                )
+                                Spacer(modifier = Modifier.padding(vertical = 2.dp))
+                                Text(
+                                    text = "已放弃太极适配, 部分功能在使用时可能出现异常",
+                                    style = Themes.nowTypography.body2,
+                                )
+                            } else if (HookStatus.isEnabled) {
+                                moduleState.value = if (HookStatus.framework == "Unknown") {
+                                    "未知框架, 加载成功!"
+                                } else {
+                                    "${HookStatus.framework}加载成功!"
                                 }
-                            },
-                        )
+                                Text(
+                                    text = moduleState.value,
+                                    style = Themes.nowTypography.body1,
+                                )
+                            } else {
+                                Text(
+                                    text = StringRes.moduleHintFailed,
+                                    style = Themes.nowTypography.body1,
+                                )
+                            }
+                            if (packageInfo != null) {
+                                var hint by remember { mutableStateOf("自行测试功能") }
+                                LaunchedEffect("Versions") {
+                                    hint = model.isSupportVersions(packageInfo.versionName)
+                                }
+
+                                Spacer(modifier = Modifier.padding(vertical = 2.dp))
+                                Text(
+                                    text = "抖音: ${packageInfo.versionName}，$hint",
+                                    style = Themes.nowTypography.body2,
+                                )
+                            }
+                        }
                     }
-                )
+                }
             }
 
             // 模块设置
@@ -373,26 +369,25 @@ class HomeActivity : ComponentActivity() {
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp, vertical = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        content = {
-                            Icon(
-                                imageVector = Icons.Rounded.Settings,
-                                contentDescription = "设置",
-                                tint = Themes.nowColors.icon,
-                                modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Settings,
+                            contentDescription = "设置",
+                            tint = Themes.nowColors.icon,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                        Column {
+                            Text(
+                                text = "模块设置",
+                                style = Themes.nowTypography.body1,
                             )
-                            Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-                            Column {
-                                Text(
-                                    text = "模块设置",
-                                    style = Themes.nowTypography.body1,
-                                )
-                                Text(
-                                    text = if (model.isDisablePlugin) "点击跳转模块设置" else "抖音内部左上角侧滑栏/加号按钮唤起模块设置",
-                                    style = Themes.nowTypography.overline,
-                                )
-                            }
-                        },
-                    )
+                            Text(
+                                text = if (model.isDisablePlugin) "点击跳转模块设置" else "抖音内部左上角侧滑栏/加号按钮唤起模块设置",
+                                style = Themes.nowTypography.overline,
+                            )
+                        }
+                    }
                 }
             }
 
@@ -452,29 +447,28 @@ class HomeActivity : ComponentActivity() {
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        content = {
-                            Icon(
-                                modifier = Modifier.size(24.dp),
-                                painter = painterResource(id = R.drawable.ic_find_file),
-                                contentDescription = "数据目录",
-                                tint = Themes.nowColors.icon,
-                            )
-                            Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-                            Column {
-                                Text(
-                                    text = "数据目录: `外置存储器/Download/Freedom`",
-                                    style = Themes.nowTypography.body1,
-                                )
-                                Text(
-                                    text = "长按清空数据目录",
-                                    style = Themes.nowTypography.overline,
-                                )
-                            }
-                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp, vertical = 16.dp),
-                    )
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(24.dp),
+                            painter = painterResource(id = R.drawable.ic_find_file),
+                            contentDescription = "数据目录",
+                            tint = Themes.nowColors.icon,
+                        )
+                        Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                        Column {
+                            Text(
+                                text = "数据目录: `外置存储器/Download/Freedom`",
+                                style = Themes.nowTypography.body1,
+                            )
+                            Text(
+                                text = "长按清空数据目录",
+                                style = Themes.nowTypography.overline,
+                            )
+                        }
+                    }
                 }
             }
 
@@ -494,26 +488,25 @@ class HomeActivity : ComponentActivity() {
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp, vertical = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        content = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_github),
-                                contentDescription = "Github",
-                                tint = Themes.nowColors.icon,
-                                modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_github),
+                            contentDescription = "Github",
+                            tint = Themes.nowColors.icon,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                        Column {
+                            Text(
+                                text = "源码地址",
+                                style = Themes.nowTypography.body1,
                             )
-                            Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-                            Column {
-                                Text(
-                                    text = "源码地址",
-                                    style = Themes.nowTypography.body1,
-                                )
-                                Text(
-                                    text = "https://github.com/GangJust/FreedomPlus",
-                                    style = Themes.nowTypography.overline,
-                                )
-                            }
-                        },
-                    )
+                            Text(
+                                text = "https://github.com/GangJust/FreedomPlus",
+                                style = Themes.nowTypography.overline,
+                            )
+                        }
+                    }
                 }
             }
 
@@ -533,26 +526,25 @@ class HomeActivity : ComponentActivity() {
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp, vertical = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        content = {
-                            Icon(
-                                imageVector = Icons.Rounded.Email,
-                                contentDescription = "开源说明",
-                                tint = Themes.nowColors.icon,
-                                modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Email,
+                            contentDescription = "开源说明",
+                            tint = Themes.nowColors.icon,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                        Column {
+                            Text(
+                                text = "开源说明",
+                                style = Themes.nowTypography.body1,
                             )
-                            Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-                            Column {
-                                Text(
-                                    text = "开源说明",
-                                    style = Themes.nowTypography.body1,
-                                )
-                                Text(
-                                    text = "代码开源旨在个人学习，如果认为代码内容存在不当，请联系删除",
-                                    style = Themes.nowTypography.overline,
-                                )
-                            }
-                        },
-                    )
+                            Text(
+                                text = "代码开源旨在个人学习，如果认为代码内容存在不当，请联系删除",
+                                style = Themes.nowTypography.overline,
+                            )
+                        }
+                    }
                 }
             }
 
@@ -572,26 +564,25 @@ class HomeActivity : ComponentActivity() {
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp, vertical = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        content = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_telegram),
-                                contentDescription = "Telegram频道",
-                                tint = Themes.nowColors.icon,
-                                modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_telegram),
+                            contentDescription = "Telegram频道",
+                            tint = Themes.nowColors.icon,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                        Column {
+                            Text(
+                                text = "Telegram频道",
+                                style = Themes.nowTypography.body1,
                             )
-                            Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-                            Column {
-                                Text(
-                                    text = "Telegram频道",
-                                    style = Themes.nowTypography.body1,
-                                )
-                                Text(
-                                    text = "版本发布, Bug反馈~",
-                                    style = Themes.nowTypography.overline,
-                                )
-                            }
-                        },
-                    )
+                            Text(
+                                text = "版本发布, Bug反馈~",
+                                style = Themes.nowTypography.overline,
+                            )
+                        }
+                    }
                 }
             }
 
@@ -611,26 +602,25 @@ class HomeActivity : ComponentActivity() {
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp, vertical = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        content = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_spicy_strips),
-                                contentDescription = "请我吃辣条",
-                                tint = Themes.nowColors.icon,
-                                modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_spicy_strips),
+                            contentDescription = "请我吃辣条",
+                            tint = Themes.nowColors.icon,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                        Column {
+                            Text(
+                                text = "请我吃辣条",
+                                style = Themes.nowTypography.body1,
                             )
-                            Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-                            Column {
-                                Text(
-                                    text = "请我吃辣条",
-                                    style = Themes.nowTypography.body1,
-                                )
-                                Text(
-                                    text = "模块免费且开源，不强制打赏~",
-                                    style = Themes.nowTypography.overline,
-                                )
-                            }
-                        },
-                    )
+                            Text(
+                                text = "模块免费且开源，不强制打赏~",
+                                style = Themes.nowTypography.overline,
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -678,7 +668,7 @@ class HomeActivity : ComponentActivity() {
 
             val intent = Intent()
             intent.setClassName(
-                HookConfig.douYinPackageName,
+                Constant.scopes[0].packageName,
                 "com.ss.android.ugc.aweme.main.MainActivity"
             )
             intent.putExtra("startModuleSetting", true)

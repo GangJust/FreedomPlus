@@ -26,11 +26,11 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
-import io.github.xpler.core.OnAfter
-import io.github.xpler.core.OnBefore
+import io.github.xpler.core.entity.OnAfter
+import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hook
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.interfaces.CallConstructors
+import io.github.xpler.core.wrapper.CallConstructors
 
 class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
     BaseHook<VideoViewHolder>(lpparam), CallConstructors {
@@ -44,15 +44,6 @@ class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
     }
 
     private val config get() = ConfigV1.get()
-
-    private val videoOptionBarFilterKeywords by lazy {
-        config.videoOptionBarFilterKeywords
-            .removePrefix(",").removePrefix("，")
-            .removeSuffix(",").removeSuffix("，")
-            .replace("\\s".toRegex(), "")
-            .replace("[,，]".toRegex(), "|")
-            .toRegex()
-    }
 
     private var onDrawMaps = mutableMapOf<String, ViewTreeObserver.OnDrawListener?>()
 
@@ -131,12 +122,19 @@ class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
     private fun changeFeedRightScaleView(params: XC_MethodHook.MethodHookParam) {
         if (!config.isVideoOptionBarFilter) return
 
-        val isAvatarImageWithLive = videoOptionBarFilterKeywords.pattern.contains("头像")
-
         val views = params.thisObject?.fieldGets(type = View::class.java) ?: emptyList()
         val view = views.firstOrNull { it is FeedRightScaleView }?.asOrNull<FeedRightScaleView>() ?: return
 
+        val videoOptionBarFilterKeywords = config.videoOptionBarFilterKeywords
+            .removePrefix(",").removePrefix("，")
+            .removeSuffix(",").removeSuffix("，")
+            .replace("\\s".toRegex(), "")
+            .replace("[,，]".toRegex(), "|")
+            .toRegex()
+
         view.postRunning {
+            val isAvatarImageWithLive = videoOptionBarFilterKeywords.pattern.contains("头像")
+
             view.forEachChild {
                 if (isAvatarImageWithLive && this.javaClass.name.contains("AvatarImageWithLive")) {
                     this.firstParentOrNull(FrameLayout::class.java)?.isVisible = false
@@ -163,7 +161,7 @@ class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
     @OnAfter("getAweme")
     fun getAwemeAfter(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
-            HVideoViewHolder.aweme = result.asOrNull()
+            HVideoViewHolder.aweme = result?.asOrNull()
         }.onFailure {
             KLogCat.tagE(HVideoViewHolder.TAG, it)
         }

@@ -66,6 +66,7 @@ dependencies {
     //implementation(libs.okhttp3)
     //implementation libs.ss.ktx
 
+    implementation project(":xpler")
     implementation project(":webdav")
     implementation project(":ktutils")
 }

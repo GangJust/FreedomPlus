@@ -102,27 +102,26 @@ class MainActivity : ComponentActivity() {
                     confirm = "确定",
                     onCancel = { finish() },
                     onConfirm = { requestPermissions() },
-                    content = {
-                        Column {
+                ){
+                    Column {
+                        Text(
+                            text = "外置存储器读/写权限",
+                            style = Themes.nowTypography.body1.copy(
+                                color = Themes.nowColors.subtitle,
+                                lineHeight = 1.2.sp,
+                            ),
+                        )
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                             Text(
-                                text = "外置存储器读/写权限",
+                                text = "外置存储器管理权限(Android11+)",
                                 style = Themes.nowTypography.body1.copy(
                                     color = Themes.nowColors.subtitle,
-                                    lineHeight = 1.2.sp,
+                                    lineHeight = 1.2.sp
                                 ),
                             )
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                                Text(
-                                    text = "外置存储器管理权限(Android11+)",
-                                    style = Themes.nowTypography.body1.copy(
-                                        color = Themes.nowColors.subtitle,
-                                        lineHeight = 1.2.sp
-                                    ),
-                                )
-                            }
                         }
-                    },
-                )
+                    }
+                }
             }
         }
     }

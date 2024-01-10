@@ -19,8 +19,8 @@ import io.github.fplus.core.databinding.HookAppbarLayoutBinding
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.hook.logic.SaveCommentLogic
 import io.github.xpler.core.KtXposedHelpers
-import io.github.xpler.core.NoneHook
-import io.github.xpler.core.OnAfter
+import io.github.xpler.core.entity.NoneHook
+import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
 
 class HDetailPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) :

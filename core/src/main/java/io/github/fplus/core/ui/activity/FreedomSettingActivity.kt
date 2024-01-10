@@ -73,7 +73,6 @@ import io.github.fplus.core.ui.component.FWaitingMessageDialog
 import io.github.fplus.core.ui.viewmodel.FreedomSettingVM
 import io.github.fplus.plugin.activity.XplerActivity
 import io.github.webdav.WebDav
-import io.github.xpler.HookConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -261,31 +260,29 @@ class FreedomSettingActivity : XplerActivity() {
         var showRestartAppDialog by remember { mutableStateOf(false) }
 
         if (showRestartAppDialog) {
-            if (application.packageName != HookConfig.modulePackageName) {
-                FMessageDialog(
-                    title = "提示",
-                    cancel = "取消",
-                    confirm = "重启",
-                    onCancel = {
-                        showRestartAppDialog = false
-                    },
-                    onConfirm = {
-                        showRestartAppDialog = false
-                        runCatching {
-                            // model.setVersionConfig(pluginAssets)
-                            model.setVersionConfig(assets)
-                        }.onFailure {
-                            model.setVersionConfig(null)
-                        }
-                        // KAppUtils.restartApplication(application)
-                        DexkitBuilder.restartUtilsClazz?.methodInvokeFirst(args = arrayOf(this))
-                    },
-                ) {
-                    Text(
-                        text = "需要重启应用生效, 若未重启请手动重启",
-                        style = MaterialTheme.typography.body1,
-                    )
-                }
+            FMessageDialog(
+                title = "提示",
+                cancel = "取消",
+                confirm = "重启",
+                onCancel = {
+                    showRestartAppDialog = false
+                },
+                onConfirm = {
+                    showRestartAppDialog = false
+                    runCatching {
+                        // model.setVersionConfig(pluginAssets)
+                        model.setVersionConfig(assets)
+                    }.onFailure {
+                        model.setVersionConfig(null)
+                    }
+                    // KAppUtils.restartApplication(application)
+                    DexkitBuilder.restartUtilsClazz?.methodInvokeFirst(args = arrayOf(this))
+                },
+            ) {
+                Text(
+                    text = "需要重启应用生效, 若未重启请手动重启",
+                    style = MaterialTheme.typography.body1,
+                )
             }
         }
 
@@ -684,7 +681,7 @@ class FreedomSettingActivity : XplerActivity() {
                         onConfirm = {
                             showFilterDialog = false
                             model.setVideoOptionBarFilterKeywords(inputValue)
-                            showRestartAppDialog = true
+                            KToastUtils.show(application, "切换视频或重启抖音生效")
                         },
                     ) {
                         FCard(

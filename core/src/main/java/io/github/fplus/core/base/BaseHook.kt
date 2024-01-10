@@ -31,11 +31,10 @@ import io.github.fplus.core.databinding.DialogProgressLayoutBinding
 import io.github.fplus.core.ui.dialog.XplerDialogWrapper
 import io.github.fplus.core.view.KDialog
 import io.github.fplus.core.view.adapter.DialogChoiceAdapter
-import io.github.xpler.core.KtOnHook
 import io.github.xpler.core.KtXposedHelpers
+import io.github.xpler.core.entity.HookEntity
 import io.github.xpler.core.inflateModuleView
 import io.github.xpler.core.log.XplerLog
-import io.github.xpler.core.xposedLog
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -47,7 +46,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) :
-    KtOnHook<T>(lpparam) {
+    HookEntity<T>(lpparam) {
     protected val handler: Handler = Handler(Looper.getMainLooper())
     private val mainScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
     private var toast: Toast? = null
@@ -60,7 +59,7 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) :
                 return@CoroutineExceptionHandler
             }
 
-            XplerLog.xposedLog("错误堆栈: \n${throwable.stackTraceToString()}")
+            XplerLog.e(throwable)
             if (coroutineContext.isActive) {
                 coroutineContext.cancel()
                 coroutineContext.cancelChildren()
@@ -73,7 +72,7 @@ abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) :
                 e.printStackTrace()
             } catch (e: Exception) {
                 e.printStackTrace()
-                XplerLog.xposedLog("错误堆栈: \n${e.stackTraceToString()}")
+                XplerLog.e(e)
             }
         }
         return job
