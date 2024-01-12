@@ -2,23 +2,19 @@ package io.github.fplus.core.hook
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import com.freegang.ktutils.extension.isPrimitiveObjectType
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.view.forEachChild
 import com.freegang.ktutils.view.parentView
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.xpler.core.entity.NoneHook
-import io.github.xpler.core.argsOrEmpty
+import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.wrapper.CallMethods
+import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisViewGroup
 
-class HMainBottomTabView(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<Any>(lpparam), CallMethods {
+class HMainBottomTabView : BaseHook<Any>() {
     companion object {
         const val TAG = "HMainBottomTabView"
     }
@@ -29,21 +25,16 @@ class HMainBottomTabView(lpparam: XC_LoadPackage.LoadPackageParam) :
         return DexkitBuilder.mainBottomTabViewClazz ?: NoneHook::class.java
     }
 
-    override fun callOnBeforeMethods(params: XC_MethodHook.MethodHookParam) {
-
-
-    }
-
-    override fun callOnAfterMethods(params: XC_MethodHook.MethodHookParam) {
+    @OnAfter
+    fun methodAfter(params: XC_MethodHook.MethodHookParam, i: Int) {
         hookBlockRunning(params) {
-            if (method.name.contains(Regex("Background|Alpha|Enabled"))) return
-            if (argsOrEmpty.size != 1) return
-            if (args.first()?.javaClass?.isPrimitiveObjectType == false) return
-            // KLogCat.d(TAG, "更新方法: $method")
+            if (method.name.contains(Regex("Background|Alpha|Enabled|Visibilty"))) {
+                return
+            }
 
             // 底部导航栏透明度
             if (config.isTranslucent) {
-                val alphaValue = config.translucentValue[2] / 100f
+                val alphaValue = config.translucentValue[3] / 100f
                 thisViewGroup.parentView?.alpha = alphaValue
             }
 
@@ -55,7 +46,7 @@ class HMainBottomTabView(lpparam: XC_LoadPackage.LoadPackageParam) :
                 }
             }
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 }

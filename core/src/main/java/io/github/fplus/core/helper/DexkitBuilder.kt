@@ -40,7 +40,6 @@ object DexkitBuilder {
     var conversationFragmentClazz: Class<*>? = null
     var seekBarSpeedModeBottomContainerClazz: Class<*>? = null
     var poiCreateInstanceImplClazz: Class<*>? = null
-    var videoPlayerStateClazz: Class<*>? = null
     var videoPlayerHelperClazz: Class<*>? = null
     var abstractFeedAdapterClazz: Class<*>? = null
     var recommendFeedFetchPresenterClazz: Class<*>? = null
@@ -48,7 +47,7 @@ object DexkitBuilder {
     var detailPageFragmentClazz: Class<*>? = null
     var emojiApiProxyClazz: Class<*>? = null
     var emojiPopupWindowClazz: Class<*>? = null
-    var ripsChatRoomFragmentClazz: Class<*>? = null
+    var bottomCtrlBarClazz: Class<*>? = null
     var restartUtilsClazz: Class<*>? = null
 
     // methods
@@ -97,7 +96,7 @@ object DexkitBuilder {
      * Dexkit开始搜索
      */
     private fun startSearch() {
-        KLogCat.tagD(TAG, "Dexkit开始搜索")
+        KLogCat.tagD(TAG, "Dexkit开始搜索: ${lpparam.appInfo.sourceDir}")
         System.loadLibrary("dexkit")
         DexKitBridge.create(lpparam.appInfo.sourceDir).use { bridge ->
             searchClass(bridge)
@@ -310,52 +309,6 @@ object DexkitBuilder {
             }
         }.singleInstance("poiCreateInstanceImpl")
 
-        videoPlayerStateClazz = bridge.findClass {
-            matcher {
-                fields {
-                    add {
-                        type = "com.ss.android.ugc.aweme.feed.model.Aweme"
-                    }
-                    add {
-                        type = "java.lang.String"
-                    }
-                    add {
-                        type = "int"
-                    }
-                    add {
-                        type {
-                            modifiers = Modifier.INTERFACE
-                        }
-                    }
-                }
-
-                methods {
-                    add {
-                        name = "<init>"
-                        params {
-                            add {
-                                type = "com.ss.android.ugc.aweme.feed.model.Aweme"
-                            }
-                            add {
-                                type = "java.lang.String"
-                            }
-                            add {
-                                type = "int"
-                            }
-                            add {
-                                type = "int"
-                            }
-                            add {
-                                type {
-                                    modifiers = Modifier.INTERFACE
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }.singleInstance("videoPlayerState")
-
         emojiApiProxyClazz = bridge.findClass {
             matcher {
                 fields {
@@ -423,6 +376,29 @@ object DexkitBuilder {
             }
         }.singleInstance("mainBottomTabView")
 
+        bottomCtrlBarClazz = bridge.findClass {
+            searchPackages("X")
+            matcher {
+                superClass = "android.widget.FrameLayout"
+                fields {
+                    add {
+                        annotations {
+                            add {
+                                type = "dalvik.annotation.Signature"
+                                addElement {
+                                    name = "value"
+                                    arrayValue {
+                                        addString("IPauseCtrlAction")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+        }.singleInstance("bottomCtrlBar")
+
         restartUtilsClazz = bridge.findClass {
             searchPackages("X")
             matcher {
@@ -455,18 +431,9 @@ object DexkitBuilder {
                     "DetailActOtherNitaView",
                 )
             }
-            addSearchGroup {
-                groupName = "ripsChatRoomFragment"
-                usingStrings = listOf(
-                    "com/ss/android/ugc/aweme/im/sdk/chat/rips/RipsChatRoomFragment",
-                    "RipsChatRoomFragment",
-                    "a1128.b17614",
-                )
-            }
         }
         DexkitBuilder.videoPlayerHelperClazz = findMaps.singleInstance("videoPlayerHelper")
         DexkitBuilder.detailPageFragmentClazz = findMaps.singleInstance("detailPageFragment")
-        DexkitBuilder.ripsChatRoomFragmentClazz = findMaps.singleInstance("ripsChatRoomFragment")
     }
 
     /**
@@ -485,11 +452,10 @@ object DexkitBuilder {
                             type = "com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout"
                         }
                     }
-                }
-
-                params {
                     add {
-                        type = "java.lang.Boolean"
+                        field {
+                            type = "com.ss.android.ugc.aweme.feed.model.VideoItemParams"
+                        }
                     }
                 }
 
@@ -546,7 +512,6 @@ object DexkitBuilder {
         conversationFragmentClazz = classCache.getStringOrDefault("conversationFragment").loadOrFindClass()
         seekBarSpeedModeBottomContainerClazz = classCache.getStringOrDefault("seekBarSpeedModeBottomContainer").loadOrFindClass()
         poiCreateInstanceImplClazz = classCache.getStringOrDefault("poiCreateInstanceImpl").loadOrFindClass()
-        videoPlayerStateClazz = classCache.getStringOrDefault("videoPlayerState").loadOrFindClass()
         videoPlayerHelperClazz = classCache.getStringOrDefault("videoPlayerHelper").loadOrFindClass()
         abstractFeedAdapterClazz = classCache.getStringOrDefault("abstractFeedAdapter").loadOrFindClass()
         recommendFeedFetchPresenterClazz = classCache.getStringOrDefault("recommendFeedFetchPresenter").loadOrFindClass()
@@ -554,7 +519,7 @@ object DexkitBuilder {
         emojiPopupWindowClazz = classCache.getStringOrDefault("emojiPopupWindow").loadOrFindClass()
         detailPageFragmentClazz = classCache.getStringOrDefault("detailPageFragment").loadOrFindClass()
         emojiApiProxyClazz = classCache.getStringOrDefault("emojiApiProxy").loadOrFindClass()
-        ripsChatRoomFragmentClazz = classCache.getStringOrDefault("ripsChatRoomFragment").loadOrFindClass()
+        bottomCtrlBarClazz = classCache.getStringOrDefault("bottomCtrlBar").loadOrFindClass()
         restartUtilsClazz = classCache.getStringOrDefault("restartUtils").loadOrFindClass()
     }
 
@@ -638,13 +603,9 @@ object DexkitBuilder {
         }
 
         return try {
-            app?.classLoader?.loadClass(this)
+            app?.classLoader?.loadClass(this) ?: lpparam.findClass(this)
         } catch (e: Throwable) {
-            if (e is LinkageError && "${e.message}".contains("overrides final")) {
-                return null // 过滤类似错误
-            }
-
-            lpparam.findClass(this)
+            null
         }
     }
 }

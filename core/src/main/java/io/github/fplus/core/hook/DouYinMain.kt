@@ -15,9 +15,7 @@ import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.plugin.proxy.v1.PluginBridge
 import io.github.xpler.core.log.XplerLog
-import io.github.xpler.core.lpparam
 import io.github.xpler.loader.hostClassloader
-import io.github.xpler.loader.injectClassLoader
 import kotlin.system.exitProcess
 
 class DouYinMain(private val app: Application) {
@@ -28,8 +26,6 @@ class DouYinMain(private val app: Application) {
 
     init {
         runCatching {
-            injectClassLoader(lpparam, app.classLoader)
-
             // 插件化注入
             val stubClazz = hostClassloader!!.loadClass("com.ss.android.ugc.aweme.setting.ui.AboutActivity")
             PluginBridge.init(app, stubClazz)
@@ -43,7 +39,6 @@ class DouYinMain(private val app: Application) {
 
             // 日志工具
             KLogCat.init(app)
-            KLogCat.clearStorage()
             // KLogCat.silence() //静默
 
             // 全局异常捕获工具
@@ -61,42 +56,43 @@ class DouYinMain(private val app: Application) {
             // search and hook
             DexkitBuilder.running(
                 app = app,
-                version = 4,
+                version = 8,
                 searchBefore = {
-                    HActivity(lpparam)
-                    HMainActivity(lpparam)
-                    HLivePlayActivity(lpparam)
-                    HDisallowInterceptRelativeLayout(lpparam)
-                    HMainTabStripScrollView(lpparam)
-                    HFlippableViewPager(lpparam)
-                    HCustomizedUISeekBar(lpparam)
-                    HPlayerController(lpparam)
-                    HVideoViewHolderRootView(lpparam)
-                    HPenetrateTouchRelativeLayout(lpparam)
-                    HInteractStickerParent(lpparam)
-                    // HCommentAudioView(lpparam)
-                    HGifEmojiDetailActivity(lpparam)
-                    HEmojiDetailDialog(lpparam)
+                    HActivity()
+                    HMainActivity()
+                    HLivePlayActivity()
+                    HDisallowInterceptRelativeLayout()
+                    HMainTabStripScrollView()
+                    HFlippableViewPager()
+                    HCustomizedUISeekBar()
+                    HPlayerController()
+                    HVideoViewHolderRootView()
+                    HPenetrateTouchRelativeLayout()
+                    HInteractStickerParent()
+                    // HCommentAudioView()
+                    HGifEmojiDetailActivity()
+                    HEmojiDetailDialog()
 
-                    HDialog(lpparam)
-                    // HDialogFragment(lpparam)
-                    // HPopupWindow(lpparam)
+                    HDialog()
+                    // HDialogFragment()
+                    // HPopupWindow()
                 },
                 searchAfter = {
-                    HSideBarNestedScrollView(lpparam)
-                    HCornerExtensionsPopupWindow(lpparam)
-                    HMainBottomTabView(lpparam)
-                    HMainBottomTabItem(lpparam)
-                    HCommentListPageFragment(lpparam)
-                    HConversationFragment(lpparam)
-                    HPoiCreateInstanceImpl(lpparam)
-                    HSeekBarSpeedModeBottomMask(lpparam)
-                    HVideoPlayerHelper(lpparam)
-                    HVideoViewHolder(lpparam)
-                    HAbstractFeedAdapter(lpparam)
-                    HVerticalViewPager(lpparam)
-                    HDetailPageFragment(lpparam)
-                    HEmojiDetailDialogNew(lpparam)
+                    HSideBarNestedScrollView()
+                    HCornerExtensionsPopupWindow()
+                    HMainBottomTabView()
+                    HMainBottomTabItem()
+                    HCommentListPageFragment()
+                    HConversationFragment()
+                    HPoiCreateInstanceImpl()
+                    HSeekBarSpeedModeBottomMask()
+                    HVideoPlayerHelper()
+                    HVideoViewHolder()
+                    HAbstractFeedAdapter()
+                    HVerticalViewPager()
+                    HDetailPageFragment()
+                    HEmojiDetailDialogNew()
+                    HBottomCtrlBar()
                 }
             )
 

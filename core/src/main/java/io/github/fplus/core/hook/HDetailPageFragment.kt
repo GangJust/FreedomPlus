@@ -11,7 +11,6 @@ import com.freegang.ktutils.view.firstOrNull
 import com.freegang.ktutils.view.postRunning
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.R
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
@@ -23,8 +22,7 @@ import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
 
-class HDetailPageFragment(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<Any>(lpparam) {
+class HDetailPageFragment : BaseHook<Any>() {
     companion object {
         const val TAG = "HDetailPageFragment"
 

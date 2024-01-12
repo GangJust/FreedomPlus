@@ -16,8 +16,7 @@ import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.thisActivity
 
-class HActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<Activity>(lpparam) {
+class HActivity : BaseHook<Activity>() {
     companion object {
         const val TAG = "HActivity"
     }

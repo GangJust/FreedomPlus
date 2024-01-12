@@ -406,10 +406,11 @@ class FreedomSettingActivity : XplerActivity() {
                 )
 
                 if (showTransparentDialog) {
-                    val translucentValue = model.translucentValue.value ?: listOf(50, 50, 50)
+                    val translucentValue = model.translucentValue.value ?: listOf(50, 50, 50, 50)
                     var topBarTransparent by remember { mutableStateOf(translucentValue[0]) }
                     var videoAssemblyTransparent by remember { mutableStateOf(translucentValue[1]) }
-                    var bottomBarTransparent by remember { mutableStateOf(translucentValue[2]) }
+                    var videoRightAssemblyTransparent by remember { mutableStateOf(translucentValue[2]) }
+                    var bottomBarTransparent by remember { mutableStateOf(translucentValue[3]) }
 
                     FMessageDialog(
                         title = "自定义控件透明度",
@@ -421,6 +422,7 @@ class FreedomSettingActivity : XplerActivity() {
                                 listOf(
                                     topBarTransparent,
                                     videoAssemblyTransparent,
+                                    videoRightAssemblyTransparent,
                                     bottomBarTransparent,
                                 )
                             )
@@ -450,6 +452,22 @@ class FreedomSettingActivity : XplerActivity() {
                                 valueRange = 0f..100f,
                                 onValueChange = {
                                     videoAssemblyTransparent = it.toInt()
+                                    videoRightAssemblyTransparent = it.toInt()
+                                },
+                            )
+                            Text(
+                                text = "视频右侧控件: $videoRightAssemblyTransparent",
+                                style = MaterialTheme.typography.body1,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                            Slider(
+                                value = videoRightAssemblyTransparent.toFloat(),
+                                valueRange = 0f..100f,
+                                onValueChange = {
+                                    videoRightAssemblyTransparent = it.toInt()
+                                    if (it >= videoAssemblyTransparent) {
+                                        videoRightAssemblyTransparent = videoAssemblyTransparent
+                                    }
                                 },
                             )
                             Text(
@@ -474,6 +492,16 @@ class FreedomSettingActivity : XplerActivity() {
                     checked = model.isRemoveSticker.observeAsState(false),
                     onCheckedChange = {
                         model.changeIsRemoveSticker(it)
+                    }
+                )
+            }
+            item {
+                SwitchItem(
+                    text = "移除底部播放控制栏",
+                    subtext = "部分版本在暂停视频后底部会出现播放控制栏",
+                    checked = model.isRemoveBottomCtrlBar.observeAsState(false),
+                    onCheckedChange = {
+                        model.changeIsRemoveBottomCtrlBar(it)
                     }
                 )
             }
@@ -579,7 +607,10 @@ class FreedomSettingActivity : XplerActivity() {
                         title = "请选择拍摄按钮响应模式",
                         confirm = "更改",
                         onlyConfirm = true,
-                        onConfirm = { showIsDisablePhotoDialog = false },
+                        onConfirm = {
+                            showIsDisablePhotoDialog = false
+                            showRestartAppDialog = true
+                        },
                     ) {
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -641,6 +672,7 @@ class FreedomSettingActivity : XplerActivity() {
                     },
                     onCheckedChange = {
                         model.changeIsVideoOptionBarFilter(it)
+                        showRestartAppDialog = true
                     }
                 )
 
@@ -681,7 +713,7 @@ class FreedomSettingActivity : XplerActivity() {
                         onConfirm = {
                             showFilterDialog = false
                             model.setVideoOptionBarFilterKeywords(inputValue)
-                            KToastUtils.show(application, "切换视频或重启抖音生效")
+                            showRestartAppDialog = true
                         },
                     ) {
                         FCard(

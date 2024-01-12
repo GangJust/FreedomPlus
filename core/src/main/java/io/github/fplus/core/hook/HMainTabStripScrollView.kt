@@ -5,15 +5,15 @@ import com.freegang.ktutils.view.firstParentOrNull
 import com.ss.android.ugc.aweme.homepage.ui.titlebar.MainTitleBar
 import com.ss.android.ugc.aweme.homepage.ui.view.MainTabStripScrollView
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.wrapper.CallMethods
 import io.github.xpler.core.thisViewGroup
+import io.github.xpler.core.wrapper.CallMethods
 
-class HMainTabStripScrollView(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<MainTabStripScrollView>(lpparam), CallMethods {
+class HMainTabStripScrollView : BaseHook<MainTabStripScrollView>(),
+    CallMethods {
+
     companion object {
         const val TAG = "HMainTabStripScrollView"
     }

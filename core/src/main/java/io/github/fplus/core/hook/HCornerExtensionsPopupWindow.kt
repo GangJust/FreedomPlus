@@ -9,28 +9,24 @@ import androidx.core.view.children
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.app.isDarkMode
-import com.freegang.ktutils.extension.isPrimitiveObjectType
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.view.postRunning
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
+import io.github.fplus.Constant
 import io.github.fplus.core.R
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.databinding.PopupFreedomSettingBinding
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.ui.activity.FreedomSettingActivity
-import io.github.fplus.Constant
 import io.github.xpler.core.KtXposedHelpers
 import io.github.xpler.core.entity.NoneHook
-import io.github.xpler.core.argsOrEmpty
+import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.wrapper.CallMethods
+import io.github.xpler.core.log.XplerLog
 
-class HCornerExtensionsPopupWindow(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<Any>(lpparam), CallMethods {
+class HCornerExtensionsPopupWindow : BaseHook<Any>() {
     companion object {
-        const val TAG = "HCornerExtendsionsPopupWindow"
+        const val TAG = "HCornerExtensionsPopupWindow"
     }
 
     private val config get() = ConfigV1.get()
@@ -39,16 +35,11 @@ class HCornerExtensionsPopupWindow(lpparam: XC_LoadPackage.LoadPackageParam) :
         return DexkitBuilder.cornerExtensionsPopupWindowClazz ?: NoneHook::class.java
     }
 
-    override fun callOnBeforeMethods(params: XC_MethodHook.MethodHookParam) {
-
-    }
-
-    override fun callOnAfterMethods(params: XC_MethodHook.MethodHookParam) {
+    @OnAfter
+    fun methodAfter(params: XC_MethodHook.MethodHookParam, boolean: Boolean) {
         hookBlockRunning(params) {
-            if (argsOrEmpty.size != 1) return
-            if (args.first()?.javaClass?.isPrimitiveObjectType == false) return
-            if (args.first() == false) return // fist type is Boolean
-            // KLogCat.d(TAG, "更新方法: $method")
+            if (!boolean)
+                return
 
             val popupWindow = thisObject as PopupWindow
             popupWindow.contentView.postRunning {
@@ -89,7 +80,7 @@ class HCornerExtensionsPopupWindow(lpparam: XC_LoadPackage.LoadPackageParam) :
                 }
             }
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 }

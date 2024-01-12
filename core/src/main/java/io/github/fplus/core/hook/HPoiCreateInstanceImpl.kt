@@ -4,7 +4,6 @@ import android.app.Activity
 import android.view.ViewGroup
 import com.freegang.ktutils.log.KLogCat
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.xpler.core.entity.EmptyHook
@@ -15,8 +14,7 @@ import io.github.xpler.core.entity.Param
 import io.github.xpler.core.hookBlockRunning
 import org.json.JSONObject
 
-class HPoiCreateInstanceImpl(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<EmptyHook>(lpparam) {
+class HPoiCreateInstanceImpl : BaseHook<EmptyHook>() {
     companion object {
         const val TAG = "HPoiCreateInstanceImpl"
     }

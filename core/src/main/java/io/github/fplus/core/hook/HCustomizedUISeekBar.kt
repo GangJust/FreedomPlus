@@ -3,20 +3,17 @@ package io.github.fplus.core.hook
 import android.widget.FrameLayout
 import androidx.core.view.updateMargins
 import com.freegang.ktutils.display.dip2px
-import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
 import com.ss.android.ugc.aweme.feed.ui.seekbar.SeekBarState
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
-import io.github.xpler.core.argsOrEmpty
+import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.wrapper.CallMethods
+import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisView
 
-class HCustomizedUISeekBar(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<Any>(lpparam), CallMethods {
+class HCustomizedUISeekBar : BaseHook<Any>() {
     companion object {
         const val TAG = "HCustomizedUISeekBar"
 
@@ -46,15 +43,12 @@ class HCustomizedUISeekBar(lpparam: XC_LoadPackage.LoadPackageParam) :
         }
     }
 
-    override fun callOnBeforeMethods(params: XC_MethodHook.MethodHookParam) {
-
-    }
-
-    override fun callOnAfterMethods(params: XC_MethodHook.MethodHookParam) {
+    @OnAfter
+    fun methodAfter(params: XC_MethodHook.MethodHookParam, action: SeekBarState.Action?) {
         hookBlockRunning(params) {
-            action = argsOrEmpty.firstOrNull()?.asOrNull<SeekBarState.Action>() ?: return
+            HCustomizedUISeekBar.action = action
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 }

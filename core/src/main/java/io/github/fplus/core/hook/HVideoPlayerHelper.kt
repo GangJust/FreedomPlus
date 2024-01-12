@@ -1,19 +1,16 @@
 package io.github.fplus.core.hook
 
 import android.view.MotionEvent
-import com.freegang.ktutils.log.KLogCat
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.xpler.core.entity.NoneHook
-import io.github.xpler.core.argsOrEmpty
+import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.wrapper.CallMethods
+import io.github.xpler.core.log.XplerLog
 
-class HVideoPlayerHelper(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<Any>(lpparam), CallMethods {
+class HVideoPlayerHelper : BaseHook<Any>() {
     companion object {
         const val TAG = "HVideoPlayerHelper"
     }
@@ -24,22 +21,18 @@ class HVideoPlayerHelper(lpparam: XC_LoadPackage.LoadPackageParam) :
         return DexkitBuilder.videoPlayerHelperClazz ?: NoneHook::class.java
     }
 
-    override fun callOnBeforeMethods(params: XC_MethodHook.MethodHookParam) {
+    @OnBefore
+    fun methodBefore(params: XC_MethodHook.MethodHookParam, event: MotionEvent?) {
         hookBlockRunning(params) {
-            // 禁用双击点赞
-            if (argsOrEmpty.firstOrNull()?.javaClass == MotionEvent::class.java) {
-                if (!config.isDoubleClickType) return
-                if (config.doubleClickType != 2) {
-                    result = null
-                }
+            if (!config.isDoubleClickType) {
                 return
             }
+
+            if (config.doubleClickType != 2) {
+                result = null
+            }
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
-    }
-
-    override fun callOnAfterMethods(params: XC_MethodHook.MethodHookParam) {
-
     }
 }

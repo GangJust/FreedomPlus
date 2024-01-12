@@ -24,7 +24,6 @@ import com.freegang.ktutils.view.toViewTreeString
 import com.ss.android.ugc.aweme.ad.feed.VideoViewHolderRootView
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.hook.logic.DownloadLogic
@@ -37,8 +36,7 @@ import io.github.xpler.core.thisView
 import io.github.xpler.core.thisViewGroup
 import kotlin.math.abs
 
-class HVideoViewHolderRootView(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<VideoViewHolderRootView>(lpparam) {
+class HVideoViewHolderRootView : BaseHook<VideoViewHolderRootView>() {
     companion object {
         const val TAG = "HVideoViewHolderRootView"
     }

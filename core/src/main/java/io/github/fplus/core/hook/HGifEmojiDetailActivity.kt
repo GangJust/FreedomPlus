@@ -12,7 +12,6 @@ import com.freegang.ktutils.view.idName
 import com.ss.android.ugc.aweme.comment.ui.GifEmojiDetailActivity
 import com.ss.android.ugc.aweme.emoji.model.Emoji
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.hook.logic.SaveEmojiLogic
@@ -21,8 +20,7 @@ import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.thisActivity
 import kotlinx.coroutines.delay
 
-class HGifEmojiDetailActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<GifEmojiDetailActivity>(lpparam) {
+class HGifEmojiDetailActivity : BaseHook<GifEmojiDetailActivity>() {
     companion object {
         const val TAG = "HGifEmojiDetailActivity"
     }

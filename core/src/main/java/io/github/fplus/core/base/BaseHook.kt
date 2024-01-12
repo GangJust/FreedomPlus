@@ -22,7 +22,6 @@ import com.freegang.ktutils.app.IProgressNotification
 import com.freegang.ktutils.app.KNotifiUtils
 import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.app.isDarkMode
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.R
 import io.github.fplus.core.databinding.DialogChoiceLayoutBinding
 import io.github.fplus.core.databinding.DialogInputChoiceLayoutBinding
@@ -45,8 +44,7 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-abstract class BaseHook<T>(lpparam: XC_LoadPackage.LoadPackageParam) :
-    HookEntity<T>(lpparam) {
+abstract class BaseHook<T>() : HookEntity<T>() {
     protected val handler: Handler = Handler(Looper.getMainLooper())
     private val mainScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
     private var toast: Toast? = null

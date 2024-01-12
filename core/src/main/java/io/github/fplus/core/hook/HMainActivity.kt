@@ -32,8 +32,7 @@ import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.thisActivity
 import io.github.xpler.core.thisContext
 
-class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<MainActivity>(lpparam) {
+class HMainActivity : BaseHook<MainActivity>() {
     companion object {
         const val TAG = "HMainActivity"
 
@@ -158,7 +157,7 @@ class HMainActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
     private fun initBottomTabView() {
         // 底部导航栏透明度
         if (config.isTranslucent) {
-            val alphaValue = config.translucentValue[2] / 100f
+            val alphaValue = config.translucentValue[3] / 100f
             bottomTabView?.parentView?.alpha = alphaValue
         }
 

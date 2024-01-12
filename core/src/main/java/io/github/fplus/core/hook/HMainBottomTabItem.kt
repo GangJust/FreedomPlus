@@ -7,18 +7,17 @@ import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.view.forEachChild
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.wrapper.CallMethods
 import io.github.xpler.core.thisView
+import io.github.xpler.core.wrapper.CallMethods
 
 
-class HMainBottomTabItem(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<Any>(lpparam), CallMethods {
+class HMainBottomTabItem : BaseHook<Any>(),
+    CallMethods {
     companion object {
         const val TAG = "HMainBottomTabItem"
     }
@@ -42,7 +41,10 @@ class HMainBottomTabItem(lpparam: XC_LoadPackage.LoadPackageParam) :
     }
 
     private fun isHidePhotoButton(view: View) {
-        if (!config.isHidePhotoButton) return
+        if (!config.isHidePhotoButton) {
+            return
+        }
+
         view.forEachChild {
             if ("$contentDescription".contains(Regex("拍摄|道具"))) {
                 // 隐藏按钮

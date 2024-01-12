@@ -7,7 +7,6 @@ import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.fieldGets
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.R
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.helper.DexkitBuilder
@@ -16,8 +15,7 @@ import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
 
-class HConversationFragment(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<Any>(lpparam) {
+class HConversationFragment : BaseHook<Any>() {
     companion object {
         const val TAG = "HConversationFragment"
     }

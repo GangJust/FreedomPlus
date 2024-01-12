@@ -112,23 +112,22 @@ object Themes {
             colors = nowColors.colors,
             typography = nowTypography,
             shapes = ShapeRes.defaultShapes,
-            content = {
-                //沉浸式状态栏
-                rememberSystemUiController().run {
-                    setSystemBarsColor(
-                        color = nowColors.colors.background,
-                        darkIcons = !Themes.isDark,
-                    )
-                }
-                //沉浸式则补充间隙
-                Surface(
-                    modifier = if (Themes.isImmersive) Modifier.windowInsetsPadding(WindowInsets.systemBars) else Modifier,
+        ){
+            //沉浸式状态栏
+            rememberSystemUiController().run {
+                setSystemBarsColor(
                     color = nowColors.colors.background,
-                    contentColor = nowColors.colors.background,
-                    content = { content() }
+                    darkIcons = !Themes.isDark,
                 )
             }
-        )
+            //沉浸式则补充间隙
+            Surface(
+                modifier = if (Themes.isImmersive) Modifier.windowInsetsPadding(WindowInsets.systemBars) else Modifier,
+                color = nowColors.colors.background,
+                contentColor = nowColors.colors.background,
+                content = content,
+            )
+        }
     }
 }
 

@@ -11,7 +11,6 @@ import com.ss.android.ugc.aweme.base.model.UrlModel
 import com.ss.android.ugc.aweme.emoji.store.view.EmojiBottomSheetDialog
 import com.ss.android.ugc.aweme.emoji.views.EmojiDetailDialog
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.hook.logic.SaveEmojiLogic
@@ -20,8 +19,7 @@ import io.github.xpler.core.hookClass
 import io.github.xpler.core.wrapper.CallMethods
 import kotlinx.coroutines.delay
 
-class HEmojiDetailDialog(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<EmojiDetailDialog>(lpparam), CallMethods {
+class HEmojiDetailDialog : BaseHook<EmojiDetailDialog>(), CallMethods {
     companion object {
         const val TAG = "HEmojiDetailDialog"
     }

@@ -15,18 +15,16 @@ import com.freegang.ktutils.reflect.fieldGets
 import com.freegang.ktutils.text.KTextUtils
 import com.ss.android.ugc.aweme.comment.model.Comment
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.R
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.hook.logic.SaveAudioLogic
 import io.github.xpler.core.KtXposedHelpers
 import io.github.xpler.core.argsOrEmpty
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.wrapper.CallMethods
 import io.github.xpler.core.thisView
+import io.github.xpler.core.wrapper.CallMethods
 
-class HCommentAudioView(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<Any>(lpparam), CallMethods {
+class HCommentAudioView : BaseHook<Any>(), CallMethods {
     companion object {
         const val TAG = "HCommentAudioView"
     }
@@ -39,7 +37,10 @@ class HCommentAudioView(lpparam: XC_LoadPackage.LoadPackageParam) :
 
     override fun callOnAfterMethods(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
-            if (argsOrEmpty.size != 4) return
+            if (argsOrEmpty.size != 4) {
+                return
+            }
+            
             val value = args[1].fieldGets().filterNotNull().firstOrNull() ?: return
             val gets = value.fieldGets().filter { it?.javaClass?.`package`?.name == "X" }
 

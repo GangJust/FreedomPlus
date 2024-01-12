@@ -5,14 +5,12 @@ import com.freegang.ktutils.reflect.methodInvokeFirst
 import com.freegang.ktutils.reflect.methods
 import com.ss.android.ugc.aweme.feed.adapter.VideoViewHolder
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
 
-class HPlayerController(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<Any>(lpparam) {
+class HPlayerController : BaseHook<Any>() {
     companion object {
         const val TAG = "HPlayerController"
 

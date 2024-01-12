@@ -49,11 +49,14 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     private var _isTranslucent = MutableLiveData(false)
     val isTranslucent: LiveData<Boolean> = _isTranslucent
 
-    private var _translucentValue = MutableLiveData(listOf(50, 50, 50))
+    private var _translucentValue = MutableLiveData(listOf(50, 50, 50, 50))
     val translucentValue: LiveData<List<Int>> = _translucentValue
 
     private var _isRemoveSticker = MutableLiveData(false)
     val isRemoveSticker: LiveData<Boolean> = _isRemoveSticker
+
+    private var _isRemoveBottomCtrlBar = MutableLiveData(false)
+    val isRemoveBottomCtrlBar: LiveData<Boolean> = _isRemoveBottomCtrlBar
 
     private var _isDoubleClickType = MutableLiveData(false)
     val isDoubleClickType: LiveData<Boolean> = _isDoubleClickType
@@ -162,6 +165,7 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
             changeIsTranslucent(config.isTranslucent)
             changeTranslucentValue(config.translucentValue)
             changeIsRemoveSticker(config.isRemoveSticker)
+            changeIsRemoveBottomCtrlBar(config.isRemoveBottomCtrlBar)
             changeIsDoubleClickType(config.isDoubleClickType)
             changeDoubleClickType(config.doubleClickType)
             changeIsLongtimeVideoToast(config.isLongtimeVideoToast)
@@ -237,6 +241,12 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     fun changeIsRemoveSticker(value: Boolean) {
         _isRemoveSticker.value = value
         config.isRemoveSticker = value
+    }
+
+    // 移除底部播放控制栏
+    fun changeIsRemoveBottomCtrlBar(value: Boolean) {
+        _isRemoveBottomCtrlBar.value = value
+        config.isRemoveBottomCtrlBar = value
     }
 
     // 是否开启更改双击响应类型

@@ -6,17 +6,15 @@ import com.freegang.ktutils.display.dip2px
 import com.freegang.ktutils.log.KLogCat
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.xpler.core.entity.FutureHook
 import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.wrapper.CallMethods
 import io.github.xpler.core.thisViewGroup
+import io.github.xpler.core.wrapper.CallMethods
 
-class HPenetrateTouchRelativeLayout(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<PenetrateTouchRelativeLayout>(lpparam), CallMethods {
+class HPenetrateTouchRelativeLayout : BaseHook<PenetrateTouchRelativeLayout>(), CallMethods {
     companion object {
         const val TAG = "HPenetrateTouchRelativeLayout"
     }

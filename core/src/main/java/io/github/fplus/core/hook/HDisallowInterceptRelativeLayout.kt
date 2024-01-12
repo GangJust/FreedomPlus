@@ -5,7 +5,6 @@ import com.freegang.ktutils.view.forEachChild
 import com.freegang.ktutils.view.postRunning
 import com.freegang.ktutils.view.removeInParent
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.xpler.core.findClass
@@ -14,8 +13,8 @@ import io.github.xpler.core.hookConstructorsAll
 import io.github.xpler.core.wrapper.CallConstructors
 import io.github.xpler.core.thisViewGroup
 
-class HDisallowInterceptRelativeLayout(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<Any>(lpparam), CallConstructors {
+class HDisallowInterceptRelativeLayout : BaseHook<Any>(),
+    CallConstructors {
     companion object {
         const val TAG = "HDisallowInterceptRelativeLayout"
     }

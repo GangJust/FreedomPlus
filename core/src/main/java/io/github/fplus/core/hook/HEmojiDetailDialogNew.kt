@@ -12,7 +12,6 @@ import com.ss.android.ugc.aweme.emoji.base.BaseEmoji
 import com.ss.android.ugc.aweme.emoji.similaremoji.EmojiDetailDialogNew
 import com.ss.android.ugc.aweme.emoji.store.view.EmojiBottomSheetDialog
 import com.ss.android.ugc.aweme.emoji.utils.EmojiApi
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
@@ -20,8 +19,7 @@ import io.github.fplus.core.hook.logic.SaveEmojiLogic
 import io.github.xpler.core.argsOrEmpty
 import io.github.xpler.core.hookClass
 
-class HEmojiDetailDialogNew(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<EmojiDetailDialogNew>(lpparam) {
+class HEmojiDetailDialogNew : BaseHook<EmojiDetailDialogNew>() {
     companion object {
         const val TAG = "HEmojiDetailDialogNew"
     }

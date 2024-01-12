@@ -7,17 +7,16 @@ import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.view.postRunning
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.hookClass
-import io.github.xpler.core.wrapper.CallMethods
 import io.github.xpler.core.thisViewGroup
+import io.github.xpler.core.wrapper.CallMethods
 
-class HSeekBarSpeedModeBottomMask(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<Any>(lpparam), CallMethods {
+class HSeekBarSpeedModeBottomMask : BaseHook<Any>(),
+    CallMethods {
     companion object {
         const val TAG = "HSeekBarSpeedModeBottomMask"
     }

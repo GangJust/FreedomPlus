@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.FrameLayout
+import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.view.isVisible
 import com.freegang.ktutils.extension.asOrNull
@@ -22,7 +23,6 @@ import com.ss.android.ugc.aweme.feed.ui.FeedRightScaleView
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
@@ -32,8 +32,8 @@ import io.github.xpler.core.hook
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.wrapper.CallConstructors
 
-class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<VideoViewHolder>(lpparam), CallConstructors {
+class HVideoViewHolder : BaseHook<VideoViewHolder>(),
+    CallConstructors {
 
     companion object {
         const val TAG = "HVideoViewHolder"
@@ -46,6 +46,15 @@ class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
     private val config get() = ConfigV1.get()
 
     private var onDrawMaps = mutableMapOf<String, ViewTreeObserver.OnDrawListener?>()
+
+    private val videoOptionBarFilterKeywords by lazy {
+        config.videoOptionBarFilterKeywords
+            .removePrefix(",").removePrefix("，")
+            .removeSuffix(",").removeSuffix("，")
+            .replace("\\s".toRegex(), "")
+            .replace("[,，]".toRegex(), "|")
+            .toRegex()
+    }
 
     private fun addOnDraw(view: View?) {
         if (view == null) {
@@ -120,38 +129,42 @@ class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
     }
 
     private fun changeFeedRightScaleView(params: XC_MethodHook.MethodHookParam) {
-        if (!config.isVideoOptionBarFilter) return
+        if (!config.isVideoOptionBarFilter) {
+            return
+        }
 
         val views = params.thisObject?.fieldGets(type = View::class.java) ?: emptyList()
         val view = views.firstOrNull { it is FeedRightScaleView }?.asOrNull<FeedRightScaleView>() ?: return
 
-        val videoOptionBarFilterKeywords = config.videoOptionBarFilterKeywords
-            .removePrefix(",").removePrefix("，")
-            .removeSuffix(",").removeSuffix("，")
-            .replace("\\s".toRegex(), "")
-            .replace("[,，]".toRegex(), "|")
-            .toRegex()
-
         view.postRunning {
             val isAvatarImageWithLive = videoOptionBarFilterKeywords.pattern.contains("头像")
-
             view.forEachChild {
                 if (isAvatarImageWithLive && this.javaClass.name.contains("AvatarImageWithLive")) {
-                    this.firstParentOrNull(FrameLayout::class.java)?.isVisible = false
+                    this.firstParentOrNull(RelativeLayout::class.java)?.isVisible = false
                 }
 
                 if ("${this.contentDescription}".contains(videoOptionBarFilterKeywords)) {
                     this.firstParentOrNull(FrameLayout::class.java)?.isVisible = false
                 }
 
-                if (this is TextView && "$text".contains(videoOptionBarFilterKeywords)) {
+                if (this is TextView && "${this.text}".contains(videoOptionBarFilterKeywords)) {
                     this.firstParentOrNull(FrameLayout::class.java)?.isVisible = false
                 }
             }
-
             val isMusicContainer = videoOptionBarFilterKeywords.pattern.contains("音乐")
             view.getSiblingViewAt(1)?.isVisible = !isMusicContainer
         }
+    }
+
+    private fun changeFeedRightScaleViewAlpha(params: XC_MethodHook.MethodHookParam) {
+        if (!config.isTranslucent) {
+            return
+        }
+
+        val views = params.thisObject?.fieldGets(type = View::class.java) ?: emptyList()
+        val view = views.firstOrNull { it is FeedRightScaleView }?.asOrNull<FeedRightScaleView>() ?: return
+        view.alpha = config.translucentValue[2] / 100f
+        view.getSiblingViewAt(1)?.alpha = config.translucentValue[2] / 100f // 音乐
     }
 
     private fun getContext(params: XC_MethodHook.MethodHookParam): Context? {
@@ -172,6 +185,7 @@ class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
         hookBlockRunning(params) {
             // KLogCat.d("long: $long")
             changeFeedRightScaleView(params)
+            changeFeedRightScaleViewAlpha(params)
         }.onFailure {
             KLogCat.tagE(TAG, it)
         }
@@ -232,10 +246,12 @@ class HVideoViewHolder(lpparam: XC_LoadPackage.LoadPackageParam) :
     }
 
     override fun onInit() {
-        DexkitBuilder.videoViewHolderMethods.firstOrNull()?.hook {
-            onAfter {
-                callOpenCleanMode(this, true)
+        DexkitBuilder.videoViewHolderMethods
+            .firstOrNull { it.name[0] in 'A'..'Z' }
+            ?.hook {
+                onAfter {
+                    callOpenCleanMode(this, true)
+                }
             }
-        }
     }
 }

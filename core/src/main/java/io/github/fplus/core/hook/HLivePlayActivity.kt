@@ -2,7 +2,6 @@ package io.github.fplus.core.hook
 
 import com.freegang.ktutils.log.KLogCat
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.ImmersiveHelper
@@ -12,8 +11,7 @@ import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.thisActivity
 
-class HLivePlayActivity(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<Any>(lpparam) {
+class HLivePlayActivity : BaseHook<Any>() {
 
     companion object {
         const val TAG = "HLivePlayActivity"

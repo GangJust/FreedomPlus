@@ -113,11 +113,16 @@ class ConfigV1 private constructor() {
             field = value
         }
 
-    /// 首页控件透明度 [顶部导航, 视频控件, 底部导航]
-    var translucentValue: List<Int> = listOf(50, 50, 50)
+    /// 首页控件透明度 [顶部导航, 视频控件, 视频控件右侧, 底部导航]
+    var translucentValue: List<Int> = listOf(50, 50, 50, 50)
         get() {
-            field = mmkv.getString("translucentValue", "50, 50, 50")!!.split(",").map { it.trim().toInt() }
-            return field
+            field = mmkv.getString("translucentValue", "50, 50, 50, 50")!!.split(",").map { it.trim().toInt() }
+
+            return if (field.size == 3) {
+                listOf(field[0], field[1], field[1], field[2])
+            } else {
+                field
+            }
         }
         set(value) {
             mmkv.putString("translucentValue", value.joinToString())
@@ -303,6 +308,17 @@ class ConfigV1 private constructor() {
         }
         set(value) {
             mmkv.putBoolean("isRemoveSticker", value)
+            field = value
+        }
+
+    /// 移除底部播放控制栏
+    var isRemoveBottomCtrlBar: Boolean = false
+        get() {
+            field = mmkv.getBoolean("isRemoveBottomCtrlBar", false)
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("isRemoveBottomCtrlBar", value)
             field = value
         }
 

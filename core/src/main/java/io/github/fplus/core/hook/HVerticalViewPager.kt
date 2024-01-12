@@ -12,7 +12,6 @@ import com.ss.android.ugc.aweme.common.widget.VerticalViewPager
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.follow.presenter.FollowFeed
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
@@ -22,8 +21,7 @@ import io.github.xpler.core.hookClass
 import io.github.xpler.core.lpparam
 import io.github.xpler.core.thisView
 
-class HVerticalViewPager(lpparam: XC_LoadPackage.LoadPackageParam) :
-    BaseHook<VerticalViewPager>(lpparam) {
+class HVerticalViewPager : BaseHook<VerticalViewPager>() {
     companion object {
         const val TAG = "HVerticalViewPager"
 
