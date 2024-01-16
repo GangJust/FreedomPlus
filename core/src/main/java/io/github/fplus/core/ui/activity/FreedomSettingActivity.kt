@@ -59,7 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.freegang.ktutils.app.KToastUtils
-import com.freegang.ktutils.reflect.methodInvokeFirst
+import com.freegang.ktutils.reflect.methodInvoke
 import io.github.fplus.core.R
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.helper.HighlightStyleBuilder
@@ -276,7 +276,7 @@ class FreedomSettingActivity : XplerActivity() {
                         model.setVersionConfig(null)
                     }
                     // KAppUtils.restartApplication(application)
-                    DexkitBuilder.restartUtilsClazz?.methodInvokeFirst(args = arrayOf(this))
+                    DexkitBuilder.restartUtilsClazz?.methodInvoke(args = arrayOf(this))
                 },
             ) {
                 Text(

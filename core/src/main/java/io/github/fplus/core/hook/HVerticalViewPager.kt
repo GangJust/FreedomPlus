@@ -4,9 +4,9 @@ import android.view.MotionEvent
 import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.reflect.fieldGetFirst
-import com.freegang.ktutils.reflect.fieldSetFirst
-import com.freegang.ktutils.reflect.methodInvokeFirst
+import com.freegang.ktutils.reflect.fieldGet
+import com.freegang.ktutils.reflect.fieldSet
+import com.freegang.ktutils.reflect.methodInvoke
 import com.freegang.ktutils.text.KTextUtils
 import com.ss.android.ugc.aweme.common.widget.VerticalViewPager
 import com.ss.android.ugc.aweme.feed.model.Aweme
@@ -74,13 +74,13 @@ class HVerticalViewPager : BaseHook<VerticalViewPager>() {
                     onBefore {
                         if (!config.isVideoFilter) return@onBefore
 
-                        val mModel = thisObject.fieldGetFirst("mModel")
-                        val mData = mModel?.fieldGetFirst("mData")
+                        val mModel = thisObject.fieldGet(name = "mModel")
+                        val mData = mModel?.fieldGet(name = "mData")
                         if (mData?.javaClass?.name?.contains("FeedItemList") == true) {
-                            val items = mData.fieldGetFirst("items")?.asOrNull<List<Aweme>>() ?: emptyList()
+                            val items = mData.fieldGet(name = "items")?.asOrNull<List<Aweme>>() ?: emptyList()
                             if (items.size < 3) return@onBefore
 
-                            mData.fieldSetFirst("items", filterAwemeList(items))
+                            mData.fieldSet(name = "items", filterAwemeList(items))
                             // val array = items.map { it.sortString() }.toTypedArray()
                             // KLogCat.tagD(TAG, arrayOf("推荐视频列表", array.joinToString("\n")))
                         }
@@ -96,13 +96,13 @@ class HVerticalViewPager : BaseHook<VerticalViewPager>() {
                     onBefore {
                         if (!config.isVideoFilter) return@onBefore
 
-                        val mModel = thisObject.fieldGetFirst("mModel")
-                        val mData = mModel?.fieldGetFirst("mData")
+                        val mModel = thisObject.fieldGet(name = "mModel")
+                        val mData = mModel?.fieldGet(name = "mData")
                         if (mData?.javaClass?.name?.contains("FollowFeedList") == true) {
-                            val mItems = mData.fieldGetFirst("mItems")?.asOrNull<List<FollowFeed>>() ?: emptyList()
+                            val mItems = mData.fieldGet(name = "mItems")?.asOrNull<List<FollowFeed>>() ?: emptyList()
                             if (mItems.size < 3) return@onBefore
 
-                            mData.fieldSetFirst("mItems", filterFollowFeedList(mItems))
+                            mData.fieldSet("mItems", filterFollowFeedList(mItems))
                             // val array = mItems.map { it.aweme.sortString() }.toTypedArray()
                             // KLogCat.tagD(TAG, arrayOf("关注视频列表", array.joinToString("\n")))
                         }
@@ -122,9 +122,9 @@ class HVerticalViewPager : BaseHook<VerticalViewPager>() {
         hookBlockRunning(params) {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    val adapter = thisObject.methodInvokeFirst("getAdapter") ?: return
-                    val currentItem = thisObject.methodInvokeFirst("getCurrentItem") as? Int ?: return
-                    currentAweme = adapter.methodInvokeFirst(
+                    val adapter = thisObject.methodInvoke("getAdapter") ?: return
+                    val currentItem = thisObject.methodInvoke("getCurrentItem") as? Int ?: return
+                    currentAweme = adapter.methodInvoke(
                         returnType = Aweme::class.java,
                         args = arrayOf(currentItem),
                     ) as? Aweme
@@ -137,13 +137,13 @@ class HVerticalViewPager : BaseHook<VerticalViewPager>() {
                         }
                         durationRunnable = Runnable {
                             //
-                            val delayItem = thisObject.methodInvokeFirst("getCurrentItem") as? Int ?: return@Runnable
+                            val delayItem = thisObject.methodInvoke("getCurrentItem") as? Int ?: return@Runnable
                             if (delayItem == currentItem) {
                                 return@Runnable
                             }
 
                             //
-                            val delayAweme = adapter.methodInvokeFirst(
+                            val delayAweme = adapter.methodInvoke(
                                 returnType = Aweme::class.java,
                                 args = arrayOf(delayItem),
                             ) as? Aweme

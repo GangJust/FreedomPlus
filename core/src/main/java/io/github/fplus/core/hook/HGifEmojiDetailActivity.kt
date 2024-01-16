@@ -6,7 +6,7 @@ import androidx.core.view.isVisible
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.reflect.fieldGetFirst
+import com.freegang.ktutils.reflect.fieldGet
 import com.freegang.ktutils.view.firstOrNull
 import com.freegang.ktutils.view.idName
 import com.ss.android.ugc.aweme.comment.ui.GifEmojiDetailActivity
@@ -35,8 +35,8 @@ class HGifEmojiDetailActivity : BaseHook<GifEmojiDetailActivity>() {
             if (!config.isEmoji) return
             val gifEmoji = thisActivity.intent.getSerializableExtra("gif_emoji") as Emoji? ?: return
 
-            val animateUrl = gifEmoji.fieldGetFirst("animateUrl")
-            urlList = animateUrl?.fieldGetFirst("urlList")?.asOrNull<List<String>>() ?: emptyList()
+            val animateUrl = gifEmoji.fieldGet(name = "animateUrl")
+            urlList = animateUrl?.fieldGet(name = "urlList")?.asOrNull<List<String>>() ?: emptyList()
             if (urlList.isEmpty()) return
 
             rebuildView(thisActivity as GifEmojiDetailActivity)

@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.reflect.methodInvokeFirst
+import com.freegang.ktutils.reflect.methodInvoke
 import com.freegang.ktutils.view.firstOrNull
 import com.freegang.ktutils.view.postRunning
 import com.ss.android.ugc.aweme.feed.model.Aweme
@@ -43,7 +43,7 @@ class HDetailPageFragment : BaseHook<Any>() {
             //
             HDetailPageFragment.isComment = false
             view.postRunning {
-                val aweme = thisObject.methodInvokeFirst(returnType = Aweme::class.java) as? Aweme ?: return@postRunning
+                val aweme = thisObject.methodInvoke(returnType = Aweme::class.java) as? Aweme ?: return@postRunning
 
                 // awemeType 【134:评论区图片, 133|136:评论区视频, 0:主页视频详情, 68:主页图文详情, 13:私信视频/图文, 6000:私信图片】 by 25.1.0 至今
                 if (aweme.awemeType != 134 && aweme.awemeType != 133 && aweme.awemeType != 136) return@postRunning
@@ -61,7 +61,7 @@ class HDetailPageFragment : BaseHook<Any>() {
                     backBtn.performClick()
                 }
                 binding.saveBtn.setOnClickListener {
-                    val awemeAgain = thisObject.methodInvokeFirst(returnType = Aweme::class.java) as? Aweme // 重新获取
+                    val awemeAgain = thisObject.methodInvoke(returnType = Aweme::class.java) as? Aweme // 重新获取
                     SaveCommentLogic(this@HDetailPageFragment, it.context, awemeAgain)
                 }
                 viewGroup.addView(appbar)

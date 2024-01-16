@@ -5,7 +5,7 @@ import android.widget.TextView
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.reflect.fieldGetFirst
+import com.freegang.ktutils.reflect.fieldGet
 import com.freegang.ktutils.view.firstOrNull
 import com.ss.android.ugc.aweme.base.model.UrlModel
 import com.ss.android.ugc.aweme.emoji.store.view.EmojiBottomSheetDialog
@@ -66,8 +66,8 @@ class HEmojiDetailDialog : BaseHook<EmojiDetailDialog>(), CallMethods {
             if (!config.isEmoji) return
             if (urlList.isNotEmpty()) return
 
-            val urlModel = thisObject.fieldGetFirst(type = UrlModel::class.java)
-            urlList = urlModel?.fieldGetFirst("urlList")?.asOrNull<List<String>>() ?: listOf()
+            val urlModel = thisObject.fieldGet(type = UrlModel::class.java)
+            urlList = urlModel?.fieldGet(name = "urlList")?.asOrNull<List<String>>() ?: listOf()
         }.onFailure {
             KLogCat.tagE(TAG, it)
         }

@@ -18,8 +18,8 @@ import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.util.TypedValue
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.reflect.fieldSetFirst
-import com.freegang.ktutils.reflect.methodInvokeFirst
+import com.freegang.ktutils.reflect.fieldSet
+import com.freegang.ktutils.reflect.methodInvoke
 import com.freegang.ktutils.reflect.methodInvokes
 import io.github.xpler.core.KtXposedHelpers
 import java.io.InputStream
@@ -810,7 +810,7 @@ class PluginResources(
 // 代理Resources
 fun proxyRes(activity: Activity?) {
     activity?.runCatching {
-        this.fieldSetFirst("mResources", PluginResources(activity.resources))
+        this.fieldSet("mResources", PluginResources(activity.resources))
     }
 }
 
@@ -818,6 +818,6 @@ fun proxyRes(activity: Activity?) {
 fun injectRes(res: Resources?) {
     if (res != null) {
         val assets = res.assets
-        assets.methodInvokeFirst("addAssetPath", args = arrayOf(KtXposedHelpers.modulePath))
+        assets.methodInvoke(name = "addAssetPath", args = arrayOf(KtXposedHelpers.modulePath))
     }
 }

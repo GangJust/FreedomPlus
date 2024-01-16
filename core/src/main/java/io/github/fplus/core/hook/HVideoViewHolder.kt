@@ -9,10 +9,10 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.reflect.fieldGetFirst
+import com.freegang.ktutils.reflect.fieldGet
 import com.freegang.ktutils.reflect.fieldGets
-import com.freegang.ktutils.reflect.methodFirst
-import com.freegang.ktutils.reflect.methodInvokeFirst
+import com.freegang.ktutils.reflect.method
+import com.freegang.ktutils.reflect.methodInvoke
 import com.freegang.ktutils.view.firstParentOrNull
 import com.freegang.ktutils.view.forEachChild
 import com.freegang.ktutils.view.getSiblingViewAt
@@ -97,7 +97,7 @@ class HVideoViewHolder : BaseHook<VideoViewHolder>(),
             return
         }
 
-        val first = view.viewTreeObserver.fieldGetFirst("mOnDrawListeners")?.asOrNull<List<*>>() ?: return
+        val first = view.viewTreeObserver.fieldGet("mOnDrawListeners")?.asOrNull<List<*>>() ?: return
         KLogCat.d("监听集合", *first.map { "$it" }.toTypedArray())
     }
 
@@ -110,7 +110,7 @@ class HVideoViewHolder : BaseHook<VideoViewHolder>(),
             return
         }
 
-        val first = params.thisObject.methodFirst("openCleanMode", paramTypes = arrayOf(Boolean::class.java))
+        val first = params.thisObject.method(name = "openCleanMode", paramTypes = arrayOf(Boolean::class.java))
         XposedBridge.invokeOriginalMethod(first, params.thisObject, arrayOf(bool))
 
         //
@@ -168,7 +168,7 @@ class HVideoViewHolder : BaseHook<VideoViewHolder>(),
     }
 
     private fun getContext(params: XC_MethodHook.MethodHookParam): Context? {
-        return params.thisObject.methodInvokeFirst("getContext")?.asOrNull<Context>()
+        return params.thisObject.methodInvoke(name = "getContext")?.asOrNull<Context>()
     }
 
     @OnAfter("getAweme")

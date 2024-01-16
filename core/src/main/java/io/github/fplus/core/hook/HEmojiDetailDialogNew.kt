@@ -5,7 +5,7 @@ import android.view.View
 import android.widget.TextView
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.reflect.fieldFirst
+import com.freegang.ktutils.reflect.field
 import com.freegang.ktutils.view.firstOrNull
 import com.freegang.ktutils.view.postDelayedRunning
 import com.ss.android.ugc.aweme.emoji.base.BaseEmoji
@@ -32,7 +32,7 @@ class HEmojiDetailDialogNew : BaseHook<EmojiDetailDialogNew>() {
     override fun onInit() {
         // 该类是 retrofit2 代理类的Hook, 直接通过实例获取class进行hook
         DexkitBuilder.emojiApiProxyClazz?.let { it ->
-            val emojiApiField = it.fieldFirst(type = EmojiApi::class.java)
+            val emojiApiField = it.field(type = EmojiApi::class.java)
             val emojiApi = emojiApiField?.get(null)
             if (emojiApi != null) {
                 lpparam.hookClass(emojiApi::class.java)

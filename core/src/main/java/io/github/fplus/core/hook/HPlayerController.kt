@@ -1,7 +1,7 @@
 package io.github.fplus.core.hook
 
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.reflect.methodInvokeFirst
+import com.freegang.ktutils.reflect.methodInvoke
 import com.freegang.ktutils.reflect.methods
 import com.ss.android.ugc.aweme.feed.adapter.VideoViewHolder
 import de.robv.android.xposed.XC_MethodHook
@@ -110,7 +110,7 @@ class HPlayerController : BaseHook<Any>() {
         val methodFirst = params.thisObject.methods(returnType = VideoViewHolder::class.java)
             .firstOrNull { it.parameterTypes.isEmpty() }
         val videoViewHolder = methodFirst?.invoke(params.thisObject)
-        videoViewHolder?.methodInvokeFirst("openCleanMode", args = arrayOf(bool))
+        videoViewHolder?.methodInvoke(name = "openCleanMode", args = arrayOf(bool))
 
         //
         HMainActivity.toggleView(!bool)

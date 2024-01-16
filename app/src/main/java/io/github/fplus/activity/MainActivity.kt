@@ -16,9 +16,9 @@ import androidx.compose.material.Text
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
-import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.FreedomTheme
 import io.github.fplus.Themes
+import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.ui.component.FMessageDialog
 
 class MainActivity : ComponentActivity() {
@@ -102,7 +102,7 @@ class MainActivity : ComponentActivity() {
                     confirm = "确定",
                     onCancel = { finish() },
                     onConfirm = { requestPermissions() },
-                ){
+                ) {
                     Column {
                         Text(
                             text = "外置存储器读/写权限",
