@@ -8,10 +8,10 @@ import com.freegang.ktutils.app.navBarInteractionMode
 import com.freegang.ktutils.app.navigationBarHeight
 import com.freegang.ktutils.log.KLogCat
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.ImmersiveHelper
+import io.github.fplus.core.ui.activity.FreedomSettingActivity
 import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.thisActivity
@@ -24,9 +24,12 @@ class HActivity : BaseHook<Activity>() {
     private val config get() = ConfigV1.get()
 
     @OnBefore("dispatchTouchEvent")
-    fun dispatchTouchEventBefore(param: XC_MethodHook.MethodHookParam, event: MotionEvent) {
-        hookBlockRunning(param) {
+    fun dispatchTouchEventBefore(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {
+        hookBlockRunning(params) {
             DouYinMain.freeExitCountDown?.restart()
+
+            if (thisActivity is FreedomSettingActivity) return
+
             if (config.isImmersive) {
                 // 底部三键导航
                 val activity = thisObject as Activity
@@ -42,9 +45,11 @@ class HActivity : BaseHook<Activity>() {
     }
 
     @OnBefore("onResume")
-    fun onResumeBefore(param: XC_MethodHook.MethodHookParam) {
-        hookBlockRunning(param) {
+    fun onResumeBefore(params: XC_MethodHook.MethodHookParam) {
+        hookBlockRunning(params) {
             DouYinMain.freeExitCountDown?.restart()
+
+            if (thisActivity is FreedomSettingActivity) return
 
             if (config.isImmersive) {
                 ImmersiveHelper.immersive(

@@ -45,7 +45,7 @@ class DouYinMain(private val app: Application) {
             val intent = Intent()
             val className = "${Constant.modulePackage}.activity.ErrorActivity"
             intent.setClassName(Constant.modulePackage, className)
-            KAppCrashUtils.init(app, "抖音异常退出!", intent) {
+            KAppCrashUtils.init(app, "抖音异常退出!", intent) { e, m ->
                 KActivityUtils.unregister(app)
                 true
             }
@@ -56,10 +56,11 @@ class DouYinMain(private val app: Application) {
             // search and hook
             DexkitBuilder.running(
                 app = app,
-                version = 8,
+                version = 10,
                 searchBefore = {
                     HActivity()
                     HMainActivity()
+                    HDetailActivity()
                     HLivePlayActivity()
                     HDisallowInterceptRelativeLayout()
                     HMainTabStripScrollView()
@@ -76,6 +77,8 @@ class DouYinMain(private val app: Application) {
                     HDialog()
                     // HDialogFragment()
                     // HPopupWindow()
+
+                    HFragment()
                 },
                 searchAfter = {
                     HSideBarNestedScrollView()

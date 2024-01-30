@@ -17,6 +17,7 @@ import com.freegang.ktutils.media.KMediaUtils
 import com.freegang.ktutils.net.KHttpUtils
 import com.freegang.ktutils.text.KTextUtils
 import com.ss.android.ugc.aweme.feed.model.Aweme
+import com.ss.ugc.aweme.ImageUrlStruct
 import de.robv.android.xposed.XposedBridge
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
@@ -92,7 +93,16 @@ class DownloadLogic(
     private fun getVideoUrlList(aweme: Aweme): List<String> {
         val video = aweme.video ?: return emptyList()
 
-        return video.playAddrH265?.urlList ?: video.h264PlayAddr?.urlList ?: emptyList()
+        return when (config.videoCoding) {
+            "H265" -> video.playAddrH265?.urlList ?: emptyList()
+            "H264" -> video.h264PlayAddr?.urlList ?: emptyList()
+            "Auto" -> video.playAddr?.urlList ?: emptyList()
+            else -> emptyList()
+        }
+    }
+
+    private fun getImageUrlList(aweme: Aweme): List<ImageUrlStruct> {
+        return aweme.images ?: return emptyList()
     }
 
     private fun getMusicUrlList(aweme: Aweme): List<String> {
@@ -105,10 +115,10 @@ class DownloadLogic(
      * @param aweme
      */
     private fun showChoiceDialog(aweme: Aweme) {
-        val urlList = getVideoUrlList(aweme)
-        val items = mutableListOf("文案", if (urlList.isNotEmpty()) "视频" else "图片", "背景音乐")
+        val urlList = getImageUrlList(aweme)
+        val items = mutableListOf("文案", if (urlList.isEmpty()) "视频" else "图片", "背景音乐")
         if (config.isWebDav) {
-            items.add(if (urlList.isNotEmpty()) "视频(WebDav)" else "图片(WebDav)")
+            items.add(if (urlList.isEmpty()) "视频(WebDav)" else "图片(WebDav)")
             items.add("背景音乐(WebDav)")
         }
         hook.showInputChoiceDialog(
@@ -203,7 +213,7 @@ class DownloadLogic(
      * @param aweme
      */
     private fun downloadImages(aweme: Aweme, isWebDav: Boolean = false) {
-        val structList = aweme.images ?: emptyList()
+        val structList = getImageUrlList(aweme)
         if (structList.isEmpty()) {
             hook.showToast(context, "未获取到图片信息")
             return

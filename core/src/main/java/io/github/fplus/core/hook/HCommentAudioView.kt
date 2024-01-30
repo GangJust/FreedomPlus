@@ -24,6 +24,7 @@ import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.thisView
 import io.github.xpler.core.wrapper.CallMethods
 
+@Deprecated("暂存区, 评论区语音保存")
 class HCommentAudioView : BaseHook<Any>(), CallMethods {
     companion object {
         const val TAG = "HCommentAudioView"
@@ -40,7 +41,7 @@ class HCommentAudioView : BaseHook<Any>(), CallMethods {
             if (argsOrEmpty.size != 4) {
                 return
             }
-            
+
             val value = args[1].fieldGets().filterNotNull().firstOrNull() ?: return
             val gets = value.fieldGets().filter { it?.javaClass?.`package`?.name == "X" }
 

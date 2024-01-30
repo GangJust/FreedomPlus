@@ -40,6 +40,12 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     private var _isNotification = MutableLiveData(false)
     val isNotification: LiveData<Boolean> = _isNotification
 
+    private var _isCopyDownload = MutableLiveData(false)
+    val isCopyDownload: LiveData<Boolean> = _isCopyDownload
+
+    private var _videoCoding = MutableLiveData("")
+    val videoCoding: LiveData<String> = _videoCoding
+
     private var _isEmoji = MutableLiveData(false)
     val isEmoji: LiveData<Boolean> = _isEmoji
 
@@ -160,6 +166,8 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
             changeIsDownload(config.isDownload)
             changeIsOwnerDir(config.isOwnerDir)
             changeIsNotification(config.isNotification)
+            changeIsCopyDownload(config.isCopyDownload)
+            changeVideoCoding(config.videoCoding)
             changeIsEmoji(config.isEmoji)
             changeIsVibrate(config.isVibrate)
             changeIsTranslucent(config.isTranslucent)
@@ -211,6 +219,18 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     fun changeIsNotification(value: Boolean) {
         _isNotification.value = value
         config.isNotification = value
+    }
+
+    // 复制链接时弹出下载
+    fun changeIsCopyDownload(value: Boolean) {
+        _isCopyDownload.value = value
+        config.isCopyDownload = value
+    }
+
+    // 视频编码类型
+    fun changeVideoCoding(value: String) {
+        _videoCoding.value = value
+        config.videoCoding = value
     }
 
     // 表情包保存

@@ -12,6 +12,7 @@ import androidx.core.view.isVisible
 import com.freegang.ktutils.app.appVersionCode
 import com.freegang.ktutils.app.appVersionName
 import com.freegang.ktutils.app.contentView
+import com.freegang.ktutils.app.is64BitDalvik
 import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.view.forEachChild
@@ -21,16 +22,18 @@ import com.freegang.ktutils.view.removeInParent
 import com.ss.android.ugc.aweme.homepage.ui.titlebar.MainTitleBar
 import com.ss.android.ugc.aweme.main.MainActivity
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
+import io.github.fplus.core.hook.logic.ClipboardLogic
+import io.github.fplus.core.hook.logic.DownloadLogic
 import io.github.fplus.core.ui.activity.FreedomSettingActivity
 import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.thisActivity
 import io.github.xpler.core.thisContext
+import kotlinx.coroutines.delay
 
 class HMainActivity : BaseHook<MainActivity>() {
     companion object {
@@ -52,7 +55,7 @@ class HMainActivity : BaseHook<MainActivity>() {
     }
 
     private val config get() = ConfigV1.get()
-
+    private val clipboardLogic = ClipboardLogic(this)
     private var disallowInterceptRelativeLayout: View? = null
 
     @OnBefore("onCreate")
@@ -91,7 +94,9 @@ class HMainActivity : BaseHook<MainActivity>() {
     @OnAfter("onResume")
     fun onResume(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
+            addClipboardListener(thisActivity)
             initView(thisActivity)
+            is32BisTips(thisActivity)
         }.onFailure {
             KLogCat.tagE(TAG, it)
         }
@@ -100,11 +105,29 @@ class HMainActivity : BaseHook<MainActivity>() {
     @OnBefore("onPause")
     fun onPause(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
-            saveConfig(thisContext)
+            removeClipboardListener(thisActivity)
             clearView()
+            saveConfig(thisContext)
         }.onFailure {
             KLogCat.tagE(TAG, it)
         }
+    }
+
+    private fun addClipboardListener(activity: Activity) {
+        if (!config.isDownload) return
+        if (!config.isCopyDownload) return
+
+        clipboardLogic.addClipboardListener(activity) { clipData, firstText ->
+            DownloadLogic(
+                this@HMainActivity,
+                activity,
+                HVideoViewHolder.aweme,
+            )
+        }
+    }
+
+    private fun removeClipboardListener(activity: Activity) {
+        clipboardLogic.removeClipboardListener(activity)
     }
 
     private fun initView(activity: Activity) {
@@ -203,5 +226,59 @@ class HMainActivity : BaseHook<MainActivity>() {
             dyVersionName = context.appVersionName,
             dyVersionCode = context.appVersionCode
         )
+    }
+
+    private fun is32BisTips(context: Context) {
+        launch {
+            delay(2000L)
+
+            if (context.is64BitDalvik) {
+                return@launch
+            }
+
+            val version = config.versionConfig
+            val cacheVersion = "${version.dyVersionName}_${version.dyVersionCode}"
+            val currentVersion = "${context.appVersionName}_${context.appVersionCode}"
+            if (cacheVersion.compareTo(currentVersion) != 0) {
+                config.is32BitTips = true
+            }
+
+            if (!config.is32BitTips) {
+                return@launch
+            }
+
+            showMessageDialog(
+                context = context,
+                title = "温馨提示",
+                content = "当前抖音32位，使用过程中可能出现严重卡顿、花屏等现象，建议更换抖音64位。",
+                cancel = "此版本不再提示",
+                confirm = "确定",
+                onCancel = {
+                    config.is32BitTips = false
+                },
+                onConfirm = {
+
+                }
+            )
+        }
+
+        /*showComposeDialog(context) { onClosedHandle ->
+            FMessageDialog(
+                title = "温馨提示",
+                cancel = "此版本不再提示",
+                confirm = "确定",
+                onCancel = {
+                    onClosedHandle.invoke()
+                    config.is32BitTips = false
+                },
+                onConfirm = {
+                    onClosedHandle.invoke()
+                }
+            ) {
+                Text(
+                    text = "当前抖音32位，使用过程中可能出现严重卡顿、花屏等现象，建议更换抖音64位。",
+                )
+            }
+        }*/
     }
 }

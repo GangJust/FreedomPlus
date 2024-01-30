@@ -11,13 +11,12 @@ import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.xpler.core.entity.NoneHook
+import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.thisView
-import io.github.xpler.core.wrapper.CallMethods
 
 
-class HMainBottomTabItem : BaseHook<Any>(),
-    CallMethods {
+class HMainBottomTabItem : BaseHook<Any>() {
     companion object {
         const val TAG = "HMainBottomTabItem"
     }
@@ -28,11 +27,8 @@ class HMainBottomTabItem : BaseHook<Any>(),
         return DexkitBuilder.mainBottomTabItemClazz ?: NoneHook::class.java
     }
 
-    override fun callOnBeforeMethods(params: XC_MethodHook.MethodHookParam) {
-
-    }
-
-    override fun callOnAfterMethods(params: XC_MethodHook.MethodHookParam) {
+    @OnAfter
+    fun currentIndexAfter(params: XC_MethodHook.MethodHookParam, int: Int) {
         hookBlockRunning(params) {
             isHidePhotoButton(thisView)
         }.onFailure {

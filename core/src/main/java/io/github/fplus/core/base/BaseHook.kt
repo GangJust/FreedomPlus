@@ -27,6 +27,7 @@ import io.github.fplus.core.databinding.DialogChoiceLayoutBinding
 import io.github.fplus.core.databinding.DialogInputChoiceLayoutBinding
 import io.github.fplus.core.databinding.DialogMessageLayoutBinding
 import io.github.fplus.core.databinding.DialogProgressLayoutBinding
+import io.github.fplus.core.ui.ModuleTheme
 import io.github.fplus.core.ui.dialog.XplerDialogWrapper
 import io.github.fplus.core.view.KDialog
 import io.github.fplus.core.view.adapter.DialogChoiceAdapter
@@ -110,7 +111,9 @@ abstract class BaseHook<T>() : HookEntity<T>() {
     ) {
         XplerDialogWrapper(context).apply {
             setWrapperContent {
-                content.invoke(this::dismiss)
+                ModuleTheme {
+                    content.invoke(this::dismiss)
+                }
             }
         }.show()
     }

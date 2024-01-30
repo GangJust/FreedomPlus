@@ -209,7 +209,11 @@ class HVideoViewHolderRootView : BaseHook<VideoViewHolderRootView>() {
     private fun showOptionsMenuV1(view: ViewGroup) {
         if (HDetailPageFragment.isComment) return
 
-        val items = mutableListOf("评论", "收藏", "分享", "下载")
+        val items = mutableListOf("评论", "收藏", "分享")
+
+        if (config.isDownload) {
+            items.add("下载")
+        }
 
         if (config.isNeatMode) {
             items.add(0, if (!config.neatModeState) "清爽模式" else "普通模式")

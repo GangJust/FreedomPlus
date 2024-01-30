@@ -80,6 +80,28 @@ class ConfigV1 private constructor() {
             field = value
         }
 
+    /// 复制链接时弹出下载
+    var isCopyDownload: Boolean = false
+        get() {
+            field = mmkv.getBoolean("isCopyDownload", false)
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("isCopyDownload", value)
+            field = value
+        }
+
+    /// 视频编码 [Auto, H265, H264]
+    var videoCoding: String = "H265"
+        get() {
+            field = mmkv.getString("videoCoding", "H265")!!
+            return field
+        }
+        set(value) {
+            mmkv.putString("videoCoding", value)
+            field = value
+        }
+
     /// 表情包/评论区视频、图片保存
     var isEmoji: Boolean = false
         get() {
@@ -488,6 +510,16 @@ class ConfigV1 private constructor() {
             mmkv.putLong("versionCode", value.versionCode)
             mmkv.putString("dyVersionName", value.dyVersionName)
             mmkv.putLong("dyVersionCode", value.dyVersionCode)
+        }
+
+    var is32BitTips: Boolean = true
+        get() {
+            field = mmkv.getBoolean("is32BitTips", true)
+            return field
+        }
+        set(value) {
+            field = value
+            mmkv.putBoolean("is32BitTips", value)
         }
 
     var dexkitCache: JSONObject = JSONObject()

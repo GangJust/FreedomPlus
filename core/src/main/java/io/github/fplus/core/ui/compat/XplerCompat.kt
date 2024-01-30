@@ -26,10 +26,7 @@ fun painterResourceCompat(@DrawableRes id: Int): Painter {
     res.getValue(id, value, true)
     val path = value.string
 
-    KLogCat.d(
-        "Resources: $res",
-        "Path: $path",
-    )
+    KLogCat.i("Resources: $res", "Path: $path")
 
     if (path?.endsWith(".xml") == true) {
         return painterResource(id = id)
