@@ -16,15 +16,13 @@ import io.github.fplus.plugin.base.BaseActivity
 
 abstract class XplerActivity : BaseActivity() {
 
-    private val mClassLoader: PluginClassloader? = null
+    private val mClassLoader by lazy { PluginClassloader() }
 
     private var mResources: Resources? = null
 
     private val content = mutableStateOf<(@Composable () -> Unit)?>(null)
 
-    override fun getClassLoader(): ClassLoader {
-        return mClassLoader ?: super.getClassLoader()
-    }
+    override fun getClassLoader(): ClassLoader = mClassLoader
 
     override fun getResources(): Resources {
         return mResources ?: super.getResources()

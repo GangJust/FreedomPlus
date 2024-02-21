@@ -8,6 +8,10 @@ import io.github.fplus.plugin.proxySingle
 
 object PluginBridge {
     fun init(application: Application, stubActivity: Class<*>) {
+        init(application, stubActivity.name)
+    }
+
+    fun init(application: Application, stubActivity: String) {
         hookPackageManager(application, stubActivity)
         hookInstrumentation(application, stubActivity)
     }
@@ -19,7 +23,7 @@ object PluginBridge {
     @SuppressLint("DiscouragedPrivateApi", "PrivateApi")
     private fun hookInstrumentation(
         application: Application,
-        subActivityClass: Class<*>,
+        subActivityClassName: String,
     ) {
         // 1.from ContextImpl get mMainThread field value (ActivityThread obj)
         // 2.from ActivityThread get mInstrumentation field (Instrumentation obj)
@@ -45,7 +49,7 @@ object PluginBridge {
             val mInstrumentationObj = mInstrumentationField.get(activityThreadObj) as Instrumentation
 
             // 4.reset set value
-            mInstrumentationField.set(activityThreadObj, PluginInstrumentation(mInstrumentationObj, subActivityClass))
+            mInstrumentationField.set(activityThreadObj, PluginInstrumentation(mInstrumentationObj, subActivityClassName))
         } catch (e: IllegalAccessException) {
             e.printStackTrace()
         } catch (e: NoSuchFieldException) {
@@ -63,7 +67,7 @@ object PluginBridge {
     @SuppressLint("PrivateApi", "DiscouragedPrivateApi")
     private fun hookPackageManager(
         application: Application,
-        stubActivityClass: Class<*>,
+        stubActivityClassName: String,
     ) {
         try {
             // 获取到 ActivityThread 中的静态字段 sPackageManager 一个静态的 IPackageManager
@@ -78,7 +82,7 @@ object PluginBridge {
                 if (method.name == "getActivityInfo") {
                     args?.forEachIndexed { index, _ ->
                         if (args[index] is ComponentName) {
-                            args[index] = ComponentName(application.packageName, stubActivityClass.name)
+                            args[index] = ComponentName(application.packageName, stubActivityClassName)
                         }
                     }
                 }

@@ -178,7 +178,7 @@ class HomeActivity : ComponentActivity() {
                             onLongClick = {
                                 lifecycleScope.launch {
                                     updateLog = withContext(Dispatchers.IO) {
-                                        val inputStream = assets.open("update.log")
+                                        val inputStream = assets.open("update.txt")
                                         val bytes = inputStream.readBytes()
                                         val text = bytes.decodeToString()
                                         inputStream.close()
@@ -293,9 +293,9 @@ class HomeActivity : ComponentActivity() {
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             val packageInfo =
-                                KAppUtils.getPackageInfo(application, Constant.scopes[0].packageName)
+                                KAppUtils.getPackageInfo(application, Constant.scopes.elementAt(0).packageName)
                             val lspatchActive =
-                                HookStatus.isLSPatchActive(application, Constant.scopes[0].packageName)
+                                HookStatus.isLSPatchActive(application, Constant.scopes.elementAt(0).packageName)
                             if (lspatchActive.isNotEmpty()) {
                                 moduleState.value = "Lspatch加载成功!"
                                 Text(
@@ -668,7 +668,7 @@ class HomeActivity : ComponentActivity() {
 
             val intent = Intent()
             intent.setClassName(
-                Constant.scopes[0].packageName,
+                Constant.scopes.elementAt(0).packageName,
                 "com.ss.android.ugc.aweme.main.MainActivity"
             )
             intent.putExtra("startModuleSetting", true)

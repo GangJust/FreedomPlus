@@ -64,6 +64,12 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     private var _isRemoveBottomCtrlBar = MutableLiveData(false)
     val isRemoveBottomCtrlBar: LiveData<Boolean> = _isRemoveBottomCtrlBar
 
+    private var _isPreventRecalled = MutableLiveData(false)
+    val isPreventRecalled: LiveData<Boolean> = _isPreventRecalled
+
+    private var _preventRecalledOtherSetting = MutableLiveData(listOf(false))
+    val preventRecalledOtherSetting: LiveData<List<Boolean>> = _preventRecalledOtherSetting
+
     private var _isDoubleClickType = MutableLiveData(false)
     val isDoubleClickType: LiveData<Boolean> = _isDoubleClickType
 
@@ -72,6 +78,12 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
 
     private var _isLongtimeVideoToast = MutableLiveData(false)
     val isLongtimeVideoToast: LiveData<Boolean> = _isLongtimeVideoToast
+
+    private var _isHideTopTab = MutableLiveData(false)
+    var isHideTopTab: LiveData<Boolean> = _isHideTopTab
+
+    private var _hideTopTabKeywords = MutableLiveData("")
+    var hideTopTabKeywords: LiveData<String> = _hideTopTabKeywords
 
     private var _isHidePhotoButton = MutableLiveData(false)
     val isDHidePhotoButton: LiveData<Boolean> = _isHidePhotoButton
@@ -118,12 +130,6 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     private var _commentColorMode = MutableLiveData(0)
     val commentColorMode: LiveData<Int> = _commentColorMode
 
-    private var _isHideTab = MutableLiveData(false)
-    var isHideTab: LiveData<Boolean> = _isHideTab
-
-    private var _hideTabKeywords = MutableLiveData("")
-    var hideTabKeywords: LiveData<String> = _hideTabKeywords
-
     private var _isWebDav = MutableLiveData(false)
     var isWebDav: LiveData<Boolean> = _isWebDav
 
@@ -144,6 +150,9 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
 
     private var _timedShutdownValue = MutableLiveData(listOf(10, 3))
     var timedShutdownValue: LiveData<List<Int>> = _timedShutdownValue
+
+    private var _keepAppBackend = MutableLiveData(false)
+    var keepAppBackend: LiveData<Boolean> = _keepAppBackend
 
     private var _isDisablePlugin = MutableLiveData(false)
     val isDisablePlugin: LiveData<Boolean> = _isDisablePlugin
@@ -174,6 +183,8 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
             changeTranslucentValue(config.translucentValue)
             changeIsRemoveSticker(config.isRemoveSticker)
             changeIsRemoveBottomCtrlBar(config.isRemoveBottomCtrlBar)
+            changeIsPreventRecalled(config.isPreventRecalled)
+            changePreventRecalledOtherSetting(config.preventRecalledOtherSetting)
             changeIsDoubleClickType(config.isDoubleClickType)
             changeDoubleClickType(config.doubleClickType)
             changeIsLongtimeVideoToast(config.isLongtimeVideoToast)
@@ -192,13 +203,14 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
             changeSystemControllerValue(config.systemControllerValue)
             changeIsCommentColorMode(config.isCommentColorMode)
             changeCommentColorMode(config.commentColorMode)
-            changeIsHideTab(config.isHideTab)
-            setHideTabKeywords(config.hideTabKeywords)
+            changeIsHideTopTab(config.isHideTopTab)
+            setHideTabKeywords(config.hideTopTabKeywords)
             changeIsWebDav(config.isWebDav)
             loadWebHistory()
             setWebDavConfig(config.webDavConfig)
             changeIsTimeExit(config.isTimedExit)
             setTimedShutdownValue(config.timedShutdownValue)
+            changeKeepAppBackend(config.keepAppBackend)
             changeIsDisablePlugin(config.isDisablePlugin)
         }
     }
@@ -267,6 +279,17 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     fun changeIsRemoveBottomCtrlBar(value: Boolean) {
         _isRemoveBottomCtrlBar.value = value
         config.isRemoveBottomCtrlBar = value
+    }
+
+    // 消息防撤回
+    fun changeIsPreventRecalled(value: Boolean) {
+        _isPreventRecalled.value = value
+        config.isPreventRecalled = value
+    }
+
+    fun changePreventRecalledOtherSetting(value: List<Boolean>) {
+        _preventRecalledOtherSetting.value = value
+        config.preventRecalledOtherSetting = value
     }
 
     // 是否开启更改双击响应类型
@@ -382,15 +405,15 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     }
 
     // 隐藏顶部tab
-    fun changeIsHideTab(value: Boolean) {
-        _isHideTab.value = value
-        config.isHideTab = value
+    fun changeIsHideTopTab(value: Boolean) {
+        _isHideTopTab.value = value
+        config.isHideTopTab = value
     }
 
     // 隐藏顶部tab包含的关键字, 逗号隔开
     fun setHideTabKeywords(hideTabKeywords: String) {
-        _hideTabKeywords.value = hideTabKeywords
-        config.hideTabKeywords = hideTabKeywords
+        _hideTopTabKeywords.value = hideTabKeywords
+        config.hideTopTabKeywords = hideTabKeywords
     }
 
     // WebDav
@@ -473,6 +496,12 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     fun setTimedShutdownValue(value: List<Int>) {
         _timedShutdownValue.value = value
         config.timedShutdownValue = value
+    }
+
+    // 保留应用后台
+    fun changeKeepAppBackend(value: Boolean) {
+        _keepAppBackend.value = value
+        config.keepAppBackend = value
     }
 
     // 去插件化

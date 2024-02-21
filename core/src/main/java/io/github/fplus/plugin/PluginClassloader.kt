@@ -4,21 +4,23 @@ import io.github.xpler.loader.hostClassloader
 import io.github.xpler.loader.moduleClassloader
 
 class PluginClassloader : ClassLoader() {
-    override fun findClass(name: String?): Class<*> {
+    override fun loadClass(name: String, resolve: Boolean): Class<*> {
+        // Log.d("XplerLog", "load: $name")
+
         val loadedClass = findLoadedClass(name)
         if (loadedClass != null) return loadedClass
 
         try {
             return moduleClassloader!!.loadClass(name)
-        } catch (e: Exception) {
-            // KLogCat.e(e)
+        } catch (e: ClassNotFoundException) {
+            // e.printStackTrace()
         }
         try {
             return hostClassloader!!.loadClass(name)
-        } catch (e: Exception) {
-            // KLogCat.e(e)
+        } catch (e: ClassNotFoundException) {
+            // e.printStackTrace()
         }
 
-        return super.findClass(name)
+        return super.loadClass(name, resolve)
     }
 }

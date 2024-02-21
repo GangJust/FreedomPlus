@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CircularProgressIndicator
@@ -53,6 +54,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.style.TextOverflow
@@ -168,7 +170,7 @@ class FreedomSettingActivity : XplerActivity() {
                                 interactionSource = remember { MutableInteractionSource() },
                                 onLongClick = {
                                     if (!model.hasDexkitCache) {
-                                        KToastUtils.show(application, "没有类日志!")
+                                        KToastUtils.show(application, "没有类日志")
                                         return@combinedClickable
                                     }
                                     showLogDialog = true
@@ -232,7 +234,7 @@ class FreedomSettingActivity : XplerActivity() {
                                             runCatching {
                                                 // pluginAssets
                                                 assets
-                                                    .open("update.log")
+                                                    .open("update.txt")
                                                     .use {
                                                         updateLog = it
                                                             .readBytes()
@@ -271,16 +273,17 @@ class FreedomSettingActivity : XplerActivity() {
             item { TranslucentItem() }
             item { RemoveStickerItem() }
             item { RemoveBottomCtrlBarItem() }
+            item { PreventRecalledItem() }
             item { DoubleClickTypeItem() }
             item { LongtimeVideoToastItem() }
-            item { DHidePhotoButtonItem() }
+            item { HideTopTabItem() }
+            item { HidePhotoButtonItem() }
             item { VideoOptionBarFilterItem() }
             item { VideoFilterItem() }
             item { DialogFilterItem() }
             item { NeatModeItem() }
             item { ImmersiveItem() }
             item { CommentColorModeItem() }
-            item { HideTabItem() }
             item { WebDavItem() }
             item { TimedExitItem() }
             /*item { DisablePluginItem() }*/
@@ -568,6 +571,52 @@ class FreedomSettingActivity : XplerActivity() {
     }
 
     @Composable
+    private fun PreventRecalledItem() {
+        var showSettingDialog by remember { mutableStateOf(false) }
+
+        SwitchItem(
+            text = "消息防撤回",
+            subtext = "阻止聊天消息撤回，点击调整相关设置",
+            checked = model.isPreventRecalled.observeAsState(false),
+            onClick = {
+                showSettingDialog = true
+            },
+            onCheckedChange = {
+                model.changeIsPreventRecalled(it)
+            }
+        )
+
+        if (showSettingDialog) {
+            val otherSetting = model.preventRecalledOtherSetting.value ?: listOf(false)
+            val allowMineRecalled = remember { mutableStateOf(otherSetting.getOrElse(0) { false }) }
+
+            FMessageDialog(
+                title = "其他设置",
+                confirm = "更改",
+                onlyConfirm = true,
+                onConfirm = {
+                    showSettingDialog = false
+                    model.changePreventRecalledOtherSetting(
+                        listOf(
+                            allowMineRecalled.value
+                        )
+                    )
+                },
+            ) {
+                Column {
+                    CheckBoxItem(
+                        text = "保留自己撤回的消息",
+                        checked = allowMineRecalled,
+                        onCheckedChange = {
+                            allowMineRecalled.value = it
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
     private fun DoubleClickTypeItem() {
         var showDoubleClickModeDialog by remember { mutableStateOf(false) }
 
@@ -652,7 +701,86 @@ class FreedomSettingActivity : XplerActivity() {
     }
 
     @Composable
-    private fun DHidePhotoButtonItem() {
+    private fun HideTopTabItem() {
+        var showKeywordsEditorDialog by remember { mutableStateOf(false) }
+        var showTipsDialog by remember { mutableStateOf(false) }
+
+        SwitchItem(
+            text = "隐藏顶部选项",
+            subtext = "隐藏顶部标签页, 点击设置关键字",
+            checked = model.isHideTopTab.observeAsState(false),
+            onClick = {
+                showKeywordsEditorDialog = true
+            },
+            onCheckedChange = {
+                showRestartAppDialog.value = true
+                if (it) {
+                    showTipsDialog = true
+                }
+                model.changeIsHideTopTab(it)
+            },
+        )
+
+        if (showKeywordsEditorDialog) {
+            var hideTabKeywords by remember {
+                mutableStateOf(
+                    model.hideTopTabKeywords.value ?: ""
+                )
+            }
+            FMessageDialog(
+                title = "请输入关键字, 用逗号分开",
+                cancel = "取消",
+                confirm = "确定",
+                onCancel = { showKeywordsEditorDialog = false },
+                onConfirm = {
+                    showKeywordsEditorDialog = false
+                    model.setHideTabKeywords(hideTabKeywords)
+                },
+            ) {
+                FCard(
+                    border = FCardBorder(borderWidth = 1.0.dp),
+                ) {
+                    BasicTextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp, horizontal = 12.dp),
+                        value = hideTabKeywords,
+                        maxLines = 1,
+                        singleLine = true,
+                        textStyle = MaterialTheme.typography.body1,
+                        onValueChange = {
+                            hideTabKeywords = it
+                        },
+                    )
+                }
+            }
+        }
+
+        if (showTipsDialog) {
+            FMessageDialog(
+                title = "提示",
+                cancel = "关闭",
+                confirm = "开启",
+                onCancel = {
+                    showTipsDialog = false
+                    model.changeIsHideTopTab(false)
+                },
+                onConfirm = {
+                    showTipsDialog = false
+                    showRestartAppDialog.value = true
+                    model.changeIsHideTopTab(true)
+                },
+            ) {
+                Text(
+                    text = "一旦开启顶部选项隐藏, 将禁止左右滑动切换, 具体效果自行查看!",
+                    style = MaterialTheme.typography.body1,
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun HidePhotoButtonItem() {
         var showIsDisablePhotoDialog by remember { mutableStateOf(false) }
 
         SwitchItem(
@@ -1284,85 +1412,6 @@ class FreedomSettingActivity : XplerActivity() {
         }
     }
 
-    @Composable
-    private fun HideTabItem() {
-        var showHideTabKeywordsEditorDialog by remember { mutableStateOf(false) }
-        var showHideTabTipsDialog by remember { mutableStateOf(false) }
-
-        SwitchItem(
-            text = "隐藏顶部选项",
-            subtext = "点击设置关键字",
-            checked = model.isHideTab.observeAsState(false),
-            onClick = {
-                showHideTabKeywordsEditorDialog = true
-            },
-            onCheckedChange = {
-                showRestartAppDialog.value = true
-                if (it) {
-                    showHideTabTipsDialog = true
-                }
-                model.changeIsHideTab(it)
-            },
-        )
-
-        if (showHideTabKeywordsEditorDialog) {
-            var hideTabKeywords by remember {
-                mutableStateOf(
-                    model.hideTabKeywords.value ?: ""
-                )
-            }
-            FMessageDialog(
-                title = "请输入关键字, 用逗号分开",
-                cancel = "取消",
-                confirm = "确定",
-                onCancel = { showHideTabKeywordsEditorDialog = false },
-                onConfirm = {
-                    showHideTabKeywordsEditorDialog = false
-                    model.setHideTabKeywords(hideTabKeywords)
-                },
-            ) {
-                FCard(
-                    border = FCardBorder(borderWidth = 1.0.dp),
-                ) {
-                    BasicTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 12.dp, horizontal = 12.dp),
-                        value = hideTabKeywords,
-                        maxLines = 1,
-                        singleLine = true,
-                        textStyle = MaterialTheme.typography.body1,
-                        onValueChange = {
-                            hideTabKeywords = it
-                        },
-                    )
-                }
-            }
-        }
-
-        if (showHideTabTipsDialog) {
-            FMessageDialog(
-                title = "提示",
-                cancel = "关闭",
-                confirm = "开启",
-                onCancel = {
-                    showHideTabTipsDialog = false
-                    model.changeIsHideTab(false)
-                },
-                onConfirm = {
-                    showHideTabTipsDialog = false
-                    showRestartAppDialog.value = true
-                    model.changeIsHideTab(true)
-                },
-            ) {
-                Text(
-                    text = "一旦开启顶部选项隐藏, 将禁止左右滑动切换, 具体效果自行查看!",
-                    style = MaterialTheme.typography.body1,
-                )
-            }
-        }
-    }
-
     @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
     @Composable
     private fun WebDavItem() {
@@ -1601,6 +1650,7 @@ class FreedomSettingActivity : XplerActivity() {
     @Composable
     private fun TimedExitItem() {
         var showTimedExitSettingDialog by remember { mutableStateOf(false) }
+        var showKeepAppBackendTips by remember { mutableStateOf(false) }
 
         SwitchItem(
             text = "定时退出",
@@ -1620,7 +1670,6 @@ class FreedomSettingActivity : XplerActivity() {
             var timedExit by remember { mutableStateOf("${times[0]}") }
             var freeExit by remember { mutableStateOf("${times[1]}") }
 
-            KToastUtils.show(application, "低于3分钟将不执行~")
             FMessageDialog(
                 title = "定时退出时间设置",
                 cancel = "取消",
@@ -1629,14 +1678,15 @@ class FreedomSettingActivity : XplerActivity() {
                     showTimedExitSettingDialog = false
                 },
                 onConfirm = {
-                    showTimedExitSettingDialog = false
                     val intTimedExit = timedExit.toIntOrNull() ?: -1
                     val intFreeExit = freeExit.toIntOrNull() ?: -1
                     if (intTimedExit < 0 || intFreeExit < 0) {
                         KToastUtils.show(application, "请输入正确的分钟数")
                         return@FMessageDialog
                     }
-                    KToastUtils.show(application, "设置成功, 下次启动生效")
+
+                    showTimedExitSettingDialog = false
+                    KToastUtils.show(application, "低于3分钟将不执行, 下次启动生效!")
                     model.setTimedShutdownValue(listOf(intTimedExit, intFreeExit))
                 }
             ) {
@@ -1657,6 +1707,7 @@ class FreedomSettingActivity : XplerActivity() {
                                 maxLines = 1,
                                 singleLine = true,
                                 textStyle = MaterialTheme.typography.body1,
+                                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                                 decorationBox = { innerTextField ->
                                     if (timedExit.isEmpty()) Text(
                                         text = "运行超过指定时间",
@@ -1693,6 +1744,7 @@ class FreedomSettingActivity : XplerActivity() {
                                 maxLines = 1,
                                 singleLine = true,
                                 textStyle = MaterialTheme.typography.body1,
+                                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                                 decorationBox = { innerTextField ->
                                     if (freeExit.isEmpty()) Text(
                                         text = "空闲超过指定时间",
@@ -1712,7 +1764,42 @@ class FreedomSettingActivity : XplerActivity() {
                             )
                         }
                     }
+                    Divider(modifier = Modifier.padding(vertical = 12.dp))
+                    CheckBoxItem(
+                        text = "保留应用后台",
+                        checked = model.keepAppBackend.observeAsState(initial = false),
+                        onCheckedChange = {
+                            showKeepAppBackendTips = it
+                            model.changeKeepAppBackend(it)
+                        },
+                    )
                 }
+            }
+        }
+
+        if (showKeepAppBackendTips) {
+            FMessageDialog(
+                title = "提示",
+                onlyConfirm = true,
+                confirm = "确定",
+                onConfirm = {
+                    showKeepAppBackendTips = false
+                }
+            ) {
+                Text(
+                    text = buildAnnotatedString {
+                        append("开启后“定时/空闲退出”将由")
+                        withStyle(SpanStyle(Color.Red)) {
+                            append("退出应用")
+                        }
+                        append("变为")
+                        withStyle(SpanStyle(Color.Red)) {
+                            append("切换后台")
+                        }
+                        append("，但在某些情况下应用进程可能会被系统调度杀死。")
+                    },
+                    style = MaterialTheme.typography.body1,
+                )
             }
         }
     }

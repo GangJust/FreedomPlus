@@ -21,7 +21,7 @@ class HFlippableViewPager : BaseHook<FlippableViewPager>() {
     @OnBefore("onInterceptTouchEvent", "onTouchEvent", "dispatchTouchEvent")
     fun onTouchEventBefore(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {
         hookBlockRunning(params) {
-            if (!config.isHideTab) return
+            if (!config.isHideTopTab) return
             result = false // 禁止ViewPager左右滑动
         }.onFailure {
             KLogCat.tagE(TAG, it)

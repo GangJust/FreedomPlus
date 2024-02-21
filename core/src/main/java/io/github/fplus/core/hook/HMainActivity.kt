@@ -94,6 +94,10 @@ class HMainActivity : BaseHook<MainActivity>() {
     @OnAfter("onResume")
     fun onResume(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
+            if (DouYinMain.inBackend) {
+                DouYinMain.inBackend = false
+                DouYinMain.timedExitCountDown?.restart()
+            }
             addClipboardListener(thisActivity)
             initView(thisActivity)
             is32BisTips(thisActivity)
@@ -154,15 +158,15 @@ class HMainActivity : BaseHook<MainActivity>() {
 
     private fun initMainTitleBar() {
         // 隐藏顶部选项卡
-        if (config.isHideTab) {
-            val hideTabKeywords = config.hideTabKeywords
+        if (config.isHideTopTab) {
+            val hideTabKeywords = config.hideTopTabKeywords
                 .removePrefix(",").removePrefix("，")
                 .removeSuffix(",").removeSuffix("，")
                 .replace("\\s".toRegex(), "")
                 .replace("[,，]".toRegex(), "|")
                 .toRegex()
             mainTitleBar?.forEachChild {
-                if (config.isHideTab) {
+                if (config.isHideTopTab) {
                     if ("$contentDescription".contains(hideTabKeywords)) {
                         isVisible = false
                     }

@@ -15,11 +15,11 @@ import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.plugin.proxy.v1.PluginBridge
 import io.github.xpler.core.log.XplerLog
-import io.github.xpler.loader.hostClassloader
 import kotlin.system.exitProcess
 
 class DouYinMain(private val app: Application) {
     companion object {
+        var inBackend = false
         var timedExitCountDown: CountDownTimer? = null
         var freeExitCountDown: CountDownTimer? = null
     }
@@ -27,8 +27,7 @@ class DouYinMain(private val app: Application) {
     init {
         runCatching {
             // 插件化注入
-            val stubClazz = hostClassloader!!.loadClass("com.ss.android.ugc.aweme.setting.ui.AboutActivity")
-            PluginBridge.init(app, stubClazz)
+            PluginBridge.init(app, "com.ss.android.ugc.aweme.setting.ui.AboutActivity")
 
             // 加载配置
             ConfigV1.initialize(app)
@@ -56,11 +55,12 @@ class DouYinMain(private val app: Application) {
             // search and hook
             DexkitBuilder.running(
                 app = app,
-                version = 10,
+                version = 15,
                 searchBefore = {
                     HActivity()
                     HMainActivity()
                     HDetailActivity()
+                    HLandscapeFeedActivity()
                     HLivePlayActivity()
                     HDisallowInterceptRelativeLayout()
                     HMainTabStripScrollView()
@@ -77,8 +77,6 @@ class DouYinMain(private val app: Application) {
                     HDialog()
                     // HDialogFragment()
                     // HPopupWindow()
-
-                    HFragment()
                 },
                 searchAfter = {
                     HSideBarNestedScrollView()
@@ -95,7 +93,12 @@ class DouYinMain(private val app: Application) {
                     HVerticalViewPager()
                     HDetailPageFragment()
                     HEmojiDetailDialogNew()
+                    HEmojiPopupWindow()
                     HBottomCtrlBar()
+
+                    HMessage()
+                    HChatListRecyclerViewAdapter()
+                    HChatListRecalledHint()
                 }
             )
 
@@ -115,7 +118,7 @@ class DouYinMain(private val app: Application) {
         val timedExit = config.timedShutdownValue[0] * 60 * 1000L
         val freeExit = config.timedShutdownValue[1] * 60 * 1000L
 
-        if (timedExit >= 60 * 1000 * 3) {
+        if (timedExit >= 60 * 1000L * 3) {
             timedExitCountDown = object : CountDownTimer(timedExit, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
                     val second = millisUntilFinished / 1000
@@ -129,15 +132,15 @@ class DouYinMain(private val app: Application) {
                 }
 
                 override fun onFinish() {
-                    if (!config.isTimedExit) return
-                    KActivityUtils.getActivities().forEach { it.finishAndRemoveTask() }
-                    Process.killProcess(Process.myPid())
-                    exitProcess(1)
+                    if (!config.isTimedExit)
+                        return
+
+                    keepOrKill(app, config)
                 }
             }
         }
 
-        if (freeExit >= 60 * 1000 * 3) {
+        if (freeExit >= 60 * 1000L * 3) {
             freeExitCountDown = object : CountDownTimer(freeExit, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
                     val second = millisUntilFinished / 1000
@@ -151,12 +154,27 @@ class DouYinMain(private val app: Application) {
                 }
 
                 override fun onFinish() {
-                    if (!config.isTimedExit) return
-                    KActivityUtils.getActivities().forEach { it.finishAndRemoveTask() }
-                    Process.killProcess(Process.myPid())
-                    exitProcess(1)
+                    if (!config.isTimedExit)
+                        return
+
+                    keepOrKill(app, config)
                 }
             }
+        }
+    }
+
+    //
+    private fun keepOrKill(app: Application, config: ConfigV1) {
+        if (config.keepAppBackend) {
+            inBackend = true
+            val intent = Intent(Intent.ACTION_MAIN)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            intent.addCategory(Intent.CATEGORY_HOME)
+            app.startActivity(intent)
+        } else {
+            KActivityUtils.getActivities().forEach { it.finishAndRemoveTask() }
+            Process.killProcess(Process.myPid())
+            exitProcess(1)
         }
     }
 }

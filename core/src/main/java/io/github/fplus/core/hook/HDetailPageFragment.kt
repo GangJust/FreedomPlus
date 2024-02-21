@@ -5,9 +5,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
+import android.widget.TextView
+import androidx.core.view.updatePadding
+import com.freegang.ktutils.display.dip2px
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.methodInvoke
 import com.freegang.ktutils.view.firstOrNull
+import com.freegang.ktutils.view.forEachWhereChild
 import com.freegang.ktutils.view.postRunning
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import de.robv.android.xposed.XC_MethodHook
@@ -70,11 +74,14 @@ class HDetailPageFragment : BaseHook<Any>() {
                 HDetailPageFragment.isComment = true
 
                 // 我也发一张
-                /*view.findViewsByExact(TextView::class.java) {
-                    "$text".contains("我也发") || "$contentDescription".contains("我也发")
-                }.ifNotEmpty {
-                    binding.rightSpace.updatePadding(right = KDisplayUtils.dip2px(view.context, 128f))
-                }*/
+                view.forEachWhereChild {
+                    if(this is TextView){
+                        "$text".contains("我也发") || "$contentDescription".contains("我也发")
+                        binding.rightSpace.updatePadding(right = view.context.dip2px(128f))
+                        return@forEachWhereChild true
+                    }
+                    return@forEachWhereChild false
+                }
             }
         }.onFailure {
             KLogCat.tagE(TAG, it)

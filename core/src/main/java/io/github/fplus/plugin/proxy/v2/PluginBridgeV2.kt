@@ -25,6 +25,10 @@ object PluginBridgeV2 {
     private const val XPLER_ORIGIN_INTENT = "XPLER_ORIGIN_INTENT"
 
     fun init(application: Application, stubActivity: Class<*>) {
+        init(application, stubActivity.name)
+    }
+
+    fun init(application: Application, stubActivity: String) {
         hookStartActivity(application, stubActivity)
         hookLauncherActivity()
         hookInstrumentation(application)
@@ -43,7 +47,10 @@ object PluginBridgeV2 {
      * @param subActivityClazz 在AndroidManifest.xml中注册了的Activity
      */
     @SuppressLint("DiscouragedPrivateApi", "PrivateApi")
-    private fun hookStartActivity(context: Context, subActivityClazz: Class<*>) {
+    private fun hookStartActivity(
+        context: Context,
+        subActivityClassName: String,
+    ) {
         // Android 10+
         // 1.获取ActivityTaskManager的Class对象
         // package android.app;
@@ -62,7 +69,7 @@ object PluginBridgeV2 {
         val iActivityTaskManagerSingletonObj = iActivityTaskManagerSingletonField.get(null)
 
         // 5.
-        handleIActivityTaskManager(context, subActivityClazz, iActivityTaskManagerSingletonObj)
+        handleIActivityTaskManager(context, subActivityClassName, iActivityTaskManagerSingletonObj)
     }
 
     /**
@@ -72,7 +79,7 @@ object PluginBridgeV2 {
     @SuppressLint("DiscouragedPrivateApi", "PrivateApi")
     private fun handleIActivityTaskManager(
         context: Context,
-        subActivityClazz: Class<*>,
+        subActivityClassName: String,
         IActivityTaskManagerSingletonObj: Any?,
     ) {
         try {
@@ -109,7 +116,7 @@ object PluginBridgeV2 {
             val iActivityTaskManagerProxy = Proxy.newProxyInstance(
                 Thread.currentThread().contextClassLoader,
                 arrayOf(iActivityTaskManagerClazz),
-                IActivityInvocationHandler(iActivityTaskManager, context, subActivityClazz)
+                IActivityInvocationHandler(iActivityTaskManager, context, subActivityClassName)
             )
 
             // 13.重新赋值
@@ -135,7 +142,7 @@ object PluginBridgeV2 {
     private class IActivityInvocationHandler(
         private val mIActivityManager: Any?,
         private val mContext: Context,
-        private val mSubActivityClazz: Class<*>,
+        private val mSubActivityClassName: String,
     ) : InvocationHandler {
         @Throws(InvocationTargetException::class, IllegalAccessException::class)
         override fun invoke(proxy: Any, method: Method, args: Array<Any>?): Any? {
@@ -150,7 +157,7 @@ object PluginBridgeV2 {
                 // 将启动的未注册的Activity对应的Intent,替换为安全的注册了的桩Activity的Intent
                 // 1.将未注册的Activity对应的Intent,改为安全的Intent,既在AndroidManifest.xml中配置了的Activity的Intent
                 val originIntent = args[intentIndex] as Intent
-                val safeIntent = Intent(mContext, mSubActivityClazz)
+                val safeIntent = Intent().also { it.setClassName(mContext, mSubActivityClassName) }
                 // public class Intent implements Parcelable;
                 // Intent类已经实现了Parcelable接口
                 safeIntent.putExtra(XPLER_ORIGIN_INTENT, originIntent)
@@ -421,7 +428,11 @@ object PluginBridgeV2 {
         val classLoader = moduleClassloader ?: PluginBridgeV2.classLoader ?: return false
 
         // 是否模块Activity,
-        val pluginActivityClazz = classLoader.loadClass(pluginActivityClassName) ?: return false
-        return IXplerActivity::class.java.isAssignableFrom(pluginActivityClazz)
+        return try {
+            val pluginActivityClazz = classLoader.loadClass(pluginActivityClassName) ?: return false
+            IXplerActivity::class.java.isAssignableFrom(pluginActivityClazz)
+        } catch (e: ClassNotFoundException) {
+            false
+        }
     }
 }

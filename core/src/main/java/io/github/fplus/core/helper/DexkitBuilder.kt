@@ -48,6 +48,8 @@ object DexkitBuilder {
     var emojiApiProxyClazz: Class<*>? = null
     var emojiPopupWindowClazz: Class<*>? = null
     var bottomCtrlBarClazz: Class<*>? = null
+    var chatListRecyclerViewAdapterClazz: Class<*>? = null
+    var chatListRecalledHintClazz: Class<*>? = null
     var restartUtilsClazz: Class<*>? = null
 
     // methods
@@ -83,9 +85,9 @@ object DexkitBuilder {
         this.app = app
         this.cacheVersion = version
 
-        KLogCat.tagD(TAG, "当前进程: ${lpparam.processName}")
+        KLogCat.tagI(TAG, "当前进程: ${lpparam.processName}")
         if (readCache()) {
-            KLogCat.tagD(TAG, "缓存读取成功!")
+            KLogCat.tagI(TAG, "缓存读取成功!")
             return
         }
         startSearch()
@@ -96,7 +98,7 @@ object DexkitBuilder {
      * Dexkit开始搜索
      */
     private fun startSearch() {
-        KLogCat.tagD(TAG, "Dexkit开始搜索: ${lpparam.appInfo.sourceDir}")
+        KLogCat.tagI(TAG, "Dexkit开始搜索: ${lpparam.appInfo.sourceDir}")
         System.loadLibrary("dexkit")
         DexKitBridge.create(lpparam.appInfo.sourceDir).use { bridge ->
             searchClass(bridge)
@@ -399,6 +401,75 @@ object DexkitBuilder {
             }
         }.singleInstance("bottomCtrlBar")
 
+        chatListRecyclerViewAdapterClazz = bridge.findClass {
+            // searchPackages("X")
+            matcher {
+                fields {
+                    add {
+                        type = "com.ss.android.ugc.aweme.im.sdk.chat.SessionInfo"
+                    }
+                    add {
+                        type = "androidx.recyclerview.widget.RecyclerView"
+                    }
+                    add {
+                        type = "androidx.recyclerview.widget.RecyclerView\$ItemAnimator"
+                    }
+                    add {
+                        type = "java.util.Set"
+                    }
+                    add {
+                        type = "java.util.Set"
+                    }
+                }
+
+                methods {
+                    add {
+                        name = "onBindViewHolder"
+                        paramTypes = listOf(
+                            "androidx.recyclerview.widget.RecyclerView\$ViewHolder",
+                            "int",
+                            "java.util.List",
+                        )
+                    }
+                }
+            }
+        }.singleInstance("chatListRecyclerViewAdapter")
+
+        chatListRecalledHintClazz = bridge.findClass {
+            matcher {
+                fields {
+                    add {
+                        type = "android.widget.TextView"
+                    }
+
+                    add {
+                        type = "com.ss.android.ugc.aweme.views.InterceptTouchLinearLayout"
+                    }
+
+                    add {
+                        type {
+                            superClass = "androidx.lifecycle.ViewModel"
+                        }
+                    }
+                }
+
+                methods {
+                    add {
+                        name = "getFastEventBusSubscriberClass"
+                        returnType = "java.lang.Class"
+                    }
+
+                    add {
+                        paramTypes = listOf(
+                            null,
+                            "int",
+                            "java.util.List"
+                        )
+                    }
+                }
+            }
+        }.singleInstance("chatListRecalledHint")
+
         restartUtilsClazz = bridge.findClass {
             searchPackages("X")
             matcher {
@@ -492,7 +563,7 @@ object DexkitBuilder {
         readClassCache(cache)
         readMethodsCache(cache)
 
-        KLogCat.tagD(TAG, cache.toString(2))
+        KLogCat.tagI(TAG, cache.toString(2))
 
         return true
     }
@@ -520,6 +591,8 @@ object DexkitBuilder {
         detailPageFragmentClazz = classCache.getStringOrDefault("detailPageFragment").loadOrFindClass()
         emojiApiProxyClazz = classCache.getStringOrDefault("emojiApiProxy").loadOrFindClass()
         bottomCtrlBarClazz = classCache.getStringOrDefault("bottomCtrlBar").loadOrFindClass()
+        chatListRecyclerViewAdapterClazz = classCache.getStringOrDefault("chatListRecyclerViewAdapter").loadOrFindClass()
+        chatListRecalledHintClazz = classCache.getStringOrDefault("chatListRecalledHint").loadOrFindClass()
         restartUtilsClazz = classCache.getStringOrDefault("restartUtils").loadOrFindClass()
     }
 
@@ -550,14 +623,14 @@ object DexkitBuilder {
     // 拓展方法
     private fun Map<String, ClassDataList>.singleInstance(key: String): Class<*>? {
         val classData = this[key]?.singleOrNull()
-        KLogCat.tagD(TAG, "found-class[$key]: ${classData?.name}")
+        KLogCat.tagI(TAG, "found-class[$key]: ${classData?.name}")
         classCacheJson.put(key, "${classData?.name}")
         return classData?.getInstance(lpparam.classLoader)
     }
 
     private fun ClassDataList.singleInstance(label: String): Class<*>? {
         val classData = this.singleOrNull()
-        KLogCat.tagD(TAG, "found-class[$label]: ${classData?.name}")
+        KLogCat.tagI(TAG, "found-class[$label]: ${classData?.name}")
         classCacheJson.put(label, "${classData?.name}")
         return classData?.getInstance(lpparam.classLoader)
     }
@@ -568,7 +641,7 @@ object DexkitBuilder {
         return this.filter {
             it.isMethod
         }.map {
-            KLogCat.tagD(TAG, "found-method[$label]: $it")
+            KLogCat.tagI(TAG, "found-method[$label]: $it")
             array.put(it.toJson())
             it.getMethodInstance(lpparam.classLoader)
         }

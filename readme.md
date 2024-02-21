@@ -18,6 +18,7 @@
 - 首页控件半透明防烧屏
 - 首页清爽模式隐藏大部分控件
 - 顶部Tab栏自定义隐藏
+- 聊天消息防撤回
 - 禁用双击点赞
 - 双击打开评论区
 - 全屏沉浸式播放
@@ -29,7 +30,7 @@
 ## 支持版本
 
 - 理论上支持：23.5.0 ~ 至今
-- 具体版本号列表可参考：[version.json](https://github.com/GangJust/FreedomPlus/blob/master/versions.json)
+- 版本号**参考**列表：[version.json](https://github.com/GangJust/FreedomPlus/blob/master/versions.json)
 
 
 

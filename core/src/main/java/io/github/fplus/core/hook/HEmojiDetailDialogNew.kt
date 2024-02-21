@@ -1,20 +1,17 @@
 package io.github.fplus.core.hook
 
 import android.os.Bundle
-import android.view.View
 import android.widget.TextView
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.reflect.field
+import com.freegang.ktutils.reflect.fieldGet
 import com.freegang.ktutils.view.firstOrNull
 import com.freegang.ktutils.view.postDelayedRunning
-import com.ss.android.ugc.aweme.emoji.base.BaseEmoji
+import com.ss.android.ugc.aweme.base.model.UrlModel
 import com.ss.android.ugc.aweme.emoji.similaremoji.EmojiDetailDialogNew
 import com.ss.android.ugc.aweme.emoji.store.view.EmojiBottomSheetDialog
-import com.ss.android.ugc.aweme.emoji.utils.EmojiApi
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
-import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.hook.logic.SaveEmojiLogic
 import io.github.xpler.core.argsOrEmpty
 import io.github.xpler.core.hookClass
@@ -31,9 +28,14 @@ class HEmojiDetailDialogNew : BaseHook<EmojiDetailDialogNew>() {
 
     override fun onInit() {
         // 该类是 retrofit2 代理类的Hook, 直接通过实例获取class进行hook
-        DexkitBuilder.emojiApiProxyClazz?.let { it ->
+        /*DexkitBuilder.emojiApiProxyClazz?.let { it ->
             val emojiApiField = it.field(type = EmojiApi::class.java)
             val emojiApi = emojiApiField?.get(null)
+            KLogCat.d(
+                "emojiApiProxyClazz: $it",
+                "emojiApi: $emojiApi",
+                "emojiApi: ${emojiApi?.javaClass?.simpleName}",
+            )
             if (emojiApi != null) {
                 lpparam.hookClass(emojiApi::class.java)
                     .method(
@@ -56,7 +58,18 @@ class HEmojiDetailDialogNew : BaseHook<EmojiDetailDialogNew>() {
                         }
                     }
             }
-        }
+        }*/
+
+        lpparam.hookClass(EmojiDetailDialogNew::class.java)
+            .constructorsAll {
+                onBefore {
+                    if (argsOrEmpty.isEmpty())
+                        return@onBefore
+
+                    val url = args[0].fieldGet(type = UrlModel::class.java)?.asOrNull<UrlModel>()
+                    urlList = url?.urlList ?: emptyList()
+                }
+            }
 
         lpparam.hookClass(EmojiBottomSheetDialog::class.java)
             .method("onCreate", Bundle::class.java) {
@@ -86,37 +99,5 @@ class HEmojiDetailDialogNew : BaseHook<EmojiDetailDialogNew>() {
                     }
                 }
             }
-
-        // 表情弹层
-        DexkitBuilder.emojiPopupWindowClazz?.let { it ->
-            lpparam.hookClass(it)
-                .methodAll {
-                    onAfter {
-                        if (!config.isEmoji) return@onAfter
-                        if (argsOrEmpty.isNotEmpty()) {
-                            val emoji = argsOrEmpty[0].asOrNull<BaseEmoji>()
-                            popUrlList = popUrlList.ifEmpty {
-                                emoji?.detailEmoji?.animateUrl?.urlList
-                                    ?: emoji?.detailEmoji?.staticUrl?.urlList
-                                    ?: emptyList()
-                            }
-                        }
-
-                        if (popUrlList.isEmpty()) return@onAfter
-                        val view = result?.asOrNull<View>() ?: return@onAfter
-                        if (view is TextView) {
-                            if (view.text == "添加到表情") {
-                                view.text = "添加到表情 (长按保存)"
-                                view.isLongClickable = true
-                                view.isHapticFeedbackEnabled = false
-                                view.setOnLongClickListener {
-                                    SaveEmojiLogic(this@HEmojiDetailDialogNew, it.context, popUrlList)
-                                    true
-                                }
-                            }
-                        }
-                    }
-                }
-        }
     }
 }

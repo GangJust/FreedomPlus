@@ -24,36 +24,18 @@ fun ModuleTheme(
     followSystem: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    if (followSystem) {
-        MaterialTheme(
-            typography = autoTypography(isDark = isSystemInDarkTheme()),
-            colors = autoColors(isDark = isSystemInDarkTheme()),
-        ) {
-            rememberSystemUiController().run {
-                setSystemBarsColor(
-                    color = MaterialTheme.colors.background,
-                    darkIcons = false,
-                )
-            }
-
-            Surface(
-                modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars),
-                color = MaterialTheme.colors.background,
-                contentColor = MaterialTheme.colors.background,
-                content = content,
-            )
-        }
-        return
-    }
+    val typography = autoTypography(isDark = if (followSystem) isSystemInDarkTheme() else isDark)
+    val colors = autoColors(isDark = if (followSystem) isSystemInDarkTheme() else isDark)
+    val darkIcons = !((if (followSystem) isSystemInDarkTheme() else isDark))
 
     MaterialTheme(
-        typography = autoTypography(isDark = isDark),
-        colors = autoColors(isDark = isDark),
+        typography = typography,
+        colors = colors,
     ) {
         rememberSystemUiController().run {
             setSystemBarsColor(
                 color = MaterialTheme.colors.background,
-                darkIcons = !isDark,
+                darkIcons = darkIcons,
             )
         }
 

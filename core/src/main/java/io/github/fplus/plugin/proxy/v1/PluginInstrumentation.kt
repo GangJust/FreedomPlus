@@ -20,7 +20,7 @@ import java.lang.reflect.Method
 @Keep
 class PluginInstrumentation(
     private val mBase: Instrumentation,
-    private val stubActivity: Class<*>,
+    private val stubActivity: String,
 ) : Instrumentation() {
     companion object {
         const val PLUGIN_PROXY_ACTIVITY = "xpler_plugin"
@@ -136,7 +136,7 @@ class PluginInstrumentation(
                 try {
                     val pluginClazz = pluginClassloader?.loadClass(intent.component?.className)
                     if (pluginClazz != null && IXplerActivity::class.java.isAssignableFrom(pluginClazz)) {
-                        newIntent = Intent(who, stubActivity)
+                        newIntent = Intent().apply { setClassName(who!!, stubActivity) }
                         intent.extras?.let { newIntent.putExtras(it) }
                         newIntent.putExtra(PLUGIN_PROXY_ACTIVITY, pluginClazz.name)
                     }

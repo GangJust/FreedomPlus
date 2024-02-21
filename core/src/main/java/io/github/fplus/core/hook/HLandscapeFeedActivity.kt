@@ -1,8 +1,11 @@
 package io.github.fplus.core.hook
 
 import android.app.Activity
+import com.freegang.ktutils.extension.asOrNull
 import com.freegang.ktutils.log.KLogCat
-import com.ss.android.ugc.aweme.detail.ui.DetailActivity
+import com.freegang.ktutils.reflect.method
+import com.ss.android.ugc.aweme.feed.model.Aweme
+import com.ss.android.ugc.aweme.longervideo.landscape.home.activity.LandscapeFeedActivity
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
@@ -13,9 +16,9 @@ import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.thisActivity
 
-class HDetailActivity : BaseHook<DetailActivity>() {
+class HLandscapeFeedActivity : BaseHook<LandscapeFeedActivity>() {
     companion object {
-        const val TAG = "HDetailActivity"
+        const val TAG = "HLandscapeFeedActivity"
     }
 
     private val config get() = ConfigV1.get()
@@ -27,7 +30,7 @@ class HDetailActivity : BaseHook<DetailActivity>() {
         hookBlockRunning(params) {
             addClipboardListener(thisActivity)
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            KLogCat.tagE(HDetailActivity.TAG, it)
         }
     }
 
@@ -36,7 +39,7 @@ class HDetailActivity : BaseHook<DetailActivity>() {
         hookBlockRunning(params) {
             removeClipboardListener(thisActivity)
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            KLogCat.tagE(HDetailActivity.TAG, it)
         }
     }
 
@@ -45,10 +48,13 @@ class HDetailActivity : BaseHook<DetailActivity>() {
         if (!config.isCopyDownload) return
 
         clipboardLogic.addClipboardListener(activity) { clipData, firstText ->
+            val method = activity.method(returnType = Aweme::class.java)
+            val aweme = method?.invoke(activity)?.asOrNull<Aweme>()
+
             DownloadLogic(
-                this@HDetailActivity,
+                this@HLandscapeFeedActivity,
                 activity,
-                HVideoViewHolder.aweme,
+                aweme,
             )
         }
     }

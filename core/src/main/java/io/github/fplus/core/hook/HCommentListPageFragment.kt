@@ -30,7 +30,7 @@ class HCommentListPageFragment : BaseHook<Any>() {
     }
 
     @OnAfter
-    @ReturnType(type = CommentColorMode::class)
+    @ReturnType(name = "com.ss.android.ugc.aweme.comment.constants.CommentColorMode")
     fun changeCommentColorModeAfter(params: XC_MethodHook.MethodHookParam/*, mode: CommentColorMode?*/) {
         hookBlockRunning(params) {
             if (!config.isCommentColorMode) return

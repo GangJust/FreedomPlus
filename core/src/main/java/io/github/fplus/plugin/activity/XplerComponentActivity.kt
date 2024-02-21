@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.freegang.ktutils.extension.asOrNull
 import io.github.fplus.plugin.PluginClassloader
@@ -56,7 +57,8 @@ abstract class XplerComponentActivity : BaseComponentActivity() {
 
     private fun initViewTreeOwners() {
         window!!.decorView.setViewTreeLifecycleOwner(this)
-        window!!.decorView.setViewTreeOnBackPressedDispatcherOwner(this)
+        window!!.decorView.setViewTreeViewModelStoreOwner(this)
         window!!.decorView.setViewTreeSavedStateRegistryOwner(this)
+        window!!.decorView.setViewTreeOnBackPressedDispatcherOwner(this)
     }
 }

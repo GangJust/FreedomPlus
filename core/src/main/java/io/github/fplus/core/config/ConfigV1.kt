@@ -138,7 +138,9 @@ class ConfigV1 private constructor() {
     /// 首页控件透明度 [顶部导航, 视频控件, 视频控件右侧, 底部导航]
     var translucentValue: List<Int> = listOf(50, 50, 50, 50)
         get() {
-            field = mmkv.getString("translucentValue", "50, 50, 50, 50")!!.split(",").map { it.trim().toInt() }
+            field = mmkv.getString("translucentValue", "50, 50, 50, 50")!!
+                .split(",")
+                .map { it.trim().toInt() }
 
             return if (field.size == 3) {
                 listOf(field[0], field[1], field[1], field[2])
@@ -181,6 +183,28 @@ class ConfigV1 private constructor() {
         }
         set(value) {
             mmkv.putBoolean("isLongtimeVideoToast", value)
+            field = value
+        }
+
+    /// 隐藏顶部tab
+    var isHideTopTab: Boolean = false
+        get() {
+            field = mmkv.getBoolean("isHideTopTab", false)
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("isHideTopTab", value)
+            field = value
+        }
+
+    /// 隐藏顶部tab包含的关键字, 逗号隔开
+    var hideTopTabKeywords: String = "经验, 探索, 商城"
+        get() {
+            field = mmkv.getString("hideTopTabKeywords", "经验, 探索, 商城")!!
+            return field
+        }
+        set(value) {
+            mmkv.putString("hideTopTabKeywords", value)
             field = value
         }
 
@@ -344,6 +368,30 @@ class ConfigV1 private constructor() {
             field = value
         }
 
+    /// 消息防撤回
+    var isPreventRecalled: Boolean = false
+        get() {
+            field = mmkv.getBoolean("isPreventRecalled", false)
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("isPreventRecalled", value)
+            field = value
+        }
+
+    /// 撤回其他设置
+    var preventRecalledOtherSetting: List<Boolean> = listOf(false)
+        get() {
+            field = mmkv.getString("preventRecalledOtherSetting", "false")!!
+                .split(",")
+                .map { it.trim().toBoolean() }
+            return field
+        }
+        set(value) {
+            mmkv.putString("preventRecalledOtherSetting", value.joinToString())
+            field = value
+        }
+
     /// 全屏沉浸式
     var isImmersive: Boolean = false
         get() {
@@ -357,7 +405,10 @@ class ConfigV1 private constructor() {
     // 系统隐藏项(状态栏、导航栏)
     var systemControllerValue: List<Boolean> = listOf(false, false)
         get() {
-            return mmkv.getString("systemControllerValue", "false, false")!!.split(",").map { it.trim().toBoolean() }
+            field = mmkv.getString("systemControllerValue", "false, false")!!
+                .split(",")
+                .map { it.trim().toBoolean() }
+            return field
         }
         set(value) {
             mmkv.putString("systemControllerValue", value.joinToString())
@@ -381,28 +432,6 @@ class ConfigV1 private constructor() {
         }
         set(value) {
             mmkv.putInt("commentColorMode", value)
-            field = value
-        }
-
-    /// 隐藏顶部tab
-    var isHideTab: Boolean = false
-        get() {
-            field = mmkv.getBoolean("isHideTab", false)
-            return field
-        }
-        set(value) {
-            mmkv.putBoolean("isHideTab", value)
-            field = value
-        }
-
-    /// 隐藏顶部tab包含的关键字, 逗号隔开
-    var hideTabKeywords: String = "经验, 探索, 商城"
-        get() {
-            field = mmkv.getString("hideTabKeywords", "经验, 探索, 商城")!!
-            return field
-        }
-        set(value) {
-            mmkv.putString("hideTabKeywords", value)
             field = value
         }
 
@@ -475,11 +504,24 @@ class ConfigV1 private constructor() {
     /// 定时退出 [运行时间, 空闲时间]
     var timedShutdownValue: List<Int> = listOf(10, 3)
         get() {
-            field = mmkv.getString("timedShutdownValue", "10, 3")!!.split(",").map { it.trim().toInt() }
+            field = mmkv.getString("timedShutdownValue", "10, 3")!!
+                .split(",")
+                .map { it.trim().toInt() }
             return field
         }
         set(value) {
             mmkv.putString("timedShutdownValue", value.joinToString())
+            field = value
+        }
+
+    /// 保留应用后台
+    var keepAppBackend: Boolean = false
+        get() {
+            field = mmkv.getBoolean("keepAppBackend", false)
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("keepAppBackend", value)
             field = value
         }
 
