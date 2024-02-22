@@ -11,6 +11,7 @@ import com.freegang.ktutils.text.KTextUtils
 import io.github.fplus.core.config.ConfigV1
 import io.github.xpler.core.findClass
 import io.github.xpler.core.findMethod
+import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.lpparam
 import org.json.JSONArray
 import org.json.JSONObject
@@ -631,6 +632,7 @@ object DexkitBuilder {
     private fun ClassDataList.singleInstance(label: String): Class<*>? {
         val classData = this.singleOrNull()
         KLogCat.tagI(TAG, "found-class[$label]: ${classData?.name}")
+        if (classData == null) XplerLog.d("not found class: $label")
         classCacheJson.put(label, "${classData?.name}")
         return classData?.getInstance(lpparam.classLoader)
     }

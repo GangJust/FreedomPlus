@@ -5,7 +5,6 @@ import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.ImmersiveHelper
-import io.github.xpler.core.entity.FutureHook
 import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
@@ -23,7 +22,6 @@ class HLivePlayActivity : BaseHook<Any>() {
         return findClass("com.ss.android.ugc.aweme.live.LivePlayActivity")
     }
 
-    @FutureHook
     @OnBefore("onWindowFocusChanged")
     @OnAfter("onWindowFocusChanged")
     fun onWindowFocusChangedAfter(params: XC_MethodHook.MethodHookParam, boolean: Boolean) {

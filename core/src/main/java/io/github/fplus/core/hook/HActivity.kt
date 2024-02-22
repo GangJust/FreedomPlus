@@ -12,6 +12,7 @@ import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.ImmersiveHelper
 import io.github.fplus.core.ui.activity.FreedomSettingActivity
+import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.thisActivity
@@ -48,29 +49,41 @@ class HActivity : BaseHook<Activity>() {
     fun onResumeBefore(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
             DouYinMain.freeExitCountDown?.restart()
-
-            if (thisActivity is FreedomSettingActivity) return
-
-            if (config.isImmersive) {
-                ImmersiveHelper.immersive(
-                    activity = thisActivity,
-                    hideStatusBar = config.systemControllerValue[0],
-                    hideNavigationBars = config.systemControllerValue[1],
-                )
-
-                // 底部三键导航
-                val activity = thisObject as Activity
-                if (activity.navBarInteractionMode == 0 && !config.systemControllerValue[1]) {
-                    activity.contentView.apply {
-                        updatePadding(bottom = context.navigationBarHeight)
-                    }
-                    ImmersiveHelper.systemBarColor(activity, navigationBarColor = null)
-                } else {
-                    ImmersiveHelper.systemBarColor(activity)
-                }
+            if (DouYinMain.inBackend) {
+                DouYinMain.inBackend = false
+                DouYinMain.timedExitCountDown?.restart()
             }
         }.onFailure {
             KLogCat.tagE(TAG, it)
+        }
+    }
+
+    @OnAfter("onWindowFocusChanged")
+    fun onWindowFocusChangedAfter(params: XC_MethodHook.MethodHookParam, boolean: Boolean) {
+        hookBlockRunning(params) {
+            launch {
+                if (thisActivity is FreedomSettingActivity) return@launch
+
+                if (config.isImmersive) {
+                    ImmersiveHelper.immersive(
+                        activity = thisActivity,
+                        hideStatusBar = config.systemControllerValue[0],
+                        hideNavigationBars = config.systemControllerValue[1],
+                    )
+
+                    // 底部三键导航
+                    val activity = thisObject as Activity
+                    ImmersiveHelper.systemBarColor(activity)
+                    if (activity.navBarInteractionMode == 0 && !config.systemControllerValue[1]) {
+                        activity.contentView.apply {
+                            updatePadding(bottom = context.navigationBarHeight)
+                        }
+                        ImmersiveHelper.systemBarColor(activity, navigationBarColor = null)
+                    }
+                }
+            }
+        }.onFailure {
+            KLogCat.tagE(HLivePlayActivity.TAG, it)
         }
     }
 }

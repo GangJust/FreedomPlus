@@ -183,9 +183,9 @@ class DownloadLogic(
         // 构建视频文件名
         mPureFileName = mPureFileName.secureFilename(".mp4")
         if (config.isNotification) {
-            showDownloadByNotification(videoUrlList, mVideoParent.need(), mPureFileName, isWebDav)
+            showDownloadByNotification(videoUrlList, mVideoParent, mPureFileName, isWebDav)
         } else {
-            showDownloadByDialog(videoUrlList, mVideoParent.need(), mPureFileName, isWebDav)
+            showDownloadByDialog(videoUrlList, mVideoParent, mPureFileName, isWebDav)
         }
     }
 
@@ -202,9 +202,9 @@ class DownloadLogic(
         // 构建视频文件名
         mPureFileName = mPureFileName.secureFilename(".mp3")
         if (config.isNotification) {
-            showDownloadByNotification(musicUrlList, mMusicParent.need(), mPureFileName, isWebDav)
+            showDownloadByNotification(musicUrlList, mMusicParent, mPureFileName, isWebDav)
         } else {
-            showDownloadByDialog(musicUrlList, mMusicParent.need(), mPureFileName, isWebDav)
+            showDownloadByDialog(musicUrlList, mMusicParent, mPureFileName, isWebDav)
         }
     }
 

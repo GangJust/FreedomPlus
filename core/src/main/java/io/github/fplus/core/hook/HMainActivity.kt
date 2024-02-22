@@ -28,9 +28,11 @@ import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.hook.logic.ClipboardLogic
 import io.github.fplus.core.hook.logic.DownloadLogic
 import io.github.fplus.core.ui.activity.FreedomSettingActivity
+import io.github.xpler.core.KtXposedHelpers
 import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisActivity
 import io.github.xpler.core.thisContext
 import kotlinx.coroutines.delay
@@ -84,7 +86,8 @@ class HMainActivity : BaseHook<MainActivity>() {
     @OnAfter("onCreate")
     fun onCreateAfter(params: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {
         hookBlockRunning(params) {
-            showToast(thisContext, "Freedom+ Attach!")
+            val activity = thisActivity
+            XplerLog.d("version: ${KtXposedHelpers.moduleVersionName(activity)} - ${activity.appVersionName}(${activity.appVersionCode})")
             DouYinMain.timedExitCountDown?.restart()
         }.onFailure {
             KLogCat.tagE(TAG, it)
@@ -94,10 +97,6 @@ class HMainActivity : BaseHook<MainActivity>() {
     @OnAfter("onResume")
     fun onResume(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
-            if (DouYinMain.inBackend) {
-                DouYinMain.inBackend = false
-                DouYinMain.timedExitCountDown?.restart()
-            }
             addClipboardListener(thisActivity)
             initView(thisActivity)
             is32BisTips(thisActivity)
