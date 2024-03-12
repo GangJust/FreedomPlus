@@ -14,7 +14,6 @@ import com.freegang.ktutils.app.appVersionName
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.app.is64BitDalvik
 import com.freegang.ktutils.app.isDarkMode
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.view.forEachChild
 import com.freegang.ktutils.view.parentView
 import com.freegang.ktutils.view.postRunning
@@ -78,7 +77,7 @@ class HMainActivity : BaseHook<MainActivity>() {
                     finish()
                 }
             }.onFailure {
-                KLogCat.e(it)
+                XplerLog.e(it)
             }
         }
     }
@@ -90,7 +89,7 @@ class HMainActivity : BaseHook<MainActivity>() {
             XplerLog.d("version: ${KtXposedHelpers.moduleVersionName(activity)} - ${activity.appVersionName}(${activity.appVersionCode})")
             DouYinMain.timedExitCountDown?.restart()
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
@@ -101,7 +100,7 @@ class HMainActivity : BaseHook<MainActivity>() {
             initView(thisActivity)
             is32BisTips(thisActivity)
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
@@ -112,7 +111,7 @@ class HMainActivity : BaseHook<MainActivity>() {
             clearView()
             saveConfig(thisContext)
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
@@ -135,17 +134,17 @@ class HMainActivity : BaseHook<MainActivity>() {
 
     private fun initView(activity: Activity) {
         activity.contentView.postRunning {
-            forEachChild {
-                if (this is MainTitleBar) {
-                    mainTitleBar = this
+            it.forEachChild { child ->
+                if (child is MainTitleBar) {
+                    mainTitleBar = child
                 }
 
-                if (DexkitBuilder.mainBottomTabViewClazz?.name == this.javaClass.name) {
-                    bottomTabView = this
+                if (DexkitBuilder.mainBottomTabViewClazz?.name == child.javaClass.name) {
+                    bottomTabView = child
                 }
 
-                if (this.javaClass.name.contains("DisallowInterceptRelativeLayout")) {
-                    disallowInterceptRelativeLayout = this
+                if (child.javaClass.name.contains("DisallowInterceptRelativeLayout")) {
+                    disallowInterceptRelativeLayout = child
                 }
             }
 
@@ -166,8 +165,8 @@ class HMainActivity : BaseHook<MainActivity>() {
                 .toRegex()
             mainTitleBar?.forEachChild {
                 if (config.isHideTopTab) {
-                    if ("$contentDescription".contains(hideTabKeywords)) {
-                        isVisible = false
+                    if ("${it.contentDescription}".contains(hideTabKeywords)) {
+                        it.isVisible = false
                     }
                 }
             }
@@ -191,7 +190,7 @@ class HMainActivity : BaseHook<MainActivity>() {
         if (config.isImmersive) {
             bottomTabView?.parentView?.background = ColorDrawable(Color.TRANSPARENT)
             bottomTabView?.forEachChild {
-                background = ColorDrawable(Color.TRANSPARENT)
+                it.background = ColorDrawable(Color.TRANSPARENT)
             }
         }
     }
@@ -200,18 +199,18 @@ class HMainActivity : BaseHook<MainActivity>() {
         if (config.isImmersive) {
             disallowInterceptRelativeLayout?.postRunning {
                 runCatching {
-                    forEachChild {
+                    it.forEachChild { child ->
                         // 移除顶部间隔
-                        if (javaClass.name == "android.view.View") {
-                            removeInParent()
+                        if (child.javaClass.name == "android.view.View") {
+                            child.removeInParent()
                         }
                         // 移除底部间隔
-                        if (javaClass.name == "com.ss.android.ugc.aweme.feed.ui.bottom.BottomSpace") {
-                            removeInParent()
+                        if (child.javaClass.name == "com.ss.android.ugc.aweme.feed.ui.bottom.BottomSpace") {
+                            child.removeInParent()
                         }
                     }
                 }.onFailure {
-                    KLogCat.tagE(TAG, it)
+                    XplerLog.e(it)
                 }
             }
         }
@@ -232,11 +231,11 @@ class HMainActivity : BaseHook<MainActivity>() {
     }
 
     private fun is32BisTips(context: Context) {
-        launch {
+        singleLaunchMain {
             delay(2000L)
 
             if (context.is64BitDalvik) {
-                return@launch
+                return@singleLaunchMain
             }
 
             val version = config.versionConfig
@@ -247,7 +246,7 @@ class HMainActivity : BaseHook<MainActivity>() {
             }
 
             if (!config.is32BitTips) {
-                return@launch
+                return@singleLaunchMain
             }
 
             showMessageDialog(

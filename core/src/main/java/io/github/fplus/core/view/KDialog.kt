@@ -10,7 +10,7 @@ import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.PopupWindow
 import com.freegang.ktutils.app.activeActivity
-import com.freegang.ktutils.log.KLogCat
+import io.github.xpler.core.log.XplerLog
 
 class KDialog : PopupWindow() {
 
@@ -47,8 +47,7 @@ class KDialog : PopupWindow() {
             val parentView: View = activity.window.decorView.findViewById(Window.ID_ANDROID_CONTENT)
             this.show(parentView, gravity, offsetX, offsetY)
         } catch (e: Exception) {
-            e.printStackTrace()
-            KLogCat.e("`${this::class.java.name}#show()`错误:\n${e.stackTraceToString()}")
+            XplerLog.e("`${this::class.java.name}#show()`错误:\n${e.stackTraceToString()}")
         }
     }
 
@@ -57,8 +56,7 @@ class KDialog : PopupWindow() {
             if (isShowing) return
             this.showAtLocation(parentView, gravity, x, y)
         } catch (e: Exception) {
-            e.printStackTrace()
-            KLogCat.e("`${this::class.java.name}#show()`错误:\n${e.stackTraceToString()}")
+            XplerLog.e("`${this::class.java.name}#show()`错误:\n${e.stackTraceToString()}")
         }
     }
 }

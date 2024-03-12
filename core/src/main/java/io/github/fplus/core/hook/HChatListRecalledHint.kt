@@ -3,7 +3,6 @@ package io.github.fplus.core.hook
 import android.widget.TextView
 import com.bytedance.im.core.model.Message
 import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.fieldGet
 import com.freegang.ktutils.reflect.methodInvoke
 import com.freegang.ktutils.reflect.methods
@@ -15,6 +14,7 @@ import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.entity.Param
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.log.XplerLog
 
 class HChatListRecalledHint : BaseHook<Any>() {
     companion object {
@@ -49,12 +49,14 @@ class HChatListRecalledHint : BaseHook<Any>() {
                 if (isSelf == true) return
             }
 
-            val textView = thisObject.fieldGet(type = TextView::class.java)
-            textView?.asOrNull<TextView>()?.apply {
-                text = "${text.removeSuffix(" (没收到)")} (没收到)"
-            }
+            thisObject
+                .fieldGet(type = TextView::class.java)
+                ?.asOrNull<TextView>()
+                ?.apply {
+                    text = "${text.removeSuffix(" (没收到)")} (没收到)"
+                }
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 }

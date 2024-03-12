@@ -34,7 +34,7 @@ class PluginResources(
 
     private val pluginResources by lazy {
         if (KtXposedHelpers.modulePath.isEmpty()) {
-            KLogCat.d("未获取到模块路径!")
+            KLogCat.i("未获取到模块路径!")
             originResources
         } else {
             val assetManager = AssetManager::class.java.newInstance()

@@ -6,7 +6,6 @@ import androidx.core.view.updatePadding
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.app.navBarInteractionMode
 import com.freegang.ktutils.app.navigationBarHeight
-import com.freegang.ktutils.log.KLogCat
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
@@ -15,6 +14,7 @@ import io.github.fplus.core.ui.activity.FreedomSettingActivity
 import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisActivity
 
 class HActivity : BaseHook<Activity>() {
@@ -41,7 +41,7 @@ class HActivity : BaseHook<Activity>() {
                 }
             }
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
@@ -54,15 +54,15 @@ class HActivity : BaseHook<Activity>() {
                 DouYinMain.timedExitCountDown?.restart()
             }
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
     @OnAfter("onWindowFocusChanged")
     fun onWindowFocusChangedAfter(params: XC_MethodHook.MethodHookParam, boolean: Boolean) {
         hookBlockRunning(params) {
-            launch {
-                if (thisActivity is FreedomSettingActivity) return@launch
+            singleLaunchMain {
+                if (thisActivity is FreedomSettingActivity) return@singleLaunchMain
 
                 if (config.isImmersive) {
                     ImmersiveHelper.immersive(
@@ -83,7 +83,7 @@ class HActivity : BaseHook<Activity>() {
                 }
             }
         }.onFailure {
-            KLogCat.tagE(HLivePlayActivity.TAG, it)
+            XplerLog.e(it)
         }
     }
 }

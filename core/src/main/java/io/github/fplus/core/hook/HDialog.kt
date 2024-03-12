@@ -11,6 +11,7 @@ import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.log.XplerLog
 
 class HDialog : BaseHook<Dialog>() {
     companion object {
@@ -43,17 +44,17 @@ class HDialog : BaseHook<Dialog>() {
             }
 
             mDecorView.forEachWhereChild {
-                if ("${this.contentDescription}".contains(dialogFilterKeywords)) {
+                if ("${it.contentDescription}".contains(dialogFilterKeywords)) {
                     dialog.dismiss()
                     if (config.dialogDismissTips) {
-                        KToastUtils.show(dialog.context, "“${this.contentDescription.ellipsis(5)}”关闭成功!")
+                        KToastUtils.show(dialog.context, "“${it.contentDescription.ellipsis(5)}”关闭成功!")
                     }
                     return@forEachWhereChild true
-                } else if (this is TextView) {
-                    if ("${this.text}".contains(dialogFilterKeywords)) {
+                } else if (it is TextView) {
+                    if ("${it.text}".contains(dialogFilterKeywords)) {
                         dialog.dismiss()
                         if (config.dialogDismissTips) {
-                            KToastUtils.show(dialog.context, "“${this.text.ellipsis(5)}”关闭成功!")
+                            KToastUtils.show(dialog.context, "“${it.text.ellipsis(5)}”关闭成功!")
                         }
                         return@forEachWhereChild true
                     }
@@ -62,7 +63,7 @@ class HDialog : BaseHook<Dialog>() {
                 false
             }
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 }

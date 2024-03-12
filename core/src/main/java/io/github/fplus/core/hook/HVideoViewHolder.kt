@@ -8,7 +8,6 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.view.isVisible
 import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.fieldGet
 import com.freegang.ktutils.reflect.fieldGets
 import com.freegang.ktutils.reflect.method
@@ -30,6 +29,7 @@ import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hook
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.wrapper.CallConstructors
 
 class HVideoViewHolder : BaseHook<VideoViewHolder>(),
@@ -58,7 +58,7 @@ class HVideoViewHolder : BaseHook<VideoViewHolder>(),
 
     private fun addOnDraw(view: View?) {
         if (view == null) {
-            KLogCat.d("addOnDraw", "view == null")
+            XplerLog.d("addOnDraw", "view == null")
             return
         }
 
@@ -78,7 +78,7 @@ class HVideoViewHolder : BaseHook<VideoViewHolder>(),
 
     private fun removeOnDraw(view: View?) {
         if (view == null) {
-            KLogCat.d("removeOnDraw", "view == null")
+            XplerLog.d("removeOnDraw", "view == null")
             return
         }
 
@@ -88,17 +88,17 @@ class HVideoViewHolder : BaseHook<VideoViewHolder>(),
 
     private fun testOnDraw(tag: String) {
         val array = onDrawMaps.map { "${it.key} = ${it.value}" }.toTypedArray()
-        KLogCat.d(tag, *array)
+        XplerLog.d(tag, *array)
     }
 
     private fun testAllOnDraw(view: View?) {
         if (view == null) {
-            KLogCat.d("removeOnDraw", "view == null")
+            XplerLog.d("removeOnDraw", "view == null")
             return
         }
 
         val first = view.viewTreeObserver.fieldGet("mOnDrawListeners")?.asOrNull<List<*>>() ?: return
-        KLogCat.d("监听集合", *first.map { "$it" }.toTypedArray())
+        XplerLog.d("监听集合", *first.map { "$it" }.toTypedArray())
     }
 
     private fun callOpenCleanMode(params: XC_MethodHook.MethodHookParam, bool: Boolean) {
@@ -140,15 +140,15 @@ class HVideoViewHolder : BaseHook<VideoViewHolder>(),
             val isAvatarImageWithLive = videoOptionBarFilterKeywords.pattern.contains("头像")
             view.forEachChild {
                 if (isAvatarImageWithLive && this.javaClass.name.contains("AvatarImageWithLive")) {
-                    this.firstParentOrNull(RelativeLayout::class.java)?.isVisible = false
+                    it.firstParentOrNull(RelativeLayout::class.java)?.isVisible = false
                 }
 
-                if ("${this.contentDescription}".contains(videoOptionBarFilterKeywords)) {
-                    this.firstParentOrNull(FrameLayout::class.java)?.isVisible = false
+                if ("${it.contentDescription}".contains(videoOptionBarFilterKeywords)) {
+                    it.firstParentOrNull(FrameLayout::class.java)?.isVisible = false
                 }
 
-                if (this is TextView && "${this.text}".contains(videoOptionBarFilterKeywords)) {
-                    this.firstParentOrNull(FrameLayout::class.java)?.isVisible = false
+                if (it is TextView && "${it.text}".contains(videoOptionBarFilterKeywords)) {
+                    it.firstParentOrNull(FrameLayout::class.java)?.isVisible = false
                 }
             }
             val isMusicContainer = videoOptionBarFilterKeywords.pattern.contains("音乐")
@@ -176,41 +176,41 @@ class HVideoViewHolder : BaseHook<VideoViewHolder>(),
         hookBlockRunning(params) {
             HVideoViewHolder.aweme = result?.asOrNull()
         }.onFailure {
-            KLogCat.tagE(HVideoViewHolder.TAG, it)
+            XplerLog.e(it)
         }
     }
 
     @OnAfter
     fun startStayTime(params: XC_MethodHook.MethodHookParam, long: Long?) {
         hookBlockRunning(params) {
-            // KLogCat.d("long: $long")
+            // XplerLog.d("long: $long")
             changeFeedRightScaleView(params)
             changeFeedRightScaleViewAlpha(params)
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
     @OnAfter("onViewHolderSelected")
     fun onViewHolderSelectedAfter(params: XC_MethodHook.MethodHookParam, index: Int) {
         hookBlockRunning(params) {
-            // KLogCat.d("onViewHolderSelected")
+            // XplerLog.d("onViewHolderSelected")
             callOpenCleanMode(params, true)
             val container = getWidgetContainer(params)
             addOnDraw(container)
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
     @OnAfter("onViewHolderUnSelected")
     fun onViewHolderUnSelectedAfter(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
-            // KLogCat.d("onViewHolderSelected")
+            // XplerLog.d("onViewHolderSelected")
             val container = getWidgetContainer(params)
             removeOnDraw(container)
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
@@ -221,7 +221,7 @@ class HVideoViewHolder : BaseHook<VideoViewHolder>(),
             removeOnDraw(container)
             onDrawMaps.clear()
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
@@ -231,7 +231,7 @@ class HVideoViewHolder : BaseHook<VideoViewHolder>(),
             val container = getWidgetContainer(params)
             addOnDraw(container)
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 

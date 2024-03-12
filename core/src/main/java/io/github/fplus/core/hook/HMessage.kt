@@ -2,14 +2,13 @@ package io.github.fplus.core.hook
 
 import com.bytedance.im.core.model.Message
 import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.methodInvoke
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
-import io.github.xpler.core.entity.HookEntity
 import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.log.XplerLog
 
 class HMessage : BaseHook<Message>() {
     companion object {
@@ -44,7 +43,7 @@ class HMessage : BaseHook<Message>() {
                 result = false
             }
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 }

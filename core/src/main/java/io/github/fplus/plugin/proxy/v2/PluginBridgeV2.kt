@@ -166,7 +166,7 @@ object PluginBridgeV2 {
                 // 如果是模块Activity, 则对其替换, 否则不处理
                 if (isModuleActivity(originIntent)) {
                     args[intentIndex] = safeIntent
-                    KLogCat.tagD(
+                    KLogCat.tagI(
                         TAG,
                         arrayOf(
                             "替换成功!",
@@ -344,7 +344,7 @@ object PluginBridgeV2 {
                 // 13.将原始的Intent,赋值给clientTransactionItem的mIntent属性
                 safeIntent.component = originIntent.component
 
-                KLogCat.tagD(
+                KLogCat.tagI(
                     TAG,
                     arrayOf(
                         "还原成功!",

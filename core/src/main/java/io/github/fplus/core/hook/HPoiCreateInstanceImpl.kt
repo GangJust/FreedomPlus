@@ -2,7 +2,6 @@ package io.github.fplus.core.hook
 
 import android.app.Activity
 import android.view.ViewGroup
-import com.freegang.ktutils.log.KLogCat
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.helper.DexkitBuilder
@@ -12,6 +11,7 @@ import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.entity.Param
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.log.XplerLog
 import org.json.JSONObject
 
 class HPoiCreateInstanceImpl : BaseHook<EmptyHook>() {
@@ -37,7 +37,7 @@ class HPoiCreateInstanceImpl : BaseHook<EmptyHook>() {
         hookBlockRunning(params) {
             result = null
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 }

@@ -5,7 +5,6 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import com.freegang.ktutils.app.contentView
 import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.fieldGet
 import com.freegang.ktutils.view.firstOrNull
 import com.freegang.ktutils.view.idName
@@ -17,6 +16,7 @@ import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.hook.logic.SaveEmojiLogic
 import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisActivity
 import kotlinx.coroutines.delay
 
@@ -41,24 +41,30 @@ class HGifEmojiDetailActivity : BaseHook<GifEmojiDetailActivity>() {
 
             rebuildView(thisActivity as GifEmojiDetailActivity)
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
     // 重构布局
     private fun rebuildView(activity: GifEmojiDetailActivity) {
-        launch {
+        singleLaunchMain {
             delay(200L)
 
-            activity.contentView.firstOrNull<TextView> {
-                it.idName.contains("text_right")
-            }?.apply {
-                isVisible = true
-                text = "保存"
-                setOnClickListener {
-                    SaveEmojiLogic(this@HGifEmojiDetailActivity, activity, urlList)
+            activity.contentView
+                .firstOrNull(TextView::class.java) {
+                    it.idName.contains("text_right")
                 }
-            }
+                ?.apply {
+                    isVisible = true
+                    text = "保存"
+                    setOnClickListener {
+                        SaveEmojiLogic(
+                            hook = this@HGifEmojiDetailActivity,
+                            context = context,
+                            urlList = urlList,
+                        )
+                    }
+                }
         }
     }
 }

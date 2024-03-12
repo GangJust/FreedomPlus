@@ -1,6 +1,5 @@
 package io.github.fplus.core.hook
 
-import com.freegang.ktutils.log.KLogCat
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
@@ -8,6 +7,7 @@ import io.github.fplus.core.helper.ImmersiveHelper
 import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisActivity
 
 class HLivePlayActivity : BaseHook<Any>() {
@@ -34,7 +34,7 @@ class HLivePlayActivity : BaseHook<Any>() {
                 )
             }
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 }

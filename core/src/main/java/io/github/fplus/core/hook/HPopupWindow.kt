@@ -8,6 +8,7 @@ import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.log.XplerLog
 
 class HPopupWindow : BaseHook<PopupWindow>() {
     companion object {
@@ -19,7 +20,7 @@ class HPopupWindow : BaseHook<PopupWindow>() {
         hookBlockRunning(params) {
             val context = thisObject.fieldGet("mContext") as Context
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 }

@@ -24,41 +24,8 @@ class HEmojiDetailDialogNew : BaseHook<EmojiDetailDialogNew>() {
     private val config get() = ConfigV1.get()
 
     private var urlList: List<String> = emptyList()
-    private var popUrlList: List<String> = emptyList()
 
     override fun onInit() {
-        // 该类是 retrofit2 代理类的Hook, 直接通过实例获取class进行hook
-        /*DexkitBuilder.emojiApiProxyClazz?.let { it ->
-            val emojiApiField = it.field(type = EmojiApi::class.java)
-            val emojiApi = emojiApiField?.get(null)
-            KLogCat.d(
-                "emojiApiProxyClazz: $it",
-                "emojiApi: $emojiApi",
-                "emojiApi: ${emojiApi?.javaClass?.simpleName}",
-            )
-            if (emojiApi != null) {
-                lpparam.hookClass(emojiApi::class.java)
-                    .method(
-                        "getSimilarEmoji",
-                        String::class.java,
-                        Int::class.java,
-                        String::class.java,
-                        Long::class.java,
-                        Long::class.java,
-                        Long::class.java,
-                        String::class.java,
-                        String::class.java,
-                    ) {
-                        onAfter {
-                            runCatching {
-                                urlList = mutableListOf(args[7] as String)
-                            }.onFailure {
-                                urlList = emptyList()
-                            }
-                        }
-                    }
-            }
-        }*/
 
         lpparam.hookClass(EmojiDetailDialogNew::class.java)
             .constructorsAll {
@@ -83,19 +50,21 @@ class HEmojiDetailDialogNew : BaseHook<EmojiDetailDialogNew>() {
 
                     val emojiDialog = thisObject as EmojiDetailDialogNew
                     emojiDialog.window?.contentView?.postDelayedRunning(500) {
-                        if (urlList.isEmpty()) {
+                        if (urlList.isEmpty())
                             return@postDelayedRunning
-                        }
-                        this.firstOrNull<TextView> {
-                            "${it.text}".contains("添加表情")
-                        }?.apply {
-                            text = "添加表情 (长按保存)"
-                            isHapticFeedbackEnabled = false
-                            setOnLongClickListener {
-                                SaveEmojiLogic(this@HEmojiDetailDialogNew, it.context, urlList)
-                                true
+
+                        it
+                            .firstOrNull(TextView::class.java) { v ->
+                                "${v.text}".contains("添加表情")
                             }
-                        }
+                            ?.apply {
+                                text = "添加表情 (长按保存)"
+                                isHapticFeedbackEnabled = false
+                                setOnLongClickListener {
+                                    SaveEmojiLogic(this@HEmojiDetailDialogNew, context, urlList)
+                                    true
+                                }
+                            }
                     }
                 }
             }

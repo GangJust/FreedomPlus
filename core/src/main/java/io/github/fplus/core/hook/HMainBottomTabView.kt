@@ -42,7 +42,7 @@ class HMainBottomTabView : BaseHook<Any>() {
             if (config.isImmersive) {
                 thisViewGroup.parentView?.background = ColorDrawable(Color.TRANSPARENT)
                 thisViewGroup.forEachChild {
-                    background = ColorDrawable(Color.TRANSPARENT)
+                    it.background = ColorDrawable(Color.TRANSPARENT)
                 }
             }
         }.onFailure {

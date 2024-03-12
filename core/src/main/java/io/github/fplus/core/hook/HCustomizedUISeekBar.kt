@@ -3,7 +3,6 @@ package io.github.fplus.core.hook
 import android.widget.FrameLayout
 import androidx.core.view.updateMargins
 import com.freegang.ktutils.display.dip2px
-import com.freegang.ktutils.log.KLogCat
 import com.ss.android.ugc.aweme.feed.ui.seekbar.SeekBarState
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
@@ -39,7 +38,7 @@ class HCustomizedUISeekBar : BaseHook<Any>() {
                 }
             }
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 

@@ -10,7 +10,6 @@ import com.freegang.ktutils.json.firstJsonObject
 import com.freegang.ktutils.json.getJSONArrayOrDefault
 import com.freegang.ktutils.json.getStringOrDefault
 import com.freegang.ktutils.json.parseJSON
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.fieldGets
 import com.freegang.ktutils.text.KTextUtils
 import com.ss.android.ugc.aweme.comment.model.Comment
@@ -21,6 +20,7 @@ import io.github.fplus.core.hook.logic.SaveAudioLogic
 import io.github.xpler.core.KtXposedHelpers
 import io.github.xpler.core.argsOrEmpty
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisView
 import io.github.xpler.core.wrapper.CallMethods
 
@@ -89,7 +89,7 @@ class HCommentAudioView : BaseHook<Any>(), CallMethods {
                 linearLayout.addView(this)
             }
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 }

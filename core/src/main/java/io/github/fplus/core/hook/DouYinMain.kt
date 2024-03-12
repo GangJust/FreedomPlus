@@ -74,7 +74,6 @@ class DouYinMain(private val app: Application) {
                     // HCommentAudioView()
                     HGifEmojiDetailActivity()
                     HEmojiDetailDialog()
-
                     HDialog()
                     // HDialogFragment()
                     // HPopupWindow()
@@ -96,7 +95,6 @@ class DouYinMain(private val app: Application) {
                     HEmojiDetailDialogNew()
                     HEmojiPopupWindow()
                     HBottomCtrlBar()
-
                     HMessage()
                     HChatListRecyclerViewAdapter()
                     HChatListRecalledHint()
@@ -123,7 +121,7 @@ class DouYinMain(private val app: Application) {
             timedExitCountDown = object : CountDownTimer(timedExit, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
                     val second = millisUntilFinished / 1000
-                    KLogCat.d("定时倒计时: ${second}秒")
+                    // KLogCat.d("定时倒计时: ${second}秒")
                     if (!KAppUtils.isAppInForeground(app)) {
                         inBackend = true
                         cancel()
@@ -149,7 +147,7 @@ class DouYinMain(private val app: Application) {
             freeExitCountDown = object : CountDownTimer(freeExit, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
                     val second = millisUntilFinished / 1000
-                    KLogCat.d("空闲倒计时: ${second}秒")
+                    // KLogCat.d("空闲倒计时: ${second}秒")
                     if (!KAppUtils.isAppInForeground(app)) {
                         cancel()
                     }

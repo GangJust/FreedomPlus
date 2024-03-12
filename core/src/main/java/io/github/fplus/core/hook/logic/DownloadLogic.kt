@@ -12,7 +12,6 @@ import com.freegang.ktutils.io.need
 import com.freegang.ktutils.io.pureFileName
 import com.freegang.ktutils.io.pureName
 import com.freegang.ktutils.io.secureFilename
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.media.KMediaUtils
 import com.freegang.ktutils.net.KHttpUtils
 import com.freegang.ktutils.text.KTextUtils
@@ -22,6 +21,7 @@ import de.robv.android.xposed.XposedBridge
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.webdav.WebDav
+import io.github.xpler.core.log.XplerLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -85,7 +85,7 @@ class DownloadLogic(
                 hook.showToast(context, "未获取到基本信息")
             }
         }.onFailure {
-            KLogCat.e(it)
+            XplerLog.e(it)
             hook.showToast(context, "基本信息获取失败")
         }
     }
@@ -227,7 +227,7 @@ class DownloadLogic(
                 title = mPureFileName,
                 listener = {
                     // 下载逻辑
-                    hook.launch {
+                    hook.singleLaunchIO(mPureFileName) {
                         val imageFiles = mutableListOf<File>()
                         var downloadCount = 0 // 下载计数器
                         structList.forEachIndexed { index, urlStruct ->
@@ -270,7 +270,7 @@ class DownloadLogic(
                                     it.setFinishedText("上传WebDav失败, 无法找到已下载的内容!")
                                     hook.showToast(context, "上传WebDav失败, 无法找到已下载的内容!")
                                 }
-                                return@launch
+                                return@singleLaunchIO
                             }
                             var uploadCount = 0
                             for (image in imageFiles) {
@@ -300,7 +300,7 @@ class DownloadLogic(
                 title = "Freedom+",
                 listener = { dialog, notify ->
                     // 下载逻辑
-                    hook.launch {
+                    hook.singleLaunchIO(mPureFileName) {
                         var downloadCount = 0 // 下载计数器
                         structList.forEachIndexed { index, urlStruct ->
                             val downloadFile =
@@ -338,7 +338,7 @@ class DownloadLogic(
                             val images = (mImageParent.listFiles() ?: arrayOf<File>()).filter { it.isFile }
                             if (images.isEmpty()) {
                                 hook.showToast(context, "上传WebDav失败, 无法找到已下载的内容!")
-                                return@launch
+                                return@singleLaunchIO
                             }
                             var uploadCount = 0
                             for (image in images) {
@@ -374,7 +374,7 @@ class DownloadLogic(
             title = pureFileName,
             listener = {
                 // 下载逻辑
-                hook.launch {
+                hook.singleLaunchIO(pureFileName) {
                     val downloadFile = File(parentPath.need(), pureFileName)
                     val finished = download(urlList.first(), downloadFile, it, "下载中 %s%%")
                     if (finished) {
@@ -417,7 +417,7 @@ class DownloadLogic(
             title = "Freedom+",
             listener = { dialog, notify ->
                 // 下载逻辑
-                hook.launch {
+                hook.singleLaunchIO(pureFileName) {
                     val downloadFile = File(parentPath.need(), pureFileName)
                     val finished = download(urlList.first(), downloadFile, notify, "%s%%")
                     if (finished) {
@@ -457,9 +457,8 @@ class DownloadLogic(
     ): Boolean {
         return withContext(Dispatchers.IO) {
             KHttpUtils.download(url, FileOutputStream(downloadFile)) { real, total, e ->
-                if (e != null) {
-                    XposedBridge.log(e)
-                }
+                if (e != null)
+                    XplerLog.e(e)
 
                 if (notify is KNotifiUtils.ProgressNotification) { // 通知栏在ui线程中刷新会造成ui卡顿, 排查了一下午, 麻了
                     notify.notifyProgress((real * 100 / total).toInt(), progressText)

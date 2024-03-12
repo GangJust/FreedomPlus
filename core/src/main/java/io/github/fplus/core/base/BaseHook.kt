@@ -37,6 +37,7 @@ import io.github.xpler.core.inflateModuleView
 import io.github.xpler.core.log.XplerLog
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -44,14 +45,18 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
 
-abstract class BaseHook<T>() : HookEntity<T>() {
+abstract class BaseHook<T> : HookEntity<T>() {
     protected val handler: Handler = Handler(Looper.getMainLooper())
     private val mainScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
+    private var singleMainJob: MutableMap<String, Job?> = mutableMapOf()
+    private var singleIOJob: MutableMap<String, Job?> = mutableMapOf()
+
     private var toast: Toast? = null
     private var kDialog: KDialog? = null
 
-    fun launch(block: suspend CoroutineScope.() -> Unit): Job {
+    private fun launch(context: CoroutineContext, block: suspend CoroutineScope.() -> Unit): Job {
         val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
             if (throwable is CancellationException) {
                 throwable.printStackTrace()
@@ -64,17 +69,42 @@ abstract class BaseHook<T>() : HookEntity<T>() {
                 coroutineContext.cancelChildren()
             }
         }
-        val job = mainScope.launch(exceptionHandler) {
+        val job = mainScope.launch(context + exceptionHandler) {
             try {
                 block.invoke(this)
             } catch (e: CancellationException) {
                 e.printStackTrace()
             } catch (e: Exception) {
-                e.printStackTrace()
                 XplerLog.e(e)
             }
         }
         return job
+    }
+
+    fun launchMain(block: suspend CoroutineScope.() -> Unit): Job {
+        return launch(Dispatchers.Main, block)
+    }
+
+    fun launchIO(block: suspend CoroutineScope.() -> Unit): Job {
+        return launch(Dispatchers.IO, block)
+    }
+
+    fun singleLaunchMain(name: String = "singleMain", block: suspend CoroutineScope.() -> Unit) {
+        if (singleMainJob.containsKey(name)) {
+            singleMainJob[name]?.let { if (it.isActive) it.cancel() }
+            singleMainJob.remove(name)
+        }
+
+        singleMainJob[name] = launch(Dispatchers.Main + CoroutineName(name), block)
+    }
+
+    fun singleLaunchIO(name: String = "singleIO", block: suspend CoroutineScope.() -> Unit) {
+        if (singleIOJob.containsKey(name)) {
+            singleIOJob[name]?.let { if (it.isActive) it.cancel() }
+            singleIOJob.remove(name)
+        }
+
+        singleIOJob[name] = launch(Dispatchers.IO + CoroutineName(name), block)
     }
 
     fun refresh(block: () -> Unit) {
@@ -179,7 +209,7 @@ abstract class BaseHook<T>() : HookEntity<T>() {
         context: Context,
         title: CharSequence,
         progress: Int = 0,
-        listener: (dialog: KDialog, progress: io.github.fplus.core.base.BaseHook.ProgressDialogNotification) -> Unit,
+        listener: (dialog: KDialog, progress: ProgressDialogNotification) -> Unit,
     ) {
         val isDarkMode = context.isDarkMode
         val dialogView = KtXposedHelpers.inflateView<FrameLayout>(context, R.layout.dialog_progress_layout)
@@ -414,6 +444,11 @@ abstract class BaseHook<T>() : HookEntity<T>() {
         override fun setFinishedText(finishedText: String) {
             progressBar.progress = 100
             progressText.text = finishedText
+        }
+
+        override fun setFailedText(failedText: String) {
+            progressBar.setProgress(0, true)
+            progressText.text = failedText
         }
 
         override fun notifyProgress(step: Int, inProgressText: String) {

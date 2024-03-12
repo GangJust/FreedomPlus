@@ -2,7 +2,6 @@ package io.github.fplus.core.hook
 
 import android.app.Activity
 import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.method
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.longervideo.landscape.home.activity.LandscapeFeedActivity
@@ -14,6 +13,7 @@ import io.github.fplus.core.hook.logic.DownloadLogic
 import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisActivity
 
 class HLandscapeFeedActivity : BaseHook<LandscapeFeedActivity>() {
@@ -30,7 +30,7 @@ class HLandscapeFeedActivity : BaseHook<LandscapeFeedActivity>() {
         hookBlockRunning(params) {
             addClipboardListener(thisActivity)
         }.onFailure {
-            KLogCat.tagE(HDetailActivity.TAG, it)
+            XplerLog.e(it)
         }
     }
 
@@ -39,7 +39,7 @@ class HLandscapeFeedActivity : BaseHook<LandscapeFeedActivity>() {
         hookBlockRunning(params) {
             removeClipboardListener(thisActivity)
         }.onFailure {
-            KLogCat.tagE(HDetailActivity.TAG, it)
+            XplerLog.e(it)
         }
     }
 

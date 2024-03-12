@@ -8,7 +8,6 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.view.updatePadding
 import com.freegang.ktutils.display.dip2px
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.methodInvoke
 import com.freegang.ktutils.view.firstOrNull
 import com.freegang.ktutils.view.forEachWhereChild
@@ -25,6 +24,7 @@ import io.github.xpler.core.KtXposedHelpers
 import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.log.XplerLog
 
 class HDetailPageFragment : BaseHook<Any>() {
     companion object {
@@ -52,7 +52,9 @@ class HDetailPageFragment : BaseHook<Any>() {
                 // awemeType 【134:评论区图片, 133|136:评论区视频, 0:主页视频详情, 68:主页图文详情, 13:私信视频/图文, 6000:私信图片】 by 25.1.0 至今
                 if (aweme.awemeType != 134 && aweme.awemeType != 133 && aweme.awemeType != 136) return@postRunning
 
-                val backBtn = view.firstOrNull<ImageView> { "${it.contentDescription}".contains("返回") } ?: return@postRunning
+                val backBtn = view.firstOrNull(ImageView::class.java) {
+                    "${it.contentDescription}".contains("返回")
+                } ?: return@postRunning
 
                 // 清空旧视图
                 val viewGroup = backBtn.parent as ViewGroup
@@ -75,8 +77,8 @@ class HDetailPageFragment : BaseHook<Any>() {
 
                 // 我也发一张
                 view.forEachWhereChild {
-                    if(this is TextView){
-                        "$text".contains("我也发") || "$contentDescription".contains("我也发")
+                    if (it is TextView) {
+                        "${it.text}".contains("我也发") || "${it.contentDescription}".contains("我也发")
                         binding.rightSpace.updatePadding(right = view.context.dip2px(128f))
                         return@forEachWhereChild true
                     }
@@ -84,7 +86,7 @@ class HDetailPageFragment : BaseHook<Any>() {
                 }
             }
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 

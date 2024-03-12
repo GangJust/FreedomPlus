@@ -52,7 +52,7 @@ private fun XmlPullParser.seekToStartTag(): XmlPullParser {
     while (type != XmlPullParser.START_TAG && type != XmlPullParser.END_DOCUMENT) {
         // Empty loop
         type = next()
-        KLogCat.d(this.name)
+        KLogCat.i(this.name)
     }
     if (type != XmlPullParser.START_TAG) {
         throw XmlPullParserException("No start tag found")

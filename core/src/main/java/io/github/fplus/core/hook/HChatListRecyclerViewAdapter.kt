@@ -9,7 +9,6 @@ import androidx.core.view.children
 import androidx.core.view.isVisible
 import com.bytedance.im.core.model.Message
 import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.fieldGet
 import com.freegang.ktutils.reflect.methodInvoke
 import com.freegang.ktutils.reflect.methods
@@ -23,6 +22,7 @@ import io.github.fplus.core.helper.DexkitBuilder
 import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.log.XplerLog
 
 class HChatListRecyclerViewAdapter : BaseHook<Any>() {
     companion object {
@@ -55,7 +55,7 @@ class HChatListRecyclerViewAdapter : BaseHook<Any>() {
 
             val addedFlag = "RecalledHint"
             val viewGroup = itemView
-                .firstOrNull<ViewGroup> { it.idName == "@id/content" }
+                .firstOrNull(ViewGroup::class.java) { it.idName == "@id/content" }
                 ?.parentView
                 ?: return
 
@@ -86,7 +86,7 @@ class HChatListRecyclerViewAdapter : BaseHook<Any>() {
                 }
             }
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 }

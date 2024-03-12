@@ -1,6 +1,5 @@
 package io.github.fplus.core.hook
 
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.methodInvoke
 import com.freegang.ktutils.reflect.methods
 import com.ss.android.ugc.aweme.feed.adapter.VideoViewHolder
@@ -9,6 +8,7 @@ import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.log.XplerLog
 
 class HPlayerController : BaseHook<Any>() {
     companion object {
@@ -30,12 +30,12 @@ class HPlayerController : BaseHook<Any>() {
     @OnBefore("onPlaying")
     fun onPlayingAfter(params: XC_MethodHook.MethodHookParam, aid: String?) {
         hookBlockRunning(params) {
-            // KLogCat.d("onPlaying: $aid")
+            // XplerLog.d("onPlaying: $aid")
             playingAid = aid
             isPlaying = true
             callOpenCleanMode(params, true)
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
@@ -46,20 +46,20 @@ class HPlayerController : BaseHook<Any>() {
             isPlaying = true
             callOpenCleanMode(params, true)
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
     @OnBefore("onPausePlay")
     fun onPausePlayAfter(params: XC_MethodHook.MethodHookParam, aid: String?) {
         hookBlockRunning(params) {
-            // KLogCat.d("onPausePlay: $aid")
+            // XplerLog.d("onPausePlay: $aid")
             if (playingAid == aid) {
                 isPlaying = false
             }
             callOpenCleanMode(params, false)
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
@@ -69,7 +69,7 @@ class HPlayerController : BaseHook<Any>() {
             // isPlaying = false
             // callOpenCleanMode(params, false)
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
@@ -79,7 +79,7 @@ class HPlayerController : BaseHook<Any>() {
             // isPlaying = false
             // callOpenCleanMode(params, false)
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
@@ -94,7 +94,7 @@ class HPlayerController : BaseHook<Any>() {
             isPlaying = true
             // callOpenCleanMode(params, false)
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 

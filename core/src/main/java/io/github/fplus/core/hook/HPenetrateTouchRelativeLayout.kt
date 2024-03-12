@@ -3,14 +3,13 @@ package io.github.fplus.core.hook
 import android.view.View
 import androidx.core.view.updatePadding
 import com.freegang.ktutils.display.dip2px
-import com.freegang.ktutils.log.KLogCat
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
-import io.github.xpler.core.entity.FutureHook
 import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisViewGroup
 import io.github.xpler.core.wrapper.CallMethods
 
@@ -21,7 +20,6 @@ class HPenetrateTouchRelativeLayout : BaseHook<PenetrateTouchRelativeLayout>(), 
 
     private val config get() = ConfigV1.get()
 
-    @FutureHook
     @OnBefore("setVisibility")
     fun setVisibilityBefore(params: XC_MethodHook.MethodHookParam, visibility: Int) {
         hookBlockRunning(params) {
@@ -45,7 +43,7 @@ class HPenetrateTouchRelativeLayout : BaseHook<PenetrateTouchRelativeLayout>(), 
                 HMainActivity.toggleView(true)
             }
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
@@ -62,7 +60,7 @@ class HPenetrateTouchRelativeLayout : BaseHook<PenetrateTouchRelativeLayout>(), 
                 }
             }
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 

@@ -23,22 +23,21 @@ class SaveAudioLogic(
     }
 
     init {
-        hook.launch {
+        hook.singleLaunchIO("SaveAudio") {
             // 默认保存路径: `/外置存储器/Download/Freedom/audio`
             val parentPath = ConfigV1.getFreedomDir(context).child("audio").need()
 
             // 构建保存文件名
             hook.showToast(context, "保存语音, 请稍后..")
             val file = File(parentPath, "${filename}.mp3")
-            withContext(Dispatchers.IO) {
-                val result = KHttpUtils.download(url, FileOutputStream(file))
-                if (result) {
-                    hook.showToast(context, "保存成功!")
-                    KMediaUtils.notifyMediaUpdate(context, file.absolutePath)
-                    if (config.isVibrate) hook.vibrate(context, 5L)
-                } else {
-                    hook.showToast(context, "保存失败!")
-                }
+
+            val result = KHttpUtils.download(url, FileOutputStream(file))
+            if (result) {
+                hook.showToast(context, "保存成功!")
+                KMediaUtils.notifyMediaUpdate(context, file.absolutePath)
+                if (config.isVibrate) hook.vibrate(context, 5L)
+            } else {
+                hook.showToast(context, "保存失败!")
             }
         }
     }

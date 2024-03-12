@@ -3,7 +3,6 @@ package io.github.fplus.core.hook
 import android.view.MotionEvent
 import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.fieldGet
 import com.freegang.ktutils.reflect.fieldSet
 import com.freegang.ktutils.reflect.methodInvoke
@@ -18,6 +17,7 @@ import io.github.fplus.core.helper.DexkitBuilder
 import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.hookClass
+import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.lpparam
 import io.github.xpler.core.thisView
 
@@ -82,12 +82,12 @@ class HVerticalViewPager : BaseHook<VerticalViewPager>() {
 
                             mData.fieldSet(name = "items", filterAwemeList(items))
                             // val array = items.map { it.sortString() }.toTypedArray()
-                            // KLogCat.tagD(TAG, arrayOf("推荐视频列表", array.joinToString("\n")))
+                            // XplerLog.tagD(TAG, arrayOf("推荐视频列表", array.joinToString("\n")))
                         }
                     }
                 }
         }?.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
 
         DexkitBuilder.fullFeedFollowFetchPresenterClazz?.runCatching {
@@ -104,12 +104,12 @@ class HVerticalViewPager : BaseHook<VerticalViewPager>() {
 
                             mData.fieldSet("mItems", filterFollowFeedList(mItems))
                             // val array = mItems.map { it.aweme.sortString() }.toTypedArray()
-                            // KLogCat.tagD(TAG, arrayOf("关注视频列表", array.joinToString("\n")))
+                            // XplerLog.tagD(TAG, arrayOf("关注视频列表", array.joinToString("\n")))
                         }
                     }
                 }
         }?.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
@@ -159,7 +159,7 @@ class HVerticalViewPager : BaseHook<VerticalViewPager>() {
                 }
             }
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 

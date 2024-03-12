@@ -43,7 +43,7 @@ class HCornerExtensionsPopupWindow : BaseHook<Any>() {
 
             val popupWindow = thisObject as PopupWindow
             popupWindow.contentView.postRunning {
-                val inflateView = KtXposedHelpers.inflateView<View>(context, R.layout.popup_freedom_setting)
+                val inflateView = KtXposedHelpers.inflateView<View>(it.context, R.layout.popup_freedom_setting)
                 val icFreedom = KtXposedHelpers.getDrawable(R.drawable.ic_freedom)
                 val binding = PopupFreedomSettingBinding.bind(inflateView)
                 binding.freedomSettingTitle.text = String.format("%s", "Freedom+")
@@ -52,11 +52,11 @@ class HCornerExtensionsPopupWindow : BaseHook<Any>() {
                     val intent = Intent()
                     if (config.isDisablePlugin) {
                         if (!KAppUtils.isAppInstalled(view.context, Constant.modulePackage)) {
-                            KToastUtils.show(context, "未安装Freedom+模块!")
+                            KToastUtils.show(it.context, "未安装Freedom+模块!")
                             return@setOnClickListener
                         }
                         intent.setClassName(Constant.modulePackage, "io.github.fplus.activity.MainActivity")
-                        KToastUtils.show(context, "若设置未生效请尝试重启抖音!")
+                        KToastUtils.show(it.context, "若设置未生效请尝试重启抖音!")
                     } else {
                         intent.setClass(view.context, FreedomSettingActivity::class.java)
                     }
@@ -70,8 +70,8 @@ class HCornerExtensionsPopupWindow : BaseHook<Any>() {
                     view.context.startActivity(intent, options.toBundle())
                 }
 
-                val viewGroup = this as ViewGroup
-                val last = viewGroup.children.last { it is ViewGroup } as ViewGroup  // RoundedLinearLayout
+                val viewGroup = it as ViewGroup
+                val last = viewGroup.children.last { child -> child is ViewGroup } as ViewGroup  // RoundedLinearLayout
                 binding.freedomSettingContainer.background = last.children.first().background
                 binding.root.contentDescription = "扩展功能"
 

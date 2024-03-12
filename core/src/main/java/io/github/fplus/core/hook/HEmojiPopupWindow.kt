@@ -2,7 +2,6 @@ package io.github.fplus.core.hook
 
 import android.widget.TextView
 import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.log.KLogCat
 import com.ss.android.ugc.aweme.emoji.base.BaseEmoji
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
@@ -13,6 +12,7 @@ import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.entity.ReturnType
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.log.XplerLog
 
 class HEmojiPopupWindow : BaseHook<Any>() {
     companion object {
@@ -42,7 +42,7 @@ class HEmojiPopupWindow : BaseHook<Any>() {
                     ?: emptyList()
             }
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
@@ -64,7 +64,7 @@ class HEmojiPopupWindow : BaseHook<Any>() {
                 }
             }
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 }

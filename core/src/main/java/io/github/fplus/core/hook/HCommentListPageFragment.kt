@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.reflect.fieldGets
 import com.freegang.ktutils.view.removeInParent
 import com.ss.android.ugc.aweme.comment.constants.CommentColorMode
@@ -17,6 +16,7 @@ import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.entity.ReturnType
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.log.XplerLog
 
 class HCommentListPageFragment : BaseHook<Any>() {
     companion object {
@@ -49,7 +49,7 @@ class HCommentListPageFragment : BaseHook<Any>() {
                 }
             }
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
@@ -67,7 +67,7 @@ class HCommentListPageFragment : BaseHook<Any>() {
 
             view?.removeInParent()
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 }

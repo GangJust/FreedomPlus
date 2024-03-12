@@ -1,6 +1,5 @@
 package io.github.fplus.core.hook
 
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.view.firstParentOrNull
 import com.ss.android.ugc.aweme.homepage.ui.titlebar.MainTitleBar
 import com.ss.android.ugc.aweme.homepage.ui.view.MainTabStripScrollView
@@ -8,6 +7,7 @@ import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisViewGroup
 import io.github.xpler.core.wrapper.CallMethods
 
@@ -29,7 +29,7 @@ class HMainTabStripScrollView : BaseHook<MainTabStripScrollView>(),
                 thisViewGroup.firstParentOrNull(MainTitleBar::class.java)?.alpha = config.translucentValue[0] / 100f
             }
         }.onFailure {
-            KLogCat.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 }
