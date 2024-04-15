@@ -6,11 +6,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.freegang.extension.appVersionCode
+import com.freegang.extension.appVersionName
+import com.freegang.extension.isEmpty
+import com.freegang.extension.readAssetsAsText
 import com.freegang.ktutils.app.KAppUtils
-import com.freegang.ktutils.app.appVersionCode
-import com.freegang.ktutils.app.appVersionName
-import com.freegang.ktutils.app.readAssetsAsText
-import com.freegang.ktutils.json.isEmpty
 import com.freegang.ktutils.net.KUrlUtils
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.config.Version

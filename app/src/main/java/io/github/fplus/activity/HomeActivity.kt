@@ -57,9 +57,9 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
+import com.freegang.extension.appVersionName
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
-import com.freegang.ktutils.app.appVersionName
 import com.freegang.ktutils.log.KLogCat
 import io.github.fplus.Constant
 import io.github.fplus.FreedomTheme

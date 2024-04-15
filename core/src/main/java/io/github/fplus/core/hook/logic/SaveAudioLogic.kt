@@ -1,14 +1,12 @@
 package io.github.fplus.core.hook.logic
 
 import android.content.Context
-import com.freegang.ktutils.io.child
-import com.freegang.ktutils.io.need
+import com.freegang.extension.child
+import com.freegang.extension.need
 import com.freegang.ktutils.media.KMediaUtils
 import com.freegang.ktutils.net.KHttpUtils
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 

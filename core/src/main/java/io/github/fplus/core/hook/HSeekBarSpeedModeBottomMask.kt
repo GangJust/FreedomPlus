@@ -3,8 +3,8 @@ package io.github.fplus.core.hook
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.view.View
-import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.view.postRunning
+import com.freegang.extension.asOrNull
+import com.freegang.extension.postRunning
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1

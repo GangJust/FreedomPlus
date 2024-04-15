@@ -2,10 +2,9 @@ package io.github.fplus.core.hook
 
 import android.app.Dialog
 import android.widget.TextView
+import com.freegang.extension.ellipsis
+import com.freegang.extension.forEachWhereChild
 import com.freegang.ktutils.app.KToastUtils
-import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.text.ellipsis
-import com.freegang.ktutils.view.forEachWhereChild
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1

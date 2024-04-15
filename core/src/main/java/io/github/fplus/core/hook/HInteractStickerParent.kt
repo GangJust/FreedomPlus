@@ -1,7 +1,7 @@
 package io.github.fplus.core.hook
 
-import com.freegang.ktutils.view.postRunning
-import com.freegang.ktutils.view.removeInParent
+import com.freegang.extension.postRunning
+import com.freegang.extension.removeInParent
 import com.ss.android.ugc.aweme.sticker.infoSticker.interact.consume.view.InteractStickerParent
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook

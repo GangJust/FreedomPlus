@@ -26,10 +26,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.freegang.extension.activeActivity
+import com.freegang.extension.appVersionCode
+import com.freegang.extension.appVersionName
 import com.freegang.ktutils.app.KAppCrashUtils
-import com.freegang.ktutils.app.activeActivity
-import com.freegang.ktutils.app.appVersionCode
-import com.freegang.ktutils.app.appVersionName
 import io.github.fplus.FreedomTheme
 import io.github.fplus.R
 import io.github.fplus.Themes

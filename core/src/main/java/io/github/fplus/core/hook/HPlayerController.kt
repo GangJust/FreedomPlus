@@ -1,7 +1,7 @@
 package io.github.fplus.core.hook
 
-import com.freegang.ktutils.reflect.methodInvoke
-import com.freegang.ktutils.reflect.methods
+import com.freegang.extension.methodInvoke
+import com.freegang.extension.methods
 import com.ss.android.ugc.aweme.feed.adapter.VideoViewHolder
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook

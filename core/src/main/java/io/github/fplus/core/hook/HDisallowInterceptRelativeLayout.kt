@@ -1,8 +1,8 @@
 package io.github.fplus.core.hook
 
-import com.freegang.ktutils.view.forEachChild
-import com.freegang.ktutils.view.postRunning
-import com.freegang.ktutils.view.removeInParent
+import com.freegang.extension.forEachChild
+import com.freegang.extension.postRunning
+import com.freegang.extension.removeInParent
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1

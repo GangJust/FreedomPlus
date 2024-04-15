@@ -4,9 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.reflect.fieldGets
-import com.freegang.ktutils.view.removeInParent
+import com.freegang.extension.asOrNull
+import com.freegang.extension.fieldGets
+import com.freegang.extension.removeInParent
 import com.ss.android.ugc.aweme.comment.constants.CommentColorMode
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook

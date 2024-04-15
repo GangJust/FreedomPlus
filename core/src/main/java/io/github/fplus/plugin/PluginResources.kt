@@ -17,10 +17,10 @@ import android.os.Bundle
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.util.TypedValue
+import com.freegang.extension.fieldSet
+import com.freegang.extension.methodInvoke
+import com.freegang.extension.methodInvokes
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.reflect.fieldSet
-import com.freegang.ktutils.reflect.methodInvoke
-import com.freegang.ktutils.reflect.methodInvokes
 import io.github.xpler.core.KtXposedHelpers
 import java.io.InputStream
 

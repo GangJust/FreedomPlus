@@ -2,7 +2,7 @@ package io.github.fplus.core.hook
 
 import android.view.View
 import androidx.core.view.updatePadding
-import com.freegang.ktutils.display.dip2px
+import com.freegang.extension.dip2px
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook

@@ -63,8 +63,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.freegang.extension.methodInvoke
 import com.freegang.ktutils.app.KToastUtils
-import com.freegang.ktutils.reflect.methodInvoke
 import io.github.fplus.core.R
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.helper.HighlightStyleBuilder

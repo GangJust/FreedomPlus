@@ -1,8 +1,8 @@
 package io.github.fplus.core.hook
 
 import com.bytedance.im.core.model.Message
-import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.reflect.methodInvoke
+import com.freegang.extension.asOrNull
+import com.freegang.extension.methodInvoke
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1

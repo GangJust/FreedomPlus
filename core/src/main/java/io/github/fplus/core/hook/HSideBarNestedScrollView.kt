@@ -7,12 +7,12 @@ import android.view.MotionEvent
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.view.children
+import com.freegang.extension.firstOrNull
+import com.freegang.extension.isDarkMode
+import com.freegang.extension.postRunning
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
-import com.freegang.ktutils.app.isDarkMode
 import com.freegang.ktutils.color.KColorUtils
-import com.freegang.ktutils.view.firstOrNull
-import com.freegang.ktutils.view.postRunning
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.Constant
 import io.github.fplus.core.R

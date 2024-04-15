@@ -9,8 +9,8 @@ import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Handler
 import android.os.Message
+import com.freegang.extension.classLoader
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.reflect.classLoader
 import io.github.fplus.plugin.base.IXplerActivity
 import io.github.xpler.loader.moduleClassloader
 import java.lang.reflect.InvocationHandler

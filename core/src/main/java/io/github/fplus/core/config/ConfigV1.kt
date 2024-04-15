@@ -2,10 +2,10 @@ package io.github.fplus.core.config
 
 import android.content.Context
 import android.os.Environment
-import com.freegang.ktutils.io.child
-import com.freegang.ktutils.io.storageRootFile
-import com.freegang.ktutils.json.getStringOrDefault
-import com.freegang.ktutils.json.parseJSON
+import com.freegang.extension.child
+import com.freegang.extension.getStringOrDefault
+import com.freegang.extension.parseJSON
+import com.freegang.extension.storageRootFile
 import com.tencent.mmkv.MMKV
 import io.github.webdav.WebDav
 import org.json.JSONObject

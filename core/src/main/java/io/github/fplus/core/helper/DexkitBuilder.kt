@@ -1,11 +1,11 @@
 package io.github.fplus.core.helper
 
 import android.app.Application
-import com.freegang.ktutils.app.appVersionCode
-import com.freegang.ktutils.app.appVersionName
-import com.freegang.ktutils.json.getIntOrDefault
-import com.freegang.ktutils.json.getJSONArrayOrDefault
-import com.freegang.ktutils.json.getStringOrDefault
+import com.freegang.extension.appVersionCode
+import com.freegang.extension.appVersionName
+import com.freegang.extension.getIntOrDefault
+import com.freegang.extension.getJSONArrayOrDefault
+import com.freegang.extension.getStringOrDefault
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.text.KTextUtils
 import io.github.fplus.core.config.ConfigV1

@@ -1,6 +1,6 @@
 package io.github.fplus.core.hook
 
-import com.freegang.ktutils.view.firstParentOrNull
+import com.freegang.extension.firstParentOrNull
 import com.ss.android.ugc.aweme.homepage.ui.titlebar.MainTitleBar
 import com.ss.android.ugc.aweme.homepage.ui.view.MainTabStripScrollView
 import de.robv.android.xposed.XC_MethodHook

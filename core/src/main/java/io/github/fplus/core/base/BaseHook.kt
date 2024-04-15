@@ -18,10 +18,10 @@ import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
 import androidx.core.view.isVisible
+import com.freegang.extension.isDarkMode
 import com.freegang.ktutils.app.IProgressNotification
 import com.freegang.ktutils.app.KNotifiUtils
 import com.freegang.ktutils.app.KToastUtils
-import com.freegang.ktutils.app.isDarkMode
 import io.github.fplus.core.R
 import io.github.fplus.core.databinding.DialogChoiceLayoutBinding
 import io.github.fplus.core.databinding.DialogInputChoiceLayoutBinding

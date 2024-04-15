@@ -7,11 +7,11 @@ import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.view.updatePadding
-import com.freegang.ktutils.display.dip2px
-import com.freegang.ktutils.reflect.methodInvoke
-import com.freegang.ktutils.view.firstOrNull
-import com.freegang.ktutils.view.forEachWhereChild
-import com.freegang.ktutils.view.postRunning
+import com.freegang.extension.dip2px
+import com.freegang.extension.firstOrNull
+import com.freegang.extension.forEachWhereChild
+import com.freegang.extension.methodInvoke
+import com.freegang.extension.postRunning
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.R

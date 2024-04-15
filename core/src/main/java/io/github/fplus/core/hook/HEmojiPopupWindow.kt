@@ -1,7 +1,7 @@
 package io.github.fplus.core.hook
 
 import android.widget.TextView
-import com.freegang.ktutils.extension.asOrNull
+import com.freegang.extension.asOrNull
 import com.ss.android.ugc.aweme.emoji.base.BaseEmoji
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook

@@ -2,8 +2,8 @@ package io.github.fplus.core.hook
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import com.freegang.ktutils.view.forEachChild
-import com.freegang.ktutils.view.parentView
+import com.freegang.extension.forEachChild
+import com.freegang.extension.parentView
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1

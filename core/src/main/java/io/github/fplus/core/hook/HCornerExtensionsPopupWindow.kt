@@ -6,10 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupWindow
 import androidx.core.view.children
+import com.freegang.extension.isDarkMode
+import com.freegang.extension.postRunning
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
-import com.freegang.ktutils.app.isDarkMode
-import com.freegang.ktutils.view.postRunning
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.Constant
 import io.github.fplus.core.R

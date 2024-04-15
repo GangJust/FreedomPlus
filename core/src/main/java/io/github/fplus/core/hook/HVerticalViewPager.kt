@@ -1,11 +1,11 @@
 package io.github.fplus.core.hook
 
 import android.view.MotionEvent
+import com.freegang.extension.asOrNull
+import com.freegang.extension.fieldGet
+import com.freegang.extension.fieldSet
+import com.freegang.extension.methodInvoke
 import com.freegang.ktutils.app.KToastUtils
-import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.reflect.fieldGet
-import com.freegang.ktutils.reflect.fieldSet
-import com.freegang.ktutils.reflect.methodInvoke
 import com.freegang.ktutils.text.KTextUtils
 import com.ss.android.ugc.aweme.common.widget.VerticalViewPager
 import com.ss.android.ugc.aweme.feed.model.Aweme

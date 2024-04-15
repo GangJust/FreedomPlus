@@ -6,13 +6,13 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.freegang.extension.appVersionName
+import com.freegang.extension.child
+import com.freegang.extension.storageRootFile
+import com.freegang.ktutils.app.KAppUtils
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.config.Version
 import io.github.fplus.core.config.VersionConfig
-import com.freegang.ktutils.app.KAppUtils
-import com.freegang.ktutils.app.appVersionName
-import com.freegang.ktutils.io.child
-import com.freegang.ktutils.io.storageRootFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -43,8 +43,8 @@ class HomeVM(application: Application) : AndroidViewModel(application) {
 
     // 检查版本更新
     fun checkVersion() {
-        if (KAppUtils.isAppInDebug(app)) return //测试包不检查更新
-        if (app.appVersionName.contains(Regex("beta|alpha"))) return //非release包不检查更新
+        if (KAppUtils.isAppInDebug(app)) return // 测试包不检查更新
+        if (app.appVersionName.contains(Regex("beta|alpha"))) return // 非release包不检查更新
         viewModelScope.launch {
             val version = withContext(Dispatchers.IO) { Version.getRemoteReleasesLatest() }
             if (version != null) _versionConfig.value = version
@@ -53,8 +53,8 @@ class HomeVM(application: Application) : AndroidViewModel(application) {
 
     // 获取远程版本适配列表
     fun updateVersions() {
-        if (KAppUtils.isAppInDebug(app)) return //测试包不检查更新
-        if (app.appVersionName.contains(Regex("beta|alpha"))) return //非release包不检查更新
+        if (KAppUtils.isAppInDebug(app)) return // 测试包不检查更新
+        if (app.appVersionName.contains(Regex("beta|alpha"))) return // 非release包不检查更新
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 val versions = Version.getVersions() ?: return@withContext

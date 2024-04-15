@@ -3,9 +3,9 @@ package io.github.fplus.core.hook
 import android.app.Activity
 import android.view.MotionEvent
 import androidx.core.view.updatePadding
-import com.freegang.ktutils.app.contentView
-import com.freegang.ktutils.app.navBarInteractionMode
-import com.freegang.ktutils.app.navigationBarHeight
+import com.freegang.extension.contentView
+import com.freegang.extension.navBarInteractionMode
+import com.freegang.extension.navigationBarHeight
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1

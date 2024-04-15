@@ -2,11 +2,11 @@ package io.github.fplus.core.hook
 
 import android.os.Bundle
 import android.widget.TextView
-import com.freegang.ktutils.app.contentView
-import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.reflect.fieldGet
-import com.freegang.ktutils.view.firstOrNull
-import com.freegang.ktutils.view.postDelayedRunning
+import com.freegang.extension.asOrNull
+import com.freegang.extension.contentView
+import com.freegang.extension.fieldGet
+import com.freegang.extension.firstOrNull
+import com.freegang.extension.postDelayedRunning
 import com.ss.android.ugc.aweme.base.model.UrlModel
 import com.ss.android.ugc.aweme.emoji.similaremoji.EmojiDetailDialogNew
 import com.ss.android.ugc.aweme.emoji.store.view.EmojiBottomSheetDialog

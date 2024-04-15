@@ -12,7 +12,7 @@ import android.os.IBinder
 import android.os.PersistableBundle
 import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
-import com.freegang.ktutils.reflect.classLoader
+import com.freegang.extension.classLoader
 import io.github.fplus.plugin.base.IXplerActivity
 import io.github.xpler.loader.moduleClassloader
 import java.lang.reflect.Method

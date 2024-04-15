@@ -3,8 +3,8 @@ package io.github.fplus.core.hook
 import android.view.View
 import android.widget.ImageView
 import androidx.core.view.isVisible
+import com.freegang.extension.forEachChild
 import com.freegang.ktutils.app.KToastUtils
-import com.freegang.ktutils.view.forEachChild
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1

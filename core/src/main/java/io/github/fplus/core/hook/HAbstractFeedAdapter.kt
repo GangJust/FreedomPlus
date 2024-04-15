@@ -8,11 +8,11 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.core.view.children
 import androidx.core.view.updatePadding
-import com.freegang.ktutils.display.dip2px
-import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.view.firstOrNull
-import com.freegang.ktutils.view.firstParentOrNull
-import com.freegang.ktutils.view.forEachChild
+import com.freegang.extension.asOrNull
+import com.freegang.extension.dip2px
+import com.freegang.extension.firstOrNull
+import com.freegang.extension.firstParentOrNull
+import com.freegang.extension.forEachChild
 import com.ss.android.ugc.aweme.ad.feed.VideoViewHolderRootView
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook

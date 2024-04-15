@@ -8,7 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
-import com.freegang.ktutils.extension.asOrNull
+import com.freegang.extension.asOrNull
 import io.github.fplus.plugin.PluginClassloader
 import io.github.fplus.plugin.PluginContextThemeWrapper
 import io.github.fplus.plugin.PluginResources

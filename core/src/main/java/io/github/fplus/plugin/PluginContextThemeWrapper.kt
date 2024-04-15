@@ -4,8 +4,8 @@ import android.content.Context
 import android.content.res.AssetManager
 import android.content.res.Resources
 import android.view.ContextThemeWrapper
+import com.freegang.extension.methodInvokes
 import com.freegang.ktutils.log.KLogCat
-import com.freegang.ktutils.reflect.methodInvokes
 import io.github.xpler.core.KtXposedHelpers
 
 class PluginContextThemeWrapper(

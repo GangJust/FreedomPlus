@@ -2,9 +2,9 @@ package io.github.fplus.core.hook
 
 import android.os.Bundle
 import android.view.View
-import com.freegang.ktutils.app.isDarkMode
-import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.reflect.fieldGets
+import com.freegang.extension.asOrNull
+import com.freegang.extension.fieldGets
+import com.freegang.extension.isDarkMode
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.R
 import io.github.fplus.core.base.BaseHook

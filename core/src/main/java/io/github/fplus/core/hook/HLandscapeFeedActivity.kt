@@ -1,8 +1,8 @@
 package io.github.fplus.core.hook
 
 import android.app.Activity
-import com.freegang.ktutils.extension.asOrNull
-import com.freegang.ktutils.reflect.method
+import com.freegang.extension.asOrNull
+import com.freegang.extension.method
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.longervideo.landscape.home.activity.LandscapeFeedActivity
 import de.robv.android.xposed.XC_MethodHook

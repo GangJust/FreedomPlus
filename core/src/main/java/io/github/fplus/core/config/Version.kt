@@ -1,10 +1,10 @@
 package io.github.fplus.core.config
 
 import android.util.Base64
-import com.freegang.ktutils.json.firstJsonObject
-import com.freegang.ktutils.json.getLongOrDefault
-import com.freegang.ktutils.json.getStringOrDefault
-import com.freegang.ktutils.json.parseJSON
+import com.freegang.extension.firstJsonObject
+import com.freegang.extension.getLongOrDefault
+import com.freegang.extension.getStringOrDefault
+import com.freegang.extension.parseJSON
 import com.freegang.ktutils.net.KHttpUtils
 
 
@@ -12,7 +12,7 @@ object Version {
     // Api
     private const val githubReleasesApi = "https://api.github.com/repos/GangJust/FreedomPlus/releases/latest"
 
-    //private const val githubVersionApi = "https://raw.githubusercontent.com/GangJust/FreedomPlus/master/versions.json"
+    // private const val githubVersionApi = "https://raw.githubusercontent.com/GangJust/FreedomPlus/master/versions.json"
     private const val githubVersionApi = "https://api.github.com/repos/GangJust/FreedomPlus/contents/versions.json?ref=master"
 
     // 获取Github最后一次 releases
