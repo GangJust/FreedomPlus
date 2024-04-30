@@ -10,6 +10,7 @@ import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 
+@Deprecated("旧逻辑暂存")
 class HVideoPlayerHelper : BaseHook<Any>() {
     companion object {
         const val TAG = "HVideoPlayerHelper"

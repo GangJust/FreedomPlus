@@ -42,11 +42,11 @@ class SaveEmojiLogic(
             // 构建保存文件名
             hook.showToast(context, "保存表情, 请稍后..")
             val file = File(parentPath, "${System.currentTimeMillis() / 1000}.gif")
-            val result = KHttpUtils.download(urlList.first(), FileOutputStream(file))
+            val result = KHttpUtils.download(urlList.random(), FileOutputStream(file))
             if (result) {
                 hook.showToast(context, "保存成功!")
                 KMediaUtils.notifyMediaUpdate(context, file.absolutePath)
-                if (config.isVibrate) hook.vibrate(context, 5L)
+                if (config.vibrate) hook.vibrate(context, 5L)
             } else {
                 hook.showToast(context, "保存失败!")
             }

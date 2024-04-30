@@ -40,22 +40,23 @@ class HDisallowInterceptRelativeLayout : BaseHook<Any>(),
 
     override fun callOnAfterConstructors(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
-            if (config.isImmersive) {
-                thisViewGroup.postRunning {
-                    runCatching {
-                        it.forEachChild { child ->
-                            // 移除顶部间隔
-                            if (child.javaClass.name == "android.view.View") {
-                                child.removeInParent()
-                            }
-                            // 移除底部间隔
-                            if (child.javaClass.name == "com.ss.android.ugc.aweme.feed.ui.bottom.BottomSpace") {
-                                child.removeInParent()
-                            }
+            if (!config.isImmersive)
+                return
+
+            thisViewGroup.postRunning {
+                runCatching {
+                    it.forEachChild { child ->
+                        // 移除顶部间隔
+                        if (child.javaClass.name == "android.view.View") {
+                            child.removeInParent()
                         }
-                    }.onFailure {
-                        XplerLog.e(it)
+                        // 移除底部间隔
+                        if (child.javaClass.name == "com.ss.android.ugc.aweme.feed.ui.bottom.BottomSpace") {
+                            child.removeInParent()
+                        }
                     }
+                }.onFailure {
+                    XplerLog.e(it)
                 }
             }
         }

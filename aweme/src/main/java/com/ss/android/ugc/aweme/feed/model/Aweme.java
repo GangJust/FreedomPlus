@@ -41,6 +41,8 @@ public abstract class Aweme {
 
     public List<ImageUrlStruct> images;
 
+    public String shareUrl;
+
     public Aweme() {
         throw new RuntimeException("stub!!");
     }

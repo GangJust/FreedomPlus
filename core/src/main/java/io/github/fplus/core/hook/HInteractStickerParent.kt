@@ -24,11 +24,11 @@ class HInteractStickerParent : BaseHook<InteractStickerParent>(), CallConstructo
 
     override fun callOnAfterConstructors(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
-            // 移除悬浮贴纸
-            if (config.isRemoveSticker) {
-                thisViewGroup.postRunning { child ->
-                    child.removeInParent()
-                }
+            if (!config.isRemoveSticker)
+                return
+
+            thisViewGroup.postRunning { child ->
+                child.removeInParent()
             }
         }.onFailure {
             XplerLog.e(it)

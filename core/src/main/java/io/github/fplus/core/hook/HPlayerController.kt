@@ -1,8 +1,12 @@
 package io.github.fplus.core.hook
 
-import com.freegang.extension.methodInvoke
+import android.view.View
+import androidx.core.view.isVisible
+import com.freegang.extension.asOrNull
+import com.freegang.extension.fields
 import com.freegang.extension.methods
 import com.ss.android.ugc.aweme.feed.adapter.VideoViewHolder
+import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
@@ -73,11 +77,12 @@ class HPlayerController : BaseHook<Any>() {
         }
     }
 
-    // @OnBefore("onPlayCompletedFirstTime")
+    @OnBefore("onPlayCompletedFirstTime")
     fun onPlayCompletedFirstTimeAfter(params: XC_MethodHook.MethodHookParam, aid: String?) {
         hookBlockRunning(params) {
             // isPlaying = false
             // callOpenCleanMode(params, false)
+            // onSwipeUp(params)
         }.onFailure {
             XplerLog.e(it)
         }
@@ -107,12 +112,33 @@ class HPlayerController : BaseHook<Any>() {
             return
         }
 
-        val methodFirst = params.thisObject.methods(returnType = VideoViewHolder::class.java)
+        val method = params.thisObject
+            .methods(returnType = VideoViewHolder::class.java)
             .firstOrNull { it.parameterTypes.isEmpty() }
-        val videoViewHolder = methodFirst?.invoke(params.thisObject)
-        videoViewHolder?.methodInvoke(name = "openCleanMode", args = arrayOf(bool))
+        val videoViewHolder = method?.invoke(params.thisObject)
 
-        //
+        val field = videoViewHolder
+            ?.fields(type = PenetrateTouchRelativeLayout::class.java)
+            ?.firstOrNull { it.type == PenetrateTouchRelativeLayout::class.java }
+        val view = field?.get(videoViewHolder)?.asOrNull<PenetrateTouchRelativeLayout>()
+
+        // toggle
+        view?.isVisible = !bool
         HMainActivity.toggleView(!bool)
+    }
+
+    private fun onSwipeUp(params: XC_MethodHook.MethodHookParam) {
+        val method = params.thisObject
+            .methods(returnType = VideoViewHolder::class.java)
+            .firstOrNull { it.parameterTypes.isEmpty() }
+        val videoViewHolder = method?.invoke(params.thisObject)
+
+        val fields = videoViewHolder
+            ?.fields(type = View::class.java)
+
+        fields?.map { "\nfield: ${it}\nvalue: ${it.get(videoViewHolder)}" }
+            ?.let {
+                XplerLog.d(*it.toTypedArray())
+            }
     }
 }

@@ -1,7 +1,10 @@
 package io.github.fplus.core.hook
 
 import android.app.Activity
+import com.freegang.extension.asOrNull
+import com.freegang.extension.method
 import com.ss.android.ugc.aweme.detail.ui.DetailActivity
+import com.ss.android.ugc.aweme.feed.model.Aweme
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
@@ -41,14 +44,22 @@ class HDetailActivity : BaseHook<DetailActivity>() {
     }
 
     private fun addClipboardListener(activity: Activity) {
-        if (!config.isDownload) return
-        if (!config.isCopyDownload) return
+        if (!config.isDownload)
+            return
 
-        clipboardLogic.addClipboardListener(activity) { clipData, firstText ->
+        if (!config.copyLinkDownload)
+            return
+
+        val method = activity.method(returnType = Aweme::class.java)
+        val aweme = method?.invoke(activity)?.asOrNull<Aweme>()
+            ?: HVideoViewHolder.aweme
+
+        clipboardLogic.addClipboardListener(activity) { _, _ ->
+
             DownloadLogic(
                 this@HDetailActivity,
                 activity,
-                HVideoViewHolder.aweme,
+                aweme,
             )
         }
     }

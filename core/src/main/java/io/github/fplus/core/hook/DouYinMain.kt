@@ -2,26 +2,22 @@ package io.github.fplus.core.hook
 
 import android.app.Application
 import android.content.Intent
-import android.os.CountDownTimer
-import android.os.Process
 import com.freegang.ktutils.app.KActivityUtils
 import com.freegang.ktutils.app.KAppCrashUtils
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.log.KLogCat
-import com.ss.android.ugc.aweme.feed.model.Aweme
 import io.github.fplus.Constant
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
+import io.github.fplus.core.helper.TimerExitHelper
 import io.github.fplus.plugin.proxy.v1.PluginBridge
 import io.github.xpler.core.log.XplerLog
-import kotlin.system.exitProcess
 
 class DouYinMain(private val app: Application) {
     companion object {
-        var inBackend = false
-        var timedExitCountDown: CountDownTimer? = null
-        var freeExitCountDown: CountDownTimer? = null
+        var timerExitHelper: TimerExitHelper? = null
+        var freeExitHelper: TimerExitHelper? = null
     }
 
     init {
@@ -39,6 +35,7 @@ class DouYinMain(private val app: Application) {
             // 日志工具
             XplerLog.setTag("Freedom+")
             KLogCat.init(app)
+            KLogCat.setTag("Freedom+")
             // KLogCat.silence() //静默
 
             // 全局异常捕获工具
@@ -56,7 +53,7 @@ class DouYinMain(private val app: Application) {
             // search and hook
             DexkitBuilder.running(
                 app = app,
-                version = 16,
+                version = 19,
                 searchBefore = {
                     HActivity()
                     HMainActivity()
@@ -66,9 +63,8 @@ class DouYinMain(private val app: Application) {
                     HDisallowInterceptRelativeLayout()
                     HMainTabStripScrollView()
                     HFlippableViewPager()
-                    HCustomizedUISeekBar()
                     HPlayerController()
-                    HVideoViewHolderRootView()
+                    // HVideoViewHolderRootView()
                     HPenetrateTouchRelativeLayout()
                     HInteractStickerParent()
                     // HCommentAudioView()
@@ -79,16 +75,19 @@ class DouYinMain(private val app: Application) {
                     // HPopupWindow()
                 },
                 searchAfter = {
+                    HCrashTolerance()
                     HSideBarNestedScrollView()
                     HCornerExtensionsPopupWindow()
                     HMainBottomTabView()
-                    HMainBottomTabItem()
+                    HMainBottomPhotoTab()
                     HCommentListPageFragment()
                     HConversationFragment()
-                    HPoiCreateInstanceImpl()
                     HSeekBarSpeedModeBottomMask()
-                    HVideoPlayerHelper()
+                    // HVideoPlayerHelper()
+                    HLongPressLayout()
                     HVideoViewHolder()
+                    HFeedAvatarPresenter()
+                    HHomeBottomTabServiceImpl()
                     HAbstractFeedAdapter()
                     HVerticalViewPager()
                     HDetailPageFragment()
@@ -118,79 +117,31 @@ class DouYinMain(private val app: Application) {
         val freeExit = config.timedShutdownValue[1] * 60 * 1000L
 
         if (timedExit >= 60 * 1000L * 3) {
-            timedExitCountDown = object : CountDownTimer(timedExit, 1000) {
-                override fun onTick(millisUntilFinished: Long) {
-                    val second = millisUntilFinished / 1000
-                    // KLogCat.d("定时倒计时: ${second}秒")
-                    if (!KAppUtils.isAppInForeground(app)) {
-                        inBackend = true
-                        cancel()
-                    }
-                    if (second == 30L) {
-                        KToastUtils.show(app, "抖音将在30秒后定时退出")
-                    }
-                    if (second <= 5) {
-                        KToastUtils.show(app, "定时退出倒计时${second}s")
-                    }
+            timerExitHelper = TimerExitHelper(app, timedExit, config.keepAppBackend) {
+                val second = it / 1000L
+                if (second == 30L) {
+                    KToastUtils.show(app, "抖音将在30秒后定时退出")
+                }
+                if (second <= 5) {
+                    KToastUtils.show(app, "定时退出倒计时${second}s")
                 }
 
-                override fun onFinish() {
-                    if (!config.isTimedExit)
-                        return
-
-                    keepOrKill(app, config)
-                }
+                // KLogCat.d("定时退出进行中: ${second}s")
             }
         }
 
         if (freeExit >= 60 * 1000L * 3) {
-            freeExitCountDown = object : CountDownTimer(freeExit, 1000) {
-                override fun onTick(millisUntilFinished: Long) {
-                    val second = millisUntilFinished / 1000
-                    // KLogCat.d("空闲倒计时: ${second}秒")
-                    if (!KAppUtils.isAppInForeground(app)) {
-                        cancel()
-                    }
-                    if (second == 30L) {
-                        KToastUtils.show(app, "长时间无操作, 抖音将在30秒后空闲退出")
-                    }
-                    if (second <= 5) {
-                        KToastUtils.show(app, "空闲退出倒计时${second}s")
-                    }
+            freeExitHelper = TimerExitHelper(app, timedExit, config.keepAppBackend) {
+                val second = it / 1000L
+                if (second == 30L) {
+                    KToastUtils.show(app, "长时间无操作, 抖音将在30秒后空闲退出")
+                }
+                if (second <= 5) {
+                    KToastUtils.show(app, "空闲退出倒计时${second}s")
                 }
 
-                override fun onFinish() {
-                    if (!config.isTimedExit)
-                        return
-
-                    keepOrKill(app, config)
-                }
+                // KLogCat.d("空闲退出进行中: ${second}s")
             }
         }
     }
-
-    //
-    private fun keepOrKill(app: Application, config: ConfigV1) {
-        if (config.keepAppBackend) {
-            inBackend = true
-            val intent = Intent(Intent.ACTION_MAIN)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            intent.addCategory(Intent.CATEGORY_HOME)
-            app.startActivity(intent)
-        } else {
-            KActivityUtils.getActivities().forEach { it.finishAndRemoveTask() }
-            Process.killProcess(Process.myPid())
-            exitProcess(1)
-        }
-    }
-}
-
-fun CountDownTimer.restart() {
-    cancel()
-    start()
-}
-
-fun Aweme.sortString(): String {
-    val desc = "$desc".replace(Regex("\\s"), "")
-    return "awemeType=${awemeType}, desc=$desc"
 }

@@ -16,15 +16,15 @@ import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisView
 
 
-class HMainBottomTabItem : BaseHook<Any>() {
+class HMainBottomPhotoTab : BaseHook<Any>() {
     companion object {
-        const val TAG = "HMainBottomTabItem"
+        const val TAG = "HMainBottomPhotoTab"
     }
 
     val config get() = ConfigV1.get()
 
     override fun setTargetClass(): Class<*> {
-        return DexkitBuilder.mainBottomTabItemClazz ?: NoneHook::class.java
+        return DexkitBuilder.mainBottomPhotoTabClazz ?: NoneHook::class.java
     }
 
     @OnAfter
@@ -41,8 +41,8 @@ class HMainBottomTabItem : BaseHook<Any>() {
             return
         }
 
-        view.forEachChild {
-            if ("${it.contentDescription}".contains(Regex("拍摄|道具"))) {
+        view.forEachChild { child ->
+            if ("${child.contentDescription}".contains(Regex("拍摄|道具"))) {
                 // 隐藏按钮
                 if (config.photoButtonType == 2) {
                     view.isVisible = false
@@ -50,10 +50,10 @@ class HMainBottomTabItem : BaseHook<Any>() {
                 }
 
                 // 占位按钮, 移除加号图标
-                if (it is ImageView) {
-                    it.setImageDrawable(null)
-                    it.background = null
-                    it.foreground = null
+                if (child is ImageView) {
+                    child.setImageDrawable(null)
+                    child.background = null
+                    child.foreground = null
                 }
 
                 // 允许拍摄直接结束逻辑
@@ -64,10 +64,10 @@ class HMainBottomTabItem : BaseHook<Any>() {
 
                 // 不允许拍摄
                 view.setOnClickListener {
-                    KToastUtils.show(it.context, "已禁止拍摄")
+                    KToastUtils.show(child.context, "已禁止拍摄")
                 }
                 view.setOnLongClickListener {
-                    KToastUtils.show(it.context, "已禁止拍摄")
+                    KToastUtils.show(child.context, "已禁止拍摄")
                     true
                 }
             }

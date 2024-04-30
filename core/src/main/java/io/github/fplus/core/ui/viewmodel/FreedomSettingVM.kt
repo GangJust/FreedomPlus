@@ -34,23 +34,23 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     private var _isDownload = MutableLiveData(false)
     val isDownload: LiveData<Boolean> = _isDownload
 
-    private var _isOwnerDir = MutableLiveData(false)
-    val isOwnerDir: LiveData<Boolean> = _isOwnerDir
+    private var _ownerDir = MutableLiveData(false)
+    val isOwnerDir: LiveData<Boolean> = _ownerDir
 
-    private var _isNotification = MutableLiveData(false)
-    val isNotification: LiveData<Boolean> = _isNotification
+    private var _notificationDownload = MutableLiveData(false)
+    val isNotification: LiveData<Boolean> = _notificationDownload
 
-    private var _isCopyDownload = MutableLiveData(false)
-    val isCopyDownload: LiveData<Boolean> = _isCopyDownload
+    private var _isCopyLinkDownload = MutableLiveData(false)
+    val isCopyDownload: LiveData<Boolean> = _isCopyLinkDownload
 
     private var _videoCoding = MutableLiveData("")
     val videoCoding: LiveData<String> = _videoCoding
 
-    private var _isEmoji = MutableLiveData(false)
-    val isEmoji: LiveData<Boolean> = _isEmoji
+    private var _isEmojiDownload = MutableLiveData(false)
+    val isEmoji: LiveData<Boolean> = _isEmojiDownload
 
-    private var _isVibrate = MutableLiveData(false)
-    val isVibrate: LiveData<Boolean> = _isVibrate
+    private var _vibrate = MutableLiveData(false)
+    val isVibrate: LiveData<Boolean> = _vibrate
 
     private var _isTranslucent = MutableLiveData(false)
     val isTranslucent: LiveData<Boolean> = _isTranslucent
@@ -80,28 +80,37 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     val isLongtimeVideoToast: LiveData<Boolean> = _isLongtimeVideoToast
 
     private var _isHideTopTab = MutableLiveData(false)
-    var isHideTopTab: LiveData<Boolean> = _isHideTopTab
+    val isHideTopTab: LiveData<Boolean> = _isHideTopTab
 
     private var _hideTopTabKeywords = MutableLiveData("")
-    var hideTopTabKeywords: LiveData<String> = _hideTopTabKeywords
+    val hideTopTabKeywords: LiveData<String> = _hideTopTabKeywords
+
+    private var _isHideBottomTab = MutableLiveData(false)
+    val isHideBottomTab: LiveData<Boolean> = _isHideBottomTab
+
+    private var _hideBottomTabKeywords = MutableLiveData("")
+    val hideBottomTabKeywords: LiveData<String> = _hideBottomTabKeywords
 
     private var _isHidePhotoButton = MutableLiveData(false)
-    val isDHidePhotoButton: LiveData<Boolean> = _isHidePhotoButton
+    val isHidePhotoButton: LiveData<Boolean> = _isHidePhotoButton
 
     private var _photoButtonType = MutableLiveData(2)
     val photoButtonType: LiveData<Int> = _photoButtonType
+
+    private var _isPreventAccidentalTouch = MutableLiveData(false)
+    val isPreventAccidentalTouch: LiveData<Boolean> = _isPreventAccidentalTouch
 
     private var _isVideoOptionBarFilter = MutableLiveData(false)
     val isVideoOptionBarFilter: LiveData<Boolean> = _isVideoOptionBarFilter
 
     private var _videoOptionBarFilterKeywords = MutableLiveData("")
-    var videoOptionBarFilterKeywords: LiveData<String> = _videoOptionBarFilterKeywords
+    val videoOptionBarFilterKeywords: LiveData<String> = _videoOptionBarFilterKeywords
 
     private var _isVideoFilter = MutableLiveData(false)
     val isVideoFilter: LiveData<Boolean> = _isVideoFilter
 
     private var _videoFilterKeywords = MutableLiveData("")
-    var videoFilterKeywords: LiveData<String> = _videoFilterKeywords
+    val videoFilterKeywords: LiveData<String> = _videoFilterKeywords
 
     private var _isDialogFilter = MutableLiveData(false)
     val isDialogFilter: LiveData<Boolean> = _isDialogFilter
@@ -110,7 +119,7 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     val dialogDismissTips: LiveData<Boolean> = _dialogDismissTips
 
     private var _dialogFilterKeywords = MutableLiveData("")
-    var dialogFilterKeywords: LiveData<String> = _dialogFilterKeywords
+    val dialogFilterKeywords: LiveData<String> = _dialogFilterKeywords
 
     private var _isNeatMode = MutableLiveData(false)
     val isNeatMode: LiveData<Boolean> = _isNeatMode
@@ -131,28 +140,31 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     val commentColorMode: LiveData<Int> = _commentColorMode
 
     private var _isWebDav = MutableLiveData(false)
-    var isWebDav: LiveData<Boolean> = _isWebDav
+    val isWebDav: LiveData<Boolean> = _isWebDav
 
     private var _webDavHost = MutableLiveData("")
-    var webDavHost: LiveData<String> = _webDavHost
+    val webDavHost: LiveData<String> = _webDavHost
 
     private var _webDavUsername = MutableLiveData("")
-    var webDavUsername: LiveData<String> = _webDavUsername
+    val webDavUsername: LiveData<String> = _webDavUsername
 
     private var _webDavPassword = MutableLiveData("")
-    var webDavPassword: LiveData<String> = _webDavPassword
+    val webDavPassword: LiveData<String> = _webDavPassword
 
     private var _webDavHistory = MutableLiveData(emptyList<WebDav.Config>())
-    var webDavHistory: LiveData<List<WebDav.Config>> = _webDavHistory
+    val webDavHistory: LiveData<List<WebDav.Config>> = _webDavHistory
 
     private var _isTimedExit = MutableLiveData(false)
-    var isTimedExit: LiveData<Boolean> = _isTimedExit
+    val isTimedExit: LiveData<Boolean> = _isTimedExit
 
     private var _timedShutdownValue = MutableLiveData(listOf(10, 3))
-    var timedShutdownValue: LiveData<List<Int>> = _timedShutdownValue
+    val timedShutdownValue: LiveData<List<Int>> = _timedShutdownValue
 
     private var _keepAppBackend = MutableLiveData(false)
-    var keepAppBackend: LiveData<Boolean> = _keepAppBackend
+    val keepAppBackend: LiveData<Boolean> = _keepAppBackend
+
+    private var _isCrashTolerance = MutableLiveData(false)
+    val isCrashTolerance: LiveData<Boolean> = _isCrashTolerance
 
     private var _isDisablePlugin = MutableLiveData(false)
     val isDisablePlugin: LiveData<Boolean> = _isDisablePlugin
@@ -173,44 +185,48 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             config = withContext(Dispatchers.IO) { ConfigV1.get() }
             changeIsDownload(config.isDownload)
-            changeIsOwnerDir(config.isOwnerDir)
-            changeIsNotification(config.isNotification)
-            changeIsCopyDownload(config.isCopyDownload)
-            changeVideoCoding(config.videoCoding)
-            changeIsEmoji(config.isEmoji)
-            changeIsVibrate(config.isVibrate)
+            setOwnerDir(config.ownerDir)
+            setNotificationDownload(config.notificationDownload)
+            setCopyLinkDownload(config.copyLinkDownload)
+            setVideoCoding(config.videoCoding)
+            changeIsEmojiDownload(config.isEmojiDownload)
+            setVibrate(config.vibrate)
             changeIsTranslucent(config.isTranslucent)
-            changeTranslucentValue(config.translucentValue)
+            setTranslucentValue(config.translucentValue)
             changeIsRemoveSticker(config.isRemoveSticker)
             changeIsRemoveBottomCtrlBar(config.isRemoveBottomCtrlBar)
             changeIsPreventRecalled(config.isPreventRecalled)
             changePreventRecalledOtherSetting(config.preventRecalledOtherSetting)
             changeIsDoubleClickType(config.isDoubleClickType)
-            changeDoubleClickType(config.doubleClickType)
+            setDoubleClickType(config.doubleClickType)
             changeIsLongtimeVideoToast(config.isLongtimeVideoToast)
-            changeIsHidePhotoButton(config.isHidePhotoButton)
-            changePhotoButtonType(config.photoButtonType)
             changeIsVideoOptionBarFilter(config.isVideoOptionBarFilter)
             setVideoOptionBarFilterKeywords(config.videoOptionBarFilterKeywords)
             changeIsVideoFilter(config.isVideoFilter)
             setVideoFilterKeywords(config.videoFilterKeywords)
             changeIsDialogFilter(config.isDialogFilter)
-            changeDialogDismissTips(config.dialogDismissTips)
+            setDialogDismissTips(config.dialogDismissTips)
             setDialogFilterKeywords(config.dialogFilterKeywords)
             changeIsNeatMode(config.isNeatMode)
-            changeLongPressMode(config.longPressMode)
+            setLongPressMode(config.longPressMode)
             changeIsImmersive(config.isImmersive)
-            changeSystemControllerValue(config.systemControllerValue)
+            setSystemControllerValue(config.systemControllerValue)
             changeIsCommentColorMode(config.isCommentColorMode)
             changeCommentColorMode(config.commentColorMode)
             changeIsHideTopTab(config.isHideTopTab)
-            setHideTabKeywords(config.hideTopTabKeywords)
+            setHideTopTabKeywords(config.hideTopTabKeywords)
+            changeIsHideBottomTab(config.isHideBottomTab)
+            setHideBottomTabKeywords(config.hideBottomTabKeywords)
+            changeIsHidePhotoButton(config.isHidePhotoButton)
+            setPhotoButtonType(config.photoButtonType)
+            changeIsPreventAccidentalTouch(config.isPreventAccidentalTouch)
             changeIsWebDav(config.isWebDav)
             loadWebHistory()
             setWebDavConfig(config.webDavConfig)
             changeIsTimeExit(config.isTimedExit)
             setTimedShutdownValue(config.timedShutdownValue)
-            changeKeepAppBackend(config.keepAppBackend)
+            setKeepAppBackend(config.keepAppBackend)
+            changeIsCrashTolerance(config.isCrashTolerance)
             changeIsDisablePlugin(config.isDisablePlugin)
         }
     }
@@ -222,39 +238,39 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     }
 
     // 视频创作者单独创建文件夹
-    fun changeIsOwnerDir(value: Boolean) {
-        _isOwnerDir.value = value
-        config.isOwnerDir = value
+    fun setOwnerDir(value: Boolean) {
+        _ownerDir.value = value
+        config.ownerDir = value
     }
 
     // 通知栏下载
-    fun changeIsNotification(value: Boolean) {
-        _isNotification.value = value
-        config.isNotification = value
+    fun setNotificationDownload(value: Boolean) {
+        _notificationDownload.value = value
+        config.notificationDownload = value
     }
 
     // 复制链接时弹出下载
-    fun changeIsCopyDownload(value: Boolean) {
-        _isCopyDownload.value = value
-        config.isCopyDownload = value
+    fun setCopyLinkDownload(value: Boolean) {
+        _isCopyLinkDownload.value = value
+        config.copyLinkDownload = value
     }
 
     // 视频编码类型
-    fun changeVideoCoding(value: String) {
+    fun setVideoCoding(value: String) {
         _videoCoding.value = value
         config.videoCoding = value
     }
 
     // 表情包保存
-    fun changeIsEmoji(value: Boolean) {
-        _isEmoji.value = value
-        config.isEmoji = value
+    fun changeIsEmojiDownload(value: Boolean) {
+        _isEmojiDownload.value = value
+        config.isEmojiDownload = value
     }
 
-    // 震动反馈保存
-    fun changeIsVibrate(value: Boolean) {
-        _isVibrate.value = value
-        config.isVibrate = value
+    // 震动反馈
+    fun setVibrate(value: Boolean) {
+        _vibrate.value = value
+        config.vibrate = value
     }
 
     // 首页控件半透明
@@ -264,7 +280,7 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     }
 
     /// 首页控件透明度
-    fun changeTranslucentValue(value: List<Int>) {
+    fun setTranslucentValue(value: List<Int>) {
         _translucentValue.value = value
         config.translucentValue = value
     }
@@ -287,6 +303,7 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
         config.isPreventRecalled = value
     }
 
+    // 防撤回其他设置
     fun changePreventRecalledOtherSetting(value: List<Boolean>) {
         _preventRecalledOtherSetting.value = value
         config.preventRecalledOtherSetting = value
@@ -299,15 +316,39 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     }
 
     // 双击响应类型
-    fun changeDoubleClickType(value: Int) {
+    fun setDoubleClickType(value: Int) {
         _doubleClickType.value = value
         config.doubleClickType = value
     }
 
-    // 视频时长超过5分钟提示
+    // 视频时长超过10分钟提示
     fun changeIsLongtimeVideoToast(value: Boolean) {
         _isLongtimeVideoToast.value = value
         config.isLongtimeVideoToast = value
+    }
+
+    // 隐藏顶部tab
+    fun changeIsHideTopTab(value: Boolean) {
+        _isHideTopTab.value = value
+        config.isHideTopTab = value
+    }
+
+    // 隐藏顶部tab包含的关键字, 逗号隔开
+    fun setHideTopTabKeywords(keywords: String) {
+        _hideTopTabKeywords.value = keywords
+        config.hideTopTabKeywords = keywords
+    }
+
+    // 隐藏底部tab
+    fun changeIsHideBottomTab(value: Boolean) {
+        _isHideBottomTab.value = value
+        config.isHideBottomTab = value
+    }
+
+    // 隐藏底部tab包含的关键字, 逗号隔开
+    fun setHideBottomTabKeywords(keywords: String) {
+        _hideBottomTabKeywords.value = keywords
+        config.hideBottomTabKeywords = keywords
     }
 
     // 隐藏底部加号按钮
@@ -317,18 +358,24 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     }
 
     // 改变底部加号拍摄模式
-    fun changePhotoButtonType(value: Int) {
+    fun setPhotoButtonType(value: Int) {
         _photoButtonType.value = value
         config.photoButtonType = value
     }
 
-    val videoOptionBarFilterTypes get() = config.videoOptionBarFilterTypes
+    // 手势误触复确认
+    fun changeIsPreventAccidentalTouch(value: Boolean) {
+        _isPreventAccidentalTouch.value = value
+        config.isPreventAccidentalTouch = value
+    }
 
     // 视频右侧控件栏
     fun changeIsVideoOptionBarFilter(value: Boolean) {
         _isVideoOptionBarFilter.value = value
         config.isVideoOptionBarFilter = value
     }
+
+    val videoOptionBarFilterTypes get() = config.videoOptionBarFilterTypes
 
     // 视频过滤关键字
     fun setVideoOptionBarFilterKeywords(value: String) {
@@ -357,7 +404,7 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     }
 
     // 弹窗关闭提示
-    fun changeDialogDismissTips(value: Boolean) {
+    fun setDialogDismissTips(value: Boolean) {
         _dialogDismissTips.value = value
         config.dialogDismissTips = value
     }
@@ -381,13 +428,13 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     }
 
     // 系统隐藏项(状态栏、导航栏)
-    fun changeSystemControllerValue(value: List<Boolean>) {
+    fun setSystemControllerValue(value: List<Boolean>) {
         _systemControllerValue.value = value
         config.systemControllerValue = value
     }
 
     // 清爽模式弹窗响应模式
-    fun changeLongPressMode(value: Boolean) {
+    fun setLongPressMode(value: Boolean) {
         _longPressMode.value = value
         config.longPressMode = value
     }
@@ -404,18 +451,6 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
         config.commentColorMode = value
     }
 
-    // 隐藏顶部tab
-    fun changeIsHideTopTab(value: Boolean) {
-        _isHideTopTab.value = value
-        config.isHideTopTab = value
-    }
-
-    // 隐藏顶部tab包含的关键字, 逗号隔开
-    fun setHideTabKeywords(hideTabKeywords: String) {
-        _hideTopTabKeywords.value = hideTabKeywords
-        config.hideTopTabKeywords = hideTabKeywords
-    }
-
     // WebDav
     fun changeIsWebDav(value: Boolean) {
         _isWebDav.value = value
@@ -423,7 +458,7 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     }
 
     // 初始化WebDav
-    fun initWebDav(block: (Boolean, String) -> Unit) {
+    fun testWebDav(block: (Boolean, String) -> Unit) {
         if (!hasWebDavConfig()) {
             block.invoke(false, "请填写WebDav配置!")
             return
@@ -499,9 +534,14 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     }
 
     // 保留应用后台
-    fun changeKeepAppBackend(value: Boolean) {
+    fun setKeepAppBackend(value: Boolean) {
         _keepAppBackend.value = value
         config.keepAppBackend = value
+    }
+
+    fun changeIsCrashTolerance(value: Boolean) {
+        _isCrashTolerance.value = value
+        config.isCrashTolerance = value
     }
 
     // 去插件化

@@ -32,7 +32,7 @@ class HEmojiDetailDialog : BaseHook<EmojiDetailDialog>(), CallMethods {
         lpparam.hookClass(EmojiBottomSheetDialog::class.java)
             .method("onCreate", Bundle::class.java) {
                 onAfter {
-                    if (!config.isEmoji) return@onAfter
+                    if (!config.isEmojiDownload) return@onAfter
                     if (!targetClazz.isInstance(thisObject)) return@onAfter  // 非 EmojiDetailDialog, 直接结束
 
                     singleLaunchMain {
@@ -66,7 +66,7 @@ class HEmojiDetailDialog : BaseHook<EmojiDetailDialog>(), CallMethods {
 
     override fun callOnAfterMethods(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
-            if (!config.isEmoji) return
+            if (!config.isEmojiDownload) return
             if (urlList.isNotEmpty()) return
 
             val urlModel = thisObject.fieldGet(type = UrlModel::class.java)

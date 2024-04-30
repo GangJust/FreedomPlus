@@ -13,27 +13,22 @@ import com.freegang.extension.fieldGets
 import com.freegang.extension.firstParentOrNull
 import com.freegang.extension.forEachChild
 import com.freegang.extension.getSiblingViewAt
-import com.freegang.extension.method
 import com.freegang.extension.methodInvoke
 import com.freegang.extension.postRunning
-import com.ss.android.ugc.aweme.feed.adapter.VideoViewHolder
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.feed.ui.FeedRightScaleView
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XposedBridge
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
+import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.entity.OnBefore
-import io.github.xpler.core.hook
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
-import io.github.xpler.core.wrapper.CallConstructors
 
-class HVideoViewHolder : BaseHook<VideoViewHolder>(),
-    CallConstructors {
+class HVideoViewHolder : BaseHook<Any>() {
 
     companion object {
         const val TAG = "HVideoViewHolder"
@@ -49,11 +44,16 @@ class HVideoViewHolder : BaseHook<VideoViewHolder>(),
 
     private val videoOptionBarFilterKeywords by lazy {
         config.videoOptionBarFilterKeywords
-            .removePrefix(",").removePrefix("，")
-            .removeSuffix(",").removeSuffix("，")
+            .replace("，", ",")
             .replace("\\s".toRegex(), "")
-            .replace("[,，]".toRegex(), "|")
+            .removePrefix(",").removeSuffix(",")
+            .replace(",".toRegex(), "|")
+            .replace("\\|+".toRegex(), "|")
             .toRegex()
+    }
+
+    override fun setTargetClass(): Class<*> {
+        return DexkitBuilder.videoViewHolderClazz ?: NoneHook::class.java
     }
 
     private fun addOnDraw(view: View?) {
@@ -101,22 +101,6 @@ class HVideoViewHolder : BaseHook<VideoViewHolder>(),
         XplerLog.d("监听集合", *first.map { "$it" }.toTypedArray())
     }
 
-    private fun callOpenCleanMode(params: XC_MethodHook.MethodHookParam, bool: Boolean) {
-        if (!config.isNeatMode) {
-            return
-        }
-
-        if (!config.neatModeState) {
-            return
-        }
-
-        val first = params.thisObject.method(name = "openCleanMode", paramTypes = arrayOf(Boolean::class.java))
-        XposedBridge.invokeOriginalMethod(first, params.thisObject, arrayOf(bool))
-
-        //
-        HMainActivity.toggleView(!bool)
-    }
-
     private fun getAllView(params: XC_MethodHook.MethodHookParam): List<View?> {
         val views = params.thisObject.fieldGets(type = View::class.java)
         return views.asOrNull<List<View?>>() ?: emptyList()
@@ -138,17 +122,20 @@ class HVideoViewHolder : BaseHook<VideoViewHolder>(),
 
         view.postRunning {
             val isAvatarImageWithLive = videoOptionBarFilterKeywords.pattern.contains("头像")
-            view.forEachChild {
-                if (isAvatarImageWithLive && this.javaClass.name.contains("AvatarImageWithLive")) {
-                    it.firstParentOrNull(RelativeLayout::class.java)?.isVisible = false
+            view.forEachChild { child ->
+                if (isAvatarImageWithLive && child.javaClass.name.contains("AvatarImageWithLive")) {
+                    val parentView = child.firstParentOrNull(RelativeLayout::class.java)
+                    parentView?.isVisible = false
                 }
 
-                if ("${it.contentDescription}".contains(videoOptionBarFilterKeywords)) {
-                    it.firstParentOrNull(FrameLayout::class.java)?.isVisible = false
+                if ("${child.contentDescription}".contains(videoOptionBarFilterKeywords)) {
+                    val parentView = child.firstParentOrNull(FrameLayout::class.java)
+                    parentView?.isVisible = false
                 }
 
-                if (it is TextView && "${it.text}".contains(videoOptionBarFilterKeywords)) {
-                    it.firstParentOrNull(FrameLayout::class.java)?.isVisible = false
+                if (child is TextView && "${child.text}".contains(videoOptionBarFilterKeywords)) {
+                    val parentView = child.firstParentOrNull(FrameLayout::class.java)
+                    parentView?.isVisible = false
                 }
             }
             val isMusicContainer = videoOptionBarFilterKeywords.pattern.contains("音乐")
@@ -169,6 +156,36 @@ class HVideoViewHolder : BaseHook<VideoViewHolder>(),
 
     private fun getContext(params: XC_MethodHook.MethodHookParam): Context? {
         return params.thisObject.methodInvoke(name = "getContext")?.asOrNull<Context>()
+    }
+
+    @OnBefore("isCleanMode")
+    fun isCleanModeBefore(params: XC_MethodHook.MethodHookParam, view: View?, bool: Boolean) {
+        hookBlockRunning(params) {
+            if (!config.isNeatMode)
+                return
+
+            if (!config.neatModeState)
+                return
+
+            result = Void.TYPE
+        }.onFailure {
+            XplerLog.tagE(TAG, it)
+        }
+    }
+
+    @OnBefore("openCleanMode")
+    fun openCleanModeBefore(params: XC_MethodHook.MethodHookParam, bool: Boolean) {
+        hookBlockRunning(params) {
+            if (!config.isNeatMode)
+                return
+
+            if (!config.neatModeState)
+                return
+
+            result = Void.TYPE
+        }.onFailure {
+            XplerLog.tagE(TAG, it)
+        }
     }
 
     @OnAfter("getAweme")
@@ -195,7 +212,6 @@ class HVideoViewHolder : BaseHook<VideoViewHolder>(),
     fun onViewHolderSelectedAfter(params: XC_MethodHook.MethodHookParam, index: Int) {
         hookBlockRunning(params) {
             // XplerLog.d("onViewHolderSelected")
-            callOpenCleanMode(params, true)
             val container = getWidgetContainer(params)
             addOnDraw(container)
         }.onFailure {
@@ -206,7 +222,7 @@ class HVideoViewHolder : BaseHook<VideoViewHolder>(),
     @OnAfter("onViewHolderUnSelected")
     fun onViewHolderUnSelectedAfter(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
-            // XplerLog.d("onViewHolderSelected")
+            // XplerLog.d("onViewHolderUnSelected")
             val container = getWidgetContainer(params)
             removeOnDraw(container)
         }.onFailure {
@@ -233,25 +249,5 @@ class HVideoViewHolder : BaseHook<VideoViewHolder>(),
         }.onFailure {
             XplerLog.e(it)
         }
-    }
-
-    override fun callOnBeforeConstructors(params: XC_MethodHook.MethodHookParam) {
-
-    }
-
-    override fun callOnAfterConstructors(params: XC_MethodHook.MethodHookParam) {
-        hookBlockRunning(params) {
-            callOpenCleanMode(params, true)
-        }
-    }
-
-    override fun onInit() {
-        DexkitBuilder.videoViewHolderMethods
-            .firstOrNull { it.name[0] in 'A'..'Z' }
-            ?.hook {
-                onAfter {
-                    callOpenCleanMode(this, true)
-                }
-            }
     }
 }

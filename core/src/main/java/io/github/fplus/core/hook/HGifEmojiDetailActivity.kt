@@ -32,7 +32,7 @@ class HGifEmojiDetailActivity : BaseHook<GifEmojiDetailActivity>() {
     @OnBefore("onCreate")
     fun onCreate(params: XC_MethodHook.MethodHookParam, bundle: Bundle?) {
         hookBlockRunning(params) {
-            if (!config.isEmoji) return
+            if (!config.isEmojiDownload) return
             val gifEmoji = thisActivity.intent.getSerializableExtra("gif_emoji") as Emoji? ?: return
 
             val animateUrl = gifEmoji.fieldGet(name = "animateUrl")

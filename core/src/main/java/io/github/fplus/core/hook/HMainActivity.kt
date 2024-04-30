@@ -8,10 +8,13 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
+import android.widget.RelativeLayout
 import androidx.core.view.isVisible
 import com.freegang.extension.appVersionCode
 import com.freegang.extension.appVersionName
 import com.freegang.extension.contentView
+import com.freegang.extension.firstParentOrNull
 import com.freegang.extension.forEachChild
 import com.freegang.extension.is64BitDalvik
 import com.freegang.extension.isDarkMode
@@ -19,6 +22,7 @@ import com.freegang.extension.parentView
 import com.freegang.extension.postRunning
 import com.freegang.extension.removeInParent
 import com.ss.android.ugc.aweme.homepage.ui.titlebar.MainTitleBar
+import com.ss.android.ugc.aweme.homepage.ui.view.MainTabStripScrollView
 import com.ss.android.ugc.aweme.main.MainActivity
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
@@ -87,7 +91,7 @@ class HMainActivity : BaseHook<MainActivity>() {
         hookBlockRunning(params) {
             val activity = thisActivity
             XplerLog.d("version: ${KtXposedHelpers.moduleVersionName(activity)} - ${activity.appVersionName}(${activity.appVersionCode})")
-            DouYinMain.timedExitCountDown?.restart()
+            DouYinMain.timerExitHelper?.restart()
         }.onFailure {
             XplerLog.e(it)
         }
@@ -96,9 +100,11 @@ class HMainActivity : BaseHook<MainActivity>() {
     @OnAfter("onResume")
     fun onResume(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
-            addClipboardListener(thisActivity)
-            initView(thisActivity)
-            is32BisTips(thisActivity)
+            val activity = thisObject as Activity
+
+            addClipboardListener(activity)
+            initView(activity)
+            is32BisTips(activity)
         }.onFailure {
             XplerLog.e(it)
         }
@@ -117,7 +123,7 @@ class HMainActivity : BaseHook<MainActivity>() {
 
     private fun addClipboardListener(activity: Activity) {
         if (!config.isDownload) return
-        if (!config.isCopyDownload) return
+        if (!config.copyLinkDownload) return
 
         clipboardLogic.addClipboardListener(activity) { clipData, firstText ->
             DownloadLogic(
@@ -135,6 +141,16 @@ class HMainActivity : BaseHook<MainActivity>() {
     private fun initView(activity: Activity) {
         activity.contentView.postRunning {
             it.forEachChild { child ->
+                // 新版本顶栏不居中
+                if (child is MainTabStripScrollView) {
+                    val lp = child.layoutParams
+                    if (lp is RelativeLayout.LayoutParams) {
+                        child.layoutParams = lp.apply {
+                            this.addRule(RelativeLayout.CENTER_IN_PARENT)
+                        }
+                    }
+                }
+
                 if (child is MainTitleBar) {
                     mainTitleBar = child
                 }
@@ -157,17 +173,18 @@ class HMainActivity : BaseHook<MainActivity>() {
     private fun initMainTitleBar() {
         // 隐藏顶部选项卡
         if (config.isHideTopTab) {
-            val hideTabKeywords = config.hideTopTabKeywords
-                .removePrefix(",").removePrefix("，")
-                .removeSuffix(",").removeSuffix("，")
+            val keywordsRegex = config.hideTopTabKeywords
+                .replace("，", ",")
                 .replace("\\s".toRegex(), "")
-                .replace("[,，]".toRegex(), "|")
+                .removePrefix(",").removeSuffix(",")
+                .replace(",", "|")
+                .replace("\\|+".toRegex(), "|")
                 .toRegex()
-            mainTitleBar?.forEachChild {
-                if (config.isHideTopTab) {
-                    if ("${it.contentDescription}".contains(hideTabKeywords)) {
-                        it.isVisible = false
-                    }
+
+            mainTitleBar?.forEachChild { child ->
+                val desc = "${child.contentDescription}"
+                if (desc.contains(keywordsRegex)) {
+                    child.isVisible = false
                 }
             }
         }
@@ -180,6 +197,28 @@ class HMainActivity : BaseHook<MainActivity>() {
     }
 
     private fun initBottomTabView() {
+        // 隐藏底部选项卡
+        if (config.isHideBottomTab) {
+            val keywordsRegex = config.hideBottomTabKeywords
+                .replace("，", ",")
+                .replace("\\s".toRegex(), "")
+                .removePrefix(",").removeSuffix(",")
+                .replace(",".toRegex(), "|")
+                .replace("\\|+".toRegex(), "|")
+                .toRegex()
+
+            bottomTabView?.forEachChild { child ->
+                val desc = "${child.contentDescription}"
+                if (desc.contains(keywordsRegex)) {
+                    val tabItem = child.firstParentOrNull(ViewGroup::class.java) { parent ->
+                        parent.javaClass.name.startsWith("X")
+                    }
+
+                    tabItem?.isVisible = false
+                }
+            }
+        }
+
         // 底部导航栏透明度
         if (config.isTranslucent) {
             val alphaValue = config.translucentValue[3] / 100f
@@ -196,22 +235,23 @@ class HMainActivity : BaseHook<MainActivity>() {
     }
 
     private fun initDisallowInterceptRelativeLayout() {
-        if (config.isImmersive) {
-            disallowInterceptRelativeLayout?.postRunning {
-                runCatching {
-                    it.forEachChild { child ->
-                        // 移除顶部间隔
-                        if (child.javaClass.name == "android.view.View") {
-                            child.removeInParent()
-                        }
-                        // 移除底部间隔
-                        if (child.javaClass.name == "com.ss.android.ugc.aweme.feed.ui.bottom.BottomSpace") {
-                            child.removeInParent()
-                        }
+        if (!config.isImmersive)
+            return
+
+        disallowInterceptRelativeLayout?.postRunning {
+            runCatching {
+                it.forEachChild { child ->
+                    // 移除顶部间隔
+                    if (child.javaClass.name == "android.view.View") {
+                        child.removeInParent()
                     }
-                }.onFailure {
-                    XplerLog.e(it)
+                    // 移除底部间隔
+                    if (child.javaClass.name == "com.ss.android.ugc.aweme.feed.ui.bottom.BottomSpace") {
+                        child.removeInParent()
+                    }
                 }
+            }.onFailure {
+                XplerLog.e(it)
             }
         }
     }

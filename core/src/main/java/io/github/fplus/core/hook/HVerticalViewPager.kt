@@ -6,6 +6,7 @@ import com.freegang.extension.fieldGet
 import com.freegang.extension.fieldSet
 import com.freegang.extension.methodInvoke
 import com.freegang.ktutils.app.KToastUtils
+import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.text.KTextUtils
 import com.ss.android.ugc.aweme.common.widget.VerticalViewPager
 import com.ss.android.ugc.aweme.feed.model.Aweme
@@ -54,6 +55,7 @@ class HVerticalViewPager : BaseHook<VerticalViewPager>() {
         config.videoFilterKeywords
             .replace("，", ",")
             .replace("\\s".toRegex(), "")
+            .removePrefix(",").removeSuffix(",")
             .split(",")
             .toSet()
     }
@@ -62,56 +64,11 @@ class HVerticalViewPager : BaseHook<VerticalViewPager>() {
         filterKeywordsAndTypes
             .filter { !config.videoFilterTypes.contains(it) }
             .joinToString("|")
+            .replace("\\|+".toRegex(), "|")
             .toRegex()
     }
 
     private var durationRunnable: Runnable? = null
-
-    override fun onInit() {
-        DexkitBuilder.recommendFeedFetchPresenterClazz?.runCatching {
-            lpparam.hookClass(this)
-                .method("onSuccess") {
-                    onBefore {
-                        if (!config.isVideoFilter) return@onBefore
-
-                        val mModel = thisObject.fieldGet(name = "mModel")
-                        val mData = mModel?.fieldGet(name = "mData")
-                        if (mData?.javaClass?.name?.contains("FeedItemList") == true) {
-                            val items = mData.fieldGet(name = "items")?.asOrNull<List<Aweme>>() ?: emptyList()
-                            if (items.size < 3) return@onBefore
-
-                            mData.fieldSet(name = "items", filterAwemeList(items))
-                            // val array = items.map { it.sortString() }.toTypedArray()
-                            // XplerLog.tagD(TAG, arrayOf("推荐视频列表", array.joinToString("\n")))
-                        }
-                    }
-                }
-        }?.onFailure {
-            XplerLog.e(it)
-        }
-
-        DexkitBuilder.fullFeedFollowFetchPresenterClazz?.runCatching {
-            lpparam.hookClass(this)
-                .method("onSuccess") {
-                    onBefore {
-                        if (!config.isVideoFilter) return@onBefore
-
-                        val mModel = thisObject.fieldGet(name = "mModel")
-                        val mData = mModel?.fieldGet(name = "mData")
-                        if (mData?.javaClass?.name?.contains("FollowFeedList") == true) {
-                            val mItems = mData.fieldGet(name = "mItems")?.asOrNull<List<FollowFeed>>() ?: emptyList()
-                            if (mItems.size < 3) return@onBefore
-
-                            mData.fieldSet("mItems", filterFollowFeedList(mItems))
-                            // val array = mItems.map { it.aweme.sortString() }.toTypedArray()
-                            // XplerLog.tagD(TAG, arrayOf("关注视频列表", array.joinToString("\n")))
-                        }
-                    }
-                }
-        }?.onFailure {
-            XplerLog.e(it)
-        }
-    }
 
     @OnAfter("onInterceptTouchEvent")
     fun onInterceptTouchEvent(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {
@@ -247,12 +204,59 @@ class HVerticalViewPager : BaseHook<VerticalViewPager>() {
                 null
             }
 
-            keywordsRegex.pattern.isNotBlank() && KTextUtils.get(aweme.desc).contains(keywordsRegex) -> {
+            keywordsRegex.pattern.trim().isNotEmpty()
+                    && KTextUtils.get(aweme.desc).contains(keywordsRegex) -> {
                 HVerticalViewPager.filterOtherCount += 1
                 null
             }
 
             else -> aweme
+        }
+    }
+
+    override fun onInit() {
+        DexkitBuilder.recommendFeedFetchPresenterClazz?.runCatching {
+            lpparam.hookClass(this)
+                .method("onSuccess") {
+                    onBefore {
+                        if (!config.isVideoFilter) return@onBefore
+
+                        val mModel = thisObject.fieldGet(name = "mModel")
+                        val mData = mModel?.fieldGet(name = "mData")
+                        if (mData?.javaClass?.name?.contains("FeedItemList") == true) {
+                            val items = mData.fieldGet(name = "items")?.asOrNull<List<Aweme>>() ?: emptyList()
+                            if (items.size < 3) return@onBefore
+
+                            mData.fieldSet(name = "items", filterAwemeList(items))
+                            // val array = items.map { it.sortString() }.toTypedArray()
+                            // XplerLog.tagD(TAG, arrayOf("推荐视频列表", array.joinToString("\n")))
+                        }
+                    }
+                }
+        }?.onFailure {
+            XplerLog.e(it)
+        }
+
+        DexkitBuilder.fullFeedFollowFetchPresenterClazz?.runCatching {
+            lpparam.hookClass(this)
+                .method("onSuccess") {
+                    onBefore {
+                        if (!config.isVideoFilter) return@onBefore
+
+                        val mModel = thisObject.fieldGet(name = "mModel")
+                        val mData = mModel?.fieldGet(name = "mData")
+                        if (mData?.javaClass?.name?.contains("FollowFeedList") == true) {
+                            val mItems = mData.fieldGet(name = "mItems")?.asOrNull<List<FollowFeed>>() ?: emptyList()
+                            if (mItems.size < 3) return@onBefore
+
+                            mData.fieldSet("mItems", filterFollowFeedList(mItems))
+                            // val array = mItems.map { it.aweme.sortString() }.toTypedArray()
+                            // XplerLog.tagD(TAG, arrayOf("关注视频列表", array.joinToString("\n")))
+                        }
+                    }
+                }
+        }?.onFailure {
+            XplerLog.e(it)
         }
     }
 }

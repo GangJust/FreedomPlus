@@ -41,7 +41,7 @@ class HEmojiDetailDialogNew : BaseHook<EmojiDetailDialogNew>() {
         lpparam.hookClass(EmojiBottomSheetDialog::class.java)
             .method("onCreate", Bundle::class.java) {
                 onAfter {
-                    if (!config.isEmoji) return@onAfter
+                    if (!config.isEmojiDownload) return@onAfter
 
                     // 非 EmojiDetailDialogNew, 直接结束
                     if (!targetClazz.isInstance(thisObject)) {

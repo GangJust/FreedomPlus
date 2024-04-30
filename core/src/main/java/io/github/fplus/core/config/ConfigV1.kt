@@ -59,35 +59,35 @@ class ConfigV1 private constructor() {
         }
 
     /// 按视频创作者单独创建文件夹
-    var isOwnerDir: Boolean = false
+    var ownerDir: Boolean = false
         get() {
-            field = mmkv.getBoolean("isOwnerDir", false)
+            field = mmkv.getBoolean("ownerDir", false)
             return field
         }
         set(value) {
-            mmkv.putBoolean("isOwnerDir", value)
+            mmkv.putBoolean("ownerDir", value)
             field = value
         }
 
     /// 通知栏下载
-    var isNotification: Boolean = false
+    var notificationDownload: Boolean = false
         get() {
-            field = mmkv.getBoolean("isNotification", false)
+            field = mmkv.getBoolean("notificationDownload", false)
             return field
         }
         set(value) {
-            mmkv.putBoolean("isNotification", value)
+            mmkv.putBoolean("notificationDownload", value)
             field = value
         }
 
     /// 复制链接时弹出下载
-    var isCopyDownload: Boolean = false
+    var copyLinkDownload: Boolean = false
         get() {
-            field = mmkv.getBoolean("isCopyDownload", false)
+            field = mmkv.getBoolean("copyLinkDownload", false)
             return field
         }
         set(value) {
-            mmkv.putBoolean("isCopyDownload", value)
+            mmkv.putBoolean("copyLinkDownload", value)
             field = value
         }
 
@@ -103,24 +103,24 @@ class ConfigV1 private constructor() {
         }
 
     /// 表情包/评论区视频、图片保存
-    var isEmoji: Boolean = false
+    var isEmojiDownload: Boolean = false
         get() {
-            field = mmkv.getBoolean("isEmoji", false)
+            field = mmkv.getBoolean("isEmojiDownload", false)
             return field
         }
         set(value) {
-            mmkv.putBoolean("isEmoji", value)
+            mmkv.putBoolean("isEmojiDownload", value)
             field = value
         }
 
     /// 震动反馈
-    var isVibrate: Boolean = false
+    var vibrate: Boolean = false
         get() {
-            field = mmkv.getBoolean("isVibrate", false)
+            field = mmkv.getBoolean("vibrate", false)
             return field
         }
         set(value) {
-            mmkv.putBoolean("isVibrate", value)
+            mmkv.putBoolean("vibrate", value)
             field = value
         }
 
@@ -164,7 +164,7 @@ class ConfigV1 private constructor() {
             field = value
         }
 
-    /// 双击响应类型: 0=暂停视频, 1=打开评论, 2=点赞视频
+    /// 双击响应类型: 1=打开评论, 2=点赞视频
     var doubleClickType: Int = 2
         get() {
             field = mmkv.getInt("doubleClickType", 2)
@@ -208,6 +208,28 @@ class ConfigV1 private constructor() {
             field = value
         }
 
+    /// 隐藏底部tab
+    var isHideBottomTab: Boolean = false
+        get() {
+            field = mmkv.getBoolean("isHideBottomTab", false)
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("isHideBottomTab", value)
+            field = value
+        }
+
+    /// 隐藏底部tab包含的关键字, 逗号隔开
+    var hideBottomTabKeywords: String = "商城, 朋友, 消息"
+        get() {
+            field = mmkv.getString("hideBottomTabKeywords", "商城, 朋友, 消息")!!
+            return field
+        }
+        set(value) {
+            mmkv.putString("hideBottomTabKeywords", value)
+            field = value
+        }
+
     /// 隐藏底部加号按钮
     var isHidePhotoButton: Boolean = false
         get() {
@@ -227,6 +249,17 @@ class ConfigV1 private constructor() {
         }
         set(value) {
             mmkv.putInt("photoButtonType", value)
+            field = value
+        }
+
+    /// 手势误触复确认
+    var isPreventAccidentalTouch: Boolean = false
+        get() {
+            field = mmkv.getBoolean("isPreventAccidentalTouch", false)
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("isPreventAccidentalTouch", value)
             field = value
         }
 
@@ -522,6 +555,17 @@ class ConfigV1 private constructor() {
         }
         set(value) {
             mmkv.putBoolean("keepAppBackend", value)
+            field = value
+        }
+
+    /// 崩溃容错
+    var isCrashTolerance: Boolean = false
+        get() {
+            field = mmkv.getBoolean("isCrashTolerance", false)
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("isCrashTolerance", value)
             field = value
         }
 

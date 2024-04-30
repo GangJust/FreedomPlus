@@ -33,7 +33,7 @@ class SaveAudioLogic(
             if (result) {
                 hook.showToast(context, "保存成功!")
                 KMediaUtils.notifyMediaUpdate(context, file.absolutePath)
-                if (config.isVibrate) hook.vibrate(context, 5L)
+                if (config.vibrate) hook.vibrate(context, 5L)
             } else {
                 hook.showToast(context, "保存失败!")
             }

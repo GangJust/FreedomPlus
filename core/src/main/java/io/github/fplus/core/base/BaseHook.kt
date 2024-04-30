@@ -128,15 +128,20 @@ abstract class BaseHook<T> : HookEntity<T>() {
     }
 
     @Synchronized
-    fun showDialog(view: View) {
+    fun showDialog(
+        view: View,
+        onDismiss: () -> Unit = {},
+    ) {
         kDialog = if (kDialog == null) KDialog() else kDialog
         kDialog!!.setView(view)
         kDialog!!.show()
+        kDialog!!.setOnDismissListener { onDismiss.invoke() }
     }
 
     @Synchronized
     fun showComposeDialog(
         context: Context,
+        onDismiss: () -> Unit = {},
         content: @Composable (closeHandler: () -> Unit) -> Unit
     ) {
         XplerDialogWrapper(context).apply {
@@ -144,6 +149,9 @@ abstract class BaseHook<T> : HookEntity<T>() {
                 ModuleTheme {
                     content.invoke(this::dismiss)
                 }
+            }
+            setOnDismissListener {
+                onDismiss.invoke()
             }
         }.show()
     }
@@ -157,6 +165,7 @@ abstract class BaseHook<T> : HookEntity<T>() {
         singleButton: Boolean = false, // 只会响应 onConfirm 方法
         onConfirm: () -> Unit = {},
         onCancel: () -> Unit = {},
+        onDismiss: () -> Unit = {},
     ) {
         val isDarkMode = context.isDarkMode
         val dialogView = context.inflateModuleView<FrameLayout>(R.layout.dialog_message_layout)
@@ -202,7 +211,10 @@ abstract class BaseHook<T> : HookEntity<T>() {
             onConfirm.invoke()
         }
 
-        showDialog(binding.root)
+        showDialog(
+            view = binding.root,
+            onDismiss = onDismiss,
+        )
     }
 
     fun showProgressDialog(
@@ -210,6 +222,7 @@ abstract class BaseHook<T> : HookEntity<T>() {
         title: CharSequence,
         progress: Int = 0,
         listener: (dialog: KDialog, progress: ProgressDialogNotification) -> Unit,
+        onDismiss: () -> Unit = {},
     ) {
         val isDarkMode = context.isDarkMode
         val dialogView = KtXposedHelpers.inflateView<FrameLayout>(context, R.layout.dialog_progress_layout)
@@ -232,7 +245,10 @@ abstract class BaseHook<T> : HookEntity<T>() {
             )
         )
 
-        showDialog(binding.root)
+        showDialog(
+            view = binding.root,
+            onDismiss = onDismiss
+        )
     }
 
     fun showInputChoiceDialog(
@@ -247,6 +263,7 @@ abstract class BaseHook<T> : HookEntity<T>() {
         cancel: CharSequence = "取消",
         onChoice: (view: View, input1: String, input2: String, item: CharSequence, position: Int) -> Unit,
         onCancel: () -> Unit = {},
+        onDismiss: () -> Unit = {},
     ) {
         val isDarkMode = context.isDarkMode
         val dialogView = KtXposedHelpers.inflateView<FrameLayout>(context, R.layout.dialog_input_choice_layout)
@@ -315,7 +332,10 @@ abstract class BaseHook<T> : HookEntity<T>() {
             )
         }
 
-        showDialog(binding.root)
+        showDialog(
+            view = binding.root,
+            onDismiss = onDismiss
+        )
     }
 
     fun showChoiceDialog(
@@ -371,7 +391,6 @@ abstract class BaseHook<T> : HookEntity<T>() {
         showDialog(binding.root)
     }
 
-
     private fun getHintTextColor(isDarkMode: Boolean): Int {
         return if (isDarkMode) {
             Color.parseColor("#FFAAAAAA")
@@ -395,7 +414,6 @@ abstract class BaseHook<T> : HookEntity<T>() {
             KtXposedHelpers.getDrawable(lightId)
         }
     }
-
 
     fun showNotification(
         context: Context,

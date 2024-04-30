@@ -44,10 +44,13 @@ class HLandscapeFeedActivity : BaseHook<LandscapeFeedActivity>() {
     }
 
     private fun addClipboardListener(activity: Activity) {
-        if (!config.isDownload) return
-        if (!config.isCopyDownload) return
+        if (!config.isDownload)
+            return
 
-        clipboardLogic.addClipboardListener(activity) { clipData, firstText ->
+        if (!config.copyLinkDownload)
+            return
+
+        clipboardLogic.addClipboardListener(activity) { _, _ ->
             val method = activity.method(returnType = Aweme::class.java)
             val aweme = method?.invoke(activity)?.asOrNull<Aweme>()
 

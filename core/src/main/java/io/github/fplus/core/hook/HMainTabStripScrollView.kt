@@ -24,10 +24,10 @@ class HMainTabStripScrollView : BaseHook<MainTabStripScrollView>(),
 
     override fun callOnAfterMethods(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
-            // 透明度
-            if (config.isTranslucent) {
-                thisViewGroup.firstParentOrNull(MainTitleBar::class.java)?.alpha = config.translucentValue[0] / 100f
-            }
+            if (!config.isTranslucent)
+                return
+
+            thisViewGroup.firstParentOrNull(MainTitleBar::class.java)?.alpha = config.translucentValue[0] / 100f
         }.onFailure {
             XplerLog.e(it)
         }

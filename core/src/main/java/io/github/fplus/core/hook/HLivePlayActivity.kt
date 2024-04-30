@@ -1,5 +1,6 @@
 package io.github.fplus.core.hook
 
+import com.ss.android.ugc.aweme.live.LivePlayActivity
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
@@ -10,17 +11,13 @@ import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisActivity
 
-class HLivePlayActivity : BaseHook<Any>() {
+class HLivePlayActivity : BaseHook<LivePlayActivity>() {
 
     companion object {
         const val TAG = "HLivePlayActivity"
     }
 
     private val config get() = ConfigV1.get()
-
-    override fun setTargetClass(): Class<*> {
-        return findClass("com.ss.android.ugc.aweme.live.LivePlayActivity")
-    }
 
     @OnBefore("onWindowFocusChanged")
     @OnAfter("onWindowFocusChanged")

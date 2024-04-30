@@ -28,9 +28,9 @@ class HChatListRecalledHint : BaseHook<Any>() {
     }
 
     @OnAfter
-    fun testAfter(
+    fun methodAfter(
         params: XC_MethodHook.MethodHookParam,
-        @Param("null") any: Any?,
+        @Param any: Any?,
         i: Int,
         list: List<*>?,
     ) {

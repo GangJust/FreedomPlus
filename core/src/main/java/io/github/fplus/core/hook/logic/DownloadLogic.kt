@@ -12,11 +12,11 @@ import com.freegang.extension.secureFilename
 import com.freegang.ktutils.app.IProgressNotification
 import com.freegang.ktutils.app.KNotifiUtils
 import com.freegang.ktutils.app.KToastUtils
+import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.media.KMediaUtils
 import com.freegang.ktutils.net.KHttpUtils
 import com.freegang.ktutils.text.KTextUtils
 import com.ss.android.ugc.aweme.feed.model.Aweme
-import com.ss.ugc.aweme.ImageUrlStruct
 import de.robv.android.xposed.XposedBridge
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
@@ -27,12 +27,11 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 
-
 /// 下载(视频/图文/音乐)逻辑
 class DownloadLogic(
-    private val hook: BaseHook<*>,
-    private val context: Context,
-    private val aweme: Aweme?,
+    val hook: BaseHook<*>,
+    val context: Context,
+    val aweme: Aweme?,
 ) {
 
     companion object {
@@ -63,7 +62,7 @@ class DownloadLogic(
                 mPureNickname = aweme.author.nickname.pureFileName
 
                 // mOwnerDir: 如果需要按视频创作者单独创建文件夹: `/外置存储器/Download/Freedom/${video|music|picture}/昵称(账号)`
-                mOwnerDir = if (config.isOwnerDir) "${mPureNickname}(${mShortId})" else ""
+                mOwnerDir = if (config.ownerDir) "${mPureNickname}(${mShortId})" else ""
 
                 // 默认下载路径: `/外置存储器/Download/Freedom/video`
                 mVideoParent = ConfigV1.getFreedomDir(context).child("video")
@@ -90,32 +89,12 @@ class DownloadLogic(
         }
     }
 
-    private fun getVideoUrlList(aweme: Aweme): List<String> {
-        val video = aweme.video ?: return emptyList()
-
-        return when (config.videoCoding) {
-            "H265" -> video.playAddrH265?.urlList ?: emptyList()
-            "H264" -> video.h264PlayAddr?.urlList ?: emptyList()
-            "Auto" -> video.playAddr?.urlList ?: emptyList()
-            else -> emptyList()
-        }
-    }
-
-    private fun getImageUrlList(aweme: Aweme): List<ImageUrlStruct> {
-        return aweme.images ?: return emptyList()
-    }
-
-    private fun getMusicUrlList(aweme: Aweme): List<String> {
-        val music = aweme.music ?: return emptyList()
-        return music.playUrl?.urlList ?: emptyList()
-    }
-
     /**
      * 显示下载选择弹层
      * @param aweme
      */
     private fun showChoiceDialog(aweme: Aweme) {
-        val urlList = getImageUrlList(aweme)
+        val urlList = aweme.getImageUrlList()
         val items = mutableListOf("文案", if (urlList.isEmpty()) "视频" else "图片", "背景音乐")
         if (config.isWebDav) {
             items.add(if (urlList.isEmpty()) "视频(WebDav)" else "图片(WebDav)")
@@ -124,7 +103,7 @@ class DownloadLogic(
         hook.showInputChoiceDialog(
             context = context,
             title = "Freedom+",
-            showInput1 = config.isOwnerDir,
+            showInput1 = config.ownerDir,
             input1Hint = "创作者: $mOwnerDir",
             input1DefaultValue = mOwnerDir,
             input2Hint = "文件名: $mPureFileName",
@@ -175,14 +154,20 @@ class DownloadLogic(
      * @param aweme
      */
     private fun downloadVideo(aweme: Aweme, isWebDav: Boolean = false) {
-        val videoUrlList = getVideoUrlList(aweme)
+        val videoUrlList = when (config.videoCoding) {
+            "H265" -> aweme.getH265VideoUrlList()
+            "H264" -> aweme.getH264VideoUrlList()
+            "Auto" -> aweme.getAutoVideoUrlList()
+            else -> emptyList()
+        }
+
         if (videoUrlList.isEmpty()) {
             hook.showToast(context, "未获取到视频信息")
             return
         }
         // 构建视频文件名
         mPureFileName = mPureFileName.secureFilename(".mp4")
-        if (config.isNotification) {
+        if (config.notificationDownload) {
             showDownloadByNotification(videoUrlList, mVideoParent, mPureFileName, isWebDav)
         } else {
             showDownloadByDialog(videoUrlList, mVideoParent, mPureFileName, isWebDav)
@@ -194,14 +179,14 @@ class DownloadLogic(
      * @param aweme
      */
     private fun downloadMusic(aweme: Aweme, isWebDav: Boolean = false) {
-        val musicUrlList = getMusicUrlList(aweme)
+        val musicUrlList = aweme.getMusicUrlList()
         if (musicUrlList.isEmpty()) {
             hook.showToast(context, "未获取到背景音乐")
             return
         }
         // 构建视频文件名
         mPureFileName = mPureFileName.secureFilename(".mp3")
-        if (config.isNotification) {
+        if (config.notificationDownload) {
             showDownloadByNotification(musicUrlList, mMusicParent, mPureFileName, isWebDav)
         } else {
             showDownloadByDialog(musicUrlList, mMusicParent, mPureFileName, isWebDav)
@@ -213,13 +198,13 @@ class DownloadLogic(
      * @param aweme
      */
     private fun downloadImages(aweme: Aweme, isWebDav: Boolean = false) {
-        val structList = getImageUrlList(aweme)
+        val structList = aweme.getImageUrlList()
         if (structList.isEmpty()) {
             hook.showToast(context, "未获取到图片信息")
             return
         }
 
-        if (config.isNotification) {
+        if (config.notificationDownload) {
             // 发送通知
             hook.showDownloadNotification(
                 context = context,
@@ -235,7 +220,7 @@ class DownloadLogic(
                                 File(mImageParent.need(), mPureFileName.secureFilename("_${index + 1}.jpg"))
                             val finished =
                                 download(
-                                    urlStruct.urlList.first(),
+                                    urlStruct.urlList.random(),
                                     downloadFile,
                                     it,
                                     "$index/${aweme.images.size} %s%%"
@@ -307,7 +292,7 @@ class DownloadLogic(
                                 File(mImageParent.need(), mPureFileName.secureFilename("_${index + 1}.jpg"))
                             val finished =
                                 download(
-                                    urlStruct.urlList.first(),
+                                    urlStruct.urlList.random(),
                                     downloadFile,
                                     notify,
                                     "$index/${aweme.images.size} %s%%"
@@ -376,7 +361,7 @@ class DownloadLogic(
                 // 下载逻辑
                 hook.singleLaunchIO(pureFileName) {
                     val downloadFile = File(parentPath.need(), pureFileName)
-                    val finished = download(urlList.first(), downloadFile, it, "下载中 %s%%")
+                    val finished = download(urlList.random(), downloadFile, it, "下载中 %s%%")
                     if (finished) {
                         hook.refresh {
                             val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
@@ -419,7 +404,7 @@ class DownloadLogic(
                 // 下载逻辑
                 hook.singleLaunchIO(pureFileName) {
                     val downloadFile = File(parentPath.need(), pureFileName)
-                    val finished = download(urlList.first(), downloadFile, notify, "%s%%")
+                    val finished = download(urlList.random(), downloadFile, notify, "%s%%")
                     if (finished) {
                         hook.refresh {
                             dialog.dismiss()

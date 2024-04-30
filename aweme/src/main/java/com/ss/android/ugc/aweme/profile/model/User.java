@@ -73,5 +73,8 @@ public class User {
 
     public String uid;
 
-
+    //1: 已关注, 0: 未关注
+    public int getFollowStatus() {
+        throw new RuntimeException("Stub!");
+    }
 }

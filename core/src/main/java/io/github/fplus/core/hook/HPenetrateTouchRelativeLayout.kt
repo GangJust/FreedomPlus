@@ -31,7 +31,7 @@ class HPenetrateTouchRelativeLayout : BaseHook<PenetrateTouchRelativeLayout>(), 
                 return
             }
 
-            if (visibility == View.GONE || visibility == View.INVISIBLE) {
+            if (visibility == View.GONE/* || visibility == View.INVISIBLE*/) {
                 return
             }
 
@@ -44,6 +44,15 @@ class HPenetrateTouchRelativeLayout : BaseHook<PenetrateTouchRelativeLayout>(), 
             }
         }.onFailure {
             XplerLog.e(it)
+        }
+    }
+
+    @OnBefore
+    fun methodBefore(params: XC_MethodHook.MethodHookParam, visibility: Int, string: String?) {
+        hookBlockRunning(params) {
+            setVisibilityBefore(params, visibility)
+        }.onFailure {
+            XplerLog.tagE(TAG, it)
         }
     }
 

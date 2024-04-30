@@ -6,6 +6,7 @@ import androidx.core.view.updatePadding
 import com.freegang.extension.contentView
 import com.freegang.extension.navBarInteractionMode
 import com.freegang.extension.navigationBarHeight
+import com.ss.android.ugc.aweme.live.LivePlayActivity
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
@@ -27,13 +28,17 @@ class HActivity : BaseHook<Activity>() {
     @OnBefore("dispatchTouchEvent")
     fun dispatchTouchEventBefore(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {
         hookBlockRunning(params) {
-            DouYinMain.freeExitCountDown?.restart()
+            val activity = thisObject as Activity
+            DouYinMain.freeExitHelper?.restart()
 
-            if (thisActivity is FreedomSettingActivity) return
+            if (activity is FreedomSettingActivity)
+                return
+
+            if (activity is LivePlayActivity)
+                DouYinMain.freeExitHelper?.cancel()
 
             if (config.isImmersive) {
                 // 底部三键导航
-                val activity = thisObject as Activity
                 if (activity.navBarInteractionMode == 0 && !config.systemControllerValue[1]) {
                     ImmersiveHelper.systemBarColor(activity, navigationBarColor = null)
                 } else {
@@ -48,10 +53,16 @@ class HActivity : BaseHook<Activity>() {
     @OnBefore("onResume")
     fun onResumeBefore(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
-            DouYinMain.freeExitCountDown?.restart()
-            if (DouYinMain.inBackend) {
-                DouYinMain.inBackend = false
-                DouYinMain.timedExitCountDown?.restart()
+            val activity = thisObject as Activity
+
+            if (activity is LivePlayActivity) {
+                DouYinMain.freeExitHelper?.cancel()
+            } else {
+                DouYinMain.freeExitHelper?.restart()
+            }
+
+            if (DouYinMain.timerExitHelper?.isPaused == true) {
+                DouYinMain.timerExitHelper?.restart()
             }
         }.onFailure {
             XplerLog.e(it)
@@ -62,7 +73,10 @@ class HActivity : BaseHook<Activity>() {
     fun onWindowFocusChangedAfter(params: XC_MethodHook.MethodHookParam, boolean: Boolean) {
         hookBlockRunning(params) {
             singleLaunchMain {
-                if (thisActivity is FreedomSettingActivity) return@singleLaunchMain
+                val activity = thisObject as Activity
+
+                if (activity is FreedomSettingActivity)
+                    return@singleLaunchMain
 
                 if (config.isImmersive) {
                     ImmersiveHelper.immersive(
@@ -72,7 +86,6 @@ class HActivity : BaseHook<Activity>() {
                     )
 
                     // 底部三键导航
-                    val activity = thisObject as Activity
                     ImmersiveHelper.systemBarColor(activity)
                     if (activity.navBarInteractionMode == 0 && !config.systemControllerValue[1]) {
                         activity.contentView.apply {

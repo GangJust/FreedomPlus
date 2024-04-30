@@ -5,6 +5,7 @@ import android.widget.TextView
 import com.freegang.extension.ellipsis
 import com.freegang.extension.forEachWhereChild
 import com.freegang.ktutils.app.KToastUtils
+import com.freegang.ktutils.log.KLogCat
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
@@ -21,10 +22,11 @@ class HDialog : BaseHook<Dialog>() {
 
     private val dialogFilterKeywords by lazy {
         config.dialogFilterKeywords
-            .removePrefix(",").removePrefix("，")
-            .removeSuffix(",").removeSuffix("，")
+            .replace("，", ",")
             .replace("\\s".toRegex(), "")
-            .replace("[,，]".toRegex(), "|")
+            .removePrefix(",").removeSuffix(",")
+            .replace(",", "|")
+            .replace("\\|+".toRegex(), "|")
             .toRegex()
     }
 

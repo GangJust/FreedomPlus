@@ -42,7 +42,7 @@ class HDetailPageFragment : BaseHook<Any>() {
     @OnAfter("onViewCreated")
     fun onViewCreatedAfter(param: XC_MethodHook.MethodHookParam, view: View, bundle: Bundle?) {
         hookBlockRunning(param) {
-            if (!config.isEmoji) return
+            if (!config.isEmojiDownload) return
 
             //
             HDetailPageFragment.isComment = false

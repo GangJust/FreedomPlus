@@ -33,7 +33,7 @@ class HEmojiPopupWindow : BaseHook<Any>() {
         emoji: BaseEmoji?,
     ) {
         hookBlockRunning(params) {
-            if (!config.isEmoji)
+            if (!config.isEmojiDownload)
                 return
 
             popUrlList = popUrlList.ifEmpty {
@@ -50,7 +50,7 @@ class HEmojiPopupWindow : BaseHook<Any>() {
     @ReturnType("Lcom/bytedance/ies/dmt/ui/widget/DmtTextView;")
     fun textViewAfter(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
-            if (!config.isEmoji)
+            if (!config.isEmojiDownload)
                 return
 
             val view = result?.asOrNull<TextView>() ?: return

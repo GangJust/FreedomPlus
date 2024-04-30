@@ -85,6 +85,7 @@ import kotlinx.coroutines.withContext
 import kotlin.random.Random
 import kotlin.system.exitProcess
 
+@OptIn(ExperimentalFoundationApi::class)
 class FreedomSettingActivity : XplerActivity() {
     private val model by lazy {
         ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory(application))
@@ -277,7 +278,9 @@ class FreedomSettingActivity : XplerActivity() {
             item { DoubleClickTypeItem() }
             item { LongtimeVideoToastItem() }
             item { HideTopTabItem() }
+            item { HideBottomTabItem() }
             item { HidePhotoButtonItem() }
+            item { PreventAccidentalTouch() }
             item { VideoOptionBarFilterItem() }
             item { VideoFilterItem() }
             item { DialogFilterItem() }
@@ -286,6 +289,7 @@ class FreedomSettingActivity : XplerActivity() {
             item { CommentColorModeItem() }
             item { WebDavItem() }
             item { TimedExitItem() }
+            item { CrashToleranceItem() }
             /*item { DisablePluginItem() }*/
         }
     }
@@ -371,26 +375,25 @@ class FreedomSettingActivity : XplerActivity() {
                         text = "视频创作者单独创建文件夹",
                         checked = model.isOwnerDir.observeAsState(false),
                         onCheckedChange = {
-                            model.changeIsOwnerDir(it)
+                            model.setOwnerDir(it)
                         }
                     )
                     CheckBoxItem(
                         text = "通知栏显示下载进度",
                         checked = model.isNotification.observeAsState(false),
                         onCheckedChange = {
-                            model.changeIsNotification(it)
+                            model.setNotificationDownload(it)
                         }
                     )
                     CheckBoxItem(
                         text = "“分享->复制链接”弹出下载",
                         checked = model.isCopyDownload.observeAsState(false),
                         onCheckedChange = {
-                            model.changeIsCopyDownload(it)
+                            model.setCopyLinkDownload(it)
                         }
                     )
 
                     Divider()
-
 
                     Box {
                         val menus by remember { mutableStateOf(listOf("Auto", "H264", "H265")) }
@@ -401,7 +404,7 @@ class FreedomSettingActivity : XplerActivity() {
                             value = videoCoding,
                             menus = menus,
                             onSelected = {
-                                model.changeVideoCoding(it)
+                                model.setVideoCoding(it)
                             }
                         )
                     }
@@ -422,7 +425,7 @@ class FreedomSettingActivity : XplerActivity() {
                 showSettingDialog = true
             },
             onCheckedChange = {
-                model.changeIsEmoji(it)
+                model.changeIsEmojiDownload(it)
             }
         )
 
@@ -440,7 +443,7 @@ class FreedomSettingActivity : XplerActivity() {
                         text = "震动反馈",
                         checked = model.isVibrate.observeAsState(false),
                         onCheckedChange = {
-                            model.changeIsVibrate(it)
+                            model.setVibrate(it)
                         }
                     )
                 }
@@ -478,7 +481,7 @@ class FreedomSettingActivity : XplerActivity() {
                 onlyConfirm = true,
                 onConfirm = {
                     showTransparentDialog = false
-                    model.changeTranslucentValue(
+                    model.setTranslucentValue(
                         listOf(
                             topBarTransparent,
                             videoAssemblyTransparent,
@@ -551,6 +554,7 @@ class FreedomSettingActivity : XplerActivity() {
     private fun RemoveStickerItem() {
         SwitchItem(
             text = "移除悬浮挑战/评论贴纸",
+            subtext = "部分视频出现的悬浮挑战，视频评论回复等控件",
             checked = model.isRemoveSticker.observeAsState(false),
             onCheckedChange = {
                 model.changeIsRemoveSticker(it)
@@ -575,8 +579,20 @@ class FreedomSettingActivity : XplerActivity() {
         var showSettingDialog by remember { mutableStateOf(false) }
 
         SwitchItem(
-            text = "消息防撤回",
-            subtext = "阻止聊天消息撤回，点击调整相关设置",
+            text = buildAnnotatedString {
+                append("消息防撤回 ")
+                withStyle(
+                    SpanStyle(
+                        color = Color.Red,
+                        fontSize = MaterialTheme.typography.body2.fontSize,
+                    )
+                ) {
+                    append("(失效不修)")
+                }
+            },
+            subtext = buildAnnotatedString {
+                append("阻止聊天消息撤回，点击调整相关设置")
+            },
             checked = model.isPreventRecalled.observeAsState(false),
             onClick = {
                 showSettingDialog = true
@@ -643,24 +659,10 @@ class FreedomSettingActivity : XplerActivity() {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(
-                            selected = radioIndex == 0,
-                            onClick = {
-                                radioIndex = 0
-                                model.changeDoubleClickType(radioIndex)
-                            },
-                        )
-                        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
-                        Text(
-                            text = "暂停视频",
-                            style = MaterialTheme.typography.body1,
-                        )
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(
                             selected = radioIndex == 1,
                             onClick = {
                                 radioIndex = 1
-                                model.changeDoubleClickType(radioIndex)
+                                model.setDoubleClickType(radioIndex)
                             },
                         )
                         Spacer(modifier = Modifier.padding(horizontal = 4.dp))
@@ -674,7 +676,7 @@ class FreedomSettingActivity : XplerActivity() {
                             selected = radioIndex == 2,
                             onClick = {
                                 radioIndex = 2
-                                model.changeDoubleClickType(radioIndex)
+                                model.setDoubleClickType(radioIndex)
                             },
                         )
                         Spacer(modifier = Modifier.padding(horizontal = 4.dp))
@@ -707,7 +709,7 @@ class FreedomSettingActivity : XplerActivity() {
 
         SwitchItem(
             text = "隐藏顶部选项",
-            subtext = "隐藏顶部标签页, 点击设置关键字",
+            subtext = "隐藏顶部标签, 点击设置关键字",
             checked = model.isHideTopTab.observeAsState(false),
             onClick = {
                 showKeywordsEditorDialog = true
@@ -734,7 +736,7 @@ class FreedomSettingActivity : XplerActivity() {
                 onCancel = { showKeywordsEditorDialog = false },
                 onConfirm = {
                     showKeywordsEditorDialog = false
-                    model.setHideTabKeywords(hideTabKeywords)
+                    model.setHideTopTabKeywords(hideTabKeywords)
                 },
             ) {
                 FCard(
@@ -779,6 +781,115 @@ class FreedomSettingActivity : XplerActivity() {
         }
     }
 
+    @OptIn(ExperimentalFoundationApi::class)
+    @Composable
+    private fun HideBottomTabItem() {
+        var showKeywordsEditorDialog by remember { mutableStateOf(false) }
+        var showKeywordsTips by remember { mutableStateOf(false) }
+
+        SwitchItem(
+            text = "隐藏底部选项",
+            subtext = "隐藏底部选项, 点击设置关键字",
+            checked = model.isHideBottomTab.observeAsState(false),
+            onClick = {
+                showKeywordsEditorDialog = true
+            },
+            onCheckedChange = {
+                showRestartAppDialog.value = true
+                model.changeIsHideBottomTab(it)
+            },
+        )
+
+        if (showKeywordsEditorDialog) {
+            var hideBottomKeywords by remember {
+                mutableStateOf(
+                    model.hideBottomTabKeywords.value ?: ""
+                )
+            }
+            FMessageDialog(
+                title = {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp, vertical = 16.dp)
+                    ) {
+                        Text(
+                            text = "请输入关键字, 用逗号分开",
+                            style = MaterialTheme.typography.body1,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Icon(
+                            imageVector = Icons.Outlined.Info,
+                            contentDescription = "帮助",
+                            modifier = Modifier
+                                .size(16.dp)
+                                .combinedClickable(
+                                    indication = null,
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    onClick = {
+                                        showKeywordsTips = true
+                                    },
+                                ),
+                        )
+                    }
+                },
+                cancel = "取消",
+                confirm = "确定",
+                onCancel = { showKeywordsEditorDialog = false },
+                onConfirm = {
+                    showKeywordsEditorDialog = false
+                    model.setHideBottomTabKeywords(hideBottomKeywords)
+                    showRestartAppDialog.value = true
+                },
+            ) {
+                FCard(
+                    border = FCardBorder(borderWidth = 1.0.dp),
+                ) {
+                    BasicTextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp, horizontal = 12.dp),
+                        value = hideBottomKeywords,
+                        maxLines = 1,
+                        singleLine = true,
+                        textStyle = MaterialTheme.typography.body1,
+                        onValueChange = {
+                            hideBottomKeywords = it
+                        },
+                    )
+                }
+            }
+        }
+
+        if (showKeywordsTips) {
+            FMessageDialog(
+                title = "提示",
+                onlyConfirm = true,
+                confirm = "确定",
+                onConfirm = {
+                    showKeywordsTips = false
+                }
+            ) {
+                Text(
+                    text = buildAnnotatedString {
+                        append("因为底部加号按钮的单独处理选项, ")
+                        append("关键字中出如果现")
+                        withStyle(SpanStyle(Color.Red)) {
+                            append("“拍摄”")
+                        }
+                        append(", 也将隐藏底部拍摄按钮, ")
+                        append("故")
+                        withStyle(SpanStyle(Color.Red)) {
+                            append("“允许/禁止拍摄”")
+                        }
+                        append("将会失效。")
+                    },
+                    style = MaterialTheme.typography.body1,
+                )
+            }
+        }
+    }
+
     @Composable
     private fun HidePhotoButtonItem() {
         var showIsDisablePhotoDialog by remember { mutableStateOf(false) }
@@ -786,7 +897,7 @@ class FreedomSettingActivity : XplerActivity() {
         SwitchItem(
             text = "隐藏底部加号按钮",
             subtext = "点击更改加号按钮响应状态",
-            checked = model.isDHidePhotoButton.observeAsState(false),
+            checked = model.isHidePhotoButton.observeAsState(false),
             onClick = {
                 showIsDisablePhotoDialog = true
             },
@@ -813,7 +924,7 @@ class FreedomSettingActivity : XplerActivity() {
                             selected = radioIndex == 0,
                             onClick = {
                                 radioIndex = 0
-                                model.changePhotoButtonType(radioIndex)
+                                model.setPhotoButtonType(radioIndex)
                             },
                         )
                         Spacer(modifier = Modifier.padding(horizontal = 4.dp))
@@ -827,7 +938,7 @@ class FreedomSettingActivity : XplerActivity() {
                             selected = radioIndex == 1,
                             onClick = {
                                 radioIndex = 1
-                                model.changePhotoButtonType(radioIndex)
+                                model.setPhotoButtonType(radioIndex)
                             },
                         )
                         Spacer(modifier = Modifier.padding(horizontal = 4.dp))
@@ -841,7 +952,7 @@ class FreedomSettingActivity : XplerActivity() {
                             selected = radioIndex == 2,
                             onClick = {
                                 radioIndex = 2
-                                model.changePhotoButtonType(radioIndex)
+                                model.setPhotoButtonType(radioIndex)
                             },
                         )
                         Spacer(modifier = Modifier.padding(horizontal = 4.dp))
@@ -853,6 +964,21 @@ class FreedomSettingActivity : XplerActivity() {
                 }
             }
         }
+    }
+
+    @Composable
+    private fun PreventAccidentalTouch() {
+        SwitchItem(
+            text = "手势误触复确认",
+            subtext = "底部首页、头像关注点击时显示复确认弹窗",
+            checked = model.isPreventAccidentalTouch.observeAsState(false),
+            onClick = {
+
+            },
+            onCheckedChange = {
+                model.changeIsPreventAccidentalTouch(it)
+            }
+        )
     }
 
     @OptIn(ExperimentalFoundationApi::class)
@@ -1188,7 +1314,7 @@ class FreedomSettingActivity : XplerActivity() {
                         text = "弹窗被关闭时提示",
                         checked = model.dialogDismissTips.observeAsState(initial = false),
                         onCheckedChange = {
-                            model.changeDialogDismissTips(it)
+                            model.setDialogDismissTips(it)
                         },
                     )
                 }
@@ -1252,7 +1378,7 @@ class FreedomSettingActivity : XplerActivity() {
                         RadioButton(
                             selected = longPressMode,
                             onClick = {
-                                model.changeLongPressMode(true)
+                                model.setLongPressMode(true)
                             },
                         )
                         Spacer(modifier = Modifier.padding(horizontal = 4.dp))
@@ -1265,7 +1391,7 @@ class FreedomSettingActivity : XplerActivity() {
                         RadioButton(
                             selected = !longPressMode,
                             onClick = {
-                                model.changeLongPressMode(false)
+                                model.setLongPressMode(false)
                             },
                         )
                         Spacer(modifier = Modifier.padding(horizontal = 4.dp))
@@ -1306,7 +1432,7 @@ class FreedomSettingActivity : XplerActivity() {
                 onlyConfirm = true,
                 onConfirm = {
                     showSettingDialog = false
-                    model.changeSystemControllerValue(
+                    model.setSystemControllerValue(
                         listOf(
                             isHideStatusBar.value,
                             isHideNavigateBar.value,
@@ -1440,12 +1566,12 @@ class FreedomSettingActivity : XplerActivity() {
                 }
                 if (it) {
                     isWebDavWaiting = true
-                    model.initWebDav { test, msg ->
+                    model.testWebDav { test, msg ->
                         KToastUtils.show(application, msg)
                         isWebDavWaiting = false
                         if (test) {
                             model.changeIsWebDav(true)
-                            return@initWebDav
+                            return@testWebDav
                         }
                         model.changeIsWebDav(false)
                     }
@@ -1552,14 +1678,14 @@ class FreedomSettingActivity : XplerActivity() {
                     val webDavConfig = WebDav.Config(host, username, password)
                     isWaiting = true
                     model.setWebDavConfig(webDavConfig)
-                    model.initWebDav { test, msg ->
+                    model.testWebDav { test, msg ->
                         KToastUtils.show(application, msg)
                         isWaiting = false
                         if (test) {
                             showWebDavConfigEditorDialog = false
                             model.changeIsWebDav(true)
                             model.addWebDavConfig(webDavConfig)
-                            return@initWebDav
+                            return@testWebDav
                         }
                         model.changeIsWebDav(false)
                     }
@@ -1770,7 +1896,7 @@ class FreedomSettingActivity : XplerActivity() {
                         checked = model.keepAppBackend.observeAsState(initial = false),
                         onCheckedChange = {
                             showKeepAppBackendTips = it
-                            model.changeKeepAppBackend(it)
+                            model.setKeepAppBackend(it)
                         },
                     )
                 }
@@ -1802,6 +1928,22 @@ class FreedomSettingActivity : XplerActivity() {
                 )
             }
         }
+    }
+
+    @Composable
+    private fun CrashToleranceItem() {
+        SwitchItem(
+            text = "崩溃容错",
+            subtext = "尝试对官方部分崩溃逻辑进行拦截，不保证绝对成功",
+            checked = model.isCrashTolerance.observeAsState(false),
+            onClick = {
+
+            },
+            onCheckedChange = {
+                model.changeIsCrashTolerance(it)
+                showRestartAppDialog.value = true
+            }
+        )
     }
 
     @Deprecated("暂存区")
@@ -1867,6 +2009,74 @@ class FreedomSettingActivity : XplerActivity() {
     private fun SwitchItem(
         text: String,
         subtext: String = "",
+        isWaiting: Boolean = false,
+        checked: State<Boolean>,
+        onCheckedChange: (checked: Boolean) -> Unit,
+        onClick: () -> Unit = {},
+        onLongClick: () -> Unit = {},
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp)
+                .combinedClickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() },
+                    onClick = {
+                        onClick.invoke()
+                    },
+                    onLongClick = {
+                        onLongClick.invoke()
+                    }
+                )
+                .then(if (subtext.isNotBlank()) Modifier.padding(vertical = 4.dp) else Modifier),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+            ) {
+                Text(
+                    text = text,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.body1,
+                )
+                if (subtext.isNotBlank()) {
+                    Text(
+                        modifier = Modifier.padding(vertical = 2.dp),
+                        text = subtext,
+                        style = MaterialTheme.typography.body2,
+                    )
+                }
+            }
+            if (isWaiting) {
+                BoxWithConstraints(
+                    modifier = Modifier
+                        .wrapContentSize(Alignment.Center)
+                        .padding(17.dp), // switch: width = 34.dp
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator(
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(MaterialTheme.typography.body1.fontSize.asDp),
+                    )
+                }
+            } else {
+                Switch(
+                    checked = checked.value,
+                    onCheckedChange = {
+                        onCheckedChange.invoke(it)
+                    },
+                )
+            }
+        }
+    }
+
+    @OptIn(ExperimentalFoundationApi::class)
+    @Composable
+    private fun SwitchItem(
+        text: AnnotatedString,
+        subtext: AnnotatedString = buildAnnotatedString { append("") },
         isWaiting: Boolean = false,
         checked: State<Boolean>,
         onCheckedChange: (checked: Boolean) -> Unit,

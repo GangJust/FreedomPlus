@@ -36,6 +36,7 @@ import io.github.xpler.core.thisView
 import io.github.xpler.core.thisViewGroup
 import kotlin.math.abs
 
+@Deprecated("旧逻辑暂存")
 class HVideoViewHolderRootView : BaseHook<VideoViewHolderRootView>() {
     companion object {
         const val TAG = "HVideoViewHolderRootView"
