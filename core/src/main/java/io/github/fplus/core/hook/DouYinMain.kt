@@ -53,7 +53,7 @@ class DouYinMain(private val app: Application) {
             // search and hook
             DexkitBuilder.running(
                 app = app,
-                version = 19,
+                version = 23,
                 searchBefore = {
                     HActivity()
                     HMainActivity()
@@ -64,15 +64,12 @@ class DouYinMain(private val app: Application) {
                     HMainTabStripScrollView()
                     HFlippableViewPager()
                     HPlayerController()
-                    // HVideoViewHolderRootView()
                     HPenetrateTouchRelativeLayout()
                     HInteractStickerParent()
                     // HCommentAudioView()
                     HGifEmojiDetailActivity()
                     HEmojiDetailDialog()
                     HDialog()
-                    // HDialogFragment()
-                    // HPopupWindow()
                 },
                 searchAfter = {
                     HCrashTolerance()
@@ -83,7 +80,6 @@ class DouYinMain(private val app: Application) {
                     HCommentListPageFragment()
                     HConversationFragment()
                     HSeekBarSpeedModeBottomMask()
-                    // HVideoPlayerHelper()
                     HLongPressLayout()
                     HVideoViewHolder()
                     HFeedAvatarPresenter()
@@ -131,7 +127,7 @@ class DouYinMain(private val app: Application) {
         }
 
         if (freeExit >= 60 * 1000L * 3) {
-            freeExitHelper = TimerExitHelper(app, timedExit, config.keepAppBackend) {
+            freeExitHelper = TimerExitHelper(app, freeExit, config.keepAppBackend) {
                 val second = it / 1000L
                 if (second == 30L) {
                     KToastUtils.show(app, "长时间无操作, 抖音将在30秒后空闲退出")

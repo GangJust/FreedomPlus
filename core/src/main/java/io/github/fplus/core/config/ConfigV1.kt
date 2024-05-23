@@ -357,6 +357,39 @@ class ConfigV1 private constructor() {
             field = value
         }
 
+    /// 自动连播
+    var isAutoPlay: Boolean = false
+        get() {
+            field = mmkv.getBoolean("isAutoPlay", false)
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("isAutoPlay", value)
+            field = value
+        }
+
+    /// 首页添加连播按钮
+    var addAutoPlayButton: Boolean = false
+        get() {
+            field = mmkv.getBoolean("addAutoPlayButton", false)
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("addAutoPlayButton", value)
+            field = value
+        }
+
+    /// 启动时默认开启连播
+    var defaultAutoPlay: Boolean = false
+        get() {
+            field = mmkv.getBoolean("defaultAutoPlay", false)
+            return field
+        }
+        set(value) {
+            mmkv.putBoolean("defaultAutoPlay", value)
+            field = value
+        }
+
     /// 当前是否处于清爽模式
     var neatModeState: Boolean = false
         get() {

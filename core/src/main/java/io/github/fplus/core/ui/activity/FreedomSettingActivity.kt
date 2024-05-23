@@ -9,7 +9,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -37,13 +36,14 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -85,7 +85,6 @@ import kotlinx.coroutines.withContext
 import kotlin.random.Random
 import kotlin.system.exitProcess
 
-@OptIn(ExperimentalFoundationApi::class)
 class FreedomSettingActivity : XplerActivity() {
     private val model by lazy {
         ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory(application))
@@ -100,26 +99,36 @@ class FreedomSettingActivity : XplerActivity() {
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     private fun TopBarView() {
+        var showLogDialog by remember { mutableStateOf(false) }
+
+        var rotate by remember { mutableFloatStateOf(0f) }
+        val rotateAnimate by animateFloatAsState(
+            targetValue = rotate,
+            animationSpec = tween(durationMillis = Random.nextInt(500, 1500)),
+        )
+
+        var showUpdateLogDialog by remember { mutableStateOf(false) }
+        var updateLog by remember { mutableStateOf("") }
+
         TopAppBar(
             elevation = 0.dp,
             backgroundColor = MaterialTheme.colors.background,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                BoxWithConstraints(modifier = Modifier.padding(end = 24.dp)) {
-                    Icon(
-                        imageVector = Icons.Rounded.ArrowBack,
-                        contentDescription = "返回",
-                        modifier = Modifier
-                            .size(20.dp)
-                            .clickable(
-                                indication = null,
-                                interactionSource = remember { MutableInteractionSource() },
-                                onClick = {
-                                    onBackPressedDispatcher.onBackPressed()
-                                },
-                            ),
-                    )
-                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                    contentDescription = "返回",
+                    modifier = Modifier
+                        .size(20.dp)
+                        .clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() },
+                            onClick = {
+                                onBackPressedDispatcher.onBackPressed()
+                            },
+                        ),
+                )
+                Spacer(modifier = Modifier.padding(horizontal = 12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Freedom+ Setting",
@@ -137,124 +146,113 @@ class FreedomSettingActivity : XplerActivity() {
                         ),
                     )
                 }
-                BoxWithConstraints {
-                    var showLogDialog by remember { mutableStateOf(false) }
-                    if (showLogDialog) {
-                        FMessageDialog(
-                            title = "类日志",
-                            cancel = "取消",
-                            confirm = "清除",
-                            onCancel = {
-                                showLogDialog = false
+                Icon(
+                    painter = painterResourceCompat(id = R.drawable.ic_manage),
+                    contentDescription = "Log",
+                    modifier = Modifier
+                        .size(24.dp)
+                        .combinedClickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() },
+                            onLongClick = {
+                                if (!model.hasDexkitCache) {
+                                    KToastUtils.show(application, "没有类日志")
+                                    return@combinedClickable
+                                }
+                                showLogDialog = true
                             },
-                            onConfirm = {
-                                showLogDialog = false
-                                model.clearDexkitCache()
-                                KToastUtils.show(application, "类日志清除")
-                            }
-                        ) {
-                            Text(
-                                text = """
+                            onClick = {
+                                if (!model.hasDexkitCache) {
+                                    KToastUtils.show(application, "没有类日志")
+                                    return@combinedClickable
+                                }
+                                showLogDialog = true
+                            },
+                        ),
+                )
+                Spacer(modifier = Modifier.padding(horizontal = 12.dp))
+                Icon(
+                    painter = painterResourceCompat(id = R.drawable.ic_motion),
+                    contentDescription = "更新日志",
+                    modifier = Modifier
+                        .size(20.dp)
+                        .rotate(rotateAnimate)
+                        .combinedClickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() },
+                            onLongClick = {
+                                lifecycleScope.launch {
+                                    withContext(Dispatchers.IO) {
+                                        runCatching {
+                                            // pluginAssets
+                                            assets
+                                                .open("update.txt")
+                                                .use {
+                                                    updateLog = it
+                                                        .readBytes()
+                                                        .decodeToString()
+                                                }
+                                        }.onFailure {
+                                            withContext(Dispatchers.Main) {
+                                                KToastUtils.show(application, "更新日志获取失败")
+                                            }
+                                        }
+                                    }
+                                    showUpdateLogDialog = updateLog.isNotBlank()
+                                }
+                            },
+                            onClick = {
+                                rotate = if (rotate == 0f) 360f else 0f
+                            },
+                        ),
+                )
+            }
+
+            // 类日志弹窗
+            if (showLogDialog) {
+                FMessageDialog(
+                    title = "类日志",
+                    cancel = "取消",
+                    confirm = "清除",
+                    onCancel = {
+                        showLogDialog = false
+                    },
+                    onConfirm = {
+                        showLogDialog = false
+                        model.clearDexkitCache()
+                        KToastUtils.show(application, "类日志清除")
+                    }
+                ) {
+                    Text(
+                        text = """
                                     类日志是对混淆类名的本地存储操作, 设计该功能的主要目的是为了减少启动时间。
                                     清除类日志并不会造成功能丢失，相反来说若某功能无法正常使用, 也可尝试手动清除类日志, 模块在下次启动时会对功能类重新搜索。
                                 """.trimIndent(),
-                            )
-                        }
-                    }
-                    Icon(
-                        painter = painterResourceCompat(id = R.drawable.ic_manage),
-                        contentDescription = "Log",
-                        modifier = Modifier
-                            .size(24.dp)
-                            .combinedClickable(
-                                indication = null,
-                                interactionSource = remember { MutableInteractionSource() },
-                                onLongClick = {
-                                    if (!model.hasDexkitCache) {
-                                        KToastUtils.show(application, "没有类日志")
-                                        return@combinedClickable
-                                    }
-                                    showLogDialog = true
-                                },
-                                onClick = {
-                                    if (!model.hasDexkitCache) {
-                                        KToastUtils.show(application, "没有类日志")
-                                        return@combinedClickable
-                                    }
-                                    showLogDialog = true
-                                },
-                            ),
                     )
                 }
-                Spacer(modifier = Modifier.padding(horizontal = 12.dp))
-                BoxWithConstraints {
-                    var rotate by remember { mutableStateOf(0f) }
-                    val rotateAnimate by animateFloatAsState(
-                        targetValue = rotate,
-                        animationSpec = tween(durationMillis = Random.nextInt(500, 1500)),
-                    )
+            }
 
-                    // 更新日志弹窗
-                    var showUpdateLogDialog by remember { mutableStateOf(false) }
-                    var updateLog by remember { mutableStateOf("") }
-                    if (showUpdateLogDialog) {
-                        FMessageDialog(
-                            title = "更新日志",
-                            onlyConfirm = true,
-                            confirm = "确定",
-                            onConfirm = { showUpdateLogDialog = false },
-                        ) {
-                            LazyColumn(
-                                modifier = Modifier,
-                            ) {
-                                item {
-                                    SelectionContainer {
-                                        Text(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            text = updateLog,
-                                            style = MaterialTheme.typography.body1,
-                                        )
-                                    }
-                                }
+            // 更新日志弹窗
+            if (showUpdateLogDialog) {
+                FMessageDialog(
+                    title = "更新日志",
+                    onlyConfirm = true,
+                    confirm = "确定",
+                    onConfirm = { showUpdateLogDialog = false },
+                ) {
+                    LazyColumn(
+                        modifier = Modifier,
+                    ) {
+                        item {
+                            SelectionContainer {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = updateLog,
+                                    style = MaterialTheme.typography.body1,
+                                )
                             }
                         }
                     }
-
-                    Icon(
-                        painter = painterResourceCompat(id = R.drawable.ic_motion),
-                        contentDescription = "更新日志",
-                        modifier = Modifier
-                            .size(20.dp)
-                            .rotate(rotateAnimate)
-                            .combinedClickable(
-                                indication = null,
-                                interactionSource = remember { MutableInteractionSource() },
-                                onLongClick = {
-                                    lifecycleScope.launch {
-                                        withContext(Dispatchers.IO) {
-                                            runCatching {
-                                                // pluginAssets
-                                                assets
-                                                    .open("update.txt")
-                                                    .use {
-                                                        updateLog = it
-                                                            .readBytes()
-                                                            .decodeToString()
-                                                    }
-                                            }.onFailure {
-                                                withContext(Dispatchers.Main) {
-                                                    KToastUtils.show(application, "更新日志获取失败")
-                                                }
-                                            }
-                                        }
-                                        showUpdateLogDialog = updateLog.isNotBlank()
-                                    }
-                                },
-                                onClick = {
-                                    rotate = if (rotate == 0f) 360f else 0f
-                                },
-                            ),
-                    )
                 }
             }
         }
@@ -285,6 +283,7 @@ class FreedomSettingActivity : XplerActivity() {
             item { VideoFilterItem() }
             item { DialogFilterItem() }
             item { NeatModeItem() }
+            item { AutoPlayItem() }
             item { ImmersiveItem() }
             item { CommentColorModeItem() }
             item { WebDavItem() }
@@ -1406,6 +1405,60 @@ class FreedomSettingActivity : XplerActivity() {
     }
 
     @Composable
+    private fun AutoPlayItem() {
+        var showSettingDialog by remember { mutableStateOf(false) }
+
+        SwitchItem(
+            text = "自动连播",
+            subtext = "点击调整相关设置",
+            checked = model.isAutoPlay.observeAsState(false),
+            onClick = {
+                showSettingDialog = true
+            },
+            onCheckedChange = {
+                model.changeIsAutoPlay(it)
+                showRestartAppDialog.value = true
+            }
+        )
+
+        if (showSettingDialog) {
+            val value1 = model.addAutoPlayButton.value ?: false
+            val value2 = model.defaultAutoPlay.value ?: false
+            val addAutoPlayButton = remember { mutableStateOf(value1) }
+            val defaultAutoPlay = remember { mutableStateOf(value2) }
+
+            FMessageDialog(
+                title = "相关设置",
+                confirm = "更改",
+                onlyConfirm = true,
+                onConfirm = {
+                    showSettingDialog = false
+                    model.setAddAutoPlayButton(addAutoPlayButton.value)
+                    model.setDefaultAutoPlay(defaultAutoPlay.value)
+                    showRestartAppDialog.value = true
+                },
+            ) {
+                Column {
+                    CheckBoxItem(
+                        text = "首页增加连播按钮",
+                        checked = addAutoPlayButton,
+                        onCheckedChange = {
+                            addAutoPlayButton.value = it
+                        },
+                    )
+                    CheckBoxItem(
+                        text = "启动时默认开启连播",
+                        checked = defaultAutoPlay,
+                        onCheckedChange = {
+                            defaultAutoPlay.value = it
+                        },
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
     private fun ImmersiveItem() {
         var showSettingDialog by remember { mutableStateOf(false) }
 
@@ -1604,66 +1657,64 @@ class FreedomSettingActivity : XplerActivity() {
                                 modifier = Modifier.weight(1f),
                             )
 
-                            BoxWithConstraints {
-                                Icon(
-                                    painter = painterResourceCompat(id = R.drawable.ic_history),
-                                    contentDescription = "WebDav列表",
+                            Icon(
+                                painter = painterResourceCompat(id = R.drawable.ic_history),
+                                contentDescription = "WebDav列表",
+                                modifier = Modifier
+                                    .size(16.dp)
+                                    .combinedClickable(
+                                        indication = null,
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        onClick = {
+                                            if (webDavHistory.value.isEmpty()) {
+                                                KToastUtils.show(
+                                                    application,
+                                                    "没有WebDav历史"
+                                                )
+                                            }
+                                            showWebDavHistoryMenu =
+                                                webDavHistory.value.isNotEmpty()
+                                        },
+                                    ),
+                            )
+                        }
+
+                        ExposedDropdownMenu(
+                            expanded = showWebDavHistoryMenu,
+                            onDismissRequest = { showWebDavHistoryMenu = false },
+                            modifier = Modifier.heightIn(max = 200.dp)
+                        ) {
+                            webDavHistory.value.forEach {
+                                Text(
+                                    text = it.host,
+                                    style = MaterialTheme.typography.body1,
                                     modifier = Modifier
-                                        .size(16.dp)
                                         .combinedClickable(
-                                            indication = null,
-                                            interactionSource = remember { MutableInteractionSource() },
                                             onClick = {
-                                                if (webDavHistory.value.isEmpty()) {
-                                                    KToastUtils.show(
-                                                        application,
-                                                        "没有WebDav历史"
+                                                showWebDavHistoryMenu = false
+                                                host = it.host
+                                                username = it.username
+                                                password = it.password
+                                            },
+                                            onLongClick = {
+                                                model.removeWebDavConfig(
+                                                    WebDav.Config(
+                                                        it.host,
+                                                        it.username,
+                                                        it.password,
                                                     )
-                                                }
+                                                )
                                                 showWebDavHistoryMenu =
                                                     webDavHistory.value.isNotEmpty()
-                                            },
-                                        ),
-                                )
-
-                                ExposedDropdownMenu(
-                                    expanded = showWebDavHistoryMenu,
-                                    onDismissRequest = { showWebDavHistoryMenu = false },
-                                    modifier = Modifier.heightIn(max = 200.dp)
-                                ) {
-                                    webDavHistory.value.forEach {
-                                        Text(
-                                            text = it.host,
-                                            style = MaterialTheme.typography.body1,
-                                            modifier = Modifier
-                                                .combinedClickable(
-                                                    onClick = {
-                                                        showWebDavHistoryMenu = false
-                                                        host = it.host
-                                                        username = it.username
-                                                        password = it.password
-                                                    },
-                                                    onLongClick = {
-                                                        model.removeWebDavConfig(
-                                                            WebDav.Config(
-                                                                it.host,
-                                                                it.username,
-                                                                it.password,
-                                                            )
-                                                        )
-                                                        showWebDavHistoryMenu =
-                                                            webDavHistory.value.isNotEmpty()
-                                                        KToastUtils.show(
-                                                            application,
-                                                            "删除成功"
-                                                        )
-                                                    }
+                                                KToastUtils.show(
+                                                    application,
+                                                    "删除成功"
                                                 )
-                                                .fillMaxWidth()
-                                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                                            }
                                         )
-                                    }
-                                }
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                                )
                             }
                         }
                     }
@@ -2050,7 +2101,7 @@ class FreedomSettingActivity : XplerActivity() {
                 }
             }
             if (isWaiting) {
-                BoxWithConstraints(
+                Box(
                     modifier = Modifier
                         .wrapContentSize(Alignment.Center)
                         .padding(17.dp), // switch: width = 34.dp
@@ -2118,7 +2169,7 @@ class FreedomSettingActivity : XplerActivity() {
                 }
             }
             if (isWaiting) {
-                BoxWithConstraints(
+                Box(
                     modifier = Modifier
                         .wrapContentSize(Alignment.Center)
                         .padding(17.dp), // switch: width = 34.dp

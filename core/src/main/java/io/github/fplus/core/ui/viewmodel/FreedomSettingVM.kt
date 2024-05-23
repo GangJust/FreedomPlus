@@ -124,6 +124,15 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     private var _isNeatMode = MutableLiveData(false)
     val isNeatMode: LiveData<Boolean> = _isNeatMode
 
+    private var _isAutoPlay = MutableLiveData(false)
+    val isAutoPlay: LiveData<Boolean> = _isAutoPlay
+
+    private var _addAutoPlayButton = MutableLiveData(false)
+    val addAutoPlayButton: LiveData<Boolean> = _addAutoPlayButton
+
+    private var _defaultAutoPlay = MutableLiveData(false)
+    val defaultAutoPlay: LiveData<Boolean> = _defaultAutoPlay
+
     private var _isImmersive = MutableLiveData(false)
     val isImmersive: LiveData<Boolean> = _isImmersive
 
@@ -209,6 +218,9 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
             setDialogFilterKeywords(config.dialogFilterKeywords)
             changeIsNeatMode(config.isNeatMode)
             setLongPressMode(config.longPressMode)
+            changeIsAutoPlay(config.isAutoPlay)
+            setAddAutoPlayButton(config.addAutoPlayButton)
+            setDefaultAutoPlay(config.defaultAutoPlay)
             changeIsImmersive(config.isImmersive)
             setSystemControllerValue(config.systemControllerValue)
             changeIsCommentColorMode(config.isCommentColorMode)
@@ -419,6 +431,24 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
     fun changeIsNeatMode(value: Boolean) {
         _isNeatMode.value = value
         config.isNeatMode = value
+    }
+
+    // 自动连播
+    fun changeIsAutoPlay(value: Boolean) {
+        _isAutoPlay.value = value
+        config.isAutoPlay = value
+    }
+
+    // 首页添加连播按钮
+    fun setAddAutoPlayButton(value: Boolean) {
+        _addAutoPlayButton.value = value
+        config.addAutoPlayButton = value
+    }
+
+    // 启动时默认开启连播
+    fun setDefaultAutoPlay(value: Boolean) {
+        _defaultAutoPlay.value = value
+        config.defaultAutoPlay = value
     }
 
     // 全屏沉浸

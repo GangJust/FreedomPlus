@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -96,7 +97,7 @@ class ErrorActivity : ComponentActivity() {
                 Scaffold(
                     topBar = { TopBarView() },
                 ) {
-                    BoxWithConstraints(
+                    Box(
                         modifier = Modifier.padding(it),
                     ) {
                         ScrollableContainer {

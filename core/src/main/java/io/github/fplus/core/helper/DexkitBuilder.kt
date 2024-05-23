@@ -40,7 +40,6 @@ object DexkitBuilder {
     var commentListPageFragmentClazz: Class<*>? = null
     var conversationFragmentClazz: Class<*>? = null
     var seekBarSpeedModeBottomContainerClazz: Class<*>? = null
-    var videoPlayerHelperClazz: Class<*>? = null
     var abstractFeedAdapterClazz: Class<*>? = null
     var recommendFeedFetchPresenterClazz: Class<*>? = null
     var fullFeedFollowFetchPresenterClazz: Class<*>? = null
@@ -52,6 +51,7 @@ object DexkitBuilder {
     var restartUtilsClazz: Class<*>? = null
     var longPressEventClazz: Class<*>? = null
     var doubleClickEventClazz: Class<*>? = null
+    var autoPlayControllerClazz: Class<*>? = null
 
     var videoViewHolderClazz: Class<*>? = null
     var videoViewHolderMethods: List<Method> = listOf()
@@ -513,6 +513,29 @@ object DexkitBuilder {
             }
             doubleClickEventClazz = doubleClickEvent.instance("doubleClickEvent")
 
+            val autoPlayController = bridge.findClass {
+                matcher {
+                    fields {
+                        add {
+                            type = "com.ss.android.ugc.aweme.kiwi.viewmodel.QLiveData"
+                        }
+                    }
+
+                    methods {
+                        add {
+                            returnType = "com.ss.android.ugc.aweme.kiwi.viewmodel.QLiveData"
+                        }
+                    }
+
+                    usingStrings {
+                        add("normal")
+                        add("swipe")
+                        add("auto_play_key")
+                    }
+                }
+            }
+            autoPlayControllerClazz = autoPlayController.instance("autoPlayController")
+
             val videoViewHolder = bridge.findClass {
                 matcher {
                     className = "com.ss.android.ugc.aweme.feed.adapter.VideoViewHolder"
@@ -603,15 +626,6 @@ object DexkitBuilder {
             // by using string
             val findMaps = bridge.batchFindClassUsingStrings {
                 addSearchGroup {
-                    groupName = "videoPlayerHelper"
-                    usingStrings = listOf(
-                        "isDoubleClickResExist >>> channel empty",
-                        "当前无网络，暂不可用",
-                        "暂不支持点赞操作",
-                    )
-                }
-
-                addSearchGroup {
                     groupName = "detailPageFragment"
                     usingStrings = listOf(
                         "a1128.b7947",
@@ -630,9 +644,6 @@ object DexkitBuilder {
                     )
                 }
             }
-
-            val videoPlayerHelper = findMaps["videoPlayerHelper"]
-            videoPlayerHelperClazz = videoPlayerHelper.instance("videoPlayerHelper")
 
             val detailPageFragment = findMaps["detailPageFragment"]
             detailPageFragmentClazz = detailPageFragment.instance("detailPageFragment")
@@ -682,7 +693,6 @@ object DexkitBuilder {
         commentListPageFragmentClazz = classCache.getStringOrDefault("commentListPageFragment").loadOrFindClass()
         conversationFragmentClazz = classCache.getStringOrDefault("conversationFragment").loadOrFindClass()
         seekBarSpeedModeBottomContainerClazz = classCache.getStringOrDefault("seekBarSpeedModeBottomContainer").loadOrFindClass()
-        videoPlayerHelperClazz = classCache.getStringOrDefault("videoPlayerHelper").loadOrFindClass()
         abstractFeedAdapterClazz = classCache.getStringOrDefault("abstractFeedAdapter").loadOrFindClass()
         recommendFeedFetchPresenterClazz = classCache.getStringOrDefault("recommendFeedFetchPresenter").loadOrFindClass()
         fullFeedFollowFetchPresenterClazz = classCache.getStringOrDefault("fullFeedFollowFetchPresenter").loadOrFindClass()
@@ -695,6 +705,7 @@ object DexkitBuilder {
         longPressEventClazz = classCache.getStringOrDefault("longPressEvent").loadOrFindClass()
         doubleClickEventClazz = classCache.getStringOrDefault("doubleClickEvent").loadOrFindClass()
         videoViewHolderClazz = classCache.getStringOrDefault("videoViewHolder").loadOrFindClass()
+        autoPlayControllerClazz = classCache.getStringOrDefault("autoPlayController").loadOrFindClass()
         livePhotoClazz = classCache.getStringOrDefault("livePhoto").loadOrFindClass()
         tabLandingClazz = classCache.getStringOrDefault("tabLanding").loadOrFindClass()
         feedAvatarPresenterClazz = classCache.getStringOrDefault("feedAvatarPresenter").loadOrFindClass()

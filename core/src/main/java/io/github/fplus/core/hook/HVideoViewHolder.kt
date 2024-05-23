@@ -1,13 +1,22 @@
 package io.github.fplus.core.hook
 
 import android.content.Context
+import android.graphics.Color
+import android.os.Bundle
+import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.core.view.children
 import androidx.core.view.isVisible
+import androidx.core.view.updatePaddingRelative
 import com.freegang.extension.asOrNull
+import com.freegang.extension.dip2px
 import com.freegang.extension.fieldGet
 import com.freegang.extension.fieldGets
 import com.freegang.extension.firstParentOrNull
@@ -19,14 +28,18 @@ import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.feed.ui.FeedRightScaleView
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
 import de.robv.android.xposed.XC_MethodHook
+import io.github.fplus.core.R
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
+import io.github.fplus.core.helper.AutoPlayHelper
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.entity.OnBefore
+import io.github.xpler.core.getModuleDrawable
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
+import io.github.xpler.loader.hostClassloader
 
 class HVideoViewHolder : BaseHook<Any>() {
 
@@ -101,6 +114,13 @@ class HVideoViewHolder : BaseHook<Any>() {
         XplerLog.d("监听集合", *first.map { "$it" }.toTypedArray())
     }
 
+    private fun openAutoPlay(context: Context) {
+        if (!config.isAutoPlay)
+            return
+
+        AutoPlayHelper.openAutoPlay(context)
+    }
+
     private fun getAllView(params: XC_MethodHook.MethodHookParam): List<View?> {
         val views = params.thisObject.fieldGets(type = View::class.java)
         return views.asOrNull<List<View?>>() ?: emptyList()
@@ -110,6 +130,17 @@ class HVideoViewHolder : BaseHook<Any>() {
         val views = params.thisObject?.fieldGets(type = View::class.java) ?: emptyList()
         return views.firstOrNull { it is PenetrateTouchRelativeLayout }
             ?.asOrNull<PenetrateTouchRelativeLayout>()
+    }
+
+    private fun getFragment(params: XC_MethodHook.MethodHookParam): Any? {
+        val fragmentClazz = hostClassloader!!.loadClass("androidx.fragment.app.Fragment")
+        return params.thisObject?.fieldGet(type = fragmentClazz)
+    }
+
+    private fun getFragmentType(params: XC_MethodHook.MethodHookParam): String {
+        val fragment = getFragment(params)
+        val arguments = fragment?.methodInvoke("getArguments")?.asOrNull<Bundle>()
+        return arguments?.getString("com.ss.android.ugc.aweme.intent.extra.EVENT_TYPE") ?: ""
     }
 
     private fun changeFeedRightScaleView(params: XC_MethodHook.MethodHookParam) {
@@ -152,6 +183,59 @@ class HVideoViewHolder : BaseHook<Any>() {
         val view = views.firstOrNull { it is FeedRightScaleView }?.asOrNull<FeedRightScaleView>() ?: return
         view.alpha = config.translucentValue[2] / 100f
         view.getSiblingViewAt(1)?.alpha = config.translucentValue[2] / 100f // 音乐
+    }
+
+    private fun addAutoPlayButtonView(params: XC_MethodHook.MethodHookParam) {
+        if (!config.isAutoPlay)
+            return
+
+        if (!config.addAutoPlayButton)
+            return
+
+        if (!getFragmentType(params).startsWith("homepage_hot"))
+            return
+
+        val views = params.thisObject?.fieldGets(type = View::class.java) ?: emptyList()
+        val view = views.firstOrNull { it is FeedRightScaleView }?.asOrNull<FeedRightScaleView>() ?: return
+
+        val isAdded = view.children.firstOrNull()?.tag == "AutoPlay"
+        if (isAdded)
+            return
+
+        val autoPlayContainer = LinearLayout(view.context).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ).apply {
+                gravity = Gravity.END
+                updatePaddingRelative(end = context.dip2px(8f))
+            }
+            tag = "AutoPlay"
+        }
+
+        val autoPlayImage = ImageView(view.context).apply {
+            setImageDrawable(context.getModuleDrawable(R.drawable.ic_play))
+            layoutParams = LinearLayout.LayoutParams(
+                view.context.dip2px(42f),
+                view.context.dip2px(42f)
+            ).apply {
+                gravity = Gravity.CENTER_HORIZONTAL
+            }
+        }
+
+        val autoPlayText = TextView(view.context).apply {
+            text = "连播"
+            textSize = 14f
+            setTextColor(Color.parseColor("#E6FFFFFF"))
+            gravity = Gravity.CENTER_HORIZONTAL
+        }
+
+        autoPlayContainer.addView(autoPlayImage)
+        autoPlayContainer.addView(autoPlayText)
+        autoPlayContainer.setOnClickListener { openAutoPlay(it.context) }
+
+        view.addView(autoPlayContainer, 0)
     }
 
     private fun getContext(params: XC_MethodHook.MethodHookParam): Context? {
@@ -203,6 +287,7 @@ class HVideoViewHolder : BaseHook<Any>() {
             // XplerLog.d("long: $long")
             changeFeedRightScaleView(params)
             changeFeedRightScaleViewAlpha(params)
+            addAutoPlayButtonView(params)
         }.onFailure {
             XplerLog.e(it)
         }
@@ -246,6 +331,8 @@ class HVideoViewHolder : BaseHook<Any>() {
         hookBlockRunning(params) {
             val container = getWidgetContainer(params)
             addOnDraw(container)
+            changeFeedRightScaleView(params)
+            addAutoPlayButtonView(params)
         }.onFailure {
             XplerLog.e(it)
         }

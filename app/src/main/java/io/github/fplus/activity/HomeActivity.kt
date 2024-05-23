@@ -639,7 +639,7 @@ class HomeActivity : ComponentActivity() {
                     modifier = Modifier.padding(horizontal = 24.dp),
                     topBar = { TopBarView() },
                 ) {
-                    BoxWithConstraints(
+                    Box(
                         modifier = Modifier.padding(it)
                     ) {
                         BodyView()

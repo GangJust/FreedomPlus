@@ -67,12 +67,12 @@
 
 # 关闭警告信息 - Xposed
 -dontwarn de.robv.android.xposed.**
--dontwarn android.content.res.XModuleResources
--dontwarn android.content.res.XResources
+-dontwarn android.content.res.**
 
 # 关闭警告信息 - 抖音
 -dontwarn com.ss.android.ugc.aweme.**
 -dontwarn com.ss.ugc.aweme.**
+-dontwarn com.bytedance.**
 -dontwarn dmt.**
 
 # 关闭警告信息 - 其他

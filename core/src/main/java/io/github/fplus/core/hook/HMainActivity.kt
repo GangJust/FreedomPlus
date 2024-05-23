@@ -27,6 +27,7 @@ import com.ss.android.ugc.aweme.main.MainActivity
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
+import io.github.fplus.core.helper.AutoPlayHelper
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.hook.logic.ClipboardLogic
 import io.github.fplus.core.hook.logic.DownloadLogic
@@ -92,6 +93,18 @@ class HMainActivity : BaseHook<MainActivity>() {
             val activity = thisActivity
             XplerLog.d("version: ${KtXposedHelpers.moduleVersionName(activity)} - ${activity.appVersionName}(${activity.appVersionCode})")
             DouYinMain.timerExitHelper?.restart()
+
+            // test
+            /* runCatching {
+                val helper = findClass("X.0Suh").newInstance().methodInvoke("LIZ", args = arrayOf(activity))
+                KLogCat.d("helper: $helper")
+                helper?.method("LIZ", paramTypes = arrayOf(helper::class.java, String::class.java, Int::class.java, Any::class.java))
+                    ?.invoke(helper, helper, null, 1, null)
+            }.onFailure {
+                KLogCat.d("调用失败: $it")
+            } */
+
+            openAutoPlay(activity)
         }.onFailure {
             XplerLog.e(it)
         }
@@ -253,6 +266,19 @@ class HMainActivity : BaseHook<MainActivity>() {
             }.onFailure {
                 XplerLog.e(it)
             }
+        }
+    }
+
+    private fun openAutoPlay(context: Context) {
+        if (!config.isAutoPlay)
+            return
+
+        if (!config.defaultAutoPlay)
+            return
+
+        launchMain {
+            delay(2000L)
+            AutoPlayHelper.openAutoPlay(context)
         }
     }
 
