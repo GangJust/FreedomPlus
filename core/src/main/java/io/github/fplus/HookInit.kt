@@ -6,7 +6,7 @@ import io.github.fplus.core.hook.DouYinMain
 import io.github.xpler.HookEntrance
 import io.github.xpler.core.wrapper.ApplicationHookStart
 
-class HookInit : HookEntrance<HookInit>(), ApplicationHookStart {
+class HookInit : HookEntrance(), ApplicationHookStart {
     override val modulePackage: String
         get() = Constant.modulePackage
 
