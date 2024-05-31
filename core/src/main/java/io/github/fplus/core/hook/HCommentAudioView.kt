@@ -25,7 +25,7 @@ import io.github.xpler.core.thisView
 import io.github.xpler.core.wrapper.CallMethods
 
 @Deprecated("暂存区, 评论区语音保存")
-class HCommentAudioView : BaseHook<Any>(), CallMethods {
+class HCommentAudioView : BaseHook(), CallMethods {
     companion object {
         const val TAG = "HCommentAudioView"
     }

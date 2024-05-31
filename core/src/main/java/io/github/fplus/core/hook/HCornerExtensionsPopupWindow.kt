@@ -24,7 +24,7 @@ import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 
-class HCornerExtensionsPopupWindow : BaseHook<Any>() {
+class HCornerExtensionsPopupWindow : BaseHook() {
     companion object {
         const val TAG = "HCornerExtensionsPopupWindow"
     }

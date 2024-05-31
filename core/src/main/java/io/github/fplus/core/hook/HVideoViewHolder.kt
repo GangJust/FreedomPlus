@@ -41,7 +41,7 @@ import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 import io.github.xpler.loader.hostClassloader
 
-class HVideoViewHolder : BaseHook<Any>() {
+class HVideoViewHolder : BaseHook() {
 
     companion object {
         const val TAG = "HVideoViewHolder"

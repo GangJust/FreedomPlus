@@ -13,12 +13,16 @@ import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisViewGroup
 import io.github.xpler.core.wrapper.CallMethods
 
-class HPenetrateTouchRelativeLayout : BaseHook<PenetrateTouchRelativeLayout>(), CallMethods {
+class HPenetrateTouchRelativeLayout : BaseHook(), CallMethods {
     companion object {
         const val TAG = "HPenetrateTouchRelativeLayout"
     }
 
     private val config get() = ConfigV1.get()
+
+    override fun setTargetClass(): Class<*> {
+        return PenetrateTouchRelativeLayout::class.java
+    }
 
     @OnBefore("setVisibility")
     fun setVisibilityBefore(params: XC_MethodHook.MethodHookParam, visibility: Int) {

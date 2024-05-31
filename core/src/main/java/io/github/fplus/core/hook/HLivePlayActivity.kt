@@ -11,13 +11,17 @@ import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisActivity
 
-class HLivePlayActivity : BaseHook<LivePlayActivity>() {
+class HLivePlayActivity : BaseHook() {
 
     companion object {
         const val TAG = "HLivePlayActivity"
     }
 
     private val config get() = ConfigV1.get()
+
+    override fun setTargetClass(): Class<*> {
+        return LivePlayActivity::class.java
+    }
 
     @OnBefore("onWindowFocusChanged")
     @OnAfter("onWindowFocusChanged")

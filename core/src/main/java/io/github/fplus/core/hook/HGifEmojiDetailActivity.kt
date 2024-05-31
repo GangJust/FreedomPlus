@@ -20,7 +20,7 @@ import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisActivity
 import kotlinx.coroutines.delay
 
-class HGifEmojiDetailActivity : BaseHook<GifEmojiDetailActivity>() {
+class HGifEmojiDetailActivity : BaseHook() {
     companion object {
         const val TAG = "HGifEmojiDetailActivity"
     }
@@ -28,6 +28,10 @@ class HGifEmojiDetailActivity : BaseHook<GifEmojiDetailActivity>() {
     private val config get() = ConfigV1.get()
 
     private var urlList: List<String> = emptyList()
+
+    override fun setTargetClass(): Class<*> {
+        return GifEmojiDetailActivity::class.java
+    }
 
     @OnBefore("onCreate")
     fun onCreate(params: XC_MethodHook.MethodHookParam, bundle: Bundle?) {

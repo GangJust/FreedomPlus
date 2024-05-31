@@ -13,7 +13,7 @@ import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisViewGroup
 import io.github.xpler.core.wrapper.CallConstructors
 
-class HDisallowInterceptRelativeLayout : BaseHook<Any>(),
+class HDisallowInterceptRelativeLayout : BaseHook(),
     CallConstructors {
     companion object {
         const val TAG = "HDisallowInterceptRelativeLayout"

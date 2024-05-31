@@ -15,7 +15,7 @@ import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 
-class HConversationFragment : BaseHook<Any>() {
+class HConversationFragment : BaseHook() {
     companion object {
         const val TAG = "HConversationFragment"
     }

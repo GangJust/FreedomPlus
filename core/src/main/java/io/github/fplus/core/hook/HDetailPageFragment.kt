@@ -26,7 +26,7 @@ import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 
-class HDetailPageFragment : BaseHook<Any>() {
+class HDetailPageFragment : BaseHook() {
     companion object {
         const val TAG = "HDetailPageFragment"
 
@@ -37,7 +37,9 @@ class HDetailPageFragment : BaseHook<Any>() {
 
     private val config get() = ConfigV1.get()
 
-    override fun setTargetClass(): Class<*> = DexkitBuilder.detailPageFragmentClazz ?: NoneHook::class.java
+    override fun setTargetClass(): Class<*> {
+        return DexkitBuilder.detailPageFragmentClazz ?: NoneHook::class.java
+    }
 
     @OnAfter("onViewCreated")
     fun onViewCreatedAfter(param: XC_MethodHook.MethodHookParam, view: View, bundle: Bundle?) {

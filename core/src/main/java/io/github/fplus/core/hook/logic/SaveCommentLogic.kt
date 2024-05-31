@@ -14,7 +14,7 @@ import java.io.FileOutputStream
 
 // 保存评论区(图片/视频)逻辑
 class SaveCommentLogic(
-    private val hook: BaseHook<*>,
+    private val hook: BaseHook,
     private val context: Context,
     private val aweme: Aweme?,
 ) {

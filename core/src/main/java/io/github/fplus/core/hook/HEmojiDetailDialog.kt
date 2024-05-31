@@ -19,7 +19,7 @@ import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.wrapper.CallMethods
 import kotlinx.coroutines.delay
 
-class HEmojiDetailDialog : BaseHook<EmojiDetailDialog>(), CallMethods {
+class HEmojiDetailDialog : BaseHook(), CallMethods {
     companion object {
         const val TAG = "HEmojiDetailDialog"
     }
@@ -28,12 +28,16 @@ class HEmojiDetailDialog : BaseHook<EmojiDetailDialog>(), CallMethods {
 
     private var urlList: List<String> = emptyList()
 
+    override fun setTargetClass(): Class<*> {
+        return EmojiDetailDialog::class.java
+    }
+
     override fun onInit() {
         lpparam.hookClass(EmojiBottomSheetDialog::class.java)
             .method("onCreate", Bundle::class.java) {
                 onAfter {
                     if (!config.isEmojiDownload) return@onAfter
-                    if (!targetClazz.isInstance(thisObject)) return@onAfter  // 非 EmojiDetailDialog, 直接结束
+                    if (!targetClass.isInstance(thisObject)) return@onAfter  // 非 EmojiDetailDialog, 直接结束
 
                     singleLaunchMain {
                         delay(500L)

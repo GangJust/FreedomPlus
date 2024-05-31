@@ -28,7 +28,7 @@ import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisViewGroup
 
-class HSideBarNestedScrollView : BaseHook<Any>() {
+class HSideBarNestedScrollView : BaseHook() {
     companion object {
         const val TAG = "HSideBarNestedScrollView"
     }

@@ -13,7 +13,7 @@ import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisViewGroup
 
-class HBottomCtrlBar : BaseHook<Any>() {
+class HBottomCtrlBar : BaseHook() {
     companion object {
         const val TAG = "HBottomCtrlBar"
     }

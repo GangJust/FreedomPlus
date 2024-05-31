@@ -16,7 +16,7 @@ import io.github.fplus.core.hook.logic.SaveEmojiLogic
 import io.github.xpler.core.argsOrEmpty
 import io.github.xpler.core.hookClass
 
-class HEmojiDetailDialogNew : BaseHook<EmojiDetailDialogNew>() {
+class HEmojiDetailDialogNew : BaseHook() {
     companion object {
         const val TAG = "HEmojiDetailDialogNew"
     }
@@ -24,6 +24,10 @@ class HEmojiDetailDialogNew : BaseHook<EmojiDetailDialogNew>() {
     private val config get() = ConfigV1.get()
 
     private var urlList: List<String> = emptyList()
+
+    override fun setTargetClass(): Class<*> {
+        return EmojiDetailDialogNew::class.java
+    }
 
     override fun onInit() {
 
@@ -44,7 +48,7 @@ class HEmojiDetailDialogNew : BaseHook<EmojiDetailDialogNew>() {
                     if (!config.isEmojiDownload) return@onAfter
 
                     // 非 EmojiDetailDialogNew, 直接结束
-                    if (!targetClazz.isInstance(thisObject)) {
+                    if (!targetClass.isInstance(thisObject)) {
                         return@onAfter
                     }
 

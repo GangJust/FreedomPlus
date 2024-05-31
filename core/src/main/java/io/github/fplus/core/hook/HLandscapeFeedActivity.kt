@@ -16,7 +16,7 @@ import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisActivity
 
-class HLandscapeFeedActivity : BaseHook<LandscapeFeedActivity>() {
+class HLandscapeFeedActivity : BaseHook() {
     companion object {
         const val TAG = "HLandscapeFeedActivity"
     }
@@ -24,6 +24,10 @@ class HLandscapeFeedActivity : BaseHook<LandscapeFeedActivity>() {
     private val config get() = ConfigV1.get()
 
     private val clipboardLogic = ClipboardLogic(this)
+
+    override fun setTargetClass(): Class<*> {
+        return LandscapeFeedActivity::class.java
+    }
 
     @OnAfter("onResume")
     fun onResumeAfter(params: XC_MethodHook.MethodHookParam) {

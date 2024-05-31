@@ -15,12 +15,16 @@ import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.wrapper.CallMethods
 
 /// 崩溃容错，处理官方可能造成的系列崩溃问题
-class HCrashTolerance : BaseHook<EmptyHook>() {
+class HCrashTolerance : BaseHook() {
     companion object {
         const val TAG = "HCrashTolerance"
     }
 
     val config get() = ConfigV1.get()
+
+    override fun setTargetClass(): Class<*> {
+        return EmptyHook::class.java
+    }
 
     override fun onInit() {
         if (!config.isCrashTolerance)
@@ -31,7 +35,7 @@ class HCrashTolerance : BaseHook<EmptyHook>() {
         HTabLanding()
     }
 
-    inner class HPoiFeed : BaseHook<EmptyHook>(), CallMethods {
+    inner class HPoiFeed : BaseHook(), CallMethods {
         override fun setTargetClass(): Class<*> {
             return findClass("com.ss.android.ugc.aweme.poi.anchor.poi.flavor.PoiFeedAnchor")
         }
@@ -50,7 +54,7 @@ class HCrashTolerance : BaseHook<EmptyHook>() {
         }
     }
 
-    inner class HLivePhoto : BaseHook<EmptyHook>() {
+    inner class HLivePhoto : BaseHook() {
 
         override fun setTargetClass(): Class<*> {
             return DexkitBuilder.livePhotoClazz ?: NoneHook::class.java
@@ -67,7 +71,7 @@ class HCrashTolerance : BaseHook<EmptyHook>() {
         }
     }
 
-    inner class HTabLanding : BaseHook<EmptyHook>() {
+    inner class HTabLanding : BaseHook() {
 
         override fun setTargetClass(): Class<*> {
             return DexkitBuilder.tabLandingClazz ?: NoneHook::class.java

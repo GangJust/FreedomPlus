@@ -10,12 +10,16 @@ import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 
-class HMessage : BaseHook<Message>() {
+class HMessage : BaseHook() {
     companion object {
         const val TAG = "HMessage"
     }
 
     private val config get() = ConfigV1.get()
+
+    override fun setTargetClass(): Class<*> {
+        return Message::class.java
+    }
 
     @OnAfter("isRecalled")
     fun isRecalledAfter(params: XC_MethodHook.MethodHookParam) {

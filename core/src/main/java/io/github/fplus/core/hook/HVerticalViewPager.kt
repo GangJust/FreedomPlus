@@ -22,7 +22,7 @@ import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.lpparam
 import io.github.xpler.core.thisView
 
-class HVerticalViewPager : BaseHook<VerticalViewPager>() {
+class HVerticalViewPager : BaseHook() {
     companion object {
         const val TAG = "HVerticalViewPager"
 
@@ -69,6 +69,10 @@ class HVerticalViewPager : BaseHook<VerticalViewPager>() {
     }
 
     private var durationRunnable: Runnable? = null
+
+    override fun setTargetClass(): Class<*> {
+        return VerticalViewPager::class.java
+    }
 
     @OnAfter("onInterceptTouchEvent")
     fun onInterceptTouchEvent(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {

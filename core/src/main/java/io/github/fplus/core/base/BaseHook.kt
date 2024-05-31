@@ -47,7 +47,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
-abstract class BaseHook<T> : HookEntity<T>() {
+abstract class BaseHook : HookEntity() {
     protected val handler: Handler = Handler(Looper.getMainLooper())
     private val mainScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
     private var singleMainJob: MutableMap<String, Job?> = mutableMapOf()

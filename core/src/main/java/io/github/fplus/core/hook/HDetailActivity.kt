@@ -16,7 +16,7 @@ import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisActivity
 
-class HDetailActivity : BaseHook<DetailActivity>() {
+class HDetailActivity : BaseHook() {
     companion object {
         const val TAG = "HDetailActivity"
     }
@@ -24,6 +24,10 @@ class HDetailActivity : BaseHook<DetailActivity>() {
     private val config get() = ConfigV1.get()
 
     private val clipboardLogic = ClipboardLogic(this)
+
+    override fun setTargetClass(): Class<*> {
+        return DetailActivity::class.java
+    }
 
     @OnAfter("onResume")
     fun onResumeAfter(params: XC_MethodHook.MethodHookParam) {

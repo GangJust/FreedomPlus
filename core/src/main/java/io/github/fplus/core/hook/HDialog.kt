@@ -13,7 +13,7 @@ import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 
-class HDialog : BaseHook<Dialog>() {
+class HDialog : BaseHook() {
     companion object {
         const val TAG = "HDialog"
     }
@@ -28,6 +28,10 @@ class HDialog : BaseHook<Dialog>() {
             .replace(",", "|")
             .replace("\\|+".toRegex(), "|")
             .toRegex()
+    }
+
+    override fun setTargetClass(): Class<*> {
+        return Dialog::class.java
     }
 
     @OnAfter("show")

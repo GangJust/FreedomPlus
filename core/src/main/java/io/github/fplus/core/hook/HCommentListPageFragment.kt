@@ -18,7 +18,7 @@ import io.github.xpler.core.entity.ReturnType
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 
-class HCommentListPageFragment : BaseHook<Any>() {
+class HCommentListPageFragment : BaseHook() {
     companion object {
         const val TAG = "HCommentListPageFragment"
     }

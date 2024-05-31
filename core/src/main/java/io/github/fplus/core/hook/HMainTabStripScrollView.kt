@@ -11,7 +11,7 @@ import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisViewGroup
 import io.github.xpler.core.wrapper.CallMethods
 
-class HMainTabStripScrollView : BaseHook<MainTabStripScrollView>(),
+class HMainTabStripScrollView : BaseHook(),
     CallMethods {
 
     companion object {
@@ -19,6 +19,10 @@ class HMainTabStripScrollView : BaseHook<MainTabStripScrollView>(),
     }
 
     private val config get() = ConfigV1.get()
+
+    override fun setTargetClass(): Class<*> {
+        return MainTabStripScrollView::class.java
+    }
 
     override fun callOnBeforeMethods(params: XC_MethodHook.MethodHookParam) {}
 

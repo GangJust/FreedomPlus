@@ -14,7 +14,7 @@ import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisViewGroup
 
-class HMainBottomTabView : BaseHook<Any>() {
+class HMainBottomTabView : BaseHook() {
     companion object {
         const val TAG = "HMainBottomTabView"
     }

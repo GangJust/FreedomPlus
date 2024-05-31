@@ -14,7 +14,7 @@ import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 
-class HPlayerController : BaseHook<Any>() {
+class HPlayerController : BaseHook() {
     companion object {
         const val TAG = "HPlayerController"
 

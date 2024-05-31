@@ -13,7 +13,7 @@ import java.io.FileOutputStream
 
 // 保存表情逻辑
 class SaveEmojiLogic(
-    private val hook: BaseHook<*>,
+    private val hook: BaseHook,
     private val context: Context,
     private val urlList: List<String>,
 ) {

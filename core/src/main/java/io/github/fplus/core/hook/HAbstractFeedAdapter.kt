@@ -24,7 +24,7 @@ import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 import kotlinx.coroutines.delay
 
-class HAbstractFeedAdapter : BaseHook<Any>() {
+class HAbstractFeedAdapter : BaseHook() {
     companion object {
         const val TAG = "HAbstractFeedAdapter"
     }

@@ -6,7 +6,7 @@ import android.content.Context
 import io.github.fplus.core.base.BaseHook
 
 class ClipboardLogic(
-    private val hook: BaseHook<*>,
+    private val hook: BaseHook,
 ) {
     private var primaryClipChangedListener: ClipboardManager.OnPrimaryClipChangedListener? = null
 

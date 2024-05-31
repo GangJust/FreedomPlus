@@ -9,12 +9,16 @@ import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 
-class HFlippableViewPager : BaseHook<FlippableViewPager>() {
+class HFlippableViewPager : BaseHook() {
     companion object {
         const val TAG = "HFlippableViewPager"
     }
 
     private val config get() = ConfigV1.get()
+
+    override fun setTargetClass(): Class<*> {
+        return FlippableViewPager::class.java
+    }
 
     @OnBefore("onInterceptTouchEvent", "onTouchEvent", "dispatchTouchEvent")
     fun onTouchEventBefore(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {

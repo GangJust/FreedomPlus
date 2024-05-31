@@ -29,7 +29,7 @@ import java.io.FileOutputStream
 
 /// 下载(视频/图文/音乐)逻辑
 class DownloadLogic(
-    val hook: BaseHook<*>,
+    val hook: BaseHook,
     val context: Context,
     val aweme: Aweme?,
 ) {

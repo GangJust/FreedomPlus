@@ -18,12 +18,16 @@ import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisActivity
 
-class HActivity : BaseHook<Activity>() {
+class HActivity : BaseHook() {
     companion object {
         const val TAG = "HActivity"
     }
 
     private val config get() = ConfigV1.get()
+
+    override fun setTargetClass(): Class<*> {
+        return Activity::class.java
+    }
 
     @OnBefore("dispatchTouchEvent")
     fun dispatchTouchEventBefore(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {

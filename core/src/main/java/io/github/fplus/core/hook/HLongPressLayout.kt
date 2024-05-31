@@ -34,7 +34,7 @@ import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisView
 
 
-class HLongPressLayout : BaseHook<Any>() {
+class HLongPressLayout : BaseHook() {
     companion object {
         const val TAG = "HLongPressLayout"
     }

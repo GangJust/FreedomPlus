@@ -11,7 +11,7 @@ import java.io.File
 import java.io.FileOutputStream
 
 class SaveAudioLogic(
-    private val hook: BaseHook<*>,
+    private val hook: BaseHook,
     private val context: Context,
     private val url: String,
     private val filename: String,

@@ -41,7 +41,7 @@ import io.github.xpler.core.thisActivity
 import io.github.xpler.core.thisContext
 import kotlinx.coroutines.delay
 
-class HMainActivity : BaseHook<MainActivity>() {
+class HMainActivity : BaseHook() {
     companion object {
         const val TAG = "HMainActivity"
 
@@ -63,6 +63,10 @@ class HMainActivity : BaseHook<MainActivity>() {
     private val config get() = ConfigV1.get()
     private val clipboardLogic = ClipboardLogic(this)
     private var disallowInterceptRelativeLayout: View? = null
+
+    override fun setTargetClass(): Class<*> {
+        return MainActivity::class.java
+    }
 
     @OnBefore("onCreate")
     fun onCreateBefore(params: XC_MethodHook.MethodHookParam, savedInstanceState: Bundle?) {

@@ -11,12 +11,16 @@ import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisViewGroup
 import io.github.xpler.core.wrapper.CallConstructors
 
-class HInteractStickerParent : BaseHook<InteractStickerParent>(), CallConstructors {
+class HInteractStickerParent : BaseHook(), CallConstructors {
     companion object {
         const val TAG = "HInteractStickerParent"
     }
 
     private val config get() = ConfigV1.get()
+
+    override fun setTargetClass(): Class<*> {
+        return InteractStickerParent::class.java
+    }
 
     override fun callOnBeforeConstructors(params: XC_MethodHook.MethodHookParam) {
 

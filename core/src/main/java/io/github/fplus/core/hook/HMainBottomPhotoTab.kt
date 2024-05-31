@@ -16,7 +16,7 @@ import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisView
 
 
-class HMainBottomPhotoTab : BaseHook<Any>() {
+class HMainBottomPhotoTab : BaseHook() {
     companion object {
         const val TAG = "HMainBottomPhotoTab"
     }

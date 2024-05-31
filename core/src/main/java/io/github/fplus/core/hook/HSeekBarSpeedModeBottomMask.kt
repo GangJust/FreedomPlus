@@ -15,7 +15,7 @@ import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisViewGroup
 import io.github.xpler.core.wrapper.CallMethods
 
-class HSeekBarSpeedModeBottomMask : BaseHook<Any>(),
+class HSeekBarSpeedModeBottomMask : BaseHook(),
     CallMethods {
     companion object {
         const val TAG = "HSeekBarSpeedModeBottomMask"

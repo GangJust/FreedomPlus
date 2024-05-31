@@ -16,7 +16,7 @@ import io.github.xpler.core.entity.Param
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 
-class HChatListRecalledHint : BaseHook<Any>() {
+class HChatListRecalledHint : BaseHook() {
     companion object {
         const val TAG = "HChatListRecalledHint"
     }
