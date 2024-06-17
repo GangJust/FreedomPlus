@@ -441,7 +441,7 @@ class DownloadLogic(
         progressText: String,
     ): Boolean {
         return withContext(Dispatchers.IO) {
-            KHttpUtils.download(url, FileOutputStream(downloadFile)) { real, total, e ->
+            KHttpUtils.download(url, downloadFile) { real, total, e ->
                 if (e != null)
                     XplerLog.e(e)
 
