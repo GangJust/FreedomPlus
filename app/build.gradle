@@ -94,7 +94,6 @@ dependencies {
     implementation(libs.runtime.livedata)
     implementation(libs.mmkv)
 
-    implementation project(":xpler")
     implementation project(":core")
     implementation project(":webdav")
     implementation project(":ktutils")
