@@ -8,6 +8,7 @@ import com.ss.android.ugc.aweme.longervideo.landscape.home.activity.LandscapeFee
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
+import io.github.fplus.core.helper.ImmersiveHelper
 import io.github.fplus.core.hook.logic.ClipboardLogic
 import io.github.fplus.core.hook.logic.DownloadLogic
 import io.github.xpler.core.entity.OnAfter
@@ -33,6 +34,11 @@ class HLandscapeFeedActivity : BaseHook() {
     fun onResumeAfter(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
             addClipboardListener(thisActivity)
+            ImmersiveHelper.immersive(
+                thisActivity,
+                hideStatusBar = true,
+                hideNavigationBars = true,
+            )
         }.onFailure {
             XplerLog.e(it)
         }
@@ -42,6 +48,20 @@ class HLandscapeFeedActivity : BaseHook() {
     fun onPauseBefore(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
             removeClipboardListener(thisActivity)
+        }.onFailure {
+            XplerLog.e(it)
+        }
+    }
+
+    @OnBefore("onWindowFocusChanged")
+    @OnAfter("onWindowFocusChanged")
+    fun onWindowFocusChangedAfter(params: XC_MethodHook.MethodHookParam, boolean: Boolean) {
+        hookBlockRunning(params) {
+            ImmersiveHelper.immersive(
+                thisActivity,
+                hideStatusBar = true,
+                hideNavigationBars = true,
+            )
         }.onFailure {
             XplerLog.e(it)
         }

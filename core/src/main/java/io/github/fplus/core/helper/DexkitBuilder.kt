@@ -1,10 +1,12 @@
 package io.github.fplus.core.helper
 
 import android.app.Application
+import com.freegang.extension.appLastUpdateTime
 import com.freegang.extension.appVersionCode
 import com.freegang.extension.appVersionName
 import com.freegang.extension.getIntOrDefault
 import com.freegang.extension.getJSONArrayOrDefault
+import com.freegang.extension.getLongOrDefault
 import com.freegang.extension.getStringOrDefault
 import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.text.KTextUtils
@@ -607,16 +609,13 @@ object DexkitBuilder {
                         add {
                             type = "com.ss.android.ugc.aweme.feed.model.VideoItemParams"
                         }
-
-                        add {
-                            type = "com.ss.android.ugc.aweme.feed.plato.business.mainarchitecture.tablandguide.TabId"
-                        }
                     }
                     methods {
                         add {
                             paramTypes = listOf("com.ss.android.ugc.aweme.feed.model.VideoItemParams")
                         }
                     }
+                    usingStrings = listOf("TabLandGuidePresenter", "tabLandingActionBtn")
                 }
             }
             tabLandingClazz = tabLanding.instance("tabLanding")
@@ -661,9 +660,19 @@ object DexkitBuilder {
 
         // version
         val version = cache.getIntOrDefault("version")
-        val appVersion = cache.getStringOrDefault("appVersion")
+        val appVersionName = cache.getStringOrDefault("appVersionName")
+        val appVersionCode = cache.getLongOrDefault("appVersionCode", 0)
+        val appLastUpdateTime = cache.getLongOrDefault("appLastUpdateTime")
 
-        if (appVersion.compareTo("${app!!.appVersionName}_${app!!.appVersionCode}") != 0) {
+        if (appVersionName != app!!.appVersionName) {
+            return false
+        }
+
+        if (appVersionCode != app!!.appVersionCode) {
+            return false
+        }
+
+        if (appLastUpdateTime != app!!.appLastUpdateTime) {
             return false
         }
 
@@ -727,7 +736,9 @@ object DexkitBuilder {
     private fun saveCache() {
         // version
         cacheJson.put("version", "$cacheVersion")
-        cacheJson.put("appVersion", "${app!!.appVersionName}_${app!!.appVersionCode}")
+        cacheJson.put("appVersionName", app!!.appVersionName)
+        cacheJson.put("appVersionCode", app!!.appVersionCode)
+        cacheJson.put("appLastUpdateTime", app!!.appLastUpdateTime)
 
         // cache
         cacheJson.put("class", classCacheJson)

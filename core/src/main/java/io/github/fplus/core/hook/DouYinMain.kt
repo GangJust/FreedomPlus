@@ -53,7 +53,7 @@ class DouYinMain(private val app: Application) {
             // search and hook
             DexkitBuilder.running(
                 app = app,
-                version = 23,
+                version = 24,
                 searchBefore = {
                     HActivity()
                     HMainActivity()

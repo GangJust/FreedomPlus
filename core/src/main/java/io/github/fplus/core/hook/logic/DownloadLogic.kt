@@ -220,7 +220,7 @@ class DownloadLogic(
                                 File(mImageParent.need(), mPureFileName.secureFilename("_${index + 1}.jpg"))
                             val finished =
                                 download(
-                                    urlStruct.urlList.random(),
+                                    urlStruct.urlList.first(),
                                     downloadFile,
                                     it,
                                     "$index/${aweme.images.size} %s%%"
@@ -292,7 +292,7 @@ class DownloadLogic(
                                 File(mImageParent.need(), mPureFileName.secureFilename("_${index + 1}.jpg"))
                             val finished =
                                 download(
-                                    urlStruct.urlList.random(),
+                                    urlStruct.urlList.first(),
                                     downloadFile,
                                     notify,
                                     "$index/${aweme.images.size} %s%%"
@@ -361,7 +361,7 @@ class DownloadLogic(
                 // 下载逻辑
                 hook.singleLaunchIO(pureFileName) {
                     val downloadFile = File(parentPath.need(), pureFileName)
-                    val finished = download(urlList.random(), downloadFile, it, "下载中 %s%%")
+                    val finished = download(urlList.first(), downloadFile, it, "下载中 %s%%")
                     if (finished) {
                         hook.refresh {
                             val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
@@ -404,7 +404,7 @@ class DownloadLogic(
                 // 下载逻辑
                 hook.singleLaunchIO(pureFileName) {
                     val downloadFile = File(parentPath.need(), pureFileName)
-                    val finished = download(urlList.random(), downloadFile, notify, "%s%%")
+                    val finished = download(urlList.first(), downloadFile, notify, "%s%%")
                     if (finished) {
                         hook.refresh {
                             dialog.dismiss()
@@ -441,7 +441,7 @@ class DownloadLogic(
         progressText: String,
     ): Boolean {
         return withContext(Dispatchers.IO) {
-            KHttpUtils.download(url, FileOutputStream(downloadFile)) { real, total, e ->
+            KHttpUtils.download(url, downloadFile) { real, total, e ->
                 if (e != null)
                     XplerLog.e(e)
 

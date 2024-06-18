@@ -21,7 +21,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -419,7 +418,7 @@ class HomeActivity : ComponentActivity() {
                             text = buildAnnotatedString {
                                 append("该操作将清空")
                                 withStyle(SpanStyle(Color.Red)) {
-                                    append("数据目录")
+                                    append("下载目录")
                                 }
                                 append("包括下载的")
                                 withStyle(SpanStyle(Color.Red)) {
@@ -454,17 +453,17 @@ class HomeActivity : ComponentActivity() {
                         Icon(
                             modifier = Modifier.size(24.dp),
                             painter = painterResource(id = R.drawable.ic_find_file),
-                            contentDescription = "数据目录",
+                            contentDescription = "下载目录",
                             tint = Themes.nowColors.icon,
                         )
                         Spacer(modifier = Modifier.padding(horizontal = 8.dp))
                         Column {
                             Text(
-                                text = "数据目录: `外置存储器/Download/Freedom`",
+                                text = "下载目录: `外置存储器/Download/Freedom`",
                                 style = Themes.nowTypography.body1,
                             )
                             Text(
-                                text = "长按清空数据目录",
+                                text = "长按清空下载目录",
                                 style = Themes.nowTypography.overline,
                             )
                         }

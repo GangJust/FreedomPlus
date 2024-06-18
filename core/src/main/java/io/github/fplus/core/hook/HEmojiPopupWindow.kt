@@ -36,11 +36,9 @@ class HEmojiPopupWindow : BaseHook() {
             if (!config.isEmojiDownload)
                 return
 
-            popUrlList = popUrlList.ifEmpty {
-                emoji?.detailEmoji?.animateUrl?.urlList
-                    ?: emoji?.detailEmoji?.staticUrl?.urlList
-                    ?: emptyList()
-            }
+            popUrlList = emoji?.detailEmoji?.animateUrl?.urlList
+                ?: emoji?.detailEmoji?.staticUrl?.urlList
+                        ?: emptyList()
         }.onFailure {
             XplerLog.e(it)
         }

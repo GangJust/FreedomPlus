@@ -7,8 +7,8 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.core.view.children
+import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
-import com.freegang.extension.asOrNull
 import com.freegang.extension.dip2px
 import com.freegang.extension.firstOrNull
 import com.freegang.extension.firstParentOrNull
@@ -43,14 +43,16 @@ class HAbstractFeedAdapter : BaseHook() {
         i: Int,
     ) {
         hookBlockRunning(params) {
-            if (!config.isImmersive) return
+            if (!config.isImmersive)
+                return
+
             // KLogCat.d("view: $view")
             if (view is FrameLayout && view !is VideoViewHolderRootView) {
 
                 // 垫高
                 view.forEachChild { if (it.background is GradientDrawable) it.background = null }
                 val bottomPadding = view.context.dip2px(58f) // BottomTabBarHeight
-                val viewGroup = view.children.lastOrNull()?.asOrNull<ViewGroup>() ?: return
+                val viewGroup = view.children.lastOrNull { it is ViewGroup && it.isVisible } ?: return
                 viewGroup.updatePadding(bottom = bottomPadding)
 
                 singleLaunchMain {

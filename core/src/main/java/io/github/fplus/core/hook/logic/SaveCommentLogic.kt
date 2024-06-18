@@ -10,7 +10,6 @@ import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.xpler.core.log.XplerLog
 import java.io.File
-import java.io.FileOutputStream
 
 // 保存评论区(图片/视频)逻辑
 class SaveCommentLogic(
@@ -64,7 +63,7 @@ class SaveCommentLogic(
             // 构建保存文件名
             hook.showToast(context, "保存图片, 请稍后..")
             val file = File(parentPath, "${System.currentTimeMillis() / 1000}.png")
-            val result = KHttpUtils.download(urlList.random(), FileOutputStream(file))
+            val result = KHttpUtils.download(urlList.first(), file)
             if (result) {
                 hook.showToast(context, "保存成功!")
                 KMediaUtils.notifyMediaUpdate(context, file.absolutePath)
@@ -84,7 +83,7 @@ class SaveCommentLogic(
             // 构建保存文件名
             hook.showToast(context, "保存视频, 请稍后..")
             val file = File(parentPath, "${System.currentTimeMillis() / 1000}.mp4")
-            val result = KHttpUtils.download(urlList.random(), FileOutputStream(file))
+            val result = KHttpUtils.download(urlList.first(), file)
             if (result) {
                 hook.showToast(context, "保存成功!")
                 KMediaUtils.notifyMediaUpdate(context, file.absolutePath)

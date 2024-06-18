@@ -29,7 +29,7 @@
 
 ## 支持版本
 
-- 理论上支持：23.5.0 ~ 至今
+- 理论上支持：28.0.0 ~ 至今 (28.0.0以下可能有兼容问题，请使用1.2.8之前的版本)
 - 版本号**参考**列表：[version.json](https://github.com/GangJust/FreedomPlus/blob/master/versions.json)
 
 

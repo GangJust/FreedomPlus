@@ -98,16 +98,6 @@ class HMainActivity : BaseHook() {
             XplerLog.d("version: ${KtXposedHelpers.moduleVersionName(activity)} - ${activity.appVersionName}(${activity.appVersionCode})")
             DouYinMain.timerExitHelper?.restart()
 
-            // test
-            /* runCatching {
-                val helper = findClass("X.0Suh").newInstance().methodInvoke("LIZ", args = arrayOf(activity))
-                KLogCat.d("helper: $helper")
-                helper?.method("LIZ", paramTypes = arrayOf(helper::class.java, String::class.java, Int::class.java, Any::class.java))
-                    ?.invoke(helper, helper, null, 1, null)
-            }.onFailure {
-                KLogCat.d("调用失败: $it")
-            } */
-
             openAutoPlay(activity)
         }.onFailure {
             XplerLog.e(it)

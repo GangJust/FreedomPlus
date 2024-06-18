@@ -27,8 +27,8 @@ class HCrashTolerance : BaseHook() {
     }
 
     override fun onInit() {
-        if (!config.isCrashTolerance)
-            return
+        // if (!config.isCrashTolerance)
+        //     return
 
         HPoiFeed()
         HLivePhoto()

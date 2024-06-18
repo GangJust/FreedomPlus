@@ -288,8 +288,8 @@ class FreedomSettingActivity : XplerActivity() {
             item { CommentColorModeItem() }
             item { WebDavItem() }
             item { TimedExitItem() }
-            item { CrashToleranceItem() }
-            /*item { DisablePluginItem() }*/
+            /* item { CrashToleranceItem() } */
+            /* item { DisablePluginItem() } */
         }
     }
 
@@ -1981,6 +1981,7 @@ class FreedomSettingActivity : XplerActivity() {
         }
     }
 
+    @Deprecated("暂存区")
     @Composable
     private fun CrashToleranceItem() {
         SwitchItem(

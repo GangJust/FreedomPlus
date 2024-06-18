@@ -32,7 +32,7 @@ class HEmojiDetailDialogNew : BaseHook() {
     override fun onInit() {
 
         lpparam.hookClass(EmojiDetailDialogNew::class.java)
-            .constructorsAll {
+            .constructorAll {
                 onBefore {
                     if (argsOrEmpty.isEmpty())
                         return@onBefore

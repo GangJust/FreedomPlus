@@ -5,14 +5,11 @@ import android.content.Intent
 import android.graphics.Color
 import android.view.MotionEvent
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.core.view.children
-import com.freegang.extension.firstOrNull
 import com.freegang.extension.isDarkMode
 import com.freegang.extension.postRunning
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
-import com.freegang.ktutils.color.KColorUtils
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.Constant
 import io.github.fplus.core.R
@@ -69,8 +66,6 @@ class HSideBarNestedScrollView : BaseHook() {
         viewGroup.postRunning {
             val onlyChild = it.getChildAt(0) as ViewGroup
             if (onlyChild.children.lastOrNull()?.contentDescription == "扩展功能") return@postRunning
-            val text = onlyChild.firstOrNull(TextView::class.java) ?: return@postRunning
-            val isDark = KColorUtils.isDarkColor(text.currentTextColor)
 
             val setting = KtXposedHelpers.inflateView<ViewGroup>(onlyChild.context, R.layout.side_freedom_setting)
             setting.contentDescription = "扩展功能"
@@ -79,7 +74,7 @@ class HSideBarNestedScrollView : BaseHook() {
             val backgroundRes: Int
             val iconColorRes: Int
             val textColorRes: Int
-            if (!isDark) {
+            if (viewGroup.context.isDarkMode) {
                 backgroundRes = R.drawable.side_item_background_night
                 iconColorRes = R.drawable.ic_freedom_night
                 textColorRes = Color.parseColor("#E6FFFFFF")

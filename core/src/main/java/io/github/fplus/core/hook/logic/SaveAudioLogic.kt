@@ -8,7 +8,6 @@ import com.freegang.ktutils.net.KHttpUtils
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import java.io.File
-import java.io.FileOutputStream
 
 class SaveAudioLogic(
     private val hook: BaseHook,
@@ -29,7 +28,7 @@ class SaveAudioLogic(
             hook.showToast(context, "保存语音, 请稍后..")
             val file = File(parentPath, "${filename}.mp3")
 
-            val result = KHttpUtils.download(url, FileOutputStream(file))
+            val result = KHttpUtils.download(url, file)
             if (result) {
                 hook.showToast(context, "保存成功!")
                 KMediaUtils.notifyMediaUpdate(context, file.absolutePath)

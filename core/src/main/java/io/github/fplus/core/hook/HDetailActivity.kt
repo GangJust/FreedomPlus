@@ -55,10 +55,8 @@ class HDetailActivity : BaseHook() {
             return
 
         val method = activity.method(returnType = Aweme::class.java)
-        val aweme = method?.invoke(activity)?.asOrNull<Aweme>()
-            ?: HVideoViewHolder.aweme
-
         clipboardLogic.addClipboardListener(activity) { _, _ ->
+            val aweme = method?.invoke(activity)?.asOrNull<Aweme>()
 
             DownloadLogic(
                 this@HDetailActivity,
