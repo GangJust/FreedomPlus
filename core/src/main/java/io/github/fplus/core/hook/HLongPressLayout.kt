@@ -26,6 +26,8 @@ import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.hook.logic.DownloadLogic
+import io.github.fplus.core.hook.logic.cityInfo
+import io.github.fplus.core.hook.logic.createDate
 import io.github.fplus.core.ui.activity.FreedomSettingActivity
 import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
@@ -171,9 +173,11 @@ class HLongPressLayout : BaseHook() {
             items.add(0, if (!config.neatModeState) "清爽模式" else "普通模式")
         }
 
-        if (config.isVideoFilter) {
-            items.add("过滤统计")
-        }
+        // if (config.isVideoFilter) {
+        //     items.add("过滤统计")
+        // }
+
+        items.add("视频信息")
 
         if (!config.isDisablePlugin) {
             items.add("模块设置")
@@ -207,6 +211,18 @@ class HLongPressLayout : BaseHook() {
                     context = view.context,
                     aweme = aweme,
                 )
+            }
+
+            "视频信息" -> {
+                singleLaunchMain("$item") {
+                    val msg = "视频属地: ${aweme?.cityInfo()}\n发布时间: ${aweme?.createDate()}".trim()
+                    showMessageDialog(
+                        context = view.context,
+                        title = "视频信息",
+                        content = msg,
+                        singleButton = true,
+                    )
+                }
             }
 
             "过滤统计" -> {

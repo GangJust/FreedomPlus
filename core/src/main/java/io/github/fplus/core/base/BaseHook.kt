@@ -14,7 +14,6 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
 import androidx.core.view.isVisible
@@ -53,7 +52,6 @@ abstract class BaseHook : HookEntity() {
     private var singleMainJob: MutableMap<String, Job?> = mutableMapOf()
     private var singleIOJob: MutableMap<String, Job?> = mutableMapOf()
 
-    private var toast: Toast? = null
     private var kDialog: KDialog? = null
 
     private fun launch(context: CoroutineContext, block: suspend CoroutineScope.() -> Unit): Job {

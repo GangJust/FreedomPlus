@@ -39,7 +39,6 @@ class SaveCommentLogic(
             }
         }.onFailure {
             XplerLog.e(it)
-            hook.showToast(context, "基本信息获取失败")
         }
     }
 
@@ -56,17 +55,20 @@ class SaveCommentLogic(
 
     // 保存评论区图片
     private fun onSaveCommentImage(urlList: List<String>) {
-        hook.singleLaunchIO("SaveCommentImage") {
+        val url = urlList.first()
+        hook.singleLaunchIO(url) {
             // 默认保存路径: `/外置存储器/Download/Freedom/picture/comment`
             val parentPath = ConfigV1.getFreedomDir(context).child("picture").child("comment").need()
 
             // 构建保存文件名
             hook.showToast(context, "保存图片, 请稍后..")
-            val file = File(parentPath, "${System.currentTimeMillis() / 1000}.png")
-            val result = KHttpUtils.download(urlList.first(), file)
-            if (result) {
+            val resultFile = KHttpUtils.download(
+                sourceUrl = url,
+                file = File(parentPath, "${System.currentTimeMillis() / 1000}.png"),
+            )
+            if (resultFile != null) {
                 hook.showToast(context, "保存成功!")
-                KMediaUtils.notifyMediaUpdate(context, file.absolutePath)
+                KMediaUtils.notifyMediaUpdate(context, resultFile.absolutePath)
                 if (config.vibrate) hook.vibrate(context, 5L)
             } else {
                 hook.showToast(context, "保存失败!")
@@ -76,17 +78,20 @@ class SaveCommentLogic(
 
     // 保存评论区视频
     private fun onSaveCommentVideo(urlList: List<String>) {
-        hook.singleLaunchIO("SaveCommentVideo") {
+        val url = urlList.first()
+        hook.singleLaunchIO(url) {
             // 默认保存路径: `/外置存储器/Download/Freedom/video/comment`
             val parentPath = ConfigV1.getFreedomDir(context).child("video").child("comment").need()
 
             // 构建保存文件名
             hook.showToast(context, "保存视频, 请稍后..")
-            val file = File(parentPath, "${System.currentTimeMillis() / 1000}.mp4")
-            val result = KHttpUtils.download(urlList.first(), file)
-            if (result) {
+            val resultFile = KHttpUtils.download(
+                sourceUrl = urlList.first(),
+                file = File(parentPath, "${System.currentTimeMillis() / 1000}.mp4"),
+            )
+            if (resultFile != null) {
                 hook.showToast(context, "保存成功!")
-                KMediaUtils.notifyMediaUpdate(context, file.absolutePath)
+                KMediaUtils.notifyMediaUpdate(context, resultFile.absolutePath)
                 if (config.vibrate) hook.vibrate(context, 5L)
             } else {
                 hook.showToast(context, "保存失败!")

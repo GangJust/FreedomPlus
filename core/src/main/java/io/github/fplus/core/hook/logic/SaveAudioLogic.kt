@@ -26,12 +26,13 @@ class SaveAudioLogic(
 
             // 构建保存文件名
             hook.showToast(context, "保存语音, 请稍后..")
-            val file = File(parentPath, "${filename}.mp3")
-
-            val result = KHttpUtils.download(url, file)
-            if (result) {
+            val resultFile = KHttpUtils.download(
+                sourceUrl = url,
+                file = File(parentPath, "${filename}.mp3"),
+            )
+            if (resultFile != null) {
                 hook.showToast(context, "保存成功!")
-                KMediaUtils.notifyMediaUpdate(context, file.absolutePath)
+                KMediaUtils.notifyMediaUpdate(context, resultFile.absolutePath)
                 if (config.vibrate) hook.vibrate(context, 5L)
             } else {
                 hook.showToast(context, "保存失败!")

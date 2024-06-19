@@ -594,14 +594,14 @@ class FreedomSettingVM(application: Application) : AndroidViewModel(application)
         val versionName = version.substringBeforeLast("-")
         val versionCode = version.substringAfterLast("-")
         config.versionConfig = config.versionConfig.copy(
-            versionName,
-            versionCode.toLong(),
-            app.appVersionName,
-            app.appVersionCode,
+            versionName = versionName,
+            versionCode = versionCode.toLong(),
+            dyVersionName = app.appVersionName,
+            dyVersionCode = app.appVersionCode,
         )
     }
 
-    val hasDexkitCache get() = !config.dexkitCache.isEmpty
+    val hasDexkitCache get() = !config.dexkitCache.isEmpty()
 
     // 清除类日志
     fun clearDexkitCache() {

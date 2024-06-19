@@ -229,7 +229,7 @@ class HVerticalViewPager : BaseHook() {
                         val mData = mModel?.fieldGet(name = "mData")
                         if (mData?.javaClass?.name?.contains("FeedItemList") == true) {
                             val items = mData.fieldGet(name = "items")?.asOrNull<List<Aweme>>() ?: emptyList()
-                            if (items.size < 3) return@onBefore
+                            if (items.size < 10) return@onBefore
 
                             mData.fieldSet(name = "items", filterAwemeList(items))
                             // val array = items.map { it.sortString() }.toTypedArray()
@@ -251,7 +251,7 @@ class HVerticalViewPager : BaseHook() {
                         val mData = mModel?.fieldGet(name = "mData")
                         if (mData?.javaClass?.name?.contains("FollowFeedList") == true) {
                             val mItems = mData.fieldGet(name = "mItems")?.asOrNull<List<FollowFeed>>() ?: emptyList()
-                            if (mItems.size < 3) return@onBefore
+                            if (mItems.size < 10) return@onBefore
 
                             mData.fieldSet("mItems", filterFollowFeedList(mItems))
                             // val array = mItems.map { it.aweme.sortString() }.toTypedArray()
