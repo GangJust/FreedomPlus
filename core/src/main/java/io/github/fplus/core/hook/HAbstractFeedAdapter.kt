@@ -51,7 +51,7 @@ class HAbstractFeedAdapter : BaseHook() {
 
                 // 垫高
                 view.forEachChild { if (it.background is GradientDrawable) it.background = null }
-                val bottomPadding = view.context.dip2px(58f) // BottomTabBarHeight
+                val bottomPadding = 58f.dip2px() // BottomTabBarHeight
                 val viewGroup = view.children.lastOrNull { it is ViewGroup && it.isVisible } ?: return
                 viewGroup.updatePadding(bottom = bottomPadding)
 

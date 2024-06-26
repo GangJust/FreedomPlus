@@ -56,7 +56,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
-import com.freegang.extension.appVersionName
+import com.freegang.extension.appVersion
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.log.KLogCat
@@ -242,10 +242,16 @@ class HomeActivity : ComponentActivity() {
         var showNewVersionDialog by remember { mutableStateOf(true) }
         val version by model.versionConfig.observeAsState()
         if (version != null) {
-            val version = version!!
-            if (version.name.compareTo("v${application.appVersionName}") >= 1 && showNewVersionDialog) {
+            val v = version!!
+            if (v.tagName.compareTo(
+                    application.appVersion(
+                        "-",
+                        true
+                    )
+                ) >= 1 && showNewVersionDialog
+            ) {
                 FMessageDialog(
-                    title = "发现新版本 ${version.name}!",
+                    title = "发现新版本 ${v.name}!",
                     confirm = "确定",
                     cancel = "取消",
                     onCancel = {
@@ -255,7 +261,7 @@ class HomeActivity : ComponentActivity() {
                         startActivity(
                             Intent(
                                 Intent.ACTION_VIEW,
-                                Uri.parse(version.browserDownloadUrl),
+                                Uri.parse(v.browserDownloadUrl),
                             )
                         )
                     },
@@ -266,7 +272,7 @@ class HomeActivity : ComponentActivity() {
                         item {
                             Text(
                                 modifier = Modifier.fillMaxWidth(),
-                                text = version.body,
+                                text = v.body,
                                 style = MaterialTheme.typography.body1,
                             )
                         }
@@ -652,10 +658,6 @@ class HomeActivity : ComponentActivity() {
         super.onResume()
         model.checkVersion()
         model.updateVersions()
-    }
-
-    override fun onPause() {
-        super.onPause()
     }
 
     private fun toModuleSetting() {

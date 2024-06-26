@@ -9,6 +9,7 @@ activity-compose = "1.5.1"
 compose-bom = "2024.05.00"
 accompanist-systemuicontroller = "0.28.0"
 runtime-livedata = "1.3.3"
+documentfile = "1.0.1"
 okhttp3 = "4.8.0"
 ss-ktx = "0.0.1"
 mmkv = "1.3.0"
@@ -29,6 +30,7 @@ ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview
 compose-material = { group = "androidx.compose.material", name = "material" }
 accompanist-systemuicontroller = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "accompanist-systemuicontroller" }
 runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtime-livedata" }
+documentfile = { module = "androidx.documentfile:documentfile", version.ref = "documentfile" }
 okhttp3 = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp3" }
 ss-ktx = { module = "xyz.junerver.ssktx:ss-ktx", version.ref = "ss-ktx" }
 mmkv = { group = "com.tencent", name = "mmkv", version.ref = "mmkv" }

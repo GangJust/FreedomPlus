@@ -77,7 +77,7 @@ class HCommentAudioView : BaseHook(), CallMethods {
             ImageView(thisView.context).apply {
                 setImageDrawable(KtXposedHelpers.getDrawable(R.mipmap.ic_bubbles))
                 contentDescription = "FAudioSave"
-                layoutParams = ViewGroup.LayoutParams(context.dip2px(16f), context.dip2px(12f))
+                layoutParams = ViewGroup.LayoutParams(16f.dip2px(), 12f.dip2px())
                 setOnClickListener {
                     SaveAudioLogic(
                         hook = this@HCommentAudioView,

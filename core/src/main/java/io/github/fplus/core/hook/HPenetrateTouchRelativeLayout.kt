@@ -68,7 +68,7 @@ class HPenetrateTouchRelativeLayout : BaseHook(), CallMethods {
         hookBlockRunning(params) {
             if (config.isImmersive) {
                 thisViewGroup.apply {
-                    val bottomPadding = context.dip2px(58f) // BottomTabBarHeight
+                    val bottomPadding = 58f.dip2px() // BottomTabBarHeight
                     updatePadding(bottom = bottomPadding)
                 }
             }

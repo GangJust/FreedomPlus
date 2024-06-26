@@ -81,7 +81,7 @@ class HDetailPageFragment : BaseHook() {
                 view.forEachWhereChild {
                     if (it is TextView) {
                         "${it.text}".contains("我也发") || "${it.contentDescription}".contains("我也发")
-                        binding.rightSpace.updatePadding(right = view.context.dip2px(128f))
+                        binding.rightSpace.updatePadding(right = 128f.dip2px())
                         return@forEachWhereChild true
                     }
                     return@forEachWhereChild false

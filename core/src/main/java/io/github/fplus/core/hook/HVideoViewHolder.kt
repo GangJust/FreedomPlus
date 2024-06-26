@@ -209,7 +209,7 @@ class HVideoViewHolder : BaseHook() {
                 ViewGroup.LayoutParams.WRAP_CONTENT,
             ).apply {
                 gravity = Gravity.END
-                updatePaddingRelative(end = context.dip2px(8f))
+                updatePaddingRelative(end = 8f.dip2px())
             }
             tag = "AutoPlay"
         }
@@ -217,8 +217,8 @@ class HVideoViewHolder : BaseHook() {
         val autoPlayImage = ImageView(view.context).apply {
             setImageDrawable(context.getModuleDrawable(R.drawable.ic_play))
             layoutParams = LinearLayout.LayoutParams(
-                view.context.dip2px(42f),
-                view.context.dip2px(42f)
+                42f.dip2px(),
+                42f.dip2px()
             ).apply {
                 gravity = Gravity.CENTER_HORIZONTAL
             }

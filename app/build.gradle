@@ -11,7 +11,7 @@ android {
         applicationId "io.github.fplus"
         minSdk 24
         targetSdk 33
-        versionCode 129
+        versionCode 131
         versionName "1.3.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -80,6 +80,7 @@ android {
 dependencies {
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)
+    implementation(libs.documentfile)
 
     //compose
     implementation(libs.activity.compose)

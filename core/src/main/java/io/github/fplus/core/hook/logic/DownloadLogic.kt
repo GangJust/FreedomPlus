@@ -83,7 +83,6 @@ class DownloadLogic(
             }
         }.onFailure {
             XplerLog.e(it)
-            hook.showToast(context, "基本信息获取失败")
         }
     }
 
@@ -359,26 +358,20 @@ class DownloadLogic(
                         progressText = "下载中 %s%%",
                     )
                     if (resultFile != null) {
-                        hook.refresh {
-                            val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
-                            it.setFinishedText(message)
-                            hook.showToast(context, message)
-                            KMediaUtils.notifyMediaUpdate(context, resultFile.absolutePath)
-                        }
+                        val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
+                        it.setFinishedText(message)
+                        hook.showToast(context, message)
+                        KMediaUtils.notifyMediaUpdate(context, resultFile.absolutePath)
 
                         // 上传WebDav
                         if (isWebDav) {
                             val uploadStatus = uploadToWebDav(resultFile)
-                            hook.refresh {
-                                it.setFinishedText("上传WebDav${if (uploadStatus) "成功!" else "失败!"}")
-                                hook.showToast(context, "上传WebDav${if (uploadStatus) "成功!" else "失败!"}")
-                            }
+                            it.setFinishedText("上传WebDav${if (uploadStatus) "成功!" else "失败!"}")
+                            hook.showToast(context, "上传WebDav${if (uploadStatus) "成功!" else "失败!"}")
                         }
                     } else {
-                        hook.refresh {
-                            it.setFinishedText("下载失败!")
-                            hook.showToast(context, "下载失败!")
-                        }
+                        it.setFinishedText("下载失败!")
+                        hook.showToast(context, "下载失败!")
                     }
                 }
             }
@@ -406,13 +399,11 @@ class DownloadLogic(
                         progressText = "%s%%",
                     )
                     if (resultFile != null) {
-                        hook.refresh {
-                            dialog.dismiss()
-                            val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
-                            notify.setFinishedText(message)
-                            hook.showToast(context, message)
-                            KMediaUtils.notifyMediaUpdate(context, resultFile.absolutePath)
-                        }
+                        hook.refresh { dialog.dismiss() }
+                        val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
+                        notify.setFinishedText(message)
+                        hook.showToast(context, message)
+                        KMediaUtils.notifyMediaUpdate(context, resultFile.absolutePath)
 
                         // 上传WebDav
                         if (isWebDav) {
@@ -420,11 +411,9 @@ class DownloadLogic(
                             hook.showToast(context, "上传WebDav${if (uploadStatus) "成功!" else "失败!"}")
                         }
                     } else {
-                        hook.refresh {
-                            dialog.dismiss()
-                            notify.setFinishedText("下载失败!")
-                            hook.showToast(context, "下载失败!")
-                        }
+                        hook.refresh { dialog.dismiss() }
+                        notify.setFinishedText("下载失败!")
+                        hook.showToast(context, "下载失败!")
                     }
                 }
             }
