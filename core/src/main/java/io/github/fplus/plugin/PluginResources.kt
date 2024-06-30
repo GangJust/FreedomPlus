@@ -17,9 +17,8 @@ import android.os.Bundle
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.util.TypedValue
-import com.freegang.extension.fieldSet
-import com.freegang.extension.methodInvoke
-import com.freegang.extension.methodInvokes
+import com.freegang.extension.findFieldSetValue
+import com.freegang.extension.findMethodInvoke
 import com.freegang.ktutils.log.KLogCat
 import io.github.xpler.core.KtXposedHelpers
 import java.io.InputStream
@@ -38,7 +37,9 @@ class PluginResources(
             originResources
         } else {
             val assetManager = AssetManager::class.java.newInstance()
-            assetManager.methodInvokes("addAssetPath", args = arrayOf(KtXposedHelpers.modulePath))
+            assetManager.findMethodInvoke<Any>(KtXposedHelpers.modulePath) {
+                parameterTypes(listOf(String::class.java))
+            }
             Resources(assetManager, originResources.displayMetrics, originResources.configuration)
         }
     }
@@ -810,7 +811,7 @@ class PluginResources(
 // 代理Resources
 fun proxyRes(activity: Activity?) {
     activity?.runCatching {
-        this.fieldSet("mResources", PluginResources(activity.resources))
+        this.findFieldSetValue(PluginResources(activity.resources)) { name("mResources") }
     }
 }
 
@@ -818,6 +819,6 @@ fun proxyRes(activity: Activity?) {
 fun injectRes(res: Resources?) {
     if (res != null) {
         val assets = res.assets
-        assets.methodInvoke(name = "addAssetPath", args = arrayOf(KtXposedHelpers.modulePath))
+        assets.findFieldSetValue(KtXposedHelpers.modulePath) { name("addAssetPath") }
     }
 }

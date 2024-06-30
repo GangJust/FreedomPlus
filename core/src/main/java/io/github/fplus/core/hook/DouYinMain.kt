@@ -53,8 +53,9 @@ class DouYinMain(private val app: Application) {
             // search and hook
             DexkitBuilder.running(
                 app = app,
-                version = 24,
+                version = 26,
                 searchBefore = {
+                    HPhoneWindow()
                     HActivity()
                     HMainActivity()
                     HDetailActivity()
@@ -66,7 +67,6 @@ class DouYinMain(private val app: Application) {
                     HPlayerController()
                     HPenetrateTouchRelativeLayout()
                     HInteractStickerParent()
-                    // HCommentAudioView()
                     HGifEmojiDetailActivity()
                     HEmojiDetailDialog()
                     HDialog()

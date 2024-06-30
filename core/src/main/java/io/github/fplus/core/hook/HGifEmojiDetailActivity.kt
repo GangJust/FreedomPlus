@@ -1,11 +1,10 @@
 package io.github.fplus.core.hook
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.widget.TextView
 import androidx.core.view.isVisible
-import com.freegang.extension.asOrNull
 import com.freegang.extension.contentView
-import com.freegang.extension.fieldGet
 import com.freegang.extension.firstOrNull
 import com.freegang.extension.idName
 import com.ss.android.ugc.aweme.comment.ui.GifEmojiDetailActivity
@@ -36,12 +35,15 @@ class HGifEmojiDetailActivity : BaseHook() {
     @OnBefore("onCreate")
     fun onCreate(params: XC_MethodHook.MethodHookParam, bundle: Bundle?) {
         hookBlockRunning(params) {
-            if (!config.isEmojiDownload) return
+            if (!config.isEmojiDownload)
+                return
             val gifEmoji = thisActivity.intent.getSerializableExtra("gif_emoji") as Emoji? ?: return
 
-            val animateUrl = gifEmoji.fieldGet(name = "animateUrl")
-            urlList = animateUrl?.fieldGet(name = "urlList")?.asOrNull<List<String>>() ?: emptyList()
-            if (urlList.isEmpty()) return
+            val animateUrl = gifEmoji.animateUrl
+            urlList = animateUrl?.urlList ?: emptyList()
+
+            if (urlList.isEmpty())
+                return
 
             rebuildView(thisActivity as GifEmojiDetailActivity)
         }.onFailure {
@@ -50,6 +52,7 @@ class HGifEmojiDetailActivity : BaseHook() {
     }
 
     // 重构布局
+    @SuppressLint("SetTextI18n")
     private fun rebuildView(activity: GifEmojiDetailActivity) {
         singleLaunchMain {
             delay(200L)

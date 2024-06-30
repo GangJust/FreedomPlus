@@ -1,5 +1,6 @@
 package io.github.fplus.core.hook
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.view.Gravity
 import android.view.ViewGroup
@@ -9,11 +10,10 @@ import androidx.core.view.children
 import androidx.core.view.isVisible
 import com.bytedance.im.core.model.Message
 import com.freegang.extension.asOrNull
-import com.freegang.extension.fieldGet
+import com.freegang.extension.findFieldGetValue
 import com.freegang.extension.firstOrNull
 import com.freegang.extension.idName
-import com.freegang.extension.methodInvoke
-import com.freegang.extension.methods
+import com.freegang.extension.findMethodInvoke
 import com.freegang.extension.parentView
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
@@ -36,6 +36,7 @@ class HChatListRecyclerViewAdapter : BaseHook() {
         return DexkitBuilder.chatListRecyclerViewAdapterClazz ?: NoneHook::class.java
     }
 
+    @SuppressLint("SetTextI18n")
     @OnAfter("onBindViewHolder")
     fun onBindViewHolderAfter(params: XC_MethodHook.MethodHookParam) {
         hookBlockRunning(params) {
@@ -43,15 +44,18 @@ class HChatListRecyclerViewAdapter : BaseHook() {
                 return
             }
 
-            val itemView = args[0]?.fieldGet("itemView")?.asOrNull<FrameLayout>() ?: return
+            val itemView = args[0]?.findFieldGetValue<FrameLayout> { name("itemView") } ?: return
 
-            val messages = args[0].methods(returnType = Message::class.java)
-                .filter { it.parameterTypes.isEmpty() }
-                .map { it.invoke(args[0]) }
 
-            val message = messages.firstOrNull() ?: return
-            val ext = message.methodInvoke("getExt")?.asOrNull<Map<String, String>>() ?: return
-            val isSelf = message.methodInvoke("isSelf")
+            val message = args[0]?.findMethodInvoke<Message> {
+                returnType(Message::class.java, true)
+                predicate {
+                    it.parameterTypes.isEmpty()
+                }
+            }
+
+            val ext = message?.findMethodInvoke<Map<String, String>> { name(("getExt")) } ?: return
+            val isSelf = message.findMethodInvoke<Boolean> { name("isSelf") }
 
             val addedFlag = "RecalledHint"
             val viewGroup = itemView

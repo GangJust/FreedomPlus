@@ -1,9 +1,8 @@
 package io.github.fplus.core.hook
 
 import androidx.core.view.isVisible
-import com.freegang.extension.asOrNull
-import com.freegang.extension.fields
-import com.freegang.extension.methods
+import com.freegang.extension.findFieldGetValue
+import com.freegang.extension.findMethodInvoke
 import com.ss.android.ugc.aweme.feed.adapter.VideoViewHolder
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
 import de.robv.android.xposed.XC_MethodHook
@@ -124,15 +123,17 @@ class HPlayerController : BaseHook() {
             return
         }
 
-        val method = params.thisObject
-            .methods(returnType = VideoViewHolder::class.java)
-            .firstOrNull { it.parameterTypes.isEmpty() }
-        val videoViewHolder = method?.invoke(params.thisObject)
+        val videoViewHolder = params.thisObject
+            .findMethodInvoke<VideoViewHolder> {
+                returnType(VideoViewHolder::class.java, true)
+                predicate {
+                    it.parameterTypes.isEmpty()
+                }
+            }
 
-        val field = videoViewHolder
-            ?.fields(type = PenetrateTouchRelativeLayout::class.java)
-            ?.firstOrNull { it.type == PenetrateTouchRelativeLayout::class.java }
-        val view = field?.get(videoViewHolder)?.asOrNull<PenetrateTouchRelativeLayout>()
+        val view = videoViewHolder?.findFieldGetValue<PenetrateTouchRelativeLayout> {
+            type(PenetrateTouchRelativeLayout::class.java)
+        }
 
         // toggle
         view?.isVisible = !bool

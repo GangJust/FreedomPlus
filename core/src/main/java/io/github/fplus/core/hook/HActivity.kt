@@ -16,7 +16,6 @@ import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
-import io.github.xpler.core.thisActivity
 
 class HActivity : BaseHook() {
     companion object {
@@ -40,15 +39,6 @@ class HActivity : BaseHook() {
 
             if (activity is LivePlayActivity)
                 DouYinMain.freeExitHelper?.cancel()
-
-            if (config.isImmersive) {
-                // 底部三键导航
-                if (activity.navBarInteractionMode == 0 && !config.systemControllerValue[1]) {
-                    ImmersiveHelper.systemBarColor(activity, navigationBarColor = null)
-                } else {
-                    ImmersiveHelper.systemBarColor(activity)
-                }
-            }
         }.onFailure {
             XplerLog.e(it)
         }
@@ -82,25 +72,28 @@ class HActivity : BaseHook() {
                 if (activity is FreedomSettingActivity)
                     return@singleLaunchMain
 
-                if (config.isImmersive) {
-                    ImmersiveHelper.immersive(
-                        activity = thisActivity,
-                        hideStatusBar = config.systemControllerValue[0],
-                        hideNavigationBars = config.systemControllerValue[1],
-                    )
-
-                    // 底部三键导航
-                    ImmersiveHelper.systemBarColor(activity)
-                    if (activity.navBarInteractionMode == 0 && !config.systemControllerValue[1]) {
-                        activity.contentView.apply {
-                            updatePadding(bottom = context.navigationBarHeight)
-                        }
-                        ImmersiveHelper.systemBarColor(activity, navigationBarColor = null)
-                    }
-                }
+                immersive(activity)
             }
         }.onFailure {
             XplerLog.e(it)
+        }
+    }
+
+    private fun immersive(activity: Activity) {
+        if (config.isImmersive) {
+            ImmersiveHelper.immersive(
+                activity = activity,
+                hideStatusBar = config.systemControllerValue[0],
+                hideNavigationBars = config.systemControllerValue[1],
+            )
+            ImmersiveHelper.systemBarColor(activity)
+
+            // 底部三键导航
+            if (activity.navBarInteractionMode == 0 && !config.systemControllerValue[1]) {
+                activity.contentView.apply {
+                    updatePadding(bottom = context.navigationBarHeight)
+                }
+            }
         }
     }
 }

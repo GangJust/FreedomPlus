@@ -1,10 +1,10 @@
 package io.github.fplus.core.hook
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.widget.TextView
-import com.freegang.extension.asOrNull
 import com.freegang.extension.contentView
-import com.freegang.extension.fieldGet
+import com.freegang.extension.findFieldGetValue
 import com.freegang.extension.firstOrNull
 import com.freegang.extension.postDelayedRunning
 import com.ss.android.ugc.aweme.base.model.UrlModel
@@ -29,6 +29,7 @@ class HEmojiDetailDialogNew : BaseHook() {
         return EmojiDetailDialogNew::class.java
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onInit() {
 
         lpparam.hookClass(EmojiDetailDialogNew::class.java)
@@ -37,7 +38,7 @@ class HEmojiDetailDialogNew : BaseHook() {
                     if (argsOrEmpty.isEmpty())
                         return@onBefore
 
-                    val url = args[0].fieldGet(type = UrlModel::class.java)?.asOrNull<UrlModel>()
+                    val url = args[0].findFieldGetValue<UrlModel> { type(UrlModel::class.java)  }
                     urlList = url?.urlList ?: emptyList()
                 }
             }

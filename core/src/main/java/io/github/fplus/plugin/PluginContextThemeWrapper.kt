@@ -4,9 +4,6 @@ import android.content.Context
 import android.content.res.AssetManager
 import android.content.res.Resources
 import android.view.ContextThemeWrapper
-import com.freegang.extension.methodInvokes
-import com.freegang.ktutils.log.KLogCat
-import io.github.xpler.core.KtXposedHelpers
 
 class PluginContextThemeWrapper(
     context: Context,
@@ -19,17 +16,19 @@ class PluginContextThemeWrapper(
         PluginResources(super.getResources())
     }
 
-    /*private val mResources by lazy {
+    /* private val mResources by lazy {
         val originResources = super.getResources()
         if (KtXposedHelpers.modulePath.isEmpty()) {
             KLogCat.d("未获取到模块路径!")
             originResources
         } else {
             val assetManager = AssetManager::class.java.newInstance()
-            assetManager.methodInvokes("addAssetPath", args = arrayOf(KtXposedHelpers.modulePath))
+            assetManager.methodCall<Any>(KtXposedHelpers.modulePath) {
+                parameterTypes(listOf(String::class.java))
+            }
             Resources(assetManager, originResources.displayMetrics, originResources.configuration)
         }
-    }*/
+    } */
 
     private val mTheme by lazy {
         val newTheme = mResources.newTheme()

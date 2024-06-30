@@ -1,5 +1,6 @@
 package io.github.fplus.core.hook
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
@@ -17,13 +18,14 @@ import androidx.core.view.isVisible
 import androidx.core.view.updatePaddingRelative
 import com.freegang.extension.asOrNull
 import com.freegang.extension.dip2px
-import com.freegang.extension.fieldGet
-import com.freegang.extension.fieldGets
+import com.freegang.extension.findField
+import com.freegang.extension.findFieldGetValue
 import com.freegang.extension.firstParentOrNull
 import com.freegang.extension.forEachChild
 import com.freegang.extension.getSiblingViewAt
-import com.freegang.extension.methodInvoke
+import com.freegang.extension.findMethodInvoke
 import com.freegang.extension.postRunning
+import com.freegang.extension.setLayoutWidth
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.feed.ui.FeedRightScaleView
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
@@ -110,7 +112,7 @@ class HVideoViewHolder : BaseHook() {
             return
         }
 
-        val first = view.viewTreeObserver.fieldGet("mOnDrawListeners")?.asOrNull<List<*>>() ?: return
+        val first = view.viewTreeObserver.findFieldGetValue<List<*>> { name("mOnDrawListeners") } ?: return
         XplerLog.d("监听集合", *first.map { "$it" }.toTypedArray())
     }
 
@@ -121,25 +123,37 @@ class HVideoViewHolder : BaseHook() {
         AutoPlayHelper.openAutoPlay(context)
     }
 
+    private fun getContext(params: XC_MethodHook.MethodHookParam): Context? {
+        return params.thisObject.findMethodInvoke<Context> { name("getContext") }
+    }
+
     private fun getAllView(params: XC_MethodHook.MethodHookParam): List<View?> {
-        val views = params.thisObject.fieldGets(type = View::class.java)
-        return views.asOrNull<List<View?>>() ?: emptyList()
+        val views = params.thisObject.findFieldGetValue<List<View?>> { type(View::class.java) }
+        return views ?: emptyList()
     }
 
     private fun getWidgetContainer(params: XC_MethodHook.MethodHookParam): PenetrateTouchRelativeLayout? {
-        val views = params.thisObject?.fieldGets(type = View::class.java) ?: emptyList()
-        return views.firstOrNull { it is PenetrateTouchRelativeLayout }
-            ?.asOrNull<PenetrateTouchRelativeLayout>()
+        return params.thisObject.findFieldGetValue<PenetrateTouchRelativeLayout> {
+            type(PenetrateTouchRelativeLayout::class.java)
+        }
+    }
+
+    private fun getFeedRightScaleView(params: XC_MethodHook.MethodHookParam): FeedRightScaleView? {
+        val views = params.thisObject?.findField {
+            type(View::class.java, true)
+        }?.getValues(params.thisObject)
+        return views?.firstOrNull { it is FeedRightScaleView }?.asOrNull()
     }
 
     private fun getFragment(params: XC_MethodHook.MethodHookParam): Any? {
-        val fragmentClazz = hostClassloader!!.loadClass("androidx.fragment.app.Fragment")
-        return params.thisObject?.fieldGet(type = fragmentClazz)
+        return params.thisObject?.findFieldGetValue<Any> {
+            type(hostClassloader!!.loadClass("androidx.fragment.app.Fragment"))
+        }
     }
 
     private fun getFragmentType(params: XC_MethodHook.MethodHookParam): String {
         val fragment = getFragment(params)
-        val arguments = fragment?.methodInvoke("getArguments")?.asOrNull<Bundle>()
+        val arguments = fragment?.findMethodInvoke<Bundle> { name("getArguments") }
         return arguments?.getString("com.ss.android.ugc.aweme.intent.extra.EVENT_TYPE") ?: ""
     }
 
@@ -148,10 +162,8 @@ class HVideoViewHolder : BaseHook() {
             return
         }
 
-        val views = params.thisObject?.fieldGets(type = View::class.java) ?: emptyList()
-        val view = views.firstOrNull { it is FeedRightScaleView }?.asOrNull<FeedRightScaleView>() ?: return
-
-        view.postRunning {
+        val view = getFeedRightScaleView(params)
+        view?.postRunning {
             val isAvatarImageWithLive = videoOptionBarFilterKeywords.pattern.contains("头像")
             view.forEachChild { child ->
                 if (isAvatarImageWithLive && child.javaClass.name.contains("AvatarImageWithLive")) {
@@ -179,12 +191,18 @@ class HVideoViewHolder : BaseHook() {
             return
         }
 
-        val views = params.thisObject?.fieldGets(type = View::class.java) ?: emptyList()
-        val view = views.firstOrNull { it is FeedRightScaleView }?.asOrNull<FeedRightScaleView>() ?: return
-        view.alpha = config.translucentValue[2] / 100f
-        view.getSiblingViewAt(1)?.alpha = config.translucentValue[2] / 100f // 音乐
+        val view = getFeedRightScaleView(params)
+        view?.alpha = config.translucentValue[2] / 100f
+        view?.getSiblingViewAt(1)?.alpha = config.translucentValue[2] / 100f // 音乐
     }
 
+    private fun adjustMusicContainer(params: XC_MethodHook.MethodHookParam) {
+        val view = getFeedRightScaleView(params)
+        val isMusicContainer = view?.getSiblingViewAt(1)?.asOrNull<FrameLayout>()
+        isMusicContainer?.setLayoutWidth(52f.dip2px())
+    }
+
+    @SuppressLint("SetTextI18n")
     private fun addAutoPlayButtonView(params: XC_MethodHook.MethodHookParam) {
         if (!config.isAutoPlay)
             return
@@ -195,8 +213,7 @@ class HVideoViewHolder : BaseHook() {
         if (!getFragmentType(params).startsWith("homepage_hot"))
             return
 
-        val views = params.thisObject?.fieldGets(type = View::class.java) ?: emptyList()
-        val view = views.firstOrNull { it is FeedRightScaleView }?.asOrNull<FeedRightScaleView>() ?: return
+        val view = getFeedRightScaleView(params) ?: return
 
         val isAdded = view.children.firstOrNull()?.tag == "AutoPlay"
         if (isAdded)
@@ -236,10 +253,6 @@ class HVideoViewHolder : BaseHook() {
         autoPlayContainer.setOnClickListener { openAutoPlay(it.context) }
 
         view.addView(autoPlayContainer, 0)
-    }
-
-    private fun getContext(params: XC_MethodHook.MethodHookParam): Context? {
-        return params.thisObject.methodInvoke(name = "getContext")?.asOrNull<Context>()
     }
 
     @OnBefore("isCleanMode")
@@ -287,6 +300,7 @@ class HVideoViewHolder : BaseHook() {
             // XplerLog.d("long: $long")
             changeFeedRightScaleView(params)
             changeFeedRightScaleViewAlpha(params)
+            adjustMusicContainer(params)
             addAutoPlayButtonView(params)
         }.onFailure {
             XplerLog.e(it)

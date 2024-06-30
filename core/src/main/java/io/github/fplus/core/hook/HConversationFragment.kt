@@ -3,7 +3,7 @@ package io.github.fplus.core.hook
 import android.os.Bundle
 import android.view.View
 import com.freegang.extension.asOrNull
-import com.freegang.extension.fieldGets
+import com.freegang.extension.findField
 import com.freegang.extension.isDarkMode
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.R
@@ -27,7 +27,8 @@ class HConversationFragment : BaseHook() {
     @OnAfter("onViewCreated")
     fun onViewCreatedAfter(params: XC_MethodHook.MethodHookParam, view: View, bundle: Bundle?) {
         hookBlockRunning(params) {
-            val views = thisObject.fieldGets(type = View::class.java)
+            val views = thisObject.findField { type(View::class.java) }
+                .getValues(thisObject)
                 .asOrNull<List<View?>>() ?: emptyList()
 
             if (view.context.isDarkMode) {
@@ -37,6 +38,7 @@ class HConversationFragment : BaseHook() {
                     }
                     ?.background = KtXposedHelpers.getDrawable(R.drawable.aweme_bottom_panel_night_background)
             }
+
         }.onFailure {
             XplerLog.e(it)
         }

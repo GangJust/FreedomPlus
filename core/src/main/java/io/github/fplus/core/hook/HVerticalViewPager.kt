@@ -1,12 +1,10 @@
 package io.github.fplus.core.hook
 
 import android.view.MotionEvent
-import com.freegang.extension.asOrNull
-import com.freegang.extension.fieldGet
-import com.freegang.extension.fieldSet
-import com.freegang.extension.methodInvoke
+import com.freegang.extension.findFieldGetValue
+import com.freegang.extension.findFieldSetValue
+import com.freegang.extension.findMethodInvoke
 import com.freegang.ktutils.app.KToastUtils
-import com.freegang.ktutils.log.KLogCat
 import com.freegang.ktutils.text.KTextUtils
 import com.ss.android.ugc.aweme.common.widget.VerticalViewPager
 import com.ss.android.ugc.aweme.feed.model.Aweme
@@ -83,12 +81,12 @@ class HVerticalViewPager : BaseHook() {
         hookBlockRunning(params) {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    val adapter = thisObject.methodInvoke("getAdapter") ?: return
-                    val currentItem = thisObject.methodInvoke("getCurrentItem") as? Int ?: return
-                    currentAweme = adapter.methodInvoke(
-                        returnType = Aweme::class.java,
-                        args = arrayOf(currentItem),
-                    ) as? Aweme
+                    val adapter = thisObject.findMethodInvoke<Any> { name("getAdapter") } ?: return
+                    val currentItem = thisObject.findMethodInvoke<Int> { name("getCurrentItem") } ?: return
+                    currentAweme = adapter.findMethodInvoke<Aweme>(currentItem) {
+                        returnType(Aweme::class.java)
+                        parameterTypes(listOf(Int::class.java))
+                    }
 
                     //
                     if (config.isLongtimeVideoToast) {
@@ -98,16 +96,16 @@ class HVerticalViewPager : BaseHook() {
                         }
                         durationRunnable = Runnable {
                             //
-                            val delayItem = thisObject.methodInvoke("getCurrentItem") as? Int ?: return@Runnable
+                            val delayItem = thisObject.findMethodInvoke<Int> { name("getCurrentItem") } ?: return@Runnable
                             if (delayItem == currentItem) {
                                 return@Runnable
                             }
 
                             //
-                            val delayAweme = adapter.methodInvoke(
-                                returnType = Aweme::class.java,
-                                args = arrayOf(delayItem),
-                            ) as? Aweme
+                            val delayAweme = adapter.findMethodInvoke<Aweme>(currentItem) {
+                                returnType(Aweme::class.java)
+                                parameterTypes(listOf(Int::class.java))
+                            }
                             val duration = delayAweme?.duration ?: 0
                             if (duration >= 1000 * 60 * 10) {
                                 val minute = duration / 1000 / 60
@@ -225,13 +223,13 @@ class HVerticalViewPager : BaseHook() {
                     onBefore {
                         if (!config.isVideoFilter) return@onBefore
 
-                        val mModel = thisObject.fieldGet(name = "mModel")
-                        val mData = mModel?.fieldGet(name = "mData")
+                        val mModel = thisObject.findFieldGetValue<Any> { name("mModel") }
+                        val mData = mModel?.findFieldGetValue<Any> { name("mData") }
                         if (mData?.javaClass?.name?.contains("FeedItemList") == true) {
-                            val items = mData.fieldGet(name = "items")?.asOrNull<List<Aweme>>() ?: emptyList()
+                            val items = mData.findFieldGetValue<List<Aweme>> { name("items") } ?: emptyList()
                             if (items.size < 3) return@onBefore
 
-                            mData.fieldSet(name = "items", filterAwemeList(items))
+                            mData.findFieldSetValue(filterAwemeList(items)) { name("items") }
                             // val array = items.map { it.sortString() }.toTypedArray()
                             // XplerLog.tagD(TAG, arrayOf("推荐视频列表", array.joinToString("\n")))
                         }
@@ -247,13 +245,13 @@ class HVerticalViewPager : BaseHook() {
                     onBefore {
                         if (!config.isVideoFilter) return@onBefore
 
-                        val mModel = thisObject.fieldGet(name = "mModel")
-                        val mData = mModel?.fieldGet(name = "mData")
+                        val mModel = thisObject.findFieldGetValue<Any> { name("mModel") }
+                        val mData = mModel?.findFieldGetValue<Any> { name("mData") }
                         if (mData?.javaClass?.name?.contains("FollowFeedList") == true) {
-                            val mItems = mData.fieldGet(name = "mItems")?.asOrNull<List<FollowFeed>>() ?: emptyList()
+                            val mItems = mData.findFieldGetValue<List<FollowFeed>> { name("mItems") } ?: emptyList()
                             if (mItems.size < 3) return@onBefore
 
-                            mData.fieldSet("mItems", filterFollowFeedList(mItems))
+                            mData.findFieldSetValue(filterFollowFeedList(mItems)) { name("mItems") }
                             // val array = mItems.map { it.aweme.sortString() }.toTypedArray()
                             // XplerLog.tagD(TAG, arrayOf("关注视频列表", array.joinToString("\n")))
                         }

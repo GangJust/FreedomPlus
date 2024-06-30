@@ -1,8 +1,7 @@
 package io.github.fplus.core.hook
 
 import android.app.Activity
-import com.freegang.extension.asOrNull
-import com.freegang.extension.method
+import com.freegang.extension.findMethodInvoke
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.longervideo.landscape.home.activity.LandscapeFeedActivity
 import de.robv.android.xposed.XC_MethodHook
@@ -75,9 +74,7 @@ class HLandscapeFeedActivity : BaseHook() {
             return
 
         clipboardLogic.addClipboardListener(activity) { _, _ ->
-            val method = activity.method(returnType = Aweme::class.java)
-            val aweme = method?.invoke(activity)?.asOrNull<Aweme>()
-
+            val aweme = activity.findMethodInvoke<Aweme> { returnType(Aweme::class.java) }
             DownloadLogic(
                 this@HLandscapeFeedActivity,
                 activity,

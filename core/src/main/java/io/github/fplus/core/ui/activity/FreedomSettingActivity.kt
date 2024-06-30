@@ -1,5 +1,6 @@
 package io.github.fplus.core.ui.activity
 
+import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
@@ -63,7 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.freegang.extension.methodInvoke
+import com.freegang.extension.findMethodInvoke
 import com.freegang.ktutils.app.KToastUtils
 import io.github.fplus.core.R
 import io.github.fplus.core.helper.DexkitBuilder
@@ -312,7 +313,9 @@ class FreedomSettingActivity : XplerActivity() {
                         model.setVersionConfig(null)
                     }
                     // KAppUtils.restartApplication(application)
-                    DexkitBuilder.restartUtilsClazz?.methodInvoke(args = arrayOf(this))
+                    DexkitBuilder.restartUtilsClazz?.findMethodInvoke<Any>(this){
+                        parameterTypes(listOf(Context::class.java))
+                    }
                 },
             ) {
                 Text(

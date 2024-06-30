@@ -1,11 +1,10 @@
 package io.github.fplus.core.hook
 
+import android.annotation.SuppressLint
 import android.widget.TextView
 import com.bytedance.im.core.model.Message
-import com.freegang.extension.asOrNull
-import com.freegang.extension.fieldGet
-import com.freegang.extension.methodInvoke
-import com.freegang.extension.methods
+import com.freegang.extension.findFieldGetValue
+import com.freegang.extension.findMethodInvoke
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
@@ -27,6 +26,7 @@ class HChatListRecalledHint : BaseHook() {
         return DexkitBuilder.chatListRecalledHintClazz ?: NoneHook::class.java
     }
 
+    @SuppressLint("SetTextI18n")
     @OnAfter
     fun methodAfter(
         params: XC_MethodHook.MethodHookParam,
@@ -40,21 +40,19 @@ class HChatListRecalledHint : BaseHook() {
             }
 
             if (!config.preventRecalledOtherSetting.getOrElse(0) { false }) {
-                val messages = thisObject.methods(returnType = Message::class.java)
-                    .filter { it.parameterTypes.isEmpty() }
-                    .map { it.invoke(thisObject) }
-
-                val message = messages.firstOrNull() ?: return
-                val isSelf = message.methodInvoke("isSelf")
-                if (isSelf == true) return
+                val message = thisObject.findMethodInvoke<Any> {
+                    returnType(Message::class.java, true)
+                    predicate { it.parameterTypes.isEmpty() }
+                }
+                val isSelf = message?.findMethodInvoke<Boolean> { name("isSelf") }
+                if (isSelf == true)
+                    return
             }
 
-            thisObject
-                .fieldGet(type = TextView::class.java)
-                ?.asOrNull<TextView>()
-                ?.apply {
-                    text = "${text.removeSuffix(" (没收到)")} (没收到)"
-                }
+            val textView = thisObject.findFieldGetValue<TextView> {
+                type(TextView::class.java)
+            }
+            textView?.text = "${textView?.text?.removeSuffix(" (没收到)")} (没收到)"
         }.onFailure {
             XplerLog.e(it)
         }

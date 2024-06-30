@@ -11,7 +11,7 @@ import androidx.core.view.children
 import androidx.core.view.isVisible
 import com.freegang.extension.activeActivity
 import com.freegang.extension.asOrNull
-import com.freegang.extension.fieldGet
+import com.freegang.extension.findFieldGetValue
 import com.freegang.extension.firstParentOrNull
 import com.freegang.extension.forEachChild
 import com.freegang.extension.isDarkMode
@@ -366,7 +366,7 @@ class HLongPressLayout : BaseHook() {
                         if (!config.isNeatMode)
                             return@onBefore
 
-                        aweme = thisObject.fieldGet(type = Aweme::class.java)?.asOrNull()
+                        aweme = thisObject.findFieldGetValue { type(Aweme::class.java) }
                             ?: HVideoViewHolder.aweme
 
                         if (config.longPressMode) {

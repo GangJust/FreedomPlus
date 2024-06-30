@@ -10,7 +10,7 @@ import androidx.core.view.updatePadding
 import com.freegang.extension.dip2px
 import com.freegang.extension.firstOrNull
 import com.freegang.extension.forEachWhereChild
-import com.freegang.extension.methodInvoke
+import com.freegang.extension.findMethodInvoke
 import com.freegang.extension.postRunning
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import de.robv.android.xposed.XC_MethodHook
@@ -49,7 +49,7 @@ class HDetailPageFragment : BaseHook() {
             //
             HDetailPageFragment.isComment = false
             view.postRunning {
-                val aweme = thisObject.methodInvoke(returnType = Aweme::class.java) as? Aweme ?: return@postRunning
+                val aweme = thisObject.findMethodInvoke<Aweme> { returnType(Aweme::class.java) } ?: return@postRunning
 
                 // awemeType 【134:评论区图片, 133|136:评论区视频, 0:主页视频详情, 68:主页图文详情, 13:私信视频/图文, 6000:私信图片】 by 25.1.0 至今
                 if (aweme.awemeType != 134 && aweme.awemeType != 133 && aweme.awemeType != 136) return@postRunning
@@ -69,7 +69,7 @@ class HDetailPageFragment : BaseHook() {
                     backBtn.performClick()
                 }
                 binding.saveBtn.setOnClickListener {
-                    val awemeAgain = thisObject.methodInvoke(returnType = Aweme::class.java) as? Aweme // 重新获取
+                    val awemeAgain = thisObject.findMethodInvoke<Aweme> { returnType(Aweme::class.java) } // 重新获取
                     SaveCommentLogic(this@HDetailPageFragment, it.context, awemeAgain)
                 }
                 viewGroup.addView(appbar)

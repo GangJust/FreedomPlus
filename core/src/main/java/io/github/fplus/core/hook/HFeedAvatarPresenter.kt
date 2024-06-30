@@ -2,9 +2,8 @@ package io.github.fplus.core.hook
 
 import android.view.View
 import android.view.ViewGroup
-import com.freegang.extension.asOrNull
-import com.freegang.extension.fieldGet
-import com.freegang.extension.methodInvoke
+import com.freegang.extension.findFieldGetValue
+import com.freegang.extension.findMethodInvoke
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.profile.model.User
 import de.robv.android.xposed.XC_MethodHook
@@ -42,14 +41,12 @@ class HFeedAvatarPresenter : BaseHook() {
             if (view !is ViewGroup)
                 return
 
-            val aweme: Aweme = thisObject.fieldGet(
-                type = Aweme::class.java,
-            )?.asOrNull() ?: return
+            val aweme = thisObject.findFieldGetValue<Aweme> { type(Aweme::class.java) } ?: return
 
-            val user: User = thisObject.methodInvoke(
-                returnType = User::class.java,
-                args = arrayOf(aweme),
-            )?.asOrNull() ?: return
+            val user = thisObject.findMethodInvoke<User>(aweme) {
+                returnType(User::class.java)
+                parameterTypes(listOf(Aweme::class.java))
+            } ?: return
 
             // KLogCat.d("followStatus: ${user.followStatus}")
             if (user.followStatus == 1) // 已关注

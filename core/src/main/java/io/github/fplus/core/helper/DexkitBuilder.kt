@@ -40,6 +40,7 @@ object DexkitBuilder {
     var mainBottomTabViewClazz: Class<*>? = null
     var mainBottomPhotoTabClazz: Class<*>? = null
     var commentListPageFragmentClazz: Class<*>? = null
+    var commentColorModeViewModeClazz: Class<*>? = null
     var conversationFragmentClazz: Class<*>? = null
     var seekBarSpeedModeBottomContainerClazz: Class<*>? = null
     var abstractFeedAdapterClazz: Class<*>? = null
@@ -173,11 +174,11 @@ object DexkitBuilder {
                         }
                     }
 
-                    methods {
-                        add {
-                            returnType = "com.ss.android.ugc.aweme.comment.constants.CommentColorMode"
-                        }
-                    }
+                    // methods {
+                    //     add {
+                    //         returnType = "com.ss.android.ugc.aweme.comment.constants.CommentColorMode"
+                    //     }
+                    // }
 
                     usingStrings = listOf(
                         "com/ss/android/ugc/aweme/comment/ui/CommentListPageFragment",
@@ -186,6 +187,22 @@ object DexkitBuilder {
                 }
             }
             commentListPageFragmentClazz = commentListPageFragment.instance("commentListPageFragment")
+
+            val commentColorModeViewMode = bridge.findClass {
+                matcher {
+                    superClass = "androidx.lifecycle.ViewModel"
+                    methods {
+                        add {
+                            returnType = "com.ss.android.ugc.aweme.comment.constants.CommentColorMode"
+                        }
+
+                        add {
+                            paramTypes = listOf("com.ss.android.ugc.aweme.comment.constants.CommentColorMode")
+                        }
+                    }
+                }
+            }
+            commentColorModeViewModeClazz = commentColorModeViewMode.instance("commentColorModeViewMode")
 
             val conversationFragment = bridge.findClass {
                 matcher {
@@ -700,6 +717,7 @@ object DexkitBuilder {
         mainBottomTabViewClazz = classCache.getStringOrDefault("mainBottomTabView").loadOrFindClass()
         mainBottomPhotoTabClazz = classCache.getStringOrDefault("mainBottomPhotoTab").loadOrFindClass()
         commentListPageFragmentClazz = classCache.getStringOrDefault("commentListPageFragment").loadOrFindClass()
+        commentColorModeViewModeClazz = classCache.getStringOrDefault("commentColorModeViewMode").loadOrFindClass()
         conversationFragmentClazz = classCache.getStringOrDefault("conversationFragment").loadOrFindClass()
         seekBarSpeedModeBottomContainerClazz = classCache.getStringOrDefault("seekBarSpeedModeBottomContainer").loadOrFindClass()
         abstractFeedAdapterClazz = classCache.getStringOrDefault("abstractFeedAdapter").loadOrFindClass()
@@ -785,7 +803,10 @@ object DexkitBuilder {
                 val className = json.getStringOrDefault("className")
                 val methodName = json.getStringOrDefault("methodName")
                 val paramTypeNames = json.getStringOrDefault("paramTypeNames").split(",")
-                val method = lpparam.findMethod(className, methodName, *paramTypeNames.toTypedArray())
+                val method = lpparam
+                    .findClass(className)
+                    .findMethod(methodName, *paramTypeNames.toTypedArray())
+                    ?: return@runCatching
                 methods.add(method)
             }
         }

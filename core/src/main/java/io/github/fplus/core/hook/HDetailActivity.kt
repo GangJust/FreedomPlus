@@ -1,8 +1,7 @@
 package io.github.fplus.core.hook
 
 import android.app.Activity
-import com.freegang.extension.asOrNull
-import com.freegang.extension.method
+import com.freegang.extension.findMethodInvoke
 import com.ss.android.ugc.aweme.detail.ui.DetailActivity
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import de.robv.android.xposed.XC_MethodHook
@@ -54,9 +53,8 @@ class HDetailActivity : BaseHook() {
         if (!config.copyLinkDownload)
             return
 
-        val method = activity.method(returnType = Aweme::class.java)
         clipboardLogic.addClipboardListener(activity) { _, _ ->
-            val aweme = method?.invoke(activity)?.asOrNull<Aweme>()
+            val aweme = activity.findMethodInvoke<Aweme> { returnType(Aweme::class.java) }
 
             DownloadLogic(
                 this@HDetailActivity,

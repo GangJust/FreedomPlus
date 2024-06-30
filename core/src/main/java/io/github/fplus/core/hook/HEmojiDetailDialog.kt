@@ -1,10 +1,10 @@
 package io.github.fplus.core.hook
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.widget.TextView
-import com.freegang.extension.asOrNull
 import com.freegang.extension.contentView
-import com.freegang.extension.fieldGet
+import com.freegang.extension.findFieldGetValue
 import com.freegang.extension.firstOrNull
 import com.ss.android.ugc.aweme.base.model.UrlModel
 import com.ss.android.ugc.aweme.emoji.store.view.EmojiBottomSheetDialog
@@ -32,6 +32,7 @@ class HEmojiDetailDialog : BaseHook(), CallMethods {
         return EmojiDetailDialog::class.java
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onInit() {
         lpparam.hookClass(EmojiBottomSheetDialog::class.java)
             .method("onCreate", Bundle::class.java) {
@@ -73,8 +74,8 @@ class HEmojiDetailDialog : BaseHook(), CallMethods {
             if (!config.isEmojiDownload) return
             if (urlList.isNotEmpty()) return
 
-            val urlModel = thisObject.fieldGet(type = UrlModel::class.java)
-            urlList = urlModel?.fieldGet(name = "urlList")?.asOrNull<List<String>>() ?: listOf()
+            val urlModel = thisObject.findFieldGetValue<UrlModel> { type(UrlModel::class.java) }
+            urlList = urlModel?.urlList ?: emptyList()
         }.onFailure {
             XplerLog.e(it)
         }
