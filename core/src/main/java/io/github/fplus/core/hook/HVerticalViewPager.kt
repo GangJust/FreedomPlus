@@ -102,7 +102,7 @@ class HVerticalViewPager : BaseHook() {
                             }
 
                             //
-                            val delayAweme = adapter.findMethodInvoke<Aweme>(currentItem) {
+                            val delayAweme = adapter.findMethodInvoke<Aweme>(delayItem) {
                                 returnType(Aweme::class.java)
                                 parameterTypes(listOf(Int::class.java))
                             }
