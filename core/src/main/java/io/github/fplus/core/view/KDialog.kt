@@ -1,5 +1,7 @@
 package io.github.fplus.core.view
 
+import android.animation.ValueAnimator
+import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -13,7 +15,6 @@ import com.freegang.extension.activeActivity
 import io.github.xpler.core.log.XplerLog
 
 class KDialog : PopupWindow() {
-
     init {
         this.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT)) // 取消默认背景色(设置透明)
         width = WindowManager.LayoutParams.MATCH_PARENT
@@ -28,10 +29,24 @@ class KDialog : PopupWindow() {
         return this
     }
 
+    val context: Context
+        get() = contentView.context
+
     override fun dismiss() {
         // 关闭键盘
         val imm = contentView.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
         imm?.hideSoftInputFromWindow(contentView.windowToken, InputMethodManager.RESULT_UNCHANGED_SHOWN)
+
+        // 关闭动画
+        ValueAnimator.ofFloat(0.5f, 1f).apply {
+            duration = 300L
+            addUpdateListener {
+                setBackgroundAlpha(it.animatedValue as Float)
+            }
+            start()
+        }
+
+        // 关闭弹窗
         super.dismiss()
     }
 
@@ -53,10 +68,29 @@ class KDialog : PopupWindow() {
 
     fun show(parentView: View, gravity: Int, x: Int, y: Int) {
         try {
-            if (isShowing) return
+            if (isShowing)
+                return
+
+            // 显示动画
+            ValueAnimator.ofFloat(1f, 0.5f).apply {
+                duration = 300L
+                addUpdateListener {
+                    setBackgroundAlpha(it.animatedValue as Float)
+                }
+                start()
+            }
+
+            // 显示弹窗
             this.showAtLocation(parentView, gravity, x, y)
         } catch (e: Exception) {
             XplerLog.e("`${this::class.java.name}#show()`错误:\n${e.stackTraceToString()}")
         }
+    }
+
+    private fun setBackgroundAlpha(alpha: Float) {
+        val window = (contentView.context as? Activity)?.window
+        val layoutParams = window?.attributes
+        layoutParams?.alpha = alpha
+        window?.attributes = layoutParams
     }
 }
