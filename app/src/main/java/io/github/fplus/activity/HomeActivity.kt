@@ -49,7 +49,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
@@ -63,12 +62,19 @@ import com.freegang.ktutils.log.KLogCat
 import io.github.fplus.Constant
 import io.github.fplus.FreedomTheme
 import io.github.fplus.HookStatus
-import io.github.fplus.R
 import io.github.fplus.Themes
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.ui.component.FCard
 import io.github.fplus.core.ui.component.FMessageDialog
+import io.github.fplus.resource.IconRes
 import io.github.fplus.resource.StringRes
+import io.github.fplus.resource.icons.FindFile
+import io.github.fplus.resource.icons.Github
+import io.github.fplus.resource.icons.Motion
+import io.github.fplus.resource.icons.SpicyStrips
+import io.github.fplus.resource.icons.Telegram
+import io.github.fplus.resource.icons.Visibility
+import io.github.fplus.resource.icons.VisibilityOff
 import io.github.fplus.viewmodel.HomeVM
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -142,7 +148,7 @@ class HomeActivity : ComponentActivity() {
                     )
                 }
                 Icon(
-                    painter = painterResource(id = if (visible) R.drawable.ic_visibility else R.drawable.ic_visibility_off),
+                    imageVector = if (visible) IconRes.Visibility else IconRes.VisibilityOff,
                     contentDescription = "显示/隐藏图标",
                     tint = Themes.nowColors.icon,
                     modifier = Modifier
@@ -162,7 +168,7 @@ class HomeActivity : ComponentActivity() {
                 )
                 Spacer(modifier = Modifier.padding(horizontal = 12.dp))
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_motion),
+                    imageVector = IconRes.Motion,
                     contentDescription = "检查更新/日志",
                     tint = Themes.nowColors.icon,
                     modifier = Modifier
@@ -458,7 +464,7 @@ class HomeActivity : ComponentActivity() {
                     ) {
                         Icon(
                             modifier = Modifier.size(24.dp),
-                            painter = painterResource(id = R.drawable.ic_find_file),
+                            imageVector = IconRes.FindFile,
                             contentDescription = "下载目录",
                             tint = Themes.nowColors.icon,
                         )
@@ -495,7 +501,7 @@ class HomeActivity : ComponentActivity() {
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_github),
+                            imageVector = IconRes.Github,
                             contentDescription = "Github",
                             tint = Themes.nowColors.icon,
                             modifier = Modifier.size(24.dp)
@@ -571,7 +577,7 @@ class HomeActivity : ComponentActivity() {
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_telegram),
+                            imageVector = IconRes.Telegram,
                             contentDescription = "Telegram频道",
                             tint = Themes.nowColors.icon,
                             modifier = Modifier.size(24.dp)
@@ -609,7 +615,7 @@ class HomeActivity : ComponentActivity() {
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_spicy_strips),
+                            imageVector = IconRes.SpicyStrips,
                             contentDescription = "请我吃辣条",
                             tint = Themes.nowColors.icon,
                             modifier = Modifier.size(24.dp)

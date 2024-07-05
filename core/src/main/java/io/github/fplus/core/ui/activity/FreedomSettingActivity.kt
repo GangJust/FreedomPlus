@@ -55,6 +55,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
@@ -66,12 +67,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.freegang.extension.findMethodInvoke
 import com.freegang.ktutils.app.KToastUtils
-import io.github.fplus.core.R
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.helper.HighlightStyleBuilder
 import io.github.fplus.core.ui.ModuleTheme
 import io.github.fplus.core.ui.asDp
-import io.github.fplus.core.ui.compat.painterResourceCompat
 import io.github.fplus.core.ui.component.FCard
 import io.github.fplus.core.ui.component.FCardBorder
 import io.github.fplus.core.ui.component.FCountDownMessageDialog
@@ -79,6 +78,10 @@ import io.github.fplus.core.ui.component.FMessageDialog
 import io.github.fplus.core.ui.component.FWaitingMessageDialog
 import io.github.fplus.core.ui.viewmodel.FreedomSettingVM
 import io.github.fplus.plugin.activity.XplerActivity
+import io.github.fplus.resource.IconRes
+import io.github.fplus.resource.icons.History
+import io.github.fplus.resource.icons.Manage
+import io.github.fplus.resource.icons.Motion
 import io.github.webdav.WebDav
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -129,26 +132,27 @@ class FreedomSettingActivity : XplerActivity() {
                             },
                         ),
                 )
-                Spacer(modifier = Modifier.padding(horizontal = 12.dp))
+                Spacer(modifier = Modifier.padding(horizontal = 8.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Freedom+ Setting",
                         style = MaterialTheme.typography.body1.copy(
-                            fontSize = 18.sp,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colors.onSurface,
                         ),
                     )
-                    Spacer(modifier = Modifier.padding(vertical = 2.dp))
                     Text(
                         text = "No one is always happy.",
                         style = MaterialTheme.typography.body1.copy(
-                            fontSize = 14.sp,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colors.onSurface.copy(0.5f),
                         ),
                     )
                 }
                 Icon(
-                    painter = painterResourceCompat(id = R.drawable.ic_manage),
+                    imageVector = IconRes.Manage,
                     contentDescription = "Log",
                     modifier = Modifier
                         .size(24.dp)
@@ -173,7 +177,7 @@ class FreedomSettingActivity : XplerActivity() {
                 )
                 Spacer(modifier = Modifier.padding(horizontal = 12.dp))
                 Icon(
-                    painter = painterResourceCompat(id = R.drawable.ic_motion),
+                    imageVector = IconRes.Motion,
                     contentDescription = "更新日志",
                     modifier = Modifier
                         .size(20.dp)
@@ -313,7 +317,7 @@ class FreedomSettingActivity : XplerActivity() {
                         model.setVersionConfig(null)
                     }
                     // KAppUtils.restartApplication(application)
-                    DexkitBuilder.restartUtilsClazz?.findMethodInvoke<Any>(this){
+                    DexkitBuilder.restartUtilsClazz?.findMethodInvoke<Any>(this) {
                         parameterTypes(listOf(Context::class.java))
                     }
                 },
@@ -1661,7 +1665,7 @@ class FreedomSettingActivity : XplerActivity() {
                             )
 
                             Icon(
-                                painter = painterResourceCompat(id = R.drawable.ic_history),
+                                imageVector = IconRes.History,
                                 contentDescription = "WebDav列表",
                                 modifier = Modifier
                                     .size(16.dp)

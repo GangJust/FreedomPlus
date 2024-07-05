@@ -126,9 +126,7 @@ class HPlayerController : BaseHook() {
         val videoViewHolder = params.thisObject
             .findMethodInvoke<VideoViewHolder> {
                 returnType(VideoViewHolder::class.java, true)
-                predicate {
-                    it.parameterTypes.isEmpty()
-                }
+                predicate { it.parameterTypes.isEmpty() }
             }
 
         val view = videoViewHolder?.findFieldGetValue<PenetrateTouchRelativeLayout> {

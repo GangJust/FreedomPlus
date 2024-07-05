@@ -50,6 +50,7 @@ object DexkitBuilder {
     var emojiPopupWindowClazz: Class<*>? = null
     var bottomCtrlBarClazz: Class<*>? = null
     var chatListRecyclerViewAdapterClazz: Class<*>? = null
+    var chatListRecyclerViewAdapterNewClazz: Class<*>? = null
     var chatListRecalledHintClazz: Class<*>? = null
     var restartUtilsClazz: Class<*>? = null
     var longPressEventClazz: Class<*>? = null
@@ -433,6 +434,32 @@ object DexkitBuilder {
             }
             chatListRecyclerViewAdapterClazz = chatListRecyclerViewAdapter.instance("chatListRecyclerViewAdapter")
 
+            val chatListRecyclerViewAdapterNew = bridge.findClass {
+                // searchPackages("X")
+                matcher {
+                    addField {
+                        type = "com.ss.android.ugc.aweme.im.sdk.chat.SessionInfo"
+                    }
+
+                    addMethod {
+                        returnType = "com.ss.android.ugc.aweme.rips.InjectionAware"
+                    }
+
+                    addMethod {
+                        name = "getItemId"
+                    }
+
+                    addMethod {
+                        name = "getItemCount"
+                    }
+
+                    addMethod {
+                        name = "onCreateViewHolder"
+                    }
+                }
+            }
+            chatListRecyclerViewAdapterNewClazz = chatListRecyclerViewAdapterNew.instance("chatListRecyclerViewAdapterNew")
+
             val chatListRecalledHint = bridge.findClass {
                 matcher {
                     fields {
@@ -727,6 +754,7 @@ object DexkitBuilder {
         detailPageFragmentClazz = classCache.getStringOrDefault("detailPageFragment").loadOrFindClass()
         bottomCtrlBarClazz = classCache.getStringOrDefault("bottomCtrlBar").loadOrFindClass()
         chatListRecyclerViewAdapterClazz = classCache.getStringOrDefault("chatListRecyclerViewAdapter").loadOrFindClass()
+        chatListRecyclerViewAdapterNewClazz = classCache.getStringOrDefault("chatListRecyclerViewAdapterNew").loadOrFindClass()
         chatListRecalledHintClazz = classCache.getStringOrDefault("chatListRecalledHint").loadOrFindClass()
         restartUtilsClazz = classCache.getStringOrDefault("restartUtils").loadOrFindClass()
         longPressEventClazz = classCache.getStringOrDefault("longPressEvent").loadOrFindClass()

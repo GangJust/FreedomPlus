@@ -35,7 +35,9 @@ import io.github.fplus.FreedomTheme
 import io.github.fplus.R
 import io.github.fplus.Themes
 import io.github.fplus.core.ui.component.ScrollableContainer
+import io.github.fplus.resource.IconRes
 import io.github.fplus.resource.StringRes
+import io.github.fplus.resource.icons.Acute
 import kotlin.system.exitProcess
 
 class ErrorActivity : ComponentActivity() {
@@ -64,7 +66,8 @@ class ErrorActivity : ComponentActivity() {
                 )
             }
             Icon(
-                painter = painterResource(R.drawable.ic_acute),
+                // painter = painterResource(R.drawable.ic_acute),
+                imageVector = IconRes.Acute,
                 contentDescription = "分享",
                 tint = Themes.nowColors.icon,
                 modifier = Modifier

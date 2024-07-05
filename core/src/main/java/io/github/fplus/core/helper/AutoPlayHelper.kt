@@ -9,7 +9,8 @@ object AutoPlayHelper {
 
     fun openAutoPlay(context: Context) {
         runCatching {
-            val controllerGetFiled = DexkitBuilder.autoPlayControllerClazz?.fields?.firstOrNull { Modifier.isStatic(it.modifiers) }
+            val controllerGetFiled =
+                DexkitBuilder.autoPlayControllerClazz?.fields?.firstOrNull { Modifier.isStatic(it.modifiers) }
             val controllerGet = controllerGetFiled?.get(null)
             val controller = controllerGet?.findMethodInvoke<Any>(context) {
                 parameterTypes(listOf(Context::class.java))

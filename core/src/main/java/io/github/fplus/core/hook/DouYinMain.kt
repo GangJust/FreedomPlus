@@ -42,10 +42,7 @@ class DouYinMain(private val app: Application) {
             val intent = Intent()
             val className = "${Constant.modulePackage}.activity.ErrorActivity"
             intent.setClassName(Constant.modulePackage, className)
-            KAppCrashUtils.init(app, "抖音异常退出!", intent) { e, m ->
-                KActivityUtils.unregister(app)
-                true
-            }
+            KAppCrashUtils.init(app, "抖音异常退出!", intent)
 
             // 定时退出
             initTimedShutdown(app)
@@ -53,7 +50,7 @@ class DouYinMain(private val app: Application) {
             // search and hook
             DexkitBuilder.running(
                 app = app,
-                version = 26,
+                version = 30,
                 searchBefore = {
                     HPhoneWindow()
                     HActivity()
@@ -92,6 +89,7 @@ class DouYinMain(private val app: Application) {
                     HBottomCtrlBar()
                     HMessage()
                     HChatListRecyclerViewAdapter()
+                    HChatListRecyclerViewAdapterNew()
                     HChatListRecalledHint()
                 }
             )

@@ -22,7 +22,7 @@ import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 
-class HChatListRecyclerViewAdapter : BaseHook() {
+class HChatListRecyclerViewAdapterNew : BaseHook() {
     companion object {
         const val TAG = "HChatListRecyclerViewAdapter"
     }
@@ -32,7 +32,7 @@ class HChatListRecyclerViewAdapter : BaseHook() {
     private val config get() = ConfigV1.get()
 
     override fun setTargetClass(): Class<*> {
-        return DexkitBuilder.chatListRecyclerViewAdapterClazz ?: NoneHook::class.java
+        return DexkitBuilder.chatListRecyclerViewAdapterNewClazz ?: NoneHook::class.java
     }
 
     @OnAfter("onCreateViewHolder")
@@ -62,7 +62,7 @@ class HChatListRecyclerViewAdapter : BaseHook() {
                 addView(textView)
             }
         }.onFailure {
-            XplerLog.tagE(HChatListRecyclerViewAdapterNew.TAG, it)
+            XplerLog.tagE(TAG, it)
         }
     }
 
@@ -89,8 +89,9 @@ class HChatListRecyclerViewAdapter : BaseHook() {
                 recallMsg.isVisible = false
                 recallMsg.text = ""
             }
+
         }.onFailure {
-            XplerLog.e(it)
+            XplerLog.tagE(TAG, it)
         }
     }
 }

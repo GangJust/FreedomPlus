@@ -27,27 +27,24 @@ class HMessage : BaseHook() {
                 return
             }
 
+            val message = thisObject as Message
+
             if (!config.preventRecalledOtherSetting.getOrElse(0) { false }) {
-                val isSelf = thisObject.findMethodInvoke<Boolean> { name("isSelf") }
-                if (isSelf == true) return
+                if (message.isSelf) {
+                    return
+                }
             }
 
-            val content = "${thisObject.findMethodInvoke<Any> { name("getContent") }}"
-            if (content == "{\"aweType\":0,\"text\":\"Recall Content Hided\"}") {
+            if (message.content == "{\"aweType\":0,\"text\":\"Recall Content Hided\"}") {
                 return
             }
 
-            val ext = thisObject.findMethodInvoke<MutableMap<String, String>> {
-                name("getExt")
-                returnType(java.util.Map::class.java)
-            } ?: return
-            if (ext.containsKey("s:is_recalled")) {
-                ext.remove("s:is_recalled")
-                ext.put("f:prevent_recalled", "true")
-                thisObject.findMethodInvoke<Any>(ext) { name("setExt") }
-
+            if (message.ext.containsKey("s:is_recalled")) {
+                message.ext.remove("s:is_recalled")
+                message.ext.put("f:prevent_recalled", "true")
                 result = false
             }
+
         }.onFailure {
             XplerLog.e(it)
         }
