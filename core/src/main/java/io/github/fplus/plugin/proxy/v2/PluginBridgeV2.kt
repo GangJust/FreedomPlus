@@ -11,7 +11,7 @@ import android.os.Handler
 import android.os.Message
 import com.freegang.extension.classLoader
 import com.freegang.ktutils.log.KLogCat
-import io.github.fplus.plugin.base.IXplerActivity
+import io.github.fplus.plugin.base.IPluginActivity
 import io.github.xpler.loader.moduleClassloader
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.InvocationTargetException
@@ -430,7 +430,7 @@ object PluginBridgeV2 {
         // 是否模块Activity,
         return try {
             val pluginActivityClazz = classLoader.loadClass(pluginActivityClassName) ?: return false
-            IXplerActivity::class.java.isAssignableFrom(pluginActivityClazz)
+            IPluginActivity::class.java.isAssignableFrom(pluginActivityClazz)
         } catch (e: ClassNotFoundException) {
             false
         }

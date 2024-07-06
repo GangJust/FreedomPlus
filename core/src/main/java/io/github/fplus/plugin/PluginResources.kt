@@ -37,9 +37,7 @@ class PluginResources(
             originResources
         } else {
             val assetManager = AssetManager::class.java.newInstance()
-            assetManager.findMethodInvoke<Any>(KtXposedHelpers.modulePath) {
-                parameterTypes(listOf(String::class.java))
-            }
+            assetManager.findMethodInvoke<Any>(KtXposedHelpers.modulePath) { name("addAssetPath") }
             Resources(assetManager, originResources.displayMetrics, originResources.configuration)
         }
     }

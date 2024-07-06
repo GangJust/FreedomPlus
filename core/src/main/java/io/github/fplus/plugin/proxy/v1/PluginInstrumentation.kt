@@ -13,7 +13,7 @@ import android.os.PersistableBundle
 import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
 import com.freegang.extension.classLoader
-import io.github.fplus.plugin.base.IXplerActivity
+import io.github.fplus.plugin.base.IPluginActivity
 import io.github.xpler.loader.moduleClassloader
 import java.lang.reflect.Method
 
@@ -135,7 +135,7 @@ class PluginInstrumentation(
             if (intent?.component != null) {
                 try {
                     val pluginClazz = pluginClassloader?.loadClass(intent.component?.className)
-                    if (pluginClazz != null && IXplerActivity::class.java.isAssignableFrom(pluginClazz)) {
+                    if (pluginClazz != null && IPluginActivity::class.java.isAssignableFrom(pluginClazz)) {
                         newIntent = Intent().apply { setClassName(who!!, stubActivity) }
                         intent.extras?.let { newIntent.putExtras(it) }
                         newIntent.putExtra(PLUGIN_PROXY_ACTIVITY, pluginClazz.name)

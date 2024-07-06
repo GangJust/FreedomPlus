@@ -22,7 +22,7 @@ abstract class XplerDialog(context: Context) : BaseXplerDialog(context) {
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             requestFeature(Window.FEATURE_NO_TITLE)
             WindowCompat.setDecorFitsSystemWindows(this, false)
-            WindowCompat.getInsetsController(this, decorView).hide(WindowInsetsCompat.Type.systemBars())
+            // WindowCompat.getInsetsController(this, decorView).hide(WindowInsetsCompat.Type.systemBars())
         }
     }
 

@@ -25,7 +25,7 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 
 open class BaseActivity : Activity(),
-    IXplerActivity,
+    IPluginActivity,
     ContextAware,
     LifecycleOwner,
     ViewModelStoreOwner,
