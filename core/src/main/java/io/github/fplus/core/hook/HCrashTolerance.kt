@@ -1,35 +1,25 @@
 package io.github.fplus.core.hook
 
-import com.freegang.ktutils.app.KAppUtils
-import com.freegang.ktutils.app.KToastUtils
 import com.ss.android.ugc.aweme.feed.model.VideoItemParams
 import com.ss.android.ugc.aweme.kiwi.model.QModel
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
-import io.github.xpler.core.entity.EmptyHook
 import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.wrapper.CallMethods
 
 /// 崩溃容错，处理官方可能造成的系列崩溃问题
-class HCrashTolerance : BaseHook() {
+class HCrashTolerance {
     companion object {
         const val TAG = "HCrashTolerance"
     }
 
     val config get() = ConfigV1.get()
 
-    override fun setTargetClass(): Class<*> {
-        return EmptyHook::class.java
-    }
-
-    override fun onInit() {
-        // if (!config.isCrashTolerance)
-        //     return
-
+    init {
         HPoiFeed()
         HLivePhoto()
         HTabLanding()
