@@ -13,7 +13,6 @@ import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
-import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.hookClass
 import io.github.xpler.core.log.XplerLog

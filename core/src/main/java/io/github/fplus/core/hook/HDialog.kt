@@ -5,11 +5,9 @@ import android.widget.TextView
 import com.freegang.extension.ellipsis
 import com.freegang.extension.forEachWhereChild
 import com.freegang.ktutils.app.KToastUtils
-import com.freegang.ktutils.log.KLogCat
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
-import io.github.xpler.core.entity.OnAfter
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 

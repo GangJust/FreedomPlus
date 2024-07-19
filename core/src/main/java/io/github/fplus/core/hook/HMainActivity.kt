@@ -33,8 +33,6 @@ import io.github.fplus.core.hook.logic.ClipboardLogic
 import io.github.fplus.core.hook.logic.DownloadLogic
 import io.github.fplus.core.ui.activity.FreedomSettingActivity
 import io.github.xpler.core.KtXposedHelpers
-import io.github.xpler.core.entity.OnAfter
-import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisActivity

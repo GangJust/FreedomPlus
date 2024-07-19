@@ -8,7 +8,7 @@ import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.xpler.core.findClass
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.hookConstructorsAll
+import io.github.xpler.core.hookConstructorAll
 import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisViewGroup
 import io.github.xpler.core.wrapper.CallConstructors
@@ -28,7 +28,7 @@ class HDisallowInterceptRelativeLayout : BaseHook(),
     override fun onInit() {
         // 旧版本
         lpparam.findClass("com.ss.android.ugc.aweme.feed.ui.DisallowInterceptRelativeLayout2")
-            .hookConstructorsAll {
+            .hookConstructorAll {
                 onAfter {
                     callOnAfterConstructors(this)
                 }

@@ -10,8 +10,6 @@ import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.ImmersiveHelper
 import io.github.fplus.core.hook.logic.ClipboardLogic
 import io.github.fplus.core.hook.logic.DownloadLogic
-import io.github.xpler.core.entity.OnAfter
-import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 import io.github.xpler.core.thisActivity

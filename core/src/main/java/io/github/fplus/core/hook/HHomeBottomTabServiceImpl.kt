@@ -6,7 +6,6 @@ import com.freegang.extension.getOnClickListener
 import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
-import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
 

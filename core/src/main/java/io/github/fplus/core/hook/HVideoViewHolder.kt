@@ -20,10 +20,10 @@ import com.freegang.extension.asOrNull
 import com.freegang.extension.dip2px
 import com.freegang.extension.findField
 import com.freegang.extension.findFieldGetValue
+import com.freegang.extension.findMethodInvoke
 import com.freegang.extension.firstParentOrNull
 import com.freegang.extension.forEachChild
 import com.freegang.extension.getSiblingViewAt
-import com.freegang.extension.findMethodInvoke
 import com.freegang.extension.postRunning
 import com.freegang.extension.setLayoutWidth
 import com.ss.android.ugc.aweme.feed.model.Aweme
@@ -36,8 +36,6 @@ import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.AutoPlayHelper
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.xpler.core.entity.NoneHook
-import io.github.xpler.core.entity.OnAfter
-import io.github.xpler.core.entity.OnBefore
 import io.github.xpler.core.getModuleDrawable
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.log.XplerLog
