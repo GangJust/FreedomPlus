@@ -5,11 +5,10 @@ plugins {
 
 android {
     namespace "io.github.fplus.core"
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         minSdk 24
-        targetSdk 33
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -42,9 +41,6 @@ android {
 }
 
 dependencies {
-    compileOnly files("libs/api-82.jar")
-    compileOnly project(":aweme")
-
     implementation(libs.core.ktx)
     implementation(libs.appcompat)
     implementation(libs.android.material)
@@ -63,10 +59,12 @@ dependencies {
     implementation(libs.runtime.livedata)
     implementation(libs.mmkv)
     implementation(libs.dexkit)
+    implementation(libs.xpler)
+    implementation(libs.xposed.api)
     //implementation(libs.okhttp3)
     //implementation libs.ss.ktx
 
-    implementation project(":xpler")
+    compileOnly project(":aweme")
     implementation project(":webdav")
     implementation project(":ktutils")
 }
