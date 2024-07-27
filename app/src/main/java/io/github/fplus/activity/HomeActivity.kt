@@ -59,7 +59,6 @@ import com.freegang.extension.appVersion
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
 import com.freegang.ktutils.log.KLogCat
-import io.github.fplus.Constant
 import io.github.fplus.FreedomTheme
 import io.github.fplus.HookStatus
 import io.github.fplus.Themes
@@ -303,33 +302,8 @@ class HomeActivity : ComponentActivity() {
                             modifier = Modifier.align(Alignment.Center),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            val packageInfo =
-                                KAppUtils.getPackageInfo(application, Constant.scopes.elementAt(0).packageName)
-                            val lspatchActive =
-                                HookStatus.isLSPatchActive(application, Constant.scopes.elementAt(0).packageName)
-                            if (lspatchActive.isNotEmpty()) {
-                                moduleState.value = "Lspatch加载成功!"
-                                Text(
-                                    text = moduleState.value,
-                                    style = Themes.nowTypography.body1,
-                                )
-                                Spacer(modifier = Modifier.padding(vertical = 2.dp))
-                                Text(
-                                    text = "${lspatchActive[0]} ${lspatchActive[1]} - ${lspatchActive[2]}",
-                                    style = Themes.nowTypography.body2,
-                                )
-                            } else if (HookStatus.isExpActive(this@HomeActivity)) {
-                                moduleState.value = "太极加载成功!"
-                                Text(
-                                    text = moduleState.value,
-                                    style = Themes.nowTypography.body1,
-                                )
-                                Spacer(modifier = Modifier.padding(vertical = 2.dp))
-                                Text(
-                                    text = "已放弃太极适配, 部分功能在使用时可能出现异常",
-                                    style = Themes.nowTypography.body2,
-                                )
-                            } else if (HookStatus.isEnabled) {
+                            val packageInfo = KAppUtils.getPackageInfo(application, "com.ss.android.ugc.aweme")
+                            if (HookStatus.isEnabled) {
                                 moduleState.value = if (HookStatus.framework == "Unknown") {
                                     "未知框架, 加载成功!"
                                 } else {
@@ -345,6 +319,7 @@ class HomeActivity : ComponentActivity() {
                                     style = Themes.nowTypography.body1,
                                 )
                             }
+
                             if (packageInfo != null) {
                                 var hint by remember { mutableStateOf("自行测试功能") }
                                 LaunchedEffect("Versions") {
@@ -675,7 +650,7 @@ class HomeActivity : ComponentActivity() {
 
             val intent = Intent()
             intent.setClassName(
-                Constant.scopes.elementAt(0).packageName,
+                "com.ss.android.ugc.aweme",
                 "com.ss.android.ugc.aweme.main.MainActivity"
             )
             intent.putExtra("startModuleSetting", true)
