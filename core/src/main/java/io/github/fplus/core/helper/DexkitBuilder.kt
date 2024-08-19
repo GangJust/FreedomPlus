@@ -108,7 +108,7 @@ object DexkitBuilder {
      */
     private fun startSearch() {
         KLogCat.tagI(TAG, "Dexkit开始搜索: ${lpparam.appInfo.sourceDir}")
-        System.loadLibrary("dexkit")
+        // System.loadLibrary("dexkit")
         DexKitBridge.create(lpparam.appInfo.sourceDir).use { bridge ->
             val sideBarNestedScrollView = bridge.findClass {
                 matcher {

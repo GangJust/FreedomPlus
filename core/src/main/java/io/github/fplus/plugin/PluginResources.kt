@@ -17,9 +17,9 @@ import android.os.Bundle
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.util.TypedValue
-import com.freegang.extension.findFieldSetValue
 import com.freegang.extension.findMethodInvoke
 import com.freegang.ktutils.log.KLogCat
+import de.robv.android.xposed.XposedHelpers
 import io.github.xpler.core.KtXposedHelpers
 import java.io.InputStream
 
@@ -809,14 +809,13 @@ class PluginResources(
 // 代理Resources
 fun proxyRes(activity: Activity?) {
     activity?.runCatching {
-        this.findFieldSetValue(PluginResources(activity.resources)) { name("mResources") }
+        XposedHelpers.setObjectField(this, "mResources", PluginResources(activity.resources))
     }
 }
 
 // 合并Resources
 fun injectRes(res: Resources?) {
-    if (res != null) {
-        val assets = res.assets
-        assets.findFieldSetValue(KtXposedHelpers.modulePath) { name("addAssetPath") }
+    res?.runCatching {
+        XposedHelpers.callMethod(res.assets, "addAssetPath", KtXposedHelpers.modulePath)
     }
 }

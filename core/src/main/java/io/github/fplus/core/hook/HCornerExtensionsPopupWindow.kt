@@ -2,6 +2,7 @@ package io.github.fplus.core.hook
 
 import android.app.ActivityOptions
 import android.content.Intent
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupWindow
@@ -42,9 +43,8 @@ class HCornerExtensionsPopupWindow : BaseHook() {
 
             val popupWindow = thisObject as PopupWindow
             popupWindow.contentView.postRunning {
-                val inflateView = KtXposedHelpers.inflateView<View>(it.context, R.layout.popup_freedom_setting)
                 val icFreedom = KtXposedHelpers.getDrawable(R.drawable.ic_freedom)
-                val binding = PopupFreedomSettingBinding.bind(inflateView)
+                val binding = PopupFreedomSettingBinding.inflate(LayoutInflater.from(it.context))
                 binding.freedomSettingTitle.text = String.format("%s", "Freedom+")
                 binding.freedomSettingIcon.setImageDrawable(icFreedom)
                 binding.freedomSettingContainer.setOnClickListener { view ->

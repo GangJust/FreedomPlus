@@ -7,6 +7,7 @@ import com.freegang.extension.getStringOrDefault
 import com.freegang.extension.parseJSON
 import com.freegang.extension.storageRootFile
 import com.tencent.mmkv.MMKV
+import com.tencent.mmkv.MMKV.LibLoader
 import io.github.webdav.WebDav
 import org.json.JSONObject
 import java.io.File
@@ -35,8 +36,8 @@ class ConfigV1 private constructor() {
             return context.filesDir.child("fplus")
         }
 
-        fun initialize(context: Context) {
-            MMKV.initialize(context, getConfigDir(context).absolutePath)
+        fun initialize(context: Context, libLoader: LibLoader? = null) {
+            MMKV.initialize(context, getConfigDir(context).absolutePath, libLoader)
         }
 
         fun clear(context: Context) {

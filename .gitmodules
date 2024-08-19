@@ -1,3 +1,6 @@
 [submodule "ktutils"]
 	path = ktutils
 	url = https://github.com/GangJust/ktutils.git
+[submodule "xpler"]
+	path = xpler
+	url = https://github.com/ThatWorld/xpler.git

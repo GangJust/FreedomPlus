@@ -59,12 +59,12 @@ dependencies {
     implementation(libs.runtime.livedata)
     implementation(libs.mmkv)
     implementation(libs.dexkit)
-    implementation(libs.xpler)
     //implementation(libs.okhttp3)
     //implementation libs.ss.ktx
 
     compileOnly(libs.xposed.api)
     compileOnly project(":aweme")
+    implementation project(":xpler")
     implementation project(":webdav")
     implementation project(":ktutils")
 }

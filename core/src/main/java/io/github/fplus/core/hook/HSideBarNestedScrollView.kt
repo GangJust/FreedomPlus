@@ -3,6 +3,7 @@ package io.github.fplus.core.hook
 import android.app.ActivityOptions
 import android.content.Intent
 import android.graphics.Color
+import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.ViewGroup
 import androidx.core.view.children
@@ -66,9 +67,8 @@ class HSideBarNestedScrollView : BaseHook() {
             val onlyChild = it.getChildAt(0) as ViewGroup
             if (onlyChild.children.lastOrNull()?.contentDescription == "扩展功能") return@postRunning
 
-            val setting = KtXposedHelpers.inflateView<ViewGroup>(onlyChild.context, R.layout.side_freedom_setting)
-            setting.contentDescription = "扩展功能"
-            val binding = SideFreedomSettingBinding.bind(setting)
+            val binding = SideFreedomSettingBinding.inflate(LayoutInflater.from(viewGroup.context), viewGroup, false)
+            binding.root.contentDescription = "扩展功能"
 
             val backgroundRes: Int
             val iconColorRes: Int

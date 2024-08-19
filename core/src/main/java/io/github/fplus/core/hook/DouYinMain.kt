@@ -1,7 +1,10 @@
 package io.github.fplus.core.hook
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Intent
+import com.freegang.extension.child
+import com.freegang.extension.need
 import com.freegang.ktutils.app.KActivityUtils
 import com.freegang.ktutils.app.KAppCrashUtils
 import com.freegang.ktutils.app.KAppUtils
@@ -11,8 +14,11 @@ import io.github.fplus.Constant
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.helper.TimerExitHelper
+import io.github.fplus.plugin.injectRes
 import io.github.fplus.plugin.proxy.v1.PluginBridge
+import io.github.xpler.core.KtXposedHelpers
 import io.github.xpler.core.log.XplerLog
+import java.util.zip.ZipFile
 
 class DouYinMain(private val app: Application) {
     companion object {
@@ -22,11 +28,11 @@ class DouYinMain(private val app: Application) {
 
     init {
         runCatching {
+            exportNative(app)
+
             // 插件化注入
             PluginBridge.init(app, "com.ss.android.ugc.aweme.setting.ui.AboutActivity")
-
-            // 加载配置
-            ConfigV1.initialize(app)
+            injectRes(app.resources)
 
             // 全局Application
             KAppUtils.setApplication(app)
@@ -97,6 +103,36 @@ class DouYinMain(private val app: Application) {
         }.onFailure {
             XplerLog.e(it)
             KToastUtils.show(app, "Freedom+ Error: ${it.message}")
+        }
+    }
+
+    @SuppressLint("UnsafeDynamicallyLoadedCode")
+    private fun exportNative(app: Application) {
+        val libDir = ConfigV1.getConfigDir(app).child("lib").need()
+        val libDexkit = libDir.child("libdexkit.so")
+        val libMmkv = libDir.child("libmmkv.so")
+
+        if (!libDexkit.exists() || !libMmkv.exists()) {
+            val abi = if (KAppUtils.is64BitDalvik()) "arm64-v8a" else "armeabi-v7a"
+            val dexkitSo = "lib/${abi}/libdexkit.so"
+            val mmkbSo = "lib/${abi}/libmmkv.so"
+
+            val zipFile = ZipFile(KtXposedHelpers.modulePath)
+            zipFile.getInputStream(zipFile.getEntry(dexkitSo)).use { input ->
+                libDexkit.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+            zipFile.getInputStream(zipFile.getEntry(mmkbSo)).use { input ->
+                libMmkv.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+        }
+
+        System.load(libDexkit.absolutePath)
+        ConfigV1.initialize(app) { _ ->
+            System.load(libMmkv.absolutePath)
         }
     }
 

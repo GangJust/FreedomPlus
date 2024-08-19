@@ -1,6 +1,7 @@
 package io.github.fplus.core.hook
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -62,8 +63,7 @@ class HDetailPageFragment : BaseHook() {
                 viewGroup.removeAllViews()
 
                 // 重新构建视图
-                val appbar = KtXposedHelpers.inflateView<RelativeLayout>(viewGroup.context, R.layout.hook_appbar_layout)
-                val binding = HookAppbarLayoutBinding.bind(appbar)
+                val binding = HookAppbarLayoutBinding.inflate(LayoutInflater.from(viewGroup.context), viewGroup, false)
                 binding.backBtn.setOnClickListener {
                     backBtn.performClick()
                 }
@@ -71,7 +71,7 @@ class HDetailPageFragment : BaseHook() {
                     val awemeAgain = thisObject.findMethodInvoke<Aweme> { returnType(Aweme::class.java) } // 重新获取
                     SaveCommentLogic(this@HDetailPageFragment, it.context, awemeAgain)
                 }
-                viewGroup.addView(appbar)
+                viewGroup.addView(binding.root)
 
                 //
                 HDetailPageFragment.isComment = true

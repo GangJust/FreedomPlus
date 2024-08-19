@@ -10,11 +10,12 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.FrameLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.annotation.DrawableRes
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.runtime.Composable
 import androidx.core.view.isVisible
 import com.freegang.extension.isDarkMode
@@ -28,11 +29,9 @@ import io.github.fplus.core.databinding.DialogMessageLayoutBinding
 import io.github.fplus.core.databinding.DialogProgressLayoutBinding
 import io.github.fplus.core.ui.ModuleTheme
 import io.github.fplus.core.ui.dialog.XplerDialogWrapper
-import io.github.fplus.core.view.KDialog
+import io.github.fplus.core.view.PopupDialog
 import io.github.fplus.core.view.adapter.DialogChoiceAdapter
-import io.github.xpler.core.KtXposedHelpers
 import io.github.xpler.core.entity.HookEntity
-import io.github.xpler.core.inflateModuleView
 import io.github.xpler.core.log.XplerLog
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -52,7 +51,7 @@ abstract class BaseHook : HookEntity() {
     private var singleMainJob: MutableMap<String, Job?> = mutableMapOf()
     private var singleIOJob: MutableMap<String, Job?> = mutableMapOf()
 
-    private var kDialog: KDialog? = null
+    private var popupDialog: PopupDialog? = null
 
     private fun launch(context: CoroutineContext, block: suspend CoroutineScope.() -> Unit): Job {
         val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
@@ -130,10 +129,10 @@ abstract class BaseHook : HookEntity() {
         view: View,
         onDismiss: () -> Unit = {},
     ) {
-        kDialog = if (kDialog == null) KDialog() else kDialog
-        kDialog!!.setView(view)
-        kDialog!!.show()
-        kDialog!!.setOnDismissListener { onDismiss.invoke() }
+        popupDialog = if (popupDialog == null) PopupDialog() else popupDialog
+        popupDialog!!.setView(view)
+        popupDialog!!.show()
+        popupDialog!!.setOnDismissListener { onDismiss.invoke() }
     }
 
     @Synchronized
@@ -142,6 +141,7 @@ abstract class BaseHook : HookEntity() {
         onDismiss: () -> Unit = {},
         content: @Composable (closeHandler: () -> Unit) -> Unit
     ) {
+        // injectRes(context.resources)
         XplerDialogWrapper(context).apply {
             setWrapperContent {
                 ModuleTheme {
@@ -165,11 +165,12 @@ abstract class BaseHook : HookEntity() {
         onCancel: () -> Unit = {},
         onDismiss: () -> Unit = {},
     ) {
+        // injectRes(context.resources)
         val isDarkMode = context.isDarkMode
-        val dialogView = context.inflateModuleView<FrameLayout>(R.layout.dialog_message_layout)
-        val binding = DialogMessageLayoutBinding.bind(dialogView)
+        val binding = DialogMessageLayoutBinding.inflate(LayoutInflater.from(context))
 
         binding.messageDialogContainer.background = getDrawable(
+            context,
             isDarkMode,
             R.drawable.dialog_background_night,
             R.drawable.dialog_background,
@@ -177,17 +178,20 @@ abstract class BaseHook : HookEntity() {
         if (singleButton) {
             binding.messageDialogCancel.visibility = View.GONE
             binding.messageDialogConfirm.background = getDrawable(
+                context,
                 isDarkMode,
                 R.drawable.dialog_single_button_background_night,
                 R.drawable.dialog_single_button_background,
             )
         } else {
             binding.messageDialogCancel.background = getDrawable(
+                context,
                 isDarkMode,
                 R.drawable.dialog_cancel_button_background_night,
                 R.drawable.dialog_cancel_button_background,
             )
             binding.messageDialogConfirm.background = getDrawable(
+                context,
                 isDarkMode,
                 R.drawable.dialog_confirm_button_background_night,
                 R.drawable.dialog_confirm_button_background,
@@ -201,11 +205,11 @@ abstract class BaseHook : HookEntity() {
         binding.messageDialogCancel.setTextColor(getTextColor(isDarkMode))
         binding.messageDialogConfirm.text = confirm
         binding.messageDialogCancel.setOnClickListener {
-            kDialog!!.dismiss()
+            popupDialog!!.dismiss()
             onCancel.invoke()
         }
         binding.messageDialogConfirm.setOnClickListener {
-            kDialog!!.dismiss()
+            popupDialog!!.dismiss()
             onConfirm.invoke()
         }
 
@@ -219,14 +223,15 @@ abstract class BaseHook : HookEntity() {
         context: Context,
         title: CharSequence,
         progress: Int = 0,
-        listener: (dialog: KDialog, progress: ProgressDialogNotification) -> Unit,
+        listener: (dismiss: (() -> Unit), progress: ProgressDialogNotification) -> Unit,
         onDismiss: () -> Unit = {},
     ) {
+        // injectRes(context.resources)
         val isDarkMode = context.isDarkMode
-        val dialogView = KtXposedHelpers.inflateView<FrameLayout>(context, R.layout.dialog_progress_layout)
-        val binding = DialogProgressLayoutBinding.bind(dialogView)
+        val binding = DialogProgressLayoutBinding.inflate(LayoutInflater.from(context))
 
         binding.progressDialogContainer.background = getDrawable(
+            context,
             isDarkMode,
             R.drawable.dialog_background_night,
             R.drawable.dialog_background,
@@ -236,7 +241,7 @@ abstract class BaseHook : HookEntity() {
         binding.progressDialogTitle.setTextColor(getTextColor(isDarkMode))
         binding.progressDialogText.setTextColor(getTextColor(isDarkMode))
         listener.invoke(
-            kDialog!!,
+            popupDialog!!::dismiss,
             ProgressDialogNotification(
                 binding.progressDialogBar,
                 binding.progressDialogText
@@ -263,17 +268,19 @@ abstract class BaseHook : HookEntity() {
         onCancel: () -> Unit = {},
         onDismiss: () -> Unit = {},
     ) {
+        // injectRes(context.resources)
         val isDarkMode = context.isDarkMode
-        val dialogView = KtXposedHelpers.inflateView<FrameLayout>(context, R.layout.dialog_input_choice_layout)
-        val binding = DialogInputChoiceLayoutBinding.bind(dialogView)
+        val binding = DialogInputChoiceLayoutBinding.inflate(LayoutInflater.from(context))
 
         binding.choiceDialogContainer.background = getDrawable(
+            context,
             isDarkMode,
             R.drawable.dialog_background_night,
             R.drawable.dialog_background,
         )
 
         binding.choiceDialogCancel.background = getDrawable(
+            context,
             isDarkMode,
             R.drawable.dialog_single_button_background_night,
             R.drawable.dialog_single_button_background,
@@ -283,6 +290,7 @@ abstract class BaseHook : HookEntity() {
         binding.choiceDialogTitle.setTextColor(getTextColor(isDarkMode))
 
         binding.choiceDialogInput1.background = getDrawable(
+            context,
             isDarkMode,
             R.drawable.dialog_input_background_night,
             R.drawable.dialog_input_background,
@@ -297,6 +305,7 @@ abstract class BaseHook : HookEntity() {
         }
 
         binding.choiceDialogInput2.background = getDrawable(
+            context,
             isDarkMode,
             R.drawable.dialog_input_background_night,
             R.drawable.dialog_input_background,
@@ -308,19 +317,20 @@ abstract class BaseHook : HookEntity() {
 
         binding.choiceDialogCancel.text = cancel
         binding.choiceDialogCancel.setOnClickListener {
-            kDialog!!.dismiss()
+            popupDialog!!.dismiss()
             onCancel.invoke()
         }
 
         binding.choiceDialogList.adapter = DialogChoiceAdapter(context, items, getTextColor(isDarkMode))
         binding.choiceDialogList.divider = ColorDrawable(Color.TRANSPARENT)
         binding.choiceDialogList.selector = getDrawable(
+            context,
             isDarkMode,
             R.drawable.item_selector_background_night,
             R.drawable.item_selector_background,
         )
         binding.choiceDialogList.setOnItemClickListener { _, view, position, _ ->
-            kDialog!!.dismiss()
+            popupDialog!!.dismiss()
             onChoice.invoke(
                 view,
                 "${binding.choiceDialogInput1.text}",
@@ -344,18 +354,20 @@ abstract class BaseHook : HookEntity() {
         onChoice: (view: View, item: CharSequence, position: Int) -> Unit,
         onCancel: () -> Unit = {},
     ) {
-        val dialogView = KtXposedHelpers.inflateView<FrameLayout>(context, R.layout.dialog_choice_layout)
-        val binding = DialogChoiceLayoutBinding.bind(dialogView)
+        // injectRes(context.resources)
+        val binding = DialogChoiceLayoutBinding.inflate(LayoutInflater.from(context))
 
         val isDarkMode = context.isDarkMode
 
         binding.choiceDialogContainer.background = getDrawable(
+            context,
             isDarkMode,
             R.drawable.dialog_background_night,
             R.drawable.dialog_background,
         )
 
         binding.choiceDialogCancel.background = getDrawable(
+            context,
             isDarkMode,
             R.drawable.dialog_single_button_background_night,
             R.drawable.dialog_single_button_background,
@@ -366,19 +378,20 @@ abstract class BaseHook : HookEntity() {
 
         binding.choiceDialogCancel.text = cancel
         binding.choiceDialogCancel.setOnClickListener {
-            kDialog!!.dismiss()
+            popupDialog!!.dismiss()
             onCancel.invoke()
         }
 
         binding.choiceDialogList.adapter = DialogChoiceAdapter(context, items, getTextColor(isDarkMode))
         binding.choiceDialogList.divider = ColorDrawable(Color.TRANSPARENT)
         binding.choiceDialogList.selector = getDrawable(
+            context,
             isDarkMode,
             R.drawable.item_selector_background_night,
             R.drawable.item_selector_background,
         )
         binding.choiceDialogList.setOnItemClickListener { _, view, position, _ ->
-            kDialog!!.dismiss()
+            popupDialog!!.dismiss()
             onChoice.invoke(
                 view,
                 items[position],
@@ -405,11 +418,18 @@ abstract class BaseHook : HookEntity() {
         }
     }
 
-    private fun getDrawable(isDarkMode: Boolean, @DrawableRes darkId: Int, @DrawableRes lightId: Int): Drawable? {
+    private fun getDrawable(
+        context: Context,
+        isDarkMode: Boolean,
+        @DrawableRes darkId: Int,
+        @DrawableRes lightId: Int,
+    ): Drawable? {
         return if (isDarkMode) {
-            KtXposedHelpers.getDrawable(darkId)
+            // KtXposedHelpers.getDrawable(darkId)
+            AppCompatResources.getDrawable(context, darkId)
         } else {
-            KtXposedHelpers.getDrawable(lightId)
+            // KtXposedHelpers.getDrawable(lightId)
+            AppCompatResources.getDrawable(context, lightId)
         }
     }
 

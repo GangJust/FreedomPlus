@@ -277,7 +277,7 @@ class DownloadLogic(
             hook.showProgressDialog(
                 context = context,
                 title = "Freedom+",
-                listener = { dialog, notify ->
+                listener = { dismiss, notify ->
                     // 下载逻辑
                     hook.singleLaunchIO(mPureFileName) {
                         var downloadCount = 0 // 下载计数器
@@ -295,7 +295,7 @@ class DownloadLogic(
                         }
 
                         hook.refresh {
-                            dialog.dismiss()
+                            dismiss.invoke()
                             if (downloadCount == aweme.images.size) {
                                 val message =
                                     if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功, 共${downloadCount}个文件!"
@@ -389,7 +389,7 @@ class DownloadLogic(
         hook.showProgressDialog(
             context = context,
             title = "Freedom+",
-            listener = { dialog, notify ->
+            listener = { dismiss, notify ->
                 // 下载逻辑
                 hook.singleLaunchIO(pureFileName) {
                     val resultFile = downloadFile(
@@ -399,7 +399,7 @@ class DownloadLogic(
                         progressText = "%s%%",
                     )
                     if (resultFile != null) {
-                        hook.refresh { dialog.dismiss() }
+                        hook.refresh { dismiss.invoke() }
                         val message = if (isWebDav) "下载成功, 正在上传WebDav!" else "下载成功!"
                         notify.setFinishedText(message)
                         hook.showToast(context, message)
@@ -411,7 +411,7 @@ class DownloadLogic(
                             hook.showToast(context, "上传WebDav${if (uploadStatus) "成功!" else "失败!"}")
                         }
                     } else {
-                        hook.refresh { dialog.dismiss() }
+                        hook.refresh { dismiss.invoke() }
                         notify.setFinishedText("下载失败!")
                         hook.showToast(context, "下载失败!")
                     }

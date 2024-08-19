@@ -14,6 +14,7 @@ import android.widget.PopupWindow
 import com.freegang.extension.activeActivity
 import io.github.xpler.core.log.XplerLog
 
+@Deprecated("Use `KDialog` instead", ReplaceWith("PopupDialog"))
 class KDialog : PopupWindow() {
     init {
         this.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT)) // 取消默认背景色(设置透明)

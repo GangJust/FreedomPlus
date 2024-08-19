@@ -14,6 +14,7 @@ import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
 import com.freegang.extension.classLoader
 import io.github.fplus.plugin.base.IPluginActivity
+import io.github.fplus.plugin.injectRes
 import io.github.xpler.loader.moduleClassloader
 import java.lang.reflect.Method
 
@@ -35,14 +36,14 @@ class PluginInstrumentation(
     }
 
     override fun callActivityOnCreate(activity: Activity?, icicle: Bundle?) {
-        // injectRes(activity?.resources)
         // proxyRes(activity)
+        injectRes(activity?.resources)
         mBase.callActivityOnCreate(activity, icicle)
     }
 
     override fun callActivityOnCreate(activity: Activity?, icicle: Bundle?, persistentState: PersistableBundle?) {
-        // injectRes(activity?.resources)
         // proxyRes(activity)
+        injectRes(activity?.resources)
         mBase.callActivityOnCreate(activity, icicle, persistentState)
     }
 

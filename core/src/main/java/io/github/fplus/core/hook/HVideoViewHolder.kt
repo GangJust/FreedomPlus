@@ -23,7 +23,7 @@ import com.freegang.extension.findFieldGetValue
 import com.freegang.extension.findMethodInvoke
 import com.freegang.extension.firstParentOrNull
 import com.freegang.extension.forEachChild
-import com.freegang.extension.getSiblingViewAt
+import com.freegang.extension.getBrotherViewAt
 import com.freegang.extension.postRunning
 import com.freegang.extension.setLayoutWidth
 import com.ss.android.ugc.aweme.feed.model.Aweme
@@ -180,7 +180,7 @@ class HVideoViewHolder : BaseHook() {
                 }
             }
             val isMusicContainer = videoOptionBarFilterKeywords.pattern.contains("音乐")
-            view.getSiblingViewAt(1)?.isVisible = !isMusicContainer
+            view.getBrotherViewAt(1)?.isVisible = !isMusicContainer
         }
     }
 
@@ -191,12 +191,12 @@ class HVideoViewHolder : BaseHook() {
 
         val view = getFeedRightScaleView(params)
         view?.alpha = config.translucentValue[2] / 100f
-        view?.getSiblingViewAt(1)?.alpha = config.translucentValue[2] / 100f // 音乐
+        view?.getBrotherViewAt(1)?.alpha = config.translucentValue[2] / 100f // 音乐
     }
 
     private fun adjustMusicContainer(params: XC_MethodHook.MethodHookParam) {
         val view = getFeedRightScaleView(params)
-        val isMusicContainer = view?.getSiblingViewAt(1)?.asOrNull<FrameLayout>()
+        val isMusicContainer = view?.getBrotherViewAt(1)?.asOrNull<FrameLayout>()
         isMusicContainer?.setLayoutWidth(52f.dip2px())
     }
 
