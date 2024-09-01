@@ -31,6 +31,7 @@ import io.github.fplus.core.ui.ModuleTheme
 import io.github.fplus.core.ui.dialog.XplerDialogWrapper
 import io.github.fplus.core.view.PopupDialog
 import io.github.fplus.core.view.adapter.DialogChoiceAdapter
+import io.github.fplus.plugin.injectRes
 import io.github.xpler.core.entity.HookEntity
 import io.github.xpler.core.log.XplerLog
 import kotlinx.coroutines.CancellationException
@@ -129,6 +130,7 @@ abstract class BaseHook : HookEntity() {
         view: View,
         onDismiss: () -> Unit = {},
     ) {
+        injectRes(view.context.resources)
         popupDialog = if (popupDialog == null) PopupDialog() else popupDialog
         popupDialog!!.setView(view)
         popupDialog!!.show()
@@ -141,7 +143,7 @@ abstract class BaseHook : HookEntity() {
         onDismiss: () -> Unit = {},
         content: @Composable (closeHandler: () -> Unit) -> Unit
     ) {
-        // injectRes(context.resources)
+        injectRes(context.resources)
         XplerDialogWrapper(context).apply {
             setWrapperContent {
                 ModuleTheme {
@@ -165,7 +167,6 @@ abstract class BaseHook : HookEntity() {
         onCancel: () -> Unit = {},
         onDismiss: () -> Unit = {},
     ) {
-        // injectRes(context.resources)
         val isDarkMode = context.isDarkMode
         val binding = DialogMessageLayoutBinding.inflate(LayoutInflater.from(context))
 
@@ -226,7 +227,6 @@ abstract class BaseHook : HookEntity() {
         listener: (dismiss: (() -> Unit), progress: ProgressDialogNotification) -> Unit,
         onDismiss: () -> Unit = {},
     ) {
-        // injectRes(context.resources)
         val isDarkMode = context.isDarkMode
         val binding = DialogProgressLayoutBinding.inflate(LayoutInflater.from(context))
 
@@ -268,7 +268,6 @@ abstract class BaseHook : HookEntity() {
         onCancel: () -> Unit = {},
         onDismiss: () -> Unit = {},
     ) {
-        // injectRes(context.resources)
         val isDarkMode = context.isDarkMode
         val binding = DialogInputChoiceLayoutBinding.inflate(LayoutInflater.from(context))
 
@@ -354,7 +353,6 @@ abstract class BaseHook : HookEntity() {
         onChoice: (view: View, item: CharSequence, position: Int) -> Unit,
         onCancel: () -> Unit = {},
     ) {
-        // injectRes(context.resources)
         val binding = DialogChoiceLayoutBinding.inflate(LayoutInflater.from(context))
 
         val isDarkMode = context.isDarkMode
@@ -425,10 +423,8 @@ abstract class BaseHook : HookEntity() {
         @DrawableRes lightId: Int,
     ): Drawable? {
         return if (isDarkMode) {
-            // KtXposedHelpers.getDrawable(darkId)
             AppCompatResources.getDrawable(context, darkId)
         } else {
-            // KtXposedHelpers.getDrawable(lightId)
             AppCompatResources.getDrawable(context, lightId)
         }
     }

@@ -108,12 +108,12 @@ class DouYinMain(private val app: Application) {
 
     @SuppressLint("UnsafeDynamicallyLoadedCode")
     private fun exportNative(app: Application) {
+        val abi = if (KAppUtils.is64BitDalvik()) "arm64-v8a" else "armeabi-v7a"
         val libDir = ConfigV1.getConfigDir(app).child("lib").need()
         val libDexkit = libDir.child("libdexkit.so")
         val libMmkv = libDir.child("libmmkv.so")
 
         if (!libDexkit.exists() || !libMmkv.exists()) {
-            val abi = if (KAppUtils.is64BitDalvik()) "arm64-v8a" else "armeabi-v7a"
             val dexkitSo = "lib/${abi}/libdexkit.so"
             val mmkbSo = "lib/${abi}/libmmkv.so"
 
