@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
 import io.github.fplus.core.R
-import io.github.xpler.core.KtXposedHelpers
 
 class DialogChoiceAdapter<T : CharSequence>(
     private val context: Context,

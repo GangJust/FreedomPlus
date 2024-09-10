@@ -16,6 +16,7 @@ import io.github.fplus.drawable.selectorDrawable
 import io.github.fplus.drawable.shapeDrawable
 import io.github.xpler.core.entity.EmptyHook
 import io.github.xpler.core.hookClass
+import io.github.xpler.core.lparam
 
 class HCommentFeedFragment : BaseHook() {
     private var urlList: List<String> = emptyList()
@@ -25,10 +26,10 @@ class HCommentFeedFragment : BaseHook() {
     }
 
     override fun onInit() {
-        lpparam.hookClass("com.ss.android.ugc.aweme.commentfeed.CommentFeedFragmentObserver")
+        lparam.hookClass("com.ss.android.ugc.aweme.commentfeed.CommentFeedFragmentObserver")
             .methodAllByParamTypes(Aweme::class.java) {
                 onAfter {
-                    val aweme = args[0].asOrNull<Aweme>()
+                    val aweme = args[0]?.asOrNull<Aweme>()
                     val commentFeedOuterComment = aweme?.commentFeedOuterComment
                     val imageList = commentFeedOuterComment?.imageList
                     val firstImage = imageList?.firstOrNull()
@@ -36,7 +37,7 @@ class HCommentFeedFragment : BaseHook() {
                 }
             }
 
-        lpparam.hookClass("com.ss.android.ugc.aweme.commentfeed.uimodule.fragment.CommentFeedTopUIModule")
+        lparam.hookClass("com.ss.android.ugc.aweme.commentfeed.uimodule.fragment.CommentFeedTopUIModule")
             .constructorAll {
                 onAfter {
                     val topView = args[0]?.asOrNull<ViewGroup>() ?: return@onAfter

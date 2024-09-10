@@ -1,6 +1,6 @@
 package io.github.fplus
 
-import io.github.xpler.core.wrapper.at
+import io.github.xpler.core.entrance.at
 
 object Constant {
     val modulePackage = "io.github.fplus"

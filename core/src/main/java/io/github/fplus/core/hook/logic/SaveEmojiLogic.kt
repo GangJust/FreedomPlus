@@ -7,7 +7,7 @@ import com.freegang.ktutils.media.KMediaUtils
 import com.freegang.ktutils.net.KHttpUtils
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.XplerLog
 import java.io.File
 
 // 保存表情逻辑

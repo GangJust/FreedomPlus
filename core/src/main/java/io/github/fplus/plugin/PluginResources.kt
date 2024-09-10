@@ -20,7 +20,8 @@ import android.util.TypedValue
 import com.freegang.extension.findMethodInvoke
 import com.freegang.ktutils.log.KLogCat
 import de.robv.android.xposed.XposedHelpers
-import io.github.xpler.core.KtXposedHelpers
+import io.github.xpler.core.XplerHelper
+import io.github.xpler.core.XplerModule
 import java.io.InputStream
 
 class PluginResources(
@@ -32,12 +33,12 @@ class PluginResources(
 ) {
 
     private val pluginResources by lazy {
-        if (KtXposedHelpers.modulePath.isEmpty()) {
+        if (XplerModule.modulePath.isEmpty()) {
             KLogCat.i("未获取到模块路径!")
             originResources
         } else {
             val assetManager = AssetManager::class.java.newInstance()
-            assetManager.findMethodInvoke<Any>(KtXposedHelpers.modulePath) { name("addAssetPath") }
+            assetManager.findMethodInvoke<Any>(XplerModule.modulePath) { name("addAssetPath") }
             Resources(assetManager, originResources.displayMetrics, originResources.configuration)
         }
     }
@@ -809,13 +810,13 @@ class PluginResources(
 // 代理Resources
 fun proxyRes(activity: Activity?) {
     activity?.runCatching {
-        XposedHelpers.setObjectField(this, "mResources", PluginResources(activity.resources))
+        XplerHelper.setFieldValue(this, "mResources", PluginResources(activity.resources))
     }
 }
 
 // 合并Resources
 fun injectRes(res: Resources?) {
     res?.runCatching {
-        XposedHelpers.callMethod(res.assets, "addAssetPath", KtXposedHelpers.modulePath)
+        XplerHelper.invokeMethod(res.assets, "addAssetPath", XplerModule.modulePath)
     }
 }

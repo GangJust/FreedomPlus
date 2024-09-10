@@ -6,19 +6,15 @@ import com.freegang.extension.findFieldGetValue
 import com.freegang.extension.findMethodInvoke
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.profile.model.User
-import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
+import io.github.xpler.core.XplerLog
 import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.proxy.MethodParam
 
 class HFeedAvatarPresenter : BaseHook() {
-    companion object {
-        const val TAG = "HFeedAvatarPresenter"
-    }
-
     private val config
         get() = ConfigV1.get()
 
@@ -30,7 +26,7 @@ class HFeedAvatarPresenter : BaseHook() {
 
     @OnBefore
     fun onClickBefore(
-        params: XC_MethodHook.MethodHookParam,
+        params: MethodParam,
         view: View?,
     ) {
         hookBlockRunning(params) {
@@ -40,9 +36,9 @@ class HFeedAvatarPresenter : BaseHook() {
             if (view !is ViewGroup)
                 return
 
-            val aweme = thisObject.findFieldGetValue<Aweme> { type(Aweme::class.java) } ?: return
+            val aweme = thisObject?.findFieldGetValue<Aweme> { type(Aweme::class.java) } ?: return
 
-            val user = thisObject.findMethodInvoke<User>(aweme) {
+            val user = thisObject?.findMethodInvoke<User>(aweme) {
                 returnType(User::class.java)
                 parameterTypes(listOf(Aweme::class.java))
             } ?: return
@@ -65,12 +61,12 @@ class HFeedAvatarPresenter : BaseHook() {
                     },
                 )
 
-                result = Void.TYPE
+                setResultVoid()
             }
 
             clickAgain = false
         }.onFailure {
-            XplerLog.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 }

@@ -20,7 +20,7 @@ import de.robv.android.xposed.XposedBridge
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.webdav.WebDav
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.XplerLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File

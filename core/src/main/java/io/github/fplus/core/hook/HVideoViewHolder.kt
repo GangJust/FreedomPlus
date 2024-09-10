@@ -13,6 +13,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.core.view.updatePaddingRelative
@@ -29,23 +30,19 @@ import com.freegang.extension.setLayoutWidth
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.feed.ui.FeedRightScaleView
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
-import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.R
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.AutoPlayHelper
 import io.github.fplus.core.helper.DexkitBuilder
+import io.github.xpler.core.XplerLog
 import io.github.xpler.core.entity.NoneHook
-import io.github.xpler.core.getModuleDrawable
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.proxy.MethodParam
 import io.github.xpler.loader.hostClassloader
 
 class HVideoViewHolder : BaseHook() {
-
     companion object {
-        const val TAG = "HVideoViewHolder"
-
         @get:Synchronized
         @set:Synchronized
         var aweme: Aweme? = null
@@ -121,41 +118,41 @@ class HVideoViewHolder : BaseHook() {
         AutoPlayHelper.openAutoPlay(context)
     }
 
-    private fun getContext(params: XC_MethodHook.MethodHookParam): Context? {
-        return params.thisObject.findMethodInvoke<Context> { name("getContext") }
+    private fun getContext(params: MethodParam): Context? {
+        return params.thisObject?.findMethodInvoke<Context> { name("getContext") }
     }
 
-    private fun getAllView(params: XC_MethodHook.MethodHookParam): List<View?> {
-        val views = params.thisObject.findFieldGetValue<List<View?>> { type(View::class.java) }
+    private fun getAllView(params: MethodParam): List<View?> {
+        val views = params.thisObject?.findFieldGetValue<List<View?>> { type(View::class.java) }
         return views ?: emptyList()
     }
 
-    private fun getWidgetContainer(params: XC_MethodHook.MethodHookParam): PenetrateTouchRelativeLayout? {
-        return params.thisObject.findFieldGetValue<PenetrateTouchRelativeLayout> {
+    private fun getWidgetContainer(params: MethodParam): PenetrateTouchRelativeLayout? {
+        return params.thisObject?.findFieldGetValue<PenetrateTouchRelativeLayout> {
             type(PenetrateTouchRelativeLayout::class.java)
         }
     }
 
-    private fun getFeedRightScaleView(params: XC_MethodHook.MethodHookParam): FeedRightScaleView? {
+    private fun getFeedRightScaleView(params: MethodParam): FeedRightScaleView? {
         val views = params.thisObject?.findField {
             type(View::class.java, true)
         }?.getValues(params.thisObject)
         return views?.firstOrNull { it is FeedRightScaleView }?.asOrNull()
     }
 
-    private fun getFragment(params: XC_MethodHook.MethodHookParam): Any? {
+    private fun getFragment(params: MethodParam): Any? {
         return params.thisObject?.findFieldGetValue<Any> {
             type(hostClassloader!!.loadClass("androidx.fragment.app.Fragment"))
         }
     }
 
-    private fun getFragmentType(params: XC_MethodHook.MethodHookParam): String {
+    private fun getFragmentType(params: MethodParam): String {
         val fragment = getFragment(params)
         val arguments = fragment?.findMethodInvoke<Bundle> { name("getArguments") }
         return arguments?.getString("com.ss.android.ugc.aweme.intent.extra.EVENT_TYPE") ?: ""
     }
 
-    private fun changeFeedRightScaleView(params: XC_MethodHook.MethodHookParam) {
+    private fun changeFeedRightScaleView(params: MethodParam) {
         if (!config.isVideoOptionBarFilter) {
             return
         }
@@ -184,7 +181,7 @@ class HVideoViewHolder : BaseHook() {
         }
     }
 
-    private fun changeFeedRightScaleViewAlpha(params: XC_MethodHook.MethodHookParam) {
+    private fun changeFeedRightScaleViewAlpha(params: MethodParam) {
         if (!config.isTranslucent) {
             return
         }
@@ -194,14 +191,14 @@ class HVideoViewHolder : BaseHook() {
         view?.getBrotherViewAt(1)?.alpha = config.translucentValue[2] / 100f // 音乐
     }
 
-    private fun adjustMusicContainer(params: XC_MethodHook.MethodHookParam) {
+    private fun adjustMusicContainer(params: MethodParam) {
         val view = getFeedRightScaleView(params)
         val isMusicContainer = view?.getBrotherViewAt(1)?.asOrNull<FrameLayout>()
         isMusicContainer?.setLayoutWidth(52f.dip2px())
     }
 
     @SuppressLint("SetTextI18n")
-    private fun addAutoPlayButtonView(params: XC_MethodHook.MethodHookParam) {
+    private fun addAutoPlayButtonView(params: MethodParam) {
         if (!config.isAutoPlay)
             return
 
@@ -230,7 +227,7 @@ class HVideoViewHolder : BaseHook() {
         }
 
         val autoPlayImage = ImageView(view.context).apply {
-            setImageDrawable(context.getModuleDrawable(R.drawable.ic_play))
+            setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.ic_play))
             layoutParams = LinearLayout.LayoutParams(
                 42f.dip2px(),
                 42f.dip2px()
@@ -254,7 +251,7 @@ class HVideoViewHolder : BaseHook() {
     }
 
     @OnBefore("isCleanMode")
-    fun isCleanModeBefore(params: XC_MethodHook.MethodHookParam, view: View?, bool: Boolean) {
+    fun isCleanModeBefore(params: MethodParam, view: View?, bool: Boolean) {
         hookBlockRunning(params) {
             if (!config.isNeatMode)
                 return
@@ -262,14 +259,14 @@ class HVideoViewHolder : BaseHook() {
             if (!config.neatModeState)
                 return
 
-            result = Void.TYPE
+            setResultVoid()
         }.onFailure {
-            XplerLog.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
     @OnBefore("openCleanMode")
-    fun openCleanModeBefore(params: XC_MethodHook.MethodHookParam, bool: Boolean) {
+    fun openCleanModeBefore(params: MethodParam, bool: Boolean) {
         hookBlockRunning(params) {
             if (!config.isNeatMode)
                 return
@@ -277,14 +274,14 @@ class HVideoViewHolder : BaseHook() {
             if (!config.neatModeState)
                 return
 
-            result = Void.TYPE
+            setResultVoid()
         }.onFailure {
-            XplerLog.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
     @OnAfter("getAweme")
-    fun getAwemeAfter(params: XC_MethodHook.MethodHookParam) {
+    fun getAwemeAfter(params: MethodParam) {
         hookBlockRunning(params) {
             HVideoViewHolder.aweme = result?.asOrNull()
         }.onFailure {
@@ -293,7 +290,7 @@ class HVideoViewHolder : BaseHook() {
     }
 
     @OnAfter
-    fun startStayTime(params: XC_MethodHook.MethodHookParam, long: Long?) {
+    fun startStayTime(params: MethodParam, long: Long?) {
         hookBlockRunning(params) {
             // XplerLog.d("long: $long")
             changeFeedRightScaleView(params)
@@ -306,7 +303,7 @@ class HVideoViewHolder : BaseHook() {
     }
 
     @OnAfter("onViewHolderSelected")
-    fun onViewHolderSelectedAfter(params: XC_MethodHook.MethodHookParam, index: Int) {
+    fun onViewHolderSelectedAfter(params: MethodParam, index: Int) {
         hookBlockRunning(params) {
             // XplerLog.d("onViewHolderSelected")
             val container = getWidgetContainer(params)
@@ -317,7 +314,7 @@ class HVideoViewHolder : BaseHook() {
     }
 
     @OnAfter("onViewHolderUnSelected")
-    fun onViewHolderUnSelectedAfter(params: XC_MethodHook.MethodHookParam) {
+    fun onViewHolderUnSelectedAfter(params: MethodParam) {
         hookBlockRunning(params) {
             // XplerLog.d("onViewHolderUnSelected")
             val container = getWidgetContainer(params)
@@ -328,7 +325,7 @@ class HVideoViewHolder : BaseHook() {
     }
 
     @OnBefore("onPause")
-    fun onPauseBefore(params: XC_MethodHook.MethodHookParam) {
+    fun onPauseBefore(params: MethodParam) {
         hookBlockRunning(params) {
             val container = getWidgetContainer(params)
             removeOnDraw(container)
@@ -339,7 +336,7 @@ class HVideoViewHolder : BaseHook() {
     }
 
     @OnAfter("onResume")
-    fun onResumeAfter(params: XC_MethodHook.MethodHookParam) {
+    fun onResumeAfter(params: MethodParam) {
         hookBlockRunning(params) {
             val container = getWidgetContainer(params)
             addOnDraw(container)

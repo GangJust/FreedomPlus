@@ -6,7 +6,7 @@ import com.freegang.extension.parseJSON
 import com.freegang.ktutils.net.KHttpUtils
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.ugc.aweme.ImageUrlStruct
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.XplerLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Date

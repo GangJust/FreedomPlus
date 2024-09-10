@@ -32,8 +32,8 @@ import io.github.fplus.core.ui.dialog.XplerDialogWrapper
 import io.github.fplus.core.view.PopupDialog
 import io.github.fplus.core.view.adapter.DialogChoiceAdapter
 import io.github.fplus.plugin.injectRes
+import io.github.xpler.core.XplerLog
 import io.github.xpler.core.entity.HookEntity
-import io.github.xpler.core.log.XplerLog
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName

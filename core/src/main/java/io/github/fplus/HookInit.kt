@@ -1,24 +1,24 @@
 package io.github.fplus
 
 import android.app.Application
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.fplus.core.hook.DouYinMain
-import io.github.xpler.HookEntrance
-import io.github.xpler.core.wrapper.ApplicationHookStart
+import io.github.xpler.XplerEntrance
+import io.github.xpler.core.entrance.ApplicationHookStart
+import io.github.xpler.core.proxy.LoadParam
 
-class HookInit : HookEntrance(), ApplicationHookStart {
+class HookInit : XplerEntrance(), ApplicationHookStart {
     override val modulePackage: String
         get() = Constant.modulePackage
 
     override val scopes: Set<ApplicationHookStart.Scope>
         get() = Constant.scopes
 
-    override fun onCreateBefore(lp: XC_LoadPackage.LoadPackageParam, hostApp: Application) {
+    override fun onCreateBefore(lparam: LoadParam, hostApp: Application) {
         //
-        // injectClassLoader(lp,hostApp.classLoader)
+        // injectClassLoader(lparam,hostApp.classLoader)
     }
 
-    override fun onCreateAfter(lp: XC_LoadPackage.LoadPackageParam, hostApp: Application) {
+    override fun onCreateAfter(lparam: LoadParam, hostApp: Application) {
         DouYinMain(hostApp)
     }
 }

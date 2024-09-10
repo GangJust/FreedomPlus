@@ -1,21 +1,21 @@
 package io.github.fplus
 
 import android.content.Context
-import io.github.xpler.HookState
+import io.github.xpler.XplerState
 
 object HookStatus {
 
     val isEnabled
-        get() = HookState.isEnabled
+        get() = XplerState.isEnabled
 
     val framework
-        get() = HookState.framework
+        get() = XplerState.framework
 
     fun isExpActive(context: Context): Boolean {
-        return HookState.isExpActive(context)
+        return XplerState.isExpActive(context)
     }
 
     fun isLSPatchActive(context: Context, packageName: String): Array<String> {
-        return HookState.isLSPatchActive(context, packageName)
+        return XplerState.isLSPatchActive(context, packageName)
     }
 }

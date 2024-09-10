@@ -2,13 +2,13 @@ package io.github.fplus.core.hook
 
 import com.ss.android.ugc.aweme.feed.model.VideoItemParams
 import com.ss.android.ugc.aweme.kiwi.model.QModel
-import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
+import io.github.xpler.core.entity.CallMethods
 import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.wrapper.CallMethods
+import io.github.xpler.core.proxy.MethodParam
 
 /// 崩溃容错，处理官方可能造成的系列崩溃问题
 class HCrashTolerance {
@@ -29,15 +29,15 @@ class HCrashTolerance {
             return findClass("com.ss.android.ugc.aweme.poi.anchor.poi.flavor.PoiFeedAnchor")
         }
 
-        override fun callOnBeforeMethods(params: XC_MethodHook.MethodHookParam) {
+        override fun callOnBeforeMethods(params: MethodParam) {
 
         }
 
-        override fun callOnAfterMethods(params: XC_MethodHook.MethodHookParam) {
+        override fun callOnAfterMethods(params: MethodParam) {
             hookBlockRunning(params) {
                 resultOrThrowable
             }.onFailure {
-                params.throwable = null
+                params.setThrowable(null)
                 // KToastUtils.show(KAppUtils.getApplication, "尝试崩溃拦截:${it.message}")
             }
         }
@@ -50,11 +50,11 @@ class HCrashTolerance {
         }
 
         @OnAfter
-        fun methodAfter(params: XC_MethodHook.MethodHookParam, qModel: QModel?) {
+        fun methodAfter(params: MethodParam, qModel: QModel?) {
             hookBlockRunning(params) {
                 resultOrThrowable
             }.onFailure {
-                params.throwable = null
+                params.setThrowable(null)
                 // KToastUtils.show(KAppUtils.getApplication, "尝试崩溃拦截:${it.message}")
             }
         }
@@ -67,11 +67,11 @@ class HCrashTolerance {
         }
 
         @OnAfter
-        fun methodAfter(params: XC_MethodHook.MethodHookParam, item: VideoItemParams?) {
+        fun methodAfter(params: MethodParam, item: VideoItemParams?) {
             hookBlockRunning(params) {
                 resultOrThrowable
             }.onFailure {
-                params.throwable = null
+                params.setThrowable(null)
                 // KToastUtils.show(KAppUtils.getApplication, "尝试崩溃拦截:${it.message}")
             }
         }

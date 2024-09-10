@@ -3,22 +3,17 @@ package io.github.fplus.core.hook
 import com.freegang.extension.forEachChild
 import com.freegang.extension.postRunning
 import com.freegang.extension.removeInParent
-import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
-import io.github.xpler.core.findClass
+import io.github.xpler.core.XplerLog
+import io.github.xpler.core.entity.CallConstructors
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.hookConstructorAll
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.hookClass
+import io.github.xpler.core.lparam
+import io.github.xpler.core.proxy.MethodParam
 import io.github.xpler.core.thisViewGroup
-import io.github.xpler.core.wrapper.CallConstructors
 
-class HDisallowInterceptRelativeLayout : BaseHook(),
-    CallConstructors {
-    companion object {
-        const val TAG = "HDisallowInterceptRelativeLayout"
-    }
-
+class HDisallowInterceptRelativeLayout : BaseHook(), CallConstructors {
     private val config get() = ConfigV1.get()
 
     override fun setTargetClass(): Class<*> {
@@ -27,18 +22,21 @@ class HDisallowInterceptRelativeLayout : BaseHook(),
 
     override fun onInit() {
         // 旧版本
-        lpparam.findClass("com.ss.android.ugc.aweme.feed.ui.DisallowInterceptRelativeLayout2")
-            .hookConstructorAll {
+        lparam.hookClass("com.ss.android.ugc.aweme.feed.ui.DisallowInterceptRelativeLayout2")
+            .constructorAll {
                 onAfter {
                     callOnAfterConstructors(this)
+                }
+                onUnhook {
+                    unhook()
                 }
             }
     }
 
-    override fun callOnBeforeConstructors(params: XC_MethodHook.MethodHookParam) {
+    override fun callOnBeforeConstructors(params: MethodParam) {
     }
 
-    override fun callOnAfterConstructors(params: XC_MethodHook.MethodHookParam) {
+    override fun callOnAfterConstructors(params: MethodParam) {
         hookBlockRunning(params) {
             if (!config.isImmersive)
                 return

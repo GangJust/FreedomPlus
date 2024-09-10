@@ -21,7 +21,6 @@ import com.freegang.ktutils.view.KViewUtils
 import com.ss.android.ugc.aweme.ad.feed.VideoViewHolderRootView
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
-import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
@@ -29,17 +28,15 @@ import io.github.fplus.core.hook.logic.DownloadLogic
 import io.github.fplus.core.hook.logic.cityInfo
 import io.github.fplus.core.hook.logic.createDate
 import io.github.fplus.core.ui.activity.FreedomSettingActivity
+import io.github.xpler.core.XplerLog
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.hookClass
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.lparam
+import io.github.xpler.core.proxy.MethodParam
 import io.github.xpler.core.thisView
 
 
 class HLongPressLayout : BaseHook() {
-    companion object {
-        const val TAG = "HLongPressLayout"
-    }
-
     private val config
         get() = ConfigV1.get()
 
@@ -61,7 +58,7 @@ class HLongPressLayout : BaseHook() {
     }
 
     @OnAfter("onTouchEvent")
-    fun onTouchEventAfter(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {
+    fun onTouchEventAfter(params: MethodParam, event: MotionEvent) {
         hookBlockRunning(params) {
             longPressRunnable = longPressRunnable ?: Runnable { onLongPress(thisView, event) }
 
@@ -104,7 +101,7 @@ class HLongPressLayout : BaseHook() {
             }
 
         }.onFailure {
-            XplerLog.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
@@ -352,7 +349,7 @@ class HLongPressLayout : BaseHook() {
 
         // 长按菜单事件拦截
         DexkitBuilder.longPressEventClazz?.also {
-            lpparam.hookClass(it)
+            lparam.hookClass(it)
                 .method(
                     "onLongPressAwemeSure",
                     Float::class.java,
@@ -365,15 +362,15 @@ class HLongPressLayout : BaseHook() {
                         if (!config.isNeatMode)
                             return@onBefore
 
-                        aweme = thisObject.findFieldGetValue { type(Aweme::class.java) }
+                        aweme = thisObject?.findFieldGetValue { type(Aweme::class.java) }
                             ?: HVideoViewHolder.aweme
 
                         if (config.longPressMode) {
                             if (y < screenSize.height / 2)
-                                result = Void.TYPE
+                                setResultVoid()
                         } else {
                             if (y > screenSize.height / 2)
-                                result = Void.TYPE
+                                setResultVoid()
                         }
                     }
                 }
@@ -381,7 +378,7 @@ class HLongPressLayout : BaseHook() {
 
         // 双击点赞事件拦截
         DexkitBuilder.doubleClickEventClazz?.also {
-            lpparam.hookClass(it)
+            lparam.hookClass(it)
                 .methodAllByParamTypes(
                     View::class.java,
                     MotionEvent::class.java,
@@ -393,7 +390,7 @@ class HLongPressLayout : BaseHook() {
                             return@onBefore
 
                         if (config.doubleClickType == 1)
-                            result = Void.TYPE
+                            setResultVoid()
                     }
                 }
         }

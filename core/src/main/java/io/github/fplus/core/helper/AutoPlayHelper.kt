@@ -2,7 +2,7 @@ package io.github.fplus.core.helper
 
 import android.content.Context
 import com.freegang.extension.findMethodInvoke
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.XplerLog
 import java.lang.reflect.Modifier
 
 object AutoPlayHelper {

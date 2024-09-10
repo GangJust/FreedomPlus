@@ -3,17 +3,13 @@ package io.github.fplus.core.hook
 import android.content.Context
 import android.view.View
 import com.freegang.extension.getOnClickListener
-import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
+import io.github.xpler.core.XplerLog
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.proxy.MethodParam
 
 class HHomeBottomTabServiceImpl : BaseHook() {
-    companion object {
-        const val TAG = "HHomeBottomTabServiceImpl"
-    }
-
     private val config
         get() = ConfigV1.get()
 
@@ -26,7 +22,7 @@ class HHomeBottomTabServiceImpl : BaseHook() {
 
     @OnBefore
     fun methodBefore(
-        params: XC_MethodHook.MethodHookParam,
+        params: MethodParam,
         context: Context?,
         type: String?,
         view: View?
@@ -49,13 +45,13 @@ class HHomeBottomTabServiceImpl : BaseHook() {
                     }
                 )
 
-                result = Void.TYPE
+                setResultVoid()
             }
 
             lastType = type
             clickAgain = false
         }.onFailure {
-            XplerLog.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 }

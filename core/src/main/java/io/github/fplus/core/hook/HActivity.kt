@@ -7,19 +7,15 @@ import com.freegang.extension.contentView
 import com.freegang.extension.navBarInteractionMode
 import com.freegang.extension.navigationBarHeight
 import com.ss.android.ugc.aweme.live.LivePlayActivity
-import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.ImmersiveHelper
 import io.github.fplus.core.ui.activity.FreedomSettingActivity
+import io.github.xpler.core.XplerLog
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.proxy.MethodParam
 
 class HActivity : BaseHook() {
-    companion object {
-        const val TAG = "HActivity"
-    }
-
     private val config get() = ConfigV1.get()
 
     override fun setTargetClass(): Class<*> {
@@ -27,7 +23,7 @@ class HActivity : BaseHook() {
     }
 
     @OnBefore("dispatchTouchEvent")
-    fun dispatchTouchEventBefore(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {
+    fun dispatchTouchEventBefore(params: MethodParam, event: MotionEvent) {
         hookBlockRunning(params) {
             val activity = thisObject as Activity
             DouYinMain.freeExitHelper?.restart()
@@ -43,7 +39,7 @@ class HActivity : BaseHook() {
     }
 
     @OnBefore("onResume")
-    fun onResumeBefore(params: XC_MethodHook.MethodHookParam) {
+    fun onResumeBefore(params: MethodParam) {
         hookBlockRunning(params) {
             val activity = thisObject as Activity
 
@@ -62,7 +58,7 @@ class HActivity : BaseHook() {
     }
 
     @OnAfter("onWindowFocusChanged")
-    fun onWindowFocusChangedAfter(params: XC_MethodHook.MethodHookParam, boolean: Boolean) {
+    fun onWindowFocusChangedAfter(params: MethodParam, boolean: Boolean) {
         hookBlockRunning(params) {
             singleLaunchMain {
                 val activity = thisObject as Activity

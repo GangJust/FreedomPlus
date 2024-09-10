@@ -12,7 +12,7 @@ import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.PopupWindow
 import com.freegang.extension.activeActivity
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.XplerLog
 
 @Deprecated("Use `KDialog` instead", ReplaceWith("PopupDialog"))
 class KDialog : PopupWindow() {

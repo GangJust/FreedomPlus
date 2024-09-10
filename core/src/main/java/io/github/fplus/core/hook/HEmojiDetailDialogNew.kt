@@ -13,14 +13,10 @@ import com.ss.android.ugc.aweme.emoji.store.view.EmojiBottomSheetDialog
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.hook.logic.SaveEmojiLogic
-import io.github.xpler.core.argsOrEmpty
 import io.github.xpler.core.hookClass
+import io.github.xpler.core.lparam
 
 class HEmojiDetailDialogNew : BaseHook() {
-    companion object {
-        const val TAG = "HEmojiDetailDialogNew"
-    }
-
     private val config get() = ConfigV1.get()
 
     private var urlList: List<String> = emptyList()
@@ -32,18 +28,18 @@ class HEmojiDetailDialogNew : BaseHook() {
     @SuppressLint("SetTextI18n")
     override fun onInit() {
 
-        lpparam.hookClass(EmojiDetailDialogNew::class.java)
+        lparam.hookClass(EmojiDetailDialogNew::class.java)
             .constructorAll {
                 onBefore {
-                    if (argsOrEmpty.isEmpty())
+                    if (args.isEmpty())
                         return@onBefore
 
-                    val url = args[0].findFieldGetValue<UrlModel> { type(UrlModel::class.java)  }
+                    val url = args[0]?.findFieldGetValue<UrlModel> { type(UrlModel::class.java) }
                     urlList = url?.urlList ?: emptyList()
                 }
             }
 
-        lpparam.hookClass(EmojiBottomSheetDialog::class.java)
+        lparam.hookClass(EmojiBottomSheetDialog::class.java)
             .method("onCreate", Bundle::class.java) {
                 onAfter {
                     if (!config.isEmojiDownload) return@onAfter
@@ -58,18 +54,16 @@ class HEmojiDetailDialogNew : BaseHook() {
                         if (urlList.isEmpty())
                             return@postDelayedRunning
 
-                        it
-                            .firstOrNull(TextView::class.java) { v ->
-                                "${v.text}".contains("添加表情")
+                        it.firstOrNull(TextView::class.java) { v ->
+                            "${v.text}".contains("添加表情")
+                        }?.apply {
+                            text = "添加表情 (长按保存)"
+                            isHapticFeedbackEnabled = false
+                            setOnLongClickListener {
+                                SaveEmojiLogic(this@HEmojiDetailDialogNew, context, urlList)
+                                true
                             }
-                            ?.apply {
-                                text = "添加表情 (长按保存)"
-                                isHapticFeedbackEnabled = false
-                                setOnLongClickListener {
-                                    SaveEmojiLogic(this@HEmojiDetailDialogNew, context, urlList)
-                                    true
-                                }
-                            }
+                        }
                     }
                 }
             }

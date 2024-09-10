@@ -9,21 +9,18 @@ import com.freegang.extension.firstOrNull
 import com.ss.android.ugc.aweme.base.model.UrlModel
 import com.ss.android.ugc.aweme.emoji.store.view.EmojiBottomSheetDialog
 import com.ss.android.ugc.aweme.emoji.views.EmojiDetailDialog
-import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.hook.logic.SaveEmojiLogic
+import io.github.xpler.core.XplerLog
+import io.github.xpler.core.entity.CallMethods
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.hookClass
-import io.github.xpler.core.log.XplerLog
-import io.github.xpler.core.wrapper.CallMethods
+import io.github.xpler.core.lparam
+import io.github.xpler.core.proxy.MethodParam
 import kotlinx.coroutines.delay
 
 class HEmojiDetailDialog : BaseHook(), CallMethods {
-    companion object {
-        const val TAG = "HEmojiDetailDialog"
-    }
-
     private val config get() = ConfigV1.get()
 
     private var urlList: List<String> = emptyList()
@@ -34,7 +31,7 @@ class HEmojiDetailDialog : BaseHook(), CallMethods {
 
     @SuppressLint("SetTextI18n")
     override fun onInit() {
-        lpparam.hookClass(EmojiBottomSheetDialog::class.java)
+        lparam.hookClass(EmojiBottomSheetDialog::class.java)
             .method("onCreate", Bundle::class.java) {
                 onAfter {
                     if (!config.isEmojiDownload) return@onAfter
@@ -65,16 +62,16 @@ class HEmojiDetailDialog : BaseHook(), CallMethods {
             }
     }
 
-    override fun callOnBeforeMethods(params: XC_MethodHook.MethodHookParam) {
+    override fun callOnBeforeMethods(params: MethodParam) {
 
     }
 
-    override fun callOnAfterMethods(params: XC_MethodHook.MethodHookParam) {
+    override fun callOnAfterMethods(params: MethodParam) {
         hookBlockRunning(params) {
             if (!config.isEmojiDownload) return
             if (urlList.isNotEmpty()) return
 
-            val urlModel = thisObject.findFieldGetValue<UrlModel> { type(UrlModel::class.java) }
+            val urlModel = thisObject?.findFieldGetValue<UrlModel> { type(UrlModel::class.java) }
             urlList = urlModel?.urlList ?: emptyList()
         }.onFailure {
             XplerLog.e(it)

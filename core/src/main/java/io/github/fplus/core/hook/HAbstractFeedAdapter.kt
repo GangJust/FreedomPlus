@@ -14,20 +14,16 @@ import com.freegang.extension.firstOrNull
 import com.freegang.extension.firstParentOrNull
 import com.freegang.extension.forEachChild
 import com.ss.android.ugc.aweme.ad.feed.VideoViewHolderRootView
-import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
+import io.github.xpler.core.XplerLog
 import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.proxy.MethodParam
 import kotlinx.coroutines.delay
 
 class HAbstractFeedAdapter : BaseHook() {
-    companion object {
-        const val TAG = "HAbstractFeedAdapter"
-    }
-
     private val config get() = ConfigV1.get()
 
     override fun setTargetClass(): Class<*> {
@@ -36,7 +32,7 @@ class HAbstractFeedAdapter : BaseHook() {
 
     @OnAfter
     fun methodAfter(
-        params: XC_MethodHook.MethodHookParam,
+        params: MethodParam,
         // @Param("com.ss.android.ugc.aweme.feed.adapter.FeedTypeConfig") feedTypeConfig: Any?,
         view: View?,
         i: Int,

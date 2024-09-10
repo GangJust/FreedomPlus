@@ -9,20 +9,18 @@ import com.freegang.ktutils.text.KTextUtils
 import com.ss.android.ugc.aweme.common.widget.VerticalViewPager
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import com.ss.android.ugc.aweme.follow.presenter.FollowFeed
-import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
+import io.github.xpler.core.XplerLog
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.hookClass
-import io.github.xpler.core.log.XplerLog
-import io.github.xpler.core.lpparam
+import io.github.xpler.core.lparam
+import io.github.xpler.core.proxy.MethodParam
 import io.github.xpler.core.thisView
 
 class HVerticalViewPager : BaseHook() {
     companion object {
-        const val TAG = "HVerticalViewPager"
-
         @get:Synchronized
         @set:Synchronized
         var currentAweme: Aweme? = null
@@ -72,16 +70,16 @@ class HVerticalViewPager : BaseHook() {
     }
 
     @OnAfter("onInterceptTouchEvent")
-    fun onInterceptTouchEvent(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {
+    fun onInterceptTouchEvent(params: MethodParam, event: MotionEvent) {
         longVideoJudge(params, event)
     }
 
-    private fun longVideoJudge(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {
+    private fun longVideoJudge(params: MethodParam, event: MotionEvent) {
         hookBlockRunning(params) {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    val adapter = thisObject.findMethodInvoke<Any> { name("getAdapter") } ?: return
-                    val currentItem = thisObject.findMethodInvoke<Int> { name("getCurrentItem") } ?: return
+                    val adapter = thisObject?.findMethodInvoke<Any> { name("getAdapter") } ?: return
+                    val currentItem = thisObject?.findMethodInvoke<Int> { name("getCurrentItem") } ?: return
                     currentAweme = adapter.findMethodInvoke<Aweme>(currentItem) {
                         returnType(Aweme::class.java)
                         parameterTypes(listOf(Int::class.java))
@@ -95,7 +93,7 @@ class HVerticalViewPager : BaseHook() {
                         }
                         durationRunnable = Runnable {
                             //
-                            val delayItem = thisObject.findMethodInvoke<Int> { name("getCurrentItem") } ?: return@Runnable
+                            val delayItem = thisObject?.findMethodInvoke<Int> { name("getCurrentItem") } ?: return@Runnable
                             if (delayItem == currentItem) {
                                 return@Runnable
                             }
@@ -217,12 +215,12 @@ class HVerticalViewPager : BaseHook() {
 
     override fun onInit() {
         DexkitBuilder.recommendFeedFetchPresenterClazz?.runCatching {
-            lpparam.hookClass(this)
+            lparam.hookClass(this)
                 .method("onSuccess") {
                     onBefore {
                         if (!config.isVideoFilter) return@onBefore
 
-                        val mModel = thisObject.findFieldGetValue<Any> { name("mModel") }
+                        val mModel = thisObject?.findFieldGetValue<Any> { name("mModel") }
                         val mData = mModel?.findFieldGetValue<Any> { name("mData") }
                         if (mData?.javaClass?.name?.contains("FeedItemList") == true) {
                             val items = mData.findFieldGetValue<List<Aweme>> { name("items") } ?: emptyList()
@@ -239,12 +237,12 @@ class HVerticalViewPager : BaseHook() {
         }
 
         DexkitBuilder.fullFeedFollowFetchPresenterClazz?.runCatching {
-            lpparam.hookClass(this)
+            lparam.hookClass(this)
                 .method("onSuccess") {
                     onBefore {
                         if (!config.isVideoFilter) return@onBefore
 
-                        val mModel = thisObject.findFieldGetValue<Any> { name("mModel") }
+                        val mModel = thisObject?.findFieldGetValue<Any> { name("mModel") }
                         val mData = mModel?.findFieldGetValue<Any> { name("mData") }
                         if (mData?.javaClass?.name?.contains("FollowFeedList") == true) {
                             val mItems = mData.findFieldGetValue<List<FollowFeed>> { name("mItems") } ?: emptyList()

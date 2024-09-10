@@ -5,20 +5,16 @@ import android.view.View
 import com.freegang.extension.forEachWhereChild
 import com.freegang.extension.removeInParent
 import com.ss.android.ugc.aweme.comment.constants.CommentColorMode
-import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
+import io.github.xpler.core.XplerLog
 import io.github.xpler.core.entity.HookEntity
 import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.proxy.MethodParam
 
 class HCommentListPageFragment : BaseHook() {
-    companion object {
-        const val TAG = "HCommentListPageFragment"
-    }
-
     private val config get() = ConfigV1.get()
 
     override fun setTargetClass(): Class<*> {
@@ -31,7 +27,7 @@ class HCommentListPageFragment : BaseHook() {
 
     @OnAfter("onViewCreated")
     fun onViewCreatedAfter(
-        params: XC_MethodHook.MethodHookParam,
+        params: MethodParam,
         view: View,
         savedInstanceState: Bundle?,
     ) {
@@ -45,7 +41,7 @@ class HCommentListPageFragment : BaseHook() {
                 false
             }
         }.onFailure {
-            XplerLog.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
@@ -57,7 +53,7 @@ class HCommentListPageFragment : BaseHook() {
 
         @OnBefore
         fun setCommentColorModeBefore(
-            params: XC_MethodHook.MethodHookParam,
+            params: MethodParam,
             mode: CommentColorMode,
         ) {
             hookBlockRunning(params) {
@@ -78,7 +74,7 @@ class HCommentListPageFragment : BaseHook() {
                     }
                 }
             }.onFailure {
-                XplerLog.tagE(TAG, it)
+                XplerLog.e(it)
             }
         }
     }

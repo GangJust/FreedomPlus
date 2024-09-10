@@ -1,17 +1,13 @@
 package io.github.fplus.core.hook
 
 import com.bytedance.im.core.model.Message
-import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
+import io.github.xpler.core.XplerLog
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.proxy.MethodParam
 
 class HMessage : BaseHook() {
-    companion object {
-        const val TAG = "HMessage"
-    }
-
     private val config get() = ConfigV1.get()
 
     override fun setTargetClass(): Class<*> {
@@ -19,7 +15,7 @@ class HMessage : BaseHook() {
     }
 
     @OnAfter("isRecalled")
-    fun isRecalledAfter(params: XC_MethodHook.MethodHookParam) {
+    fun isRecalledAfter(params: MethodParam) {
         hookBlockRunning(params) {
             if (!config.isPreventRecalled) {
                 return
@@ -40,7 +36,7 @@ class HMessage : BaseHook() {
             if (message.ext.containsKey("s:is_recalled")) {
                 message.ext.remove("s:is_recalled")
                 message.ext.put("f:prevent_recalled", "true")
-                result = false
+                setResult(false)
             }
 
         }.onFailure {

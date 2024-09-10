@@ -16,8 +16,8 @@ import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.helper.TimerExitHelper
 import io.github.fplus.plugin.injectRes
 import io.github.fplus.plugin.proxy.v1.PluginBridge
-import io.github.xpler.core.KtXposedHelpers
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.XplerLog
+import io.github.xpler.core.XplerModule
 import java.util.zip.ZipFile
 
 class DouYinMain(private val app: Application) {
@@ -118,7 +118,7 @@ class DouYinMain(private val app: Application) {
             val dexkitSo = "lib/${abi}/libdexkit.so"
             val mmkbSo = "lib/${abi}/libmmkv.so"
 
-            val zipFile = ZipFile(KtXposedHelpers.modulePath)
+            val zipFile = ZipFile(XplerModule.modulePath)
             zipFile.getInputStream(zipFile.getEntry(dexkitSo)).use { input ->
                 libDexkit.outputStream().use { output ->
                     input.copyTo(output)

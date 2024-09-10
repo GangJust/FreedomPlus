@@ -5,21 +5,17 @@ import android.widget.ImageView
 import androidx.core.view.isVisible
 import com.freegang.extension.forEachChild
 import com.freegang.ktutils.app.KToastUtils
-import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
+import io.github.xpler.core.XplerLog
 import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.proxy.MethodParam
 import io.github.xpler.core.thisView
 
 
 class HMainBottomPhotoTab : BaseHook() {
-    companion object {
-        const val TAG = "HMainBottomPhotoTab"
-    }
-
     val config get() = ConfigV1.get()
 
     override fun setTargetClass(): Class<*> {
@@ -27,7 +23,7 @@ class HMainBottomPhotoTab : BaseHook() {
     }
 
     @OnAfter
-    fun currentIndexAfter(params: XC_MethodHook.MethodHookParam, int: Int) {
+    fun currentIndexAfter(params: MethodParam, int: Int) {
         hookBlockRunning(params) {
             isHidePhotoButton(thisView)
         }.onFailure {

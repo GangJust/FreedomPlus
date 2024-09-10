@@ -13,7 +13,7 @@ import com.freegang.ktutils.text.KTextUtils
 import io.github.fplus.core.config.ConfigV1
 import io.github.xpler.core.findClass
 import io.github.xpler.core.findMethod
-import io.github.xpler.core.lpparam
+import io.github.xpler.core.lparam
 import org.json.JSONArray
 import org.json.JSONObject
 import org.luckypray.dexkit.DexKitBridge
@@ -58,7 +58,6 @@ object DexkitBuilder {
     var autoPlayControllerClazz: Class<*>? = null
 
     var videoViewHolderClazz: Class<*>? = null
-    var videoViewHolderMethods: List<Method> = listOf()
 
     var feedAvatarPresenterClazz: Class<*>? = null
     var livePhotoClazz: Class<*>? = null
@@ -94,7 +93,7 @@ object DexkitBuilder {
         this.app = app
         this.cacheVersion = version
 
-        KLogCat.tagI(TAG, "当前进程: ${lpparam.processName}")
+        KLogCat.tagI(TAG, "当前进程: ${lparam.processName}")
         if (readCache()) {
             KLogCat.tagI(TAG, "缓存读取成功!")
             return
@@ -107,9 +106,9 @@ object DexkitBuilder {
      * Dexkit开始搜索
      */
     private fun startSearch() {
-        KLogCat.tagI(TAG, "Dexkit开始搜索: ${lpparam.appInfo.sourceDir}")
+        KLogCat.tagI(TAG, "Dexkit开始搜索: ${lparam.appInfo.sourceDir}")
         // System.loadLibrary("dexkit")
-        DexKitBridge.create(lpparam.appInfo.sourceDir).use { bridge ->
+        DexKitBridge.create(lparam.appInfo.sourceDir).use { bridge ->
             val sideBarNestedScrollView = bridge.findClass {
                 matcher {
                     className = "com.ss.android.ugc.aweme.sidebar.SideBarNestedScrollView"
@@ -588,31 +587,6 @@ object DexkitBuilder {
                 }
             }
             videoViewHolderClazz = videoViewHolder.instance("videoViewHolder")
-            videoViewHolderMethods = videoViewHolder.findMethod {
-                matcher {
-                    usingFields {
-                        add {
-                            field {
-                                type = "com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout"
-                            }
-                        }
-                        add {
-                            field {
-                                type = "com.ss.android.ugc.aweme.feed.model.VideoItemParams"
-                            }
-                        }
-                    }
-
-                    invokeMethods {
-                        add {
-                            name = "isCleanMode"
-                        }
-                        add {
-                            name = "getContext"
-                        }
-                    }
-                }
-            }.instanceAll("videoViewHolderMethods")
 
             val livePhoto = bridge.findClass {
                 matcher {
@@ -725,7 +699,6 @@ object DexkitBuilder {
         }
 
         readClassCache(cache)
-        readMethodsCache(cache)
 
         KLogCat.tagI(TAG, cache.toString(2))
 
@@ -767,16 +740,6 @@ object DexkitBuilder {
     }
 
     /**
-     * 从缓存中读取方法
-     */
-    private fun readMethodsCache(cache: JSONObject) {
-        val methodsCache = cache.getJSONObject("methods")
-
-        //
-        videoViewHolderMethods = methodsCache.getJSONArrayOrDefault("videoViewHolderMethods").getCacheMethods()
-    }
-
-    /**
      * 保存缓存
      */
     private fun saveCache() {
@@ -800,7 +763,7 @@ object DexkitBuilder {
     private fun ClassData?.instance(label: String): Class<*>? {
         KLogCat.tagI(TAG, "found-class[$label]: ${this?.name}")
         classCacheJson.put(label, "${this?.name}")
-        return this?.getInstance(lpparam.classLoader)
+        return this?.getInstance(lparam.classLoader)
     }
 
     private fun MethodDataList.instanceAll(label: String): List<Method> {
@@ -811,7 +774,7 @@ object DexkitBuilder {
         }.map {
             KLogCat.tagI(TAG, "found-method[$label]: $it")
             array.put(it.toJson())
-            it.getMethodInstance(lpparam.classLoader)
+            it.getMethodInstance(lparam.classLoader)
         }
     }
 
@@ -823,31 +786,13 @@ object DexkitBuilder {
         return json
     }
 
-    private fun JSONArray.getCacheMethods(): List<Method> {
-        val methods = mutableListOf<Method>()
-        for (i in 0 until this.length()) {
-            runCatching {
-                val json = this.getJSONObject(i)
-                val className = json.getStringOrDefault("className")
-                val methodName = json.getStringOrDefault("methodName")
-                val paramTypeNames = json.getStringOrDefault("paramTypeNames").split(",")
-                val method = lpparam
-                    .findClass(className)
-                    .findMethod(methodName, *paramTypeNames.toTypedArray())
-                    ?: return@runCatching
-                methods.add(method)
-            }
-        }
-        return methods
-    }
-
     private fun String.loadOrFindClass(): Class<*>? {
         if (KTextUtils.isEmpty(this)) {
             return null
         }
 
         return try {
-            app?.classLoader?.loadClass(this) ?: lpparam.findClass(this)
+            app?.classLoader?.loadClass(this) ?: lparam.findClass(this)
         } catch (e: Throwable) {
             null
         }

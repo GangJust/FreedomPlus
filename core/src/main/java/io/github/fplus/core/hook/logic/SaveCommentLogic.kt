@@ -8,7 +8,7 @@ import com.freegang.ktutils.net.KHttpUtils
 import com.ss.android.ugc.aweme.feed.model.Aweme
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.XplerLog
 import java.io.File
 
 // 保存评论区(图片/视频)逻辑

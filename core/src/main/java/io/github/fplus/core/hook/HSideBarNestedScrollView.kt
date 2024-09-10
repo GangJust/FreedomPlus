@@ -6,12 +6,12 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.ViewGroup
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.children
 import com.freegang.extension.isDarkMode
 import com.freegang.extension.postRunning
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
-import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.Constant
 import io.github.fplus.core.R
 import io.github.fplus.core.base.BaseHook
@@ -19,17 +19,13 @@ import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.databinding.SideFreedomSettingBinding
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.ui.activity.FreedomSettingActivity
-import io.github.xpler.core.KtXposedHelpers
+import io.github.xpler.core.XplerLog
 import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.proxy.MethodParam
 import io.github.xpler.core.thisViewGroup
 
 class HSideBarNestedScrollView : BaseHook() {
-    companion object {
-        const val TAG = "HSideBarNestedScrollView"
-    }
-
     private val config get() = ConfigV1.get()
 
     override fun setTargetClass(): Class<*> {
@@ -37,7 +33,7 @@ class HSideBarNestedScrollView : BaseHook() {
     }
 
     @OnAfter("onTouchEvent")
-    fun onTouchEventAfter(params: XC_MethodHook.MethodHookParam, event: MotionEvent) {
+    fun onTouchEventAfter(params: MethodParam, event: MotionEvent) {
         hookBlockRunning(params) {
             when (event.action) {
                 MotionEvent.ACTION_UP -> {
@@ -50,7 +46,7 @@ class HSideBarNestedScrollView : BaseHook() {
     }
 
     // @OnAfter("onAttachedToWindow")
-    fun onAttachedToWindowAfter(params: XC_MethodHook.MethodHookParam) {
+    fun onAttachedToWindowAfter(params: MethodParam) {
         hookBlockRunning(params) {
             if (thisViewGroup.context.packageName.contains("lite")) {
                 thisViewGroup.postRunning { insertSettingView(it) }
@@ -83,9 +79,9 @@ class HSideBarNestedScrollView : BaseHook() {
                 textColorRes = Color.parseColor("#FF161823")
             }
 
-            binding.freedomSettingContainer.background = KtXposedHelpers.getDrawable(backgroundRes)
+            binding.freedomSettingContainer.background = AppCompatResources.getDrawable(viewGroup.context, backgroundRes)
             binding.freedomSettingText.setTextColor(textColorRes)
-            binding.freedomSettingIcon.background = KtXposedHelpers.getDrawable(iconColorRes)
+            binding.freedomSettingIcon.background = AppCompatResources.getDrawable(viewGroup.context, iconColorRes)
             binding.freedomSettingTitle.text = String.format("%s", "Freedom+")
             binding.freedomSettingTitle.setTextColor(textColorRes)
             binding.freedomSetting.setOnClickListener { view ->

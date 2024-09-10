@@ -13,19 +13,15 @@ import com.freegang.extension.findFieldGetValue
 import com.freegang.extension.firstOrNull
 import com.freegang.extension.idName
 import com.freegang.extension.parentView
-import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
+import io.github.xpler.core.XplerLog
 import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.proxy.MethodParam
 
 class HChatListRecyclerViewAdapter : BaseHook() {
-    companion object {
-        const val TAG = "HChatListRecyclerViewAdapter"
-    }
-
     private val recallMsgId = View.generateViewId()
 
     private val config get() = ConfigV1.get()
@@ -36,7 +32,7 @@ class HChatListRecyclerViewAdapter : BaseHook() {
 
     @OnAfter("onCreateViewHolder")
     fun onCreateViewHolderAfter(
-        params: XC_MethodHook.MethodHookParam,
+        params: MethodParam,
         parent: ViewGroup,
         viewType: Int,
     ) {
@@ -46,7 +42,7 @@ class HChatListRecyclerViewAdapter : BaseHook() {
             }
 
             val vh = result
-            val itemView = vh.findFieldGetValue<ViewGroup> { name("itemView") }
+            val itemView = vh?.findFieldGetValue<ViewGroup> { name("itemView") }
             val contentContainer = itemView
                 ?.firstOrNull(ViewGroup::class.java) { it.idName == "@id/content" }
                 ?.parentView
@@ -61,19 +57,19 @@ class HChatListRecyclerViewAdapter : BaseHook() {
                 addView(textView)
             }
         }.onFailure {
-            XplerLog.tagE(HChatListRecyclerViewAdapterNew.TAG, it)
+            XplerLog.e(it)
         }
     }
 
     @SuppressLint("SetTextI18n")
     @OnAfter("onBindViewHolder")
-    fun onBindViewHolderAfter(params: XC_MethodHook.MethodHookParam) {
+    fun onBindViewHolderAfter(params: MethodParam) {
         hookBlockRunning(params) {
             if (!config.isPreventRecalled) {
                 return
             }
 
-            val vh = args[0] // ViewHolder
+            val vh = args[0]!! // ViewHolder
             val itemView = args[0]?.findFieldGetValue<FrameLayout> { name("itemView") } ?: return
             val recallMsg = itemView.findViewById<TextView>(recallMsgId) ?: return
 

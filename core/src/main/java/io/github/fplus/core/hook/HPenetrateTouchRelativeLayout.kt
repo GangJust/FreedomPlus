@@ -4,19 +4,15 @@ import android.view.View
 import androidx.core.view.updatePadding
 import com.freegang.extension.dip2px
 import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
-import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
+import io.github.xpler.core.XplerLog
+import io.github.xpler.core.entity.CallMethods
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.proxy.MethodParam
 import io.github.xpler.core.thisViewGroup
-import io.github.xpler.core.wrapper.CallMethods
 
 class HPenetrateTouchRelativeLayout : BaseHook(), CallMethods {
-    companion object {
-        const val TAG = "HPenetrateTouchRelativeLayout"
-    }
-
     private val config get() = ConfigV1.get()
 
     override fun setTargetClass(): Class<*> {
@@ -24,7 +20,7 @@ class HPenetrateTouchRelativeLayout : BaseHook(), CallMethods {
     }
 
     @OnBefore("setVisibility")
-    fun setVisibilityBefore(params: XC_MethodHook.MethodHookParam, visibility: Int) {
+    fun setVisibilityBefore(params: MethodParam, visibility: Int) {
         hookBlockRunning(params) {
             if (!config.isNeatMode) {
                 return
@@ -51,19 +47,19 @@ class HPenetrateTouchRelativeLayout : BaseHook(), CallMethods {
     }
 
     @OnBefore
-    fun methodBefore(params: XC_MethodHook.MethodHookParam, visibility: Int, string: String?) {
+    fun methodBefore(params: MethodParam, visibility: Int, string: String?) {
         hookBlockRunning(params) {
             setVisibilityBefore(params, visibility)
         }.onFailure {
-            XplerLog.tagE(TAG, it)
+            XplerLog.e(it)
         }
     }
 
-    override fun callOnBeforeMethods(params: XC_MethodHook.MethodHookParam) {
+    override fun callOnBeforeMethods(params: MethodParam) {
 
     }
 
-    override fun callOnAfterMethods(params: XC_MethodHook.MethodHookParam) {
+    override fun callOnAfterMethods(params: MethodParam) {
         hookBlockRunning(params) {
             if (config.isImmersive) {
                 thisViewGroup.apply {

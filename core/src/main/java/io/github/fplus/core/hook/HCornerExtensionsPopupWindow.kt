@@ -3,15 +3,14 @@ package io.github.fplus.core.hook
 import android.app.ActivityOptions
 import android.content.Intent
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupWindow
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.children
 import com.freegang.extension.isDarkMode
 import com.freegang.extension.postRunning
 import com.freegang.ktutils.app.KAppUtils
 import com.freegang.ktutils.app.KToastUtils
-import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.Constant
 import io.github.fplus.core.R
 import io.github.fplus.core.base.BaseHook
@@ -19,16 +18,12 @@ import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.databinding.PopupFreedomSettingBinding
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.ui.activity.FreedomSettingActivity
-import io.github.xpler.core.KtXposedHelpers
+import io.github.xpler.core.XplerLog
 import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.proxy.MethodParam
 
 class HCornerExtensionsPopupWindow : BaseHook() {
-    companion object {
-        const val TAG = "HCornerExtensionsPopupWindow"
-    }
-
     private val config get() = ConfigV1.get()
 
     override fun setTargetClass(): Class<*> {
@@ -36,14 +31,14 @@ class HCornerExtensionsPopupWindow : BaseHook() {
     }
 
     @OnAfter
-    fun methodAfter(params: XC_MethodHook.MethodHookParam, boolean: Boolean) {
+    fun methodAfter(params: MethodParam, boolean: Boolean) {
         hookBlockRunning(params) {
             if (!boolean)
                 return
 
             val popupWindow = thisObject as PopupWindow
             popupWindow.contentView.postRunning {
-                val icFreedom = KtXposedHelpers.getDrawable(R.drawable.ic_freedom)
+                val icFreedom = AppCompatResources.getDrawable(it.context, R.drawable.ic_freedom)
                 val binding = PopupFreedomSettingBinding.inflate(LayoutInflater.from(it.context))
                 binding.freedomSettingTitle.text = String.format("%s", "Freedom+")
                 binding.freedomSettingIcon.setImageDrawable(icFreedom)

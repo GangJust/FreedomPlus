@@ -13,16 +13,13 @@ import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.hook.logic.SaveEmojiLogic
+import io.github.xpler.core.XplerLog
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.proxy.MethodParam
 import io.github.xpler.core.thisActivity
 import kotlinx.coroutines.delay
 
 class HGifEmojiDetailActivity : BaseHook() {
-    companion object {
-        const val TAG = "HGifEmojiDetailActivity"
-    }
-
     private val config get() = ConfigV1.get()
 
     private var urlList: List<String> = emptyList()
@@ -32,7 +29,7 @@ class HGifEmojiDetailActivity : BaseHook() {
     }
 
     @OnBefore("onCreate")
-    fun onCreate(params: XC_MethodHook.MethodHookParam, bundle: Bundle?) {
+    fun onCreate(params: MethodParam, bundle: Bundle?) {
         hookBlockRunning(params) {
             if (!config.isEmojiDownload)
                 return

@@ -3,20 +3,16 @@ package io.github.fplus.core.hook
 import android.widget.TextView
 import com.freegang.extension.asOrNull
 import com.ss.android.ugc.aweme.emoji.base.BaseEmoji
-import de.robv.android.xposed.XC_MethodHook
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.hook.logic.SaveEmojiLogic
+import io.github.xpler.core.XplerLog
 import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.hookBlockRunning
-import io.github.xpler.core.log.XplerLog
+import io.github.xpler.core.proxy.MethodParam
 
 class HEmojiPopupWindow : BaseHook() {
-    companion object {
-        const val TAG = "HEmojiPopupWindow"
-    }
-
     private val config get() = ConfigV1.get()
 
     private var popUrlList: List<String> = emptyList()
@@ -27,7 +23,7 @@ class HEmojiPopupWindow : BaseHook() {
 
     @OnAfter
     fun emojiAfter(
-        params: XC_MethodHook.MethodHookParam,
+        params: MethodParam,
         emoji: BaseEmoji?,
     ) {
         hookBlockRunning(params) {
@@ -44,7 +40,7 @@ class HEmojiPopupWindow : BaseHook() {
 
     @OnAfter
     @ReturnType("Lcom/bytedance/ies/dmt/ui/widget/DmtTextView;")
-    fun textViewAfter(params: XC_MethodHook.MethodHookParam) {
+    fun textViewAfter(params: MethodParam) {
         hookBlockRunning(params) {
             if (!config.isEmojiDownload)
                 return
