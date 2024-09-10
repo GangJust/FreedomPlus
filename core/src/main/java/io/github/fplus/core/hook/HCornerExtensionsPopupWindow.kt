@@ -18,6 +18,7 @@ import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.databinding.PopupFreedomSettingBinding
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.ui.activity.FreedomSettingActivity
+import io.github.fplus.plugin.injectRes
 import io.github.xpler.core.XplerLog
 import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.hookBlockRunning
@@ -38,6 +39,7 @@ class HCornerExtensionsPopupWindow : BaseHook() {
 
             val popupWindow = thisObject as PopupWindow
             popupWindow.contentView.postRunning {
+                injectRes(it.context.resources)
                 val icFreedom = AppCompatResources.getDrawable(it.context, R.drawable.ic_freedom)
                 val binding = PopupFreedomSettingBinding.inflate(LayoutInflater.from(it.context))
                 binding.freedomSettingTitle.text = String.format("%s", "Freedom+")

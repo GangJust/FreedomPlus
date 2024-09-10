@@ -8,13 +8,12 @@ import com.ss.android.ugc.aweme.feed.ui.PenetrateTouchRelativeLayout
 import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.xpler.core.XplerLog
+import io.github.xpler.core.entity.EmptyHook
 import io.github.xpler.core.hookBlockRunning
 import io.github.xpler.core.proxy.MethodParam
 
 class HPlayerController : BaseHook() {
     companion object {
-        const val TAG = "HPlayerController"
-
         var playingAid: String? = ""
 
         @get:Synchronized
@@ -25,7 +24,9 @@ class HPlayerController : BaseHook() {
     private val config get() = ConfigV1.get()
 
     override fun setTargetClass(): Class<*> {
-        return findClass("com.ss.android.ugc.aweme.feed.controller.PlayerController")
+        return runCatching {
+            findClass("com.ss.android.ugc.aweme.feed.controller.PlayerController")
+        }.getOrDefault(EmptyHook::class.java)
     }
 
     @OnBefore("onPlaying")
@@ -34,7 +35,7 @@ class HPlayerController : BaseHook() {
             // XplerLog.d("onPlaying: $aid")
             playingAid = aid
             isPlaying = true
-            callOpenCleanMode(params, true)
+            // callOpenCleanMode(params, true)
         }.onFailure {
             XplerLog.e(it)
         }
@@ -46,7 +47,7 @@ class HPlayerController : BaseHook() {
             // XplerLog.d("onResumePlay: $aid")
             playingAid = aid
             isPlaying = true
-            callOpenCleanMode(params, true)
+            // callOpenCleanMode(params, true)
         }.onFailure {
             XplerLog.e(it)
         }
@@ -58,7 +59,7 @@ class HPlayerController : BaseHook() {
             // XplerLog.d("onPausePlay: $aid")
             if (playingAid == aid) {
                 isPlaying = false
-                callOpenCleanMode(params, false)
+                // callOpenCleanMode(params, false)
             }
         }.onFailure {
             XplerLog.e(it)
@@ -71,7 +72,7 @@ class HPlayerController : BaseHook() {
             // XplerLog.d("onPlayStop: $aid")
             if (playingAid == aid) {
                 isPlaying = false
-                callOpenCleanMode(params, false)
+                // callOpenCleanMode(params, false)
             }
         }.onFailure {
             XplerLog.e(it)

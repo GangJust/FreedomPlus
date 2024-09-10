@@ -35,6 +35,7 @@ import io.github.fplus.core.base.BaseHook
 import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.helper.AutoPlayHelper
 import io.github.fplus.core.helper.DexkitBuilder
+import io.github.fplus.plugin.injectRes
 import io.github.xpler.core.XplerLog
 import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.hookBlockRunning
@@ -79,6 +80,13 @@ class HVideoViewHolder : BaseHook() {
                 val alpha = config.translucentValue[1] / 100f
                 if (view.alpha > alpha) {
                     view.alpha = alpha
+                }
+            }
+
+            if (config.isNeatMode) {
+                if (config.neatModeState) {
+                    view.isVisible = !HPlayerController.isPlaying
+                    HMainActivity.toggleView(view.isVisible)
                 }
             }
         })
@@ -213,6 +221,8 @@ class HVideoViewHolder : BaseHook() {
         val isAdded = view.children.firstOrNull()?.tag == "AutoPlay"
         if (isAdded)
             return
+
+        injectRes(view.context.resources)
 
         val autoPlayContainer = LinearLayout(view.context).apply {
             orientation = LinearLayout.VERTICAL

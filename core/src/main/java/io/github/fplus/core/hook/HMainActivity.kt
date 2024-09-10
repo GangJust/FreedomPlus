@@ -32,8 +32,8 @@ import io.github.fplus.core.hook.logic.ClipboardLogic
 import io.github.fplus.core.hook.logic.DownloadLogic
 import io.github.fplus.core.ui.activity.FreedomSettingActivity
 import io.github.xpler.core.XplerLog
-import io.github.xpler.core.XplerModule
 import io.github.xpler.core.hookBlockRunning
+import io.github.xpler.core.moduleVersionName
 import io.github.xpler.core.proxy.MethodParam
 import io.github.xpler.core.thisActivity
 import io.github.xpler.core.thisContext
@@ -91,7 +91,7 @@ class HMainActivity : BaseHook() {
     fun onCreateAfter(params: MethodParam, savedInstanceState: Bundle?) {
         hookBlockRunning(params) {
             val activity = thisActivity
-            XplerLog.d("version: ${XplerModule.moduleVersionName(activity)} - ${activity.appVersionName}(${activity.appVersionCode})")
+            XplerLog.d("version: ${activity.moduleVersionName} - ${activity.appVersionName}(${activity.appVersionCode})")
             DouYinMain.timerExitHelper?.restart()
 
             openAutoPlay(activity)

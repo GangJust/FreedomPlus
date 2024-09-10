@@ -130,7 +130,6 @@ abstract class BaseHook : HookEntity() {
         view: View,
         onDismiss: () -> Unit = {},
     ) {
-        injectRes(view.context.resources)
         popupDialog = if (popupDialog == null) PopupDialog() else popupDialog
         popupDialog!!.setView(view)
         popupDialog!!.show()
@@ -167,6 +166,7 @@ abstract class BaseHook : HookEntity() {
         onCancel: () -> Unit = {},
         onDismiss: () -> Unit = {},
     ) {
+        injectRes(context.resources)
         val isDarkMode = context.isDarkMode
         val binding = DialogMessageLayoutBinding.inflate(LayoutInflater.from(context))
 
@@ -227,6 +227,7 @@ abstract class BaseHook : HookEntity() {
         listener: (dismiss: (() -> Unit), progress: ProgressDialogNotification) -> Unit,
         onDismiss: () -> Unit = {},
     ) {
+        injectRes(context.resources)
         val isDarkMode = context.isDarkMode
         val binding = DialogProgressLayoutBinding.inflate(LayoutInflater.from(context))
 
@@ -268,6 +269,8 @@ abstract class BaseHook : HookEntity() {
         onCancel: () -> Unit = {},
         onDismiss: () -> Unit = {},
     ) {
+        injectRes(context.resources)
+
         val isDarkMode = context.isDarkMode
         val binding = DialogInputChoiceLayoutBinding.inflate(LayoutInflater.from(context))
 
@@ -353,9 +356,9 @@ abstract class BaseHook : HookEntity() {
         onChoice: (view: View, item: CharSequence, position: Int) -> Unit,
         onCancel: () -> Unit = {},
     ) {
-        val binding = DialogChoiceLayoutBinding.inflate(LayoutInflater.from(context))
-
+        injectRes(context.resources)
         val isDarkMode = context.isDarkMode
+        val binding = DialogChoiceLayoutBinding.inflate(LayoutInflater.from(context))
 
         binding.choiceDialogContainer.background = getDrawable(
             context,

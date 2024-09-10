@@ -86,6 +86,7 @@ class DouYinMain(private val app: Application) {
                     HSeekBarSpeedModeBottomMask()
                     HLongPressLayout()
                     HVideoViewHolder()
+                    HFeedPlayerView()
                     HFeedAvatarPresenter()
                     HHomeBottomTabServiceImpl()
                     HAbstractFeedAdapter()

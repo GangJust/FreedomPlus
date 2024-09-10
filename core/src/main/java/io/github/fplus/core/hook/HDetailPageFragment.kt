@@ -18,6 +18,7 @@ import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.databinding.HookAppbarLayoutBinding
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.hook.logic.SaveCommentLogic
+import io.github.fplus.plugin.injectRes
 import io.github.xpler.core.XplerLog
 import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.hookBlockRunning
@@ -44,6 +45,8 @@ class HDetailPageFragment : BaseHook() {
             //
             HDetailPageFragment.isComment = false
             view.postRunning {
+                injectRes(it.context.resources)
+
                 val aweme = thisObject?.findMethodInvoke<Aweme> { returnType(Aweme::class.java) } ?: return@postRunning
 
                 // awemeType 【134:评论区图片, 133|136:评论区视频, 0:主页视频详情, 68:主页图文详情, 13:私信视频/图文, 6000:私信图片】 by 25.1.0 至今

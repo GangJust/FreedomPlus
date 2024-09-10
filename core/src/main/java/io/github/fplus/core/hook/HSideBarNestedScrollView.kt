@@ -19,6 +19,7 @@ import io.github.fplus.core.config.ConfigV1
 import io.github.fplus.core.databinding.SideFreedomSettingBinding
 import io.github.fplus.core.helper.DexkitBuilder
 import io.github.fplus.core.ui.activity.FreedomSettingActivity
+import io.github.fplus.plugin.injectRes
 import io.github.xpler.core.XplerLog
 import io.github.xpler.core.entity.NoneHook
 import io.github.xpler.core.hookBlockRunning
@@ -63,6 +64,7 @@ class HSideBarNestedScrollView : BaseHook() {
             val onlyChild = it.getChildAt(0) as ViewGroup
             if (onlyChild.children.lastOrNull()?.contentDescription == "扩展功能") return@postRunning
 
+            injectRes(viewGroup.context.resources)
             val binding = SideFreedomSettingBinding.inflate(LayoutInflater.from(viewGroup.context), viewGroup, false)
             binding.root.contentDescription = "扩展功能"
 

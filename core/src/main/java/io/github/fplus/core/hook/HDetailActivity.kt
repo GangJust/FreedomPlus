@@ -14,10 +14,6 @@ import io.github.xpler.core.proxy.MethodParam
 import io.github.xpler.core.thisActivity
 
 class HDetailActivity : BaseHook() {
-    companion object {
-        const val TAG = "HDetailActivity"
-    }
-
     private val config get() = ConfigV1.get()
 
     private val clipboardLogic = ClipboardLogic(this)
