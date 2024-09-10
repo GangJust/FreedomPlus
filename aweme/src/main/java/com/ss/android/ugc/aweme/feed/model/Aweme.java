@@ -1,5 +1,6 @@
 package com.ss.android.ugc.aweme.feed.model;
 
+import com.ss.android.ugc.aweme.comment.model.Comment;
 import com.ss.android.ugc.aweme.music.model.Music;
 import com.ss.android.ugc.aweme.profile.model.User;
 import com.ss.ugc.aweme.ImageUrlStruct;
@@ -42,6 +43,8 @@ public abstract class Aweme {
     public List<ImageUrlStruct> images;
 
     public String shareUrl;
+
+    public Comment commentFeedOuterComment;
 
     public Aweme() {
         throw new RuntimeException("stub!!");

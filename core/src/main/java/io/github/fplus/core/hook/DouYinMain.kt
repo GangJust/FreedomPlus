@@ -81,6 +81,7 @@ class DouYinMain(private val app: Application) {
                     HMainBottomTabView()
                     HMainBottomPhotoTab()
                     HCommentListPageFragment()
+                    HCommentFeedFragment()
                     HConversationFragment()
                     HSeekBarSpeedModeBottomMask()
                     HLongPressLayout()
